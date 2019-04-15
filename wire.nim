@@ -1,7 +1,7 @@
 import streams, tables, oids
 import asyncdispatch, asyncnet
 from sugar import dump
-import absonimpl
+import bson
 #import nesm
 
 export streams, asyncnet, asyncdispatch
@@ -191,11 +191,12 @@ proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
   discard await socket.getReply
 
 
-proc queryAck(sock: AsyncSocket, query = newbson(), selector = newbson(),
-  sort = newbson(), skip = 0, limit = 0) {.async.} =
+proc queryAck*(sock: AsyncSocket, dbname, collname: string,
+  query = newbson(), selector = newbson(),
+  sort = newbson(), skip = 0, limit = 0): Future[ReplyFormat] {.async.} =
   var s = newStringStream()
   let findq = bson({
-    find: "role",
+    find: collname,
     filter: query,
     sort: sort,
     projection: selector,
@@ -203,19 +204,19 @@ proc queryAck(sock: AsyncSocket, query = newbson(), selector = newbson(),
     limit: limit
   })
   dump findq
-  discard s.prepareQuery(0, 0, opQuery.int32, 0, "temptest.$cmd",
+  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     skip.int32, 1, findq)
   await sock.send s.readAll
-  discard await sock.getReply
+  sock.getReply
 
 # not tested when there's no way to create database
-proc dropDatabase*(sock: AsyncSocket, collname = "temptest.$cmd",
+proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
     writeConcern = newbson()) {.async.} =
   var q = newbson(("dropDatabase", 1.toBson))
   if not writeConcern.isNil:
     q["writeConcern"] = writeConcern.toBson
   var s = newStringStream()
-  discard s.prepareQuery(0, 0, opQuery.int32, 0, collname,
+  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     0, 1, q)
   await sock.send s.readAll
   discard await sock.getReply
@@ -272,7 +273,7 @@ when isMainModule:
 
   echo "\n======================"
   echo "find with acknowledged query"
-  waitFor socket.queryAck(sort = bson({id: -1}))
+  waitFor socket.queryAck("temptest", "role", sort = bson({id: -1}))
 
 
   #[
