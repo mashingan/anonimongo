@@ -106,6 +106,20 @@ proc acknowledgedInsert(s: Stream, data: BsonDocument,
     collname, 0, 1, insertQuery)
 
 
+proc look*(reply: ReplyFormat) =
+  dump result.numberReturned
+  if result.numberReturned > 0 and
+     "cursor" in result.documents[0] and
+     "firstBatch" in result.documents[0]["cursor"].get.ofEmbedded:
+    echo "printing cursor"
+    for d in result.documents[0]["cursor"]
+      .get.ofEmbedded["firstBatch"].get.ofArray:
+      dump d
+  else:
+    for d in result.documents:
+      dump d
+    
+
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
@@ -115,42 +129,31 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} 
   let rest = await socket.recv(size = bytelen-16)
   var restStream = newStringStream rest
   result = replyParse restStream
-  dump result.numberReturned
-  if result.numberReturned > 0 and
-    "cursor" in result.documents[0] and
-    "firstBatch" in result.documents[0]["cursor"].get.ofEmbedded:
-    echo "printing cursor"
-    for d in result.documents[0]["cursor"]
-        .get.ofEmbedded["firstBatch"].get.ofArray:
-      dump d
-  else:
-    for d in result.documents:
-      dump d
 
 proc findAll(socket: AsyncSocket, selector = newbson()) {.async.} =
   var stream = newStringStream()
   discard stream.queryOp(newbson(), selector)
   await socket.send stream.readAll
-  discard await socket.getReply
+  look(await socket.getReply)
 
 proc insert(socket: AsyncSocket, doc: BsonDocument) {.async.} =
   var s = newStringStream()
   let length = s.insertOp doc
   let data = s.readAll
-  await socket.send data
+  look(await socket.send data)
 
 proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async.} =
   var s = newStringStream()
   let length = s.acknowledgedInsert doc
   let data = s.readAll
   await socket.send data
-  discard await socket.getReply
+  look(await socket.getReply)
 
 proc insertAckNewColl(socket: AsyncSocket, doc: BsonDocument) {.async.} =
   var s = newStringStream()
   discard s.acknowledgedInsert(doc, collname = "newcoll.$cmd")
   await socket.send s.readAll
-  discard await socket.getReply
+  look( await socket.getReply )
 
 let insertDoc = bson({
   id: 3.toBson,
@@ -172,7 +175,7 @@ proc deleteAck(socket: AsyncSocket, query: BsonDocument, n = 0) {.async.} =
   let length = s.deleteAck(query, n)
   let data = s.readAll
   await socket.send data
-  discard await socket.getReply
+  look( await socket.getReply )
 
 proc updateAck(s: Stream, query, update: BsonDocument, multi = true,
     collname = "temptest.$cmd"): int =
@@ -188,7 +191,7 @@ proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
   var s = newStringStream()
   let length = s.updateAck(query, update, multi)
   await socket.send s.readAll
-  discard await socket.getReply
+  look( await socket.getReply )
 
 
 proc queryAck*(sock: AsyncSocket, dbname, collname: string,
@@ -207,11 +210,11 @@ proc queryAck*(sock: AsyncSocket, dbname, collname: string,
   discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     skip.int32, 1, findq)
   await sock.send s.readAll
-  sock.getReply
+  result = await sock.getReply
 
 # not tested when there's no way to create database
 proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
-    writeConcern = newbson()) {.async.} =
+    writeConcern = newbson()): Future[ReplyFormat] {.async.} =
   var q = newbson(("dropDatabase", 1.toBson))
   if not writeConcern.isNil:
     q["writeConcern"] = writeConcern.toBson
@@ -219,7 +222,7 @@ proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
   discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     0, 1, q)
   await sock.send s.readAll
-  discard await sock.getReply
+  result = await sock.getReply
 
 when isMainModule:
   var socket = newAsyncSocket()
@@ -273,7 +276,7 @@ when isMainModule:
 
   echo "\n======================"
   echo "find with acknowledged query"
-  waitFor socket.queryAck("temptest", "role", sort = bson({id: -1}))
+  dump waitFor socket.queryAck("temptest", "role", sort = bson({id: -1}))
 
 
   #[
