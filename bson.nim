@@ -94,8 +94,8 @@ type
     bkJs
     bkSymbol    # bson spec: deprecated
     bkJsScope bkInt32 bkTimestamp bkInt64 bkDecimal
-    #bkMinKey = 0xff.byte
-    #bkMaxKey = 0x7f.byte
+    bkMaxKey = 0x7f.byte
+    bkMinKey = 0xff.byte
   
   BsonSubtype* = enum
     stGeneric = 0x00.byte

@@ -8,7 +8,8 @@ export streams, asyncnet, asyncdispatch
 
 type
   OpCode* = enum
-    opUpdate = 2001.int32
+    opReply = 1'i32
+    opUpdate = 2001'i32
     opInsert opReserved opQuery opGetMore opDelete opKillCursors
     opNo1 opNo2 # not used
     opCommand opCommandReply
@@ -24,9 +25,6 @@ type
     startingFrom: int32
     numberReturned: int32
     documents: seq[BsonDocument]
-
-
-const opReply = 1'i32
 
 proc serialize(s: Stream, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
@@ -107,16 +105,16 @@ proc acknowledgedInsert(s: Stream, data: BsonDocument,
 
 
 proc look*(reply: ReplyFormat) =
-  dump result.numberReturned
-  if result.numberReturned > 0 and
-     "cursor" in result.documents[0] and
-     "firstBatch" in result.documents[0]["cursor"].get.ofEmbedded:
+  dump reply.numberReturned
+  if reply.numberReturned > 0 and
+     "cursor" in reply.documents[0] and
+     "firstBatch" in reply.documents[0]["cursor"].get.ofEmbedded:
     echo "printing cursor"
-    for d in result.documents[0]["cursor"]
+    for d in reply.documents[0]["cursor"]
       .get.ofEmbedded["firstBatch"].get.ofArray:
       dump d
   else:
-    for d in result.documents:
+    for d in reply.documents:
       dump d
     
 
@@ -140,7 +138,7 @@ proc insert(socket: AsyncSocket, doc: BsonDocument) {.async.} =
   var s = newStringStream()
   let length = s.insertOp doc
   let data = s.readAll
-  look(await socket.send data)
+  await socket.send data
 
 proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async.} =
   var s = newStringStream()
