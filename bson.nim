@@ -32,6 +32,9 @@ proc bytes*(o: Oid): seq[byte] =
     result.add chrtmp.parseHexInt.byte
     count += 2
 
+proc stringbytes*(s: seq[byte]): string =
+  result = newstring(s.len)
+  for i, b in s: result[i] = chr b
 
 template `as`*(a, b: untyped): untyped =
   cast[b](a)
@@ -72,6 +75,10 @@ type
   BsonObjectId* = ref object of BsonBase
     value*: Oid
 
+  BsonBinary* = ref object of BsonBase
+    subtype*: BsonSubtype
+    value*: seq[byte]
+
   BsonInternal = OrderedTableRef[string, BsonBase]
   BsonDocument* = ref object
     table: BsonInternal
@@ -90,6 +97,10 @@ type
     #bkMinKey = 0xff.byte
     #bkMaxKey = 0x7f.byte
   
+  BsonSubtype* = enum
+    stGeneric = 0x00.byte
+    stFunction stBinaryOld stUuidOld stUuid stMd5
+
   BsonFetchError* = ref object of Exception
 
 iterator pairs*(b: BsonDocument): (string, BsonBase) =
@@ -116,6 +127,10 @@ proc quote(key: sink string): string =
 
 proc `$`*(doc: sink BsonDocument): string
 
+proc `$`(doc: BsonBinary): string =
+  result = "Binary(" & quote($doc.subtype) & ", " &
+    quote(doc.value.stringbytes) & ")"
+
 proc `$`*(v: sink BsonBase): string =
   case v.kind
   of bkString:
@@ -138,6 +153,8 @@ proc `$`*(v: sink BsonBase): string =
     result = $(v as BsonEmbed).value
   of bkObjectId:
     result = quote $(v as BsonObjectId).value
+  of bkBinary:
+    result = $(v as BsonBinary)
   else:
     result = ""
 
@@ -225,6 +242,14 @@ proc encode(s: Stream, key: string, doc: BsonObjectId): int =
   for b in doc.value.bytes:
     s.write b
 
+proc encode(s: Stream, key: string, doc: BsonBinary): int =
+  result = 1 + key.len + 1 + 4 + 1 + doc.value.len
+  s.writeKey key, bkBinary
+  s.write doc.value.len.int32
+  s.write doc.subtype.byte
+  for b in doc.value:
+    s.write b
+
 proc encode*(doc: BsonDocument): (int, string) =
   if doc.encoded:
     doc.stream.setPosition 0
@@ -256,6 +281,8 @@ proc encode*(doc: BsonDocument): (int, string) =
       length += doc.stream.encode(k, v as BsonNull)
     of bkObjectId:
       length += doc.stream.encode(k, v as BsonObjectId)
+    of bkBinary:
+      length += doc.stream.encode(k, v as BsonBinary)
     else:
       discard
 
@@ -300,6 +327,9 @@ converter toBson*(value: Oid): BsonBase =
 converter toBson*(value: BsonDocument): BsonBase =
   BsonEmbed(value: value, kind: bkEmbed)
 
+converter toBson*(value: openarray[byte]): BsonBase =
+  BsonBinary(value: @value, kind: bkBinary, subtype: stGeneric)
+
 proc bsonNull*: BsonBase =
   BsonNull(kind: bkNull)
 
@@ -312,6 +342,8 @@ proc isNil*(b: BsonDocument): bool =
 proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
   (@args).toBson
 
+proc bsonBinary*(binstr: string, subtype = stGeneric): BsonBase =
+  BsonBinary(value: binstr.bytes, subtype: subtype, kind: bkBinary)
 
 proc newBson*(table = newOrderedTable[string, BsonBase](),
     stream: Stream = newStringStream()): BsonDocument =
@@ -370,6 +402,14 @@ proc readMilliseconds(s: Stream): Time =
     millfrac = int64((currsec mod 1000) * 1e6)
   initTime(secfrac, millfrac)
 
+proc decodeBinary(s: Stream): (BsonSubtype, seq[byte]) =
+  var thebytes = newseq[byte]()
+  let length = s.readInt32
+  let subtype = s.readChar.BsonSubtype
+  for _ in 1 .. length:
+    thebytes.add s.readChar.byte
+  result = (subtype, thebytes)
+
 proc decode(s: Stream): (string, BsonBase) =
   var (key, kind) = s.decodeKey
   var val: BsonBase
@@ -397,6 +437,9 @@ proc decode(s: Stream): (string, BsonBase) =
   of bkEmbed:
     let doclen = s.peekInt32
     val = BsonEmbed(kind: kind, value: s.readStr(doclen).decode)
+  of bkBinary:
+    let (subtype, thebyte) = s.decodeBinary
+    val = BsonBinary(kind: kind, subtype: subtype, value: thebyte)
   else:
     val = bsonNull()
   result = (key, val)
@@ -470,6 +513,9 @@ converter ofBool*(b: BsonBase): bool =
 
 converter ofEmbedded*(b: BsonBase): BsonDocument =
   bsonFetcher(b, bkEmbed, BsonEmbed, BsonDocument)
+
+converter ofBinary*(b: BsonBase): seq[byte] =
+  bsonFetcher(b, bkBinary, BsonBinary, seq[byte])
 
 when isMainModule:
   let hellodoc = newbson(
@@ -545,3 +591,22 @@ when isMainModule:
     .ofEmbedded["$set"].get
     .ofEmbedded["truth"].get
     .ofInt == 42
+
+  let stringbin = "MwahahaBinaryGotoki"
+  let testbinary = bson({
+    dummy_binary: bsonBinary stringbin
+  })
+  let (_, tbencoded) = encode testbinary
+  let dectestbin = decode tbencoded
+  dump dectestbin
+  doAssert dectestbin["dummy_binary"].get.
+    ofBinary.stringbytes == stringbin
+
+  let qrimg = readFile "qrcode-me.png"
+  dump qrimg.len
+  let pngbin = bson({
+    "qr-me": bsonBinary qrimg
+  })
+  let (_, pngbinencode) = encode pngbin
+  let pngdec = decode pngbinencode
+  doAssert pngdec["qr-me"].get.ofBinary.stringbytes == qrimg
