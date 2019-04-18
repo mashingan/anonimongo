@@ -49,8 +49,12 @@ type
   BsonInt64* = ref object of BsonBase
     value*: int64
 
+  TimestampInternal = tuple
+    increment: uint32
+    timestamp: uint32
+
   BsonTimestamp* = ref object of BsonBase
-    value*: uint64
+    value*: TimestampInternal
 
   BsonDouble* = ref object of BsonBase
     value*: float64
@@ -155,6 +159,9 @@ proc `$`*(v: sink BsonBase): string =
     result = quote $(v as BsonObjectId).value
   of bkBinary:
     result = $(v as BsonBinary)
+  of bkTimestamp:
+    let doc = v as BsonTimestamp
+    result = fmt"timestamp(increment:{doc.value[0]}, timestamp:{doc.value[1]})"
   else:
     result = ""
 
@@ -250,6 +257,12 @@ proc encode(s: Stream, key: string, doc: BsonBinary): int =
   for b in doc.value:
     s.write b
 
+proc encode(s: Stream, key: string, doc: BsonTimestamp): int =
+  result = 1 + key.len + 1 + 8
+  s.writeKey key, bkTimestamp
+  s.write doc.value[0]
+  s.write doc.value[1]
+
 proc encode*(doc: BsonDocument): (int, string) =
   if doc.encoded:
     doc.stream.setPosition 0
@@ -283,6 +296,8 @@ proc encode*(doc: BsonDocument): (int, string) =
       length += doc.stream.encode(k, v as BsonObjectId)
     of bkBinary:
       length += doc.stream.encode(k, v as BsonBinary)
+    of bkTimestamp:
+      length += doc.stream.encode(k, v as BsonTimestamp)
     else:
       discard
 
@@ -329,6 +344,9 @@ converter toBson*(value: BsonDocument): BsonBase =
 
 converter toBson*(value: openarray[byte]): BsonBase =
   BsonBinary(value: @value, kind: bkBinary, subtype: stGeneric)
+
+converter toBson*(value: TimestampInternal): BsonBase =
+  BsonTimestamp(value: value, kind: bkTimestamp)
 
 proc bsonNull*: BsonBase =
   BsonNull(kind: bkNull)
@@ -440,6 +458,8 @@ proc decode(s: Stream): (string, BsonBase) =
   of bkBinary:
     let (subtype, thebyte) = s.decodeBinary
     val = BsonBinary(kind: kind, subtype: subtype, value: thebyte)
+  of bkTimestamp:
+    val = BsonTimestamp(kind: kind, value: (s.readUint32, s.readUint32))
   else:
     val = bsonNull()
   result = (key, val)
@@ -516,6 +536,9 @@ converter ofEmbedded*(b: BsonBase): BsonDocument =
 
 converter ofBinary*(b: BsonBase): seq[byte] =
   bsonFetcher(b, bkBinary, BsonBinary, seq[byte])
+
+converter ofTimestamp*(b: BsonBase): TimestampInternal =
+  bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
 
 when isMainModule:
   let hellodoc = newbson(
@@ -610,3 +633,18 @@ when isMainModule:
   let (_, pngbinencode) = encode pngbin
   let pngdec = decode pngbinencode
   doAssert pngdec["qr-me"].get.ofBinary.stringbytes == qrimg
+
+  block:
+    let currtime = getTime().toUnix.uint32
+    let timestampdoc = bson({
+      timestamp: (0'u32, currtime)
+    })
+    dump timestampdoc
+    let (_, timestampstr) = encode timestampdoc
+    let timestampdec = decode timestampstr
+    dump timestampdec
+    let decurrtime = timestampdec["timestamp"].get.ofTimestamp[1]
+    dump currtime
+    dump decurrtime
+    let fixcurrtime = currtime
+    doAssert decurrtime == currtime
