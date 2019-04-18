@@ -43,9 +43,9 @@ when isMainModule:
     `type`: "ephemeral_entry"
   }))
 
-  discard waitFor socket.queryAck("newcoll", "role")
+  look( waitFor socket.queryAck("newcoll", "role") )
 
   #waitFor socket.authenticate
-  waitFor socket.dropDatabase("newcoll")
+  look( waitFor socket.dropDatabase("newcoll") )
 
   close socket

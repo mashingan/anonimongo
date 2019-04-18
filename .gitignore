@@ -10,3 +10,4 @@ nimcache/
 *.un~
 
 *.exe
+*.bson
