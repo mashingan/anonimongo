@@ -75,63 +75,53 @@ proc close*(p: Pool) =
 proc endConn*(p: Pool, i: Positive) =
   p.available.addLast i.int
 
-proc handshake(s: AsyncSocket, db: string, id: int32) {.async.} =
-  let q = bson({
-    isMaster: 1,
-    client: {
-      application: { name: "test connection pool: " & $id },
-      driver: {
-        name: "anonimongo - nim mongo driver",
-        version: "0.0.4",
-      },
-      os: {
-        "type": "Windows",
-        architecture: "amd64"
-      }
-    }
-  })
-  echo "Handshake id: ", id
-  dump q
-  var stream = newStringStream()
-  discard stream.prepareQuery(id, 0, opQuery.int32, 0, db,
-    0, 1, q)
-  await s.send stream.readAll
-  look(await s.getReply)
-
-proc query1(s: AsyncSocket, db: string, id: int32) {.async.} =
-  look(await queryAck(s, id, db, "reporter", limit = 1))
-
 when isMainModule:
-  let poolSize = 16
-  let loopsize = poolsize * 2
-  var pool = initPool(poolSize)
-  waitFor pool.connect("localhost", 27017)
+
+  proc handshake(s: AsyncSocket, db: string, id: int32) {.async.} =
+    let q = bson({
+      isMaster: 1,
+      client: {
+        application: { name: "test connection pool: " & $id },
+        driver: {
+          name: "anonimongo - nim mongo driver",
+          version: "0.0.4",
+        },
+        os: {
+          "type": "Windows",
+          architecture: "amd64"
+        }
+      }
+    })
+    echo "Handshake id: ", id
+    dump q
+    var stream = newStringStream()
+    discard stream.prepareQuery(id, 0, opQuery.int32, 0, db,
+      0, 1, q)
+    await s.send stream.readAll
+    look(await s.getReply)
+
+  proc query1(s: AsyncSocket, db: string, id: int32) {.async.} =
+    look(await queryAck(s, id, db, "reporter", limit = 1))
+    let poolSize = 16
+    let loopsize = poolsize * 2
+    var pool = initPool(poolSize)
+    waitFor pool.connect("localhost", 27017)
 
   proc toHandshake(i: int): Future[bool] {.async.} =
-      echo "spawning: ", i
-      let conn = await pool.getConn
-      if conn.isNone:
-        result = false
-        return
-      var actconn = conn.get
-      dump actconn.id
-      #await actconn.socket.handshake("reporting.$cmd", actconn.id.int32)
-      withLock actconn:
-        await actconn.socket.query1("reporting", actconn.id.int32)
-      echo "end conn: ", actconn.id
-      pool.endConn actconn.id
-      #dump pool.available
-      result = true
-
-  #[
-  var futhandshake = newseq[Future[bool]](poolSize*2)
-  for i in 0 ..< poolSize*2:
-    futhandshake[i] = toHandShake(i)
-  try:
-    discard(waitFor all(futhandshake))
-  except IndexError as ie:
-    echo ie.msg
-    ]#
+    echo "spawning: ", i
+    let conn = await pool.getConn
+    if conn.isNone:
+      result = false
+    return
+    var actconn = conn.get
+    dump actconn.id
+    #await actconn.socket.handshake("reporting.$cmd", actconn.id.int32)
+    withLock actconn:
+      await actconn.socket.query1("reporting", actconn.id.int32)
+    echo "end conn: ", actconn.id
+    pool.endConn actconn.id
+    #dump pool.available
+    result = true
 
   let starttime = cpuTime()
   var futhandshake = newseq[bool](loopSize)
