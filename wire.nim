@@ -11,10 +11,9 @@ type
     opReply = 1'i32
     opUpdate = 2001'i32
     opInsert opReserved opQuery opGetMore opDelete opKillCursors
-    opNo1 opNo2 # not used
-    opCommand opCommandReply
-    opNo3       # not used
-    opMsg
+    opCommand = 2010'i32
+    opCommandReply
+    opMsg = 2013'i32
 
   MsgHeader* = object
     messageLength, requestId, responseTo, opCode: int32
@@ -274,7 +273,7 @@ when isMainModule:
 
   echo "\n======================"
   echo "find with acknowledged query"
-  dump waitFor socket.queryAck(0.i32, "temptest", "role", sort = bson({id: -1}))
+  dump waitFor socket.queryAck(0'i32, "temptest", "role", sort = bson({id: -1}))
 
 
   #[
