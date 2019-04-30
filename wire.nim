@@ -192,7 +192,7 @@ proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
   look( await socket.getReply )
 
 
-proc queryAck*(sock: AsyncSocket, dbname, collname: string,
+proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
   query = newbson(), selector = newbson(),
   sort = newbson(), skip = 0, limit = 0): Future[ReplyFormat] {.async.} =
   var s = newStringStream()
@@ -205,7 +205,7 @@ proc queryAck*(sock: AsyncSocket, dbname, collname: string,
     limit: limit
   })
   dump findq
-  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
+  discard s.prepareQuery(id, 0, opQuery.int32, 0, dbname & ".$cmd",
     skip.int32, 1, findq)
   await sock.send s.readAll
   result = await sock.getReply
@@ -274,7 +274,7 @@ when isMainModule:
 
   echo "\n======================"
   echo "find with acknowledged query"
-  dump waitFor socket.queryAck("temptest", "role", sort = bson({id: -1}))
+  dump waitFor socket.queryAck(0.i32, "temptest", "role", sort = bson({id: -1}))
 
 
   #[

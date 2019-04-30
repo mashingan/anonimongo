@@ -478,7 +478,8 @@ proc decode*(strbytes: sink string): BsonDocument =
   stream.setPosition 0
   BsonDocument(
     table: table,
-    stream: stream
+    stream: stream,
+    encoded: true
   )
 
 proc newBson*(table: varargs[(string, BsonBase)]): BsonDocument =
@@ -539,6 +540,8 @@ converter ofBinary*(b: BsonBase): seq[byte] =
 
 converter ofTimestamp*(b: BsonBase): TimestampInternal =
   bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
+
+template bson*(): untyped = bson({})
 
 when isMainModule:
   let hellodoc = newbson(
@@ -601,19 +604,22 @@ when isMainModule:
   let simplearray = bson({fields: [{haha: "haha"}, 2, 4.3, "road"]})
   dump simplearray
 
-  let arrayembed = bson({
-    objects: [
-      { q: 1, u: { "$set": { role_name: "ok" }}},
-      { q: 2, u: { "$set": { key_name: "ok" }}},
-      { q: 3, u: { "$set": { truth: 42 }}}
-    ]
-  })
-  dump arrayembed
-  doAssert arrayembed["objects"].get
-    .ofArray[2]["u"].get
-    .ofEmbedded["$set"].get
-    .ofEmbedded["truth"].get
-    .ofInt == 42
+  block:
+    let arrayembed = bson({
+      objects: [
+        { q: 1, u: { "$set": { role_name: "ok" }}},
+        { q: 2, u: { "$set": { key_name: "ok" }}},
+        { q: 3, u: { "$set": { truth: 42 }}}
+      ]
+    })
+    dump arrayembed
+    doAssert arrayembed["objects"].get
+      .ofArray[2]["u"].get
+      .ofEmbedded["$set"].get
+      .ofEmbedded["truth"].get
+      .ofInt == 42
+    let q2: int32 = arrayembed["objects"].get.ofArray[1]["q"].get
+    doAssert q2 == 2
 
   let stringbin = "MwahahaBinaryGotoki"
   let testbinary = bson({
@@ -648,3 +654,9 @@ when isMainModule:
     dump decurrtime
     let fixcurrtime = currtime
     doAssert decurrtime == currtime
+
+  block:
+    # empty bson
+    let empty = bson()
+    dump bson()
+    doAssert empty.isNil
