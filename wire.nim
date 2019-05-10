@@ -133,7 +133,7 @@ proc findAll(socket: AsyncSocket, selector = newbson()) {.async.} =
   await socket.send stream.readAll
   look(await socket.getReply)
 
-proc insert(socket: AsyncSocket, doc: BsonDocument) {.async.} =
+proc insert(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
   let length = s.insertOp doc
   let data = s.readAll
@@ -146,7 +146,7 @@ proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async.} =
   await socket.send data
   look(await socket.getReply)
 
-proc insertAckNewColl(socket: AsyncSocket, doc: BsonDocument) {.async.} =
+proc insertAckNewColl(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
   discard s.acknowledgedInsert(doc, collname = "newcoll.$cmd")
   await socket.send s.readAll
