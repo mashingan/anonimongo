@@ -156,7 +156,7 @@ proc `$`*(v: sink BsonBase): string =
   of bkEmbed:
     result = $(v as BsonEmbed).value
   of bkObjectId:
-    result = "ObjectId(" & quote $(v as BsonObjectId).value & ")"
+    result = fmt"ObjectId({quote $(v as BsonObjectId).value})"
   of bkBinary:
     result = $(v as BsonBinary)
   of bkTimestamp:
