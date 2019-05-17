@@ -99,13 +99,7 @@ when isMainModule:
     await s.send stream.readAll
     look(await s.getReply)
     ]#
-
-  let poolSize = 16
-  let loopsize = poolsize * 3
-  var pool = initPool(poolSize)
-  waitFor pool.connect("localhost", 27017)
-
-  proc toHandshake(i: int) {.async.} =
+  proc toHandshake(pool: Pool, i: int) {.async.} =
     echo "spawning: ", i
     let conn = await pool.getConn
     withLock conn:
@@ -113,13 +107,22 @@ when isMainModule:
     echo "end conn: ", conn.id
     pool.endConn conn.id
 
-  let starttime = cpuTime()
-  var count = 0
-  var ops = newseq[Future[void]]()
-  while count < loopSize:
-    ops.add toHandshake(count)
-    inc count
-  waitFor all(ops)
-  echo "ended loop at: ", cpuTime() - starttime
+  proc main {.async.} =
+    let poolSize = 16
+    let loopsize = poolsize * 3
+    var pool = initPool(poolSize)
+    waitFor pool.connect("localhost", 27017)
 
-  close pool
+    let starttime = cpuTime()
+    var count = 0
+    var ops = newseq[Future[void]]()
+    for count in 0 ..< loopSize:
+      ops.add pool.toHandshake(count)
+    await all(ops)
+    echo "ended loop at: ", cpuTime() - starttime
+
+    close pool
+
+  let start = cpuTime()
+  waitFor main()
+  echo "whole operation: ", cpuTime() - start
