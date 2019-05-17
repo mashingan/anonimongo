@@ -127,7 +127,7 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} 
   var restStream = newStringStream rest
   result = replyParse restStream
 
-proc findAll(socket: AsyncSocket, selector = newbson()) {.async.} =
+proc findAll(socket: AsyncSocket, selector = newbson()) {.async, used.} =
   var stream = newStringStream()
   discard stream.queryOp(newbson(), selector)
   await socket.send stream.readAll
@@ -139,7 +139,7 @@ proc insert(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   let data = s.readAll
   await socket.send data
 
-proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async.} =
+proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
   let length = s.acknowledgedInsert doc
   let data = s.readAll
@@ -167,7 +167,7 @@ proc deleteAck(s: Stream, query: BsonDocument, n = 0): int =
   s.prepareQuery(0, 0, opQuery.int32, 0, "temptest.$cmd",
     0, 1, deleteEntry)
 
-proc deleteAck(socket: AsyncSocket, query: BsonDocument, n = 0) {.async.} =
+proc deleteAck(socket: AsyncSocket, query: BsonDocument, n = 0) {.async, used.} =
   var s = newStringStream()
   let length = s.deleteAck(query, n)
   let data = s.readAll
@@ -184,7 +184,7 @@ proc updateAck(s: Stream, query, update: BsonDocument, multi = true,
 
 
 proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
-    multi = true) {.async.} =
+    multi = true) {.async, used.} =
   var s = newStringStream()
   let length = s.updateAck(query, update, multi)
   await socket.send s.readAll
