@@ -45,19 +45,14 @@ proc initPool*(size = 16): Pool =
   result.selector = newSelector[bool]()
   result.selector.registerEvent(result.event, true)
 
-
-proc getConn*(p: Pool): Future[Option[Connection]] =
-  result = newFuture[Option[Connection]]("pool.getConn")
-  try:
-    dump p.available
-    if p.available.len == 0:
-      result.complete none(Connection)
+proc getConn*(p: Pool): Future[Connection] {.async.} =
+  while true:
+    if p.available.len != 0:
+      let id = p.available.popFirst
+      return p.connections[id]
     else:
-      result.complete p[p.available.popFirst].some
-  except IndexError as ie:
-    result.fail newException(IndexError, "Error getConn: " & ie.msg)
-  except Exception as exc:
-    result.fail exc
+      try: poll(100)
+      except ValueError: discard
 
 proc connect*(p: Pool, address: string, port: int) {.async.} =
   for i, c in p.connections:
@@ -110,27 +105,21 @@ when isMainModule:
   var pool = initPool(poolSize)
   waitFor pool.connect("localhost", 27017)
 
-  proc toHandshake(i: int): Future[bool] {.async.} =
+  proc toHandshake(i: int) {.async.} =
     echo "spawning: ", i
     let conn = await pool.getConn
-    if conn.isNone:
-      result = false
-      return
-    let actconn = conn.get
-    dump actconn.id
-    withLock actconn:
-      await actconn.socket.query1("reporting", actconn.id.int32)
-    echo "end conn: ", actconn.id
-    pool.endConn actconn.id
-    result = true
+    withLock conn:
+      await conn.socket.query1("reporting", conn.id.int32)
+    echo "end conn: ", conn.id
+    pool.endConn conn.id
 
   let starttime = cpuTime()
   var count = 0
+  var ops = newseq[Future[void]]()
   while count < loopSize:
-    let hshakeok = waitFor toHandShake(count)
-    if not hshakeok: continue
-    #futhandshake[count] = hshakeok
+    ops.add toHandshake(count)
     inc count
+  waitFor all(ops)
   echo "ended loop at: ", cpuTime() - starttime
 
   close pool
