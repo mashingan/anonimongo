@@ -57,6 +57,15 @@ template readFloatLE(s: Stream): untyped =
   else:
     s.readFloat64
 
+template peekInt32LE(s: Stream): untyped =
+  when cpuEndian == bigEndian:
+    var tempbe = s.peekInt32
+    var temple: int32
+    swapEndian32(addr temple, addr tempbe)
+    temple
+  else:
+    s.peekInt32
+
 proc bytes*(s: string): seq[byte] =
   result = newseq[byte](s.len)
   for i, c in s:
@@ -425,7 +434,7 @@ proc decodeKey(s: Stream): (string, BsonKind) =
 proc decode*(strbytes: sink string): BsonDocument
 
 proc decodeArray(s: Stream): seq[BsonBase] =
-  let length = s.peekInt32
+  let length = s.peekInt32LE
   let buff = s.readStr length
   let doc = decode buff
   var ordTable = newOrderedTable[int, BsonBase]()
@@ -493,7 +502,7 @@ proc decode(s: Stream): (string, BsonBase) =
   of bkObjectId:
     val = BsonObjectId(kind: kind, value: s.decodeObjectId)
   of bkEmbed:
-    let doclen = s.peekInt32
+    let doclen = s.peekInt32LE
     val = BsonEmbed(kind: kind, value: s.readStr(doclen).decode)
   of bkBinary:
     let (subtype, thebyte) = s.decodeBinary
