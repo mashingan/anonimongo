@@ -9,13 +9,53 @@ from times import Time, toUnix, getTime, nanosecond, initTime, `$`
 from options import Option, some, none, get, isSome
 from lenientops import `/`, `+`, `*`
 from typetraits import name
-import macros
+import macros, endians
 
 export typetraits
 export strutils
 export options
 
 include bsonify
+
+template writeLE[T](s: Stream, val: T): untyped =
+  when cpuEndian == bigEndian:
+    var old = val
+    var temp: T
+    when sizeof(T) == 2:
+      littleEndian16(addr temp, addr old)
+    elif sizeof(T) == 4:
+      littleEndian32(addr temp, addr old)
+    elif sizeof(T) == 8:
+      littleEndian64(addr temp, addr old)
+    s.write temp
+  else:
+    s.write val
+
+template readIntLE(s: Stream, which: typedesc): untyped =
+  when cpuEndian == bigEndian:
+    var tempLE: which
+    when which is int32:
+      var tempBE = s.readInt32
+      swapEndian32(addr tempLE, addr tempBE)
+    elif which is int64:
+      var tempBE = s.readInt64
+      swapEndian64(addr tempLE, addr tempBE)
+    tempLE
+  else:
+    when which is int32:
+      s.readInt32
+    elif which is int64:
+      s.readInt64
+
+
+template readFloatLE(s: Stream): untyped =
+  when cpuEndian == bigEndian:
+    var tempBE = s.readFloat64
+    var tempLE: float64
+    swapEndian64(addr tempLE, addr tempBE)
+    tempLE
+  else:
+    s.readFloat64
 
 proc bytes*(s: string): seq[byte] =
   result = newseq[byte](s.len)
@@ -185,25 +225,25 @@ proc encode*(doc: BsonDocument): (int, string)
 proc encode(s: Stream, key: string, doc: BsonInt32): int =
   result = 1 + key.len + 1 + 4
   s.writeKey key, bkInt32
-  s.write doc.value
+  s.writeLE doc.value
 
 proc encode(s: Stream, key: string, doc: BsonInt64): int =
   result = 1 + key.len + 1 + 8
   s.writeKey key, bkInt64
-  s.write doc.value
+  s.writeLE doc.value
 
 proc encode(s: Stream, key: string, doc: BsonString): int =
   let sbytes = ($doc.value).bytes
   result = 1 + key.len + 1 + 4 + sbytes.len + 1
   s.writeKey key, bkString
-  s.write (sbytes.len + 1).int32
+  s.writeLE (sbytes.len + 1).int32
   for c in sbytes: s.write c
   s.write 0x00.byte
 
 proc encode(s: Stream, key: string, doc: BsonDouble): int =
   result = 1 + key.len + 1 + 8
   s.writeKey key, bkDouble
-  s.write doc.value
+  s.writeLE doc.value
 
 proc encode(s: Stream, key: string, doc: BsonArray): int =
   var embedArray = BsonDocument(
@@ -230,7 +270,7 @@ proc encode(s: Stream, key: string, doc: BsonTime): int =
   let timesec = doc.value.toUnix
   let timenano = doc.value.nanosecond
   let timeval = int64(timesec*1000 + timenano/1e6)
-  s.write timeval
+  s.writeLE timeval
 
 proc encode(s: Stream, key: string, doc: BsonDocument): int =
   result = 1 + key.len + 1
@@ -252,16 +292,16 @@ proc encode(s: Stream, key: string, doc: BsonObjectId): int =
 proc encode(s: Stream, key: string, doc: BsonBinary): int =
   result = 1 + key.len + 1 + 4 + 1 + doc.value.len
   s.writeKey key, bkBinary
-  s.write doc.value.len.int32
+  s.writeLE doc.value.len.int32
   s.write doc.subtype.byte
   for b in doc.value:
-    s.write b
+    s.writeLE b
 
 proc encode(s: Stream, key: string, doc: BsonTimestamp): int =
   result = 1 + key.len + 1 + 8
   s.writeKey key, bkTimestamp
-  s.write doc.value[0]
-  s.write doc.value[1]
+  s.writeLE doc.value[0]
+  s.writeLE doc.value[1]
 
 proc encode*(doc: BsonDocument): (int, string) =
   if doc.encoded:
@@ -270,7 +310,7 @@ proc encode*(doc: BsonDocument): (int, string) =
     return (docstr.len, docstr)
   var length = 4 + 1
   var buff = ""
-  doc.stream.write length.int32
+  doc.stream.writeLE length.int32
   for k, v in doc:
     case v.kind
     of bkInt32:
@@ -303,7 +343,7 @@ proc encode*(doc: BsonDocument): (int, string) =
 
   doc.stream.write 0x00.byte
   doc.stream.setPosition 0
-  doc.stream.write length.int32
+  doc.stream.writeLE length.int32
   doc.stream.setPosition 0
   buff = doc.stream.readAll
   doc.encoded = true
@@ -396,7 +436,7 @@ proc decodeArray(s: Stream): seq[BsonBase] =
     result.add d
 
 proc decodeString(s: Stream): seq[Rune] =
-  let length = s.readInt32
+  let length = s.readIntLE int32
   let buff = s.readStr(length-1)
   discard s.readChar # discard last 0x00
   result = toSeq(buff.runes)
@@ -415,14 +455,14 @@ proc decodeObjectId(s: Stream): Oid =
 
 proc readMilliseconds(s: Stream): Time =
   let
-    currsec = s.readInt64
+    currsec = s.readIntLE int64
     secfrac = int64(currsec / 1000.0)
     millfrac = int64((currsec mod 1000) * 1e6)
   initTime(secfrac, millfrac)
 
 proc decodeBinary(s: Stream): (BsonSubtype, seq[byte]) =
   var thebytes = newseq[byte]()
-  let length = s.readInt32
+  let length = s.readIntLE int32
   let subtype = s.readChar.BsonSubtype
   for _ in 1 .. length:
     thebytes.add s.readChar.byte
@@ -433,11 +473,11 @@ proc decode(s: Stream): (string, BsonBase) =
   var val: BsonBase
   case kind
   of bkInt32:
-    val = BsonInt32(kind: kind, value: s.readInt32)
+    val = BsonInt32(kind: kind, value: s.readIntLE int32)
   of bkInt64:
-    val = BsonInt64(kind: kind, value: s.readInt64)
+    val = BsonInt64(kind: kind, value: s.readIntLE int64)
   of bkDouble:
-    val = BsonDouble(kind: kind, value: s.readFloat64)
+    val = BsonDouble(kind: kind, value: s.readFloatLE)
   of bkTime:
     # bson repr need time from milliseconds while
     # nim fromUnix is from seconds
@@ -468,7 +508,7 @@ proc decode*(strbytes: sink string): BsonDocument =
   var
     stream = newStringStream(strbytes)
     table = newOrderedTable[string, BsonBase]()
-  discard stream.readInt32
+  discard stream.readIntLE(int32)
   while not stream.atEnd:
     let (key, val) = stream.decode
     table[key] = val
