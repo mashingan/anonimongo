@@ -181,8 +181,7 @@ proc quote(key: sink string): string =
 proc `$`*(doc: sink BsonDocument): string
 
 proc `$`(doc: BsonBinary): string =
-  result = "Binary(" & quote($doc.subtype) & ", " &
-    quote(doc.value.stringbytes) & ")"
+  result = fmt"binary({quote($doc.subtype)}, {quote(doc.value.stringbytes)})"
 
 proc `$`*(v: sink BsonBase): string =
   case v.kind
