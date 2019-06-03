@@ -31,7 +31,7 @@ template writeLE*[T](s: Stream, val: T): untyped =
   else:
     s.write val
 
-template readIntLE(s: Stream, which: typedesc): untyped =
+template readIntLE*(s: Stream, which: typedesc): untyped =
   when cpuEndian == bigEndian:
     var tempLE: which
     when which is int32:
@@ -57,7 +57,7 @@ template readFloatLE(s: Stream): untyped =
   else:
     s.readFloat64
 
-template peekInt32LE(s: Stream): untyped =
+template peekInt32LE*(s: Stream): untyped =
   when cpuEndian == bigEndian:
     var tempbe = s.peekInt32
     var temple: int32

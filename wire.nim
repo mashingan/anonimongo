@@ -1,7 +1,7 @@
 import streams, tables, oids
 import asyncdispatch, asyncnet
 from sugar import dump
-from endians import littleEndian32
+from endians import littleEndian32, swapEndian32, swapEndian64
 import bson
 #import nesm
 
@@ -40,22 +40,22 @@ proc msgHeader(s: Stream, reqId, returnTo, opCode: int32): int=
 
 proc msgHeaderFetch(s: Stream): MsgHeader =
   MsgHeader(
-    messageLength: s.readInt32,
-    requestId: s.readInt32,
-    responseTo: s.readInt32,
-    opCode: s.readInt32
+    messageLength: s.readIntLE int32,
+    requestId: s.readIntLE int32,
+    responseTo: s.readIntLE int32,
+    opCode: s.readIntLE int32
   )
 
 proc replyParse*(s: Stream): ReplyFormat =
   result = ReplyFormat(
-    responseFlags: s.readInt32,
-    cursorId: s.readInt64,
-    startingFrom: s.readInt32,
-    numberReturned: s.readInt32,
+    responseFlags: s.readIntLE int32,
+    cursorId: s.readIntLE int64,
+    startingFrom: s.readIntLE int32,
+    numberReturned: s.readIntLE int32,
     documents: newSeq[BsonDocument]()
   )
   for _ in 1 .. result.numberReturned:
-    let doclen = s.peekInt32
+    let doclen = s.peekInt32LE
     result.documents.add s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
