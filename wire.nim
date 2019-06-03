@@ -1,6 +1,7 @@
 import streams, tables, oids
 import asyncdispatch, asyncnet
 from sugar import dump
+from endians import littleEndian32
 import bson
 #import nesm
 
@@ -33,9 +34,9 @@ proc serialize(s: Stream, doc: BsonDocument): int =
 proc msgHeader(s: Stream, reqId, returnTo, opCode: int32): int=
   result = 16
   s.write 0'i32
-  s.write reqId
-  s.write returnTo
-  s.write opCode
+  s.writeLE reqId
+  s.writeLE returnTo
+  s.writeLE opCode
 
 proc msgHeaderFetch(s: Stream): MsgHeader =
   MsgHeader(
@@ -63,16 +64,16 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     query = newbson(), selector = newbson()): int =
   result = s.msgHeader(reqId, target, opcode)
 
-  s.write flags;                       result += 4
+  s.writeLE flags;                     result += 4
   s.write collname; s.write 0x00.byte; result += collname.len + 1
-  s.write nskip; s.write nreturn;      result += 2 * 4
+  s.writeLE nskip; s.writeLE nreturn;  result += 2 * 4
 
   result += s.serialize query
   if not selector.isNil:
     result += s.serialize selector
 
   s.setPosition 0
-  s.write result.int32
+  s.writeLE result.int32
   s.setPosition 0
 
 proc queryOp(s: Stream, query = newbson(), selector = newbson()): int =
@@ -90,7 +91,7 @@ proc insertOp(s: Stream, data: BsonDocument): int =
   dump data
   result += s.serialize data
   s.setPosition 0
-  s.write result.int32
+  s.writeLE result.int32
   s.setPosition 0
 
 proc acknowledgedInsert(s: Stream, data: BsonDocument,

@@ -17,7 +17,7 @@ export options
 
 include bsonify
 
-template writeLE[T](s: Stream, val: T): untyped =
+template writeLE*[T](s: Stream, val: T): untyped =
   when cpuEndian == bigEndian:
     var old = val
     var temp: T
