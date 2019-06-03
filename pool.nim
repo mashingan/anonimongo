@@ -35,9 +35,10 @@ proc `[]=`*(p: Pool, i: int, c: Connection) =
 
 proc initPool*(size = 16): Pool =
   new result
-  result.connections = newTable[int, Connection](size)
-  result.available = initDeque[int](size.nextPowerOfTwo)
-  for i in 0 ..< size:
+  let realsize = nextPowerOfTwo size
+  result.connections = newTable[int, Connection](realsize)
+  result.available = initDeque[int](realsize)
+  for i in 0 ..< realsize:
     result[i] = i.initConnection
     result.available.addFirst i
 
