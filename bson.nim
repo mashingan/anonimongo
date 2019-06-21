@@ -139,6 +139,7 @@ type
     encoded*: bool
 
   BsonKind* = enum
+    bkEmptyArray = 0x00.byte
     bkDouble = 0x01.byte
     bkString bkEmbed bkArray bkBinary
     bkUndefined # bson spec: deprecated
@@ -419,9 +420,7 @@ proc newBson*(table = newOrderedTable[string, BsonBase](),
   )
 
 proc decodeKey(s: Stream): (string, BsonKind) =
-  let oldpos = s.getPosition
-  s.setPosition oldpos
-  var kind = s.readInt8.BsonKind
+  let kind = s.readInt8.BsonKind
   var buff = ""
   while true:
     var achar = s.readChar
@@ -434,11 +433,15 @@ proc decode*(strbytes: sink string): BsonDocument
 
 proc decodeArray(s: Stream): seq[BsonBase] =
   let length = s.peekInt32LE
-  let buff = s.readStr length
-  let doc = decode buff
+  let doc = decode s.readStr(length)
   var ordTable = newOrderedTable[int, BsonBase]()
   for k, v in doc:
-    ordTable[parseInt k] = v
+    var num = 0
+    try:
+      num = parseInt k
+      ordTable[num] = v
+    except ValueError:
+      continue
 
   for _, d in ordTable:
     result.add d
@@ -477,7 +480,7 @@ proc decodeBinary(s: Stream): (BsonSubtype, seq[byte]) =
   result = (subtype, thebytes)
 
 proc decode(s: Stream): (string, BsonBase) =
-  var (key, kind) = s.decodeKey
+  let (key, kind) = s.decodeKey
   var val: BsonBase
   case kind
   of bkInt32:
@@ -520,7 +523,7 @@ proc decode*(strbytes: sink string): BsonDocument =
   while not stream.atEnd:
     let (key, val) = stream.decode
     table[key] = val
-    if stream.peekInt8 == 0:
+    if not stream.atEnd and stream.peekInt8 == 0:
       break
 
   stream.setPosition 0
@@ -706,5 +709,26 @@ when isMainModule:
   block:
     # empty bson
     let empty = bson()
-    dump bson()
+    dump empty
+    empty.stream.setPosition 0
+    let emptystr = empty.stream.readAll
+    dump emptystr.len
+    for c in emptystr:
+      stdout.write c.ord, " "
+    echo()
     doAssert empty.isNil
+
+  block:
+    let emptyarr = bson({
+      emptyarr: []
+    })
+    dump emptyarr
+    let (_, empstr) = encode emptyarr
+    let empdec = decode empstr
+    dump empdec
+    doAssert empdec["emptyarr"].get.ofArray.len == 0
+
+  block:
+    let emptyarr = decode(readFile "emptyarr.bson")
+    dump emptyarr
+    doAssert emptyarr["emptyarr"].get.ofArray.len == 0
