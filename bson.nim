@@ -406,6 +406,9 @@ proc isNil*(b: BsonBase): bool =
 proc isNil*(b: BsonDocument): bool =
   b == nil or b.len == 0
 
+proc isNil*(b: Option[BsonBase]): bool =
+  b.isSome and b.get.isNil
+
 proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
   (@args).toBson
 
@@ -615,7 +618,7 @@ when isMainModule:
     ]),
     stream = newFileStream("bsonimpl_encode.bson", mode = fmReadWrite)
   )
-  let (newhelen, newhelstr) = encode newdoc
+  let (_, newhelstr) = encode newdoc
   dump hellolen
   dump hellostr
   dump newdoc
@@ -635,7 +638,8 @@ when isMainModule:
   if hellofield in revdoc and revdoc[hellofield].isSome:
     dump revdoc[hellofield].get.ofInt
 
-  dump revdoc["this is null"].get.isNil
+  dump revdoc["this is null"]
+  dump revdoc["this is null"].isNil
   dump revdoc[hellofield].get.isNil
 
   let macrodoc = bson({
@@ -703,7 +707,6 @@ when isMainModule:
     let decurrtime = timestampdec["timestamp"].get.ofTimestamp[1]
     dump currtime
     dump decurrtime
-    let fixcurrtime = currtime
     doAssert decurrtime == currtime
 
   block:
