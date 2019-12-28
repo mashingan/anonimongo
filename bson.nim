@@ -722,9 +722,10 @@ when isMainModule:
     doAssert empty.isNil
 
   block:
-    let emptyarr = bson({
-      emptyarr: []
-    })
+    let emptyarr = newBson(
+      table = newOrderedTable([
+        ("emptyarr", bsonArray())]),
+      stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
     dump emptyarr
     let (_, empstr) = encode emptyarr
     let empdec = decode empstr
