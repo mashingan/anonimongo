@@ -183,6 +183,20 @@ proc `[]`*(b: BsonBase, idx: int): BsonBase =
 proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
   b.table[key] = val
 
+proc mget*(b: var BsonDocument, key: string): var BsonBase =
+  b.table[key]
+
+proc mget*(b: var BsonBase, key: string): var BsonBase =
+  if b.kind != bkEmbed:
+    raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
+  result = (b as BsonEmbed).value.table[key]
+
+proc mget*(b: var BsonBase, index: int): var BsonBase =
+  if b.kind != bkArray:
+    raise BsonFetchError(msg: fmt"Invalid index retrieval, get {b.kind}")
+  result = (b as BsonArray).value[index]
+
+
 proc len*(b: BsonDocument): int =
   b.table.len
 
@@ -759,3 +773,18 @@ when isMainModule:
     let emptyarr = decode(readFile "emptyarr.bson")
     dump emptyarr
     doAssert emptyarr["emptyarr"].get.ofArray.len == 0
+
+  block:
+    # test mutable bson object
+    var arrayembed = bson({
+      objects: [
+        { q: 1, u: { "$set": { role_name: "ok" }}},
+        { q: 2, u: { "$set": { key_name: "ok" }}},
+        { q: 3, u: { "$set": { truth: 42 }}}
+      ]
+    })
+    dump arrayembed["objects"].get[0]["q"]
+
+    # modify first elem object with key q to 5
+    arrayembed.mget("objects").mget(0).mget("q") = 5
+    dump arrayembed["objects"].get[0]["q"]
