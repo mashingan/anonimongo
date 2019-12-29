@@ -170,6 +170,16 @@ proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
   else:
     result = none BsonBase
 
+proc `[]`*(b: BsonBase, key: string): BsonBase =
+  if b.kind != bkEmbed:
+    raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
+  result = ((b as BsonEmbed).value)[key].get
+
+proc `[]`*(b: BsonBase, idx: int): BsonBase =
+  if b.kind != bkArray:
+    raise BsonFetchError(msg: fmt"Invalid indexed retrieval, get {b.kind}")
+  result = (b as BsonArray).value[idx]
+
 proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
   b.table[key] = val
 
@@ -668,12 +678,8 @@ when isMainModule:
       ]
     })
     dump arrayembed
-    doAssert arrayembed["objects"].get
-      .ofArray[2]["u"].get
-      .ofEmbedded["$set"].get
-      .ofEmbedded["truth"].get
-      .ofInt == 42
-    let q2: int32 = arrayembed["objects"].get.ofArray[1]["q"].get
+    doAssert arrayembed["objects"].get[2]["u"]["$set"]["truth"].ofInt32 == 42
+    let q2: int32 = arrayembed["objects"].get[1]["q"]
     doAssert q2 == 2
 
   let stringbin = "MwahahaBinaryGotoki"
