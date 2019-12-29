@@ -682,6 +682,23 @@ when isMainModule:
     let q2: int32 = arrayembed["objects"].get[1]["q"]
     doAssert q2 == 2
 
+    try:
+      dump arrayembed["objects"].get["hello"]
+    except BsonFetchError:
+      echo getCurrentExceptionMsg()
+    try:
+      dump arrayembed["objects"].get[4]
+    except IndexError:
+      echo getCurrentExceptionMsg()
+    try:
+      dump arrayembed["objects"].get[1]["q"]["hello"]
+    except BsonFetchError:
+      echo getCurrentExceptionMsg()
+    try:
+      dump arrayembed["objects"].get[0][3]
+    except BsonFetchError:
+      echo getCurrentExceptionMsg()
+
   let stringbin = "MwahahaBinaryGotoki"
   let testbinary = bson({
     dummy_binary: bsonBinary stringbin
