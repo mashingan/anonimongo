@@ -20,11 +20,11 @@ type
     messageLength, requestId, responseTo, opCode: int32
 
   ReplyFormat* = object
-    responseFlags: int32
-    cursorId: int64
-    startingFrom: int32
-    numberReturned: int32
-    documents: seq[BsonDocument]
+    responseFlags*: int32
+    cursorId*: int64
+    startingFrom*: int32
+    numberReturned*: int32
+    documents*: seq[BsonDocument]
 
 proc serialize(s: Stream, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
@@ -94,7 +94,7 @@ proc insertOp(s: Stream, data: BsonDocument): int =
   s.writeLE result.int32
   s.setPosition 0
 
-proc acknowledgedInsert(s: Stream, data: BsonDocument,
+proc acknowledgedInsert*(s: Stream, data: BsonDocument,
     collname = "temptest.$cmd"): int =
   let insertQuery = bson({
     insert: "role",
