@@ -94,7 +94,7 @@ proc insertOp(s: Stream, data: BsonDocument): int =
   s.writeLE result.int32
   s.setPosition 0
 
-proc acknowledgedInsert*(s: Stream, data: BsonDocument,
+proc acknowledgedInsert(s: Stream, data: BsonDocument,
     collname = "temptest.$cmd"): int =
   let insertQuery = bson({
     insert: "role",

@@ -2,14 +2,15 @@ import wire, bson
 import scram/client
 import md5, strformat
 
-proc authenticate(sock: AsyncSocket, user, pass: string, T: typedesc = Sha1Digest): Future[bool] {.async.} =
+proc authenticate(sock: AsyncSocket, user, pass: string,
+  T: typedesc = Sha1Digest, dbname = "admin.$cmd"): Future[bool] {.async.} =
   var
     scram = newScramClient[T]()
     stream = newStringStream()
   let
     msg = getMD5 &"{user}:mongo:{pass}"
     fst = scram.prepareFirstMessage(user)
-  discard stream.prepareQuery(0, 0, opQuery.int32, 0, "admin.$cmd", 0, 1, bson({
+  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
       saslStart: int32 1,
       mechanism: "SCRAM-SHA-1",
       payload: bsonBinary fst
@@ -24,7 +25,7 @@ proc authenticate(sock: AsyncSocket, user, pass: string, T: typedesc = Sha1Diges
     strres = res1.documents[0]["payload"].get.ofBinary.stringBytes
     msgf = scram.prepareFinalMessage(msg, strres)
   stream = newStringStream()
-  discard stream.prepareQuery(0, 0, opQuery.int32, 0, "admin.$cmd", 0, 1, bson({
+  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
     saslContinue: int32 1,
     conversationId: res1.documents[0]["conversationId"].get.ofInt32,
     payload: bsonBinary msgf
@@ -35,7 +36,7 @@ proc authenticate(sock: AsyncSocket, user, pass: string, T: typedesc = Sha1Diges
     echo res2.documents[0]["errMsg"].get
     return false
   stream = newStringStream()
-  discard stream.prepareQuery(0, 0, opQuery.int32, 0, "admin.$cmd", 0, 1, bson({
+  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
     saslContinue: int32 1,
     conversationId: res2.documents[0]["conversationId"].get.ofInt32,
     payload: bsonBinary ""
