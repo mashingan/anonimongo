@@ -4,7 +4,6 @@ from strutils import parseHexInt, join, parseInt, toHex,
   toLowerAscii, `%`
 from strformat import fmt
 from sequtils import toSeq
-from sugar import dump
 from times import Time, toUnix, getTime, nanosecond, initTime, `$`
 from options import Option, some, none, get, isSome
 from lenientops import `/`, `+`, `*`
@@ -622,6 +621,7 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 template bson*(): untyped = bson({})
 
 when isMainModule:
+  from sugar import dump
   let hellodoc = newbson(
     [("hello", 100.toBson),
     ("array world", bsonArray("red", 50, 4.2)),

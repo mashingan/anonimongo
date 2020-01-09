@@ -1,7 +1,7 @@
-import streams, tables, oids
+import streams
 import asyncdispatch, asyncnet
 from sugar import dump
-from endians import littleEndian32, swapEndian32, swapEndian64
+#from endians import littleEndian32, swapEndian32, swapEndian64
 import bson
 #import nesm
 
@@ -17,7 +17,7 @@ type
     opMsg = 2013'i32
 
   MsgHeader* = object
-    messageLength, requestId, responseTo, opCode: int32
+    messageLength*, requestId*, responseTo*, opCode*: int32
 
   ReplyFormat* = object
     responseFlags*: int32
@@ -121,7 +121,8 @@ proc look*(reply: ReplyFormat) =
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
-  dump msghdr
+  when not defined(release) or not defined(danger):
+    dump msghdr
   let bytelen = msghdr.messageLength
 
   let rest = await socket.recv(size = bytelen-16)
@@ -136,13 +137,13 @@ proc findAll(socket: AsyncSocket, selector = newbson()) {.async, used.} =
 
 proc insert(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
-  let length = s.insertOp doc
+  let _ = s.insertOp doc
   let data = s.readAll
   await socket.send data
 
 proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
-  let length = s.acknowledgedInsert doc
+  let _ = s.acknowledgedInsert doc
   let data = s.readAll
   await socket.send data
   look(await socket.getReply)
@@ -153,7 +154,7 @@ proc insertAckNewColl(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   await socket.send s.readAll
   look( await socket.getReply )
 
-let insertDoc = bson({
+let insertDoc {.used.} = bson({
   id: 3.toBson,
   role_name: "tester"
 })
@@ -170,7 +171,7 @@ proc deleteAck(s: Stream, query: BsonDocument, n = 0): int =
 
 proc deleteAck(socket: AsyncSocket, query: BsonDocument, n = 0) {.async, used.} =
   var s = newStringStream()
-  let length = s.deleteAck(query, n)
+  let _ = s.deleteAck(query, n)
   let data = s.readAll
   await socket.send data
   look( await socket.getReply )
@@ -187,7 +188,7 @@ proc updateAck(s: Stream, query, update: BsonDocument, multi = true,
 proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
     multi = true) {.async, used.} =
   var s = newStringStream()
-  let length = s.updateAck(query, update, multi)
+  let _ = s.updateAck(query, update, multi)
   await socket.send s.readAll
   look( await socket.getReply )
 
