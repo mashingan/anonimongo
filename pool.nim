@@ -1,6 +1,7 @@
-import deques, math, tables, selectors
+import deques, math, tables, strformat
 import sugar, options, locks, times
-import bson, wire
+import bson, wire, auth
+import scram/client
 
 type
   Connection* = object
@@ -11,8 +12,6 @@ type
   Pool* = ref object
     connections: TableRef[int, Connection]
     available*: Deque[int]
-    event: SelectEvent
-    selector: Selector[bool]
 
 template withLock*(l, ops: untyped): untyped =
   {.locks: [l.lock].}:
@@ -42,23 +41,22 @@ proc initPool*(size = 16): Pool =
     result[i] = i.initConnection
     result.available.addFirst i
 
-  result.event = newSelectEvent()
-  result.selector = newSelector[bool]()
-  result.selector.registerEvent(result.event, true)
-
-proc getConn*(p: Pool): Future[Connection] {.async.} =
+proc getConn*(p: Pool): Future[(int, Connection)] {.async.} =
   while true:
-    if p.available.len != 0:
-      let id = p.available.popFirst
-      return p.connections[id]
+    if p.available.len > 0:
+      let id = p.available.popLast
+      when not defined(release):
+        dump id
+      result = (id, p.connections[id])
+      return
     else:
       try: poll(100)
       except ValueError: discard
 
 proc connect*(p: Pool, address: string, port: int) {.async.} =
   for i, c in p.connections:
-    withLock c:
-      await c.socket.connect(address, Port port)
+    withLock c: await c.socket.connect(address, Port port)
+    #await c.socket.connect(address, Port port)
     echo "connection: ", i, " is connected"
 
 proc close*(p: Pool) =
@@ -69,12 +67,29 @@ proc close*(p: Pool) =
         echo "connection: ", c.id, " is closed"
 
 proc endConn*(p: Pool, i: Positive) =
-  p.available.addLast i.int
+  p.available.addFirst i.int
+  echo &"endConn: addFirst {i}"
+
+proc authenticate*(p: Pool, user, pass: string, T: typedesc = Sha1Digest,
+  dbname = "admin.$cmd"): Future[bool] {.async.} =
+  result = true
+  for i, c in p.connections:
+    echo &"conn {i} to auth."
+    withLock c:
+      if not await c.socket.authenticate(user, pass, T, dbname):
+        result = false
+        return
+    #[
+    if not await c.socket.authenticate(user, pass, T, dbname):
+      result = false
+      return
+    ]#
+    echo &"connection {i} authenticated."
 
 when isMainModule:
 
   proc query1(s: AsyncSocket, db: string, id: int32) {.async.} =
-    look(await queryAck(s, id, db, "reporter", limit = 1))
+    look(await queryAck(s, id, db, "role", limit = 1))
 
   #[
   proc handshake(s: AsyncSocket, db: string, id: int32) {.async.} =
@@ -102,24 +117,37 @@ when isMainModule:
     ]#
   proc toHandshake(pool: Pool, i: int) {.async.} =
     echo "spawning: ", i
-    let conn = await pool.getConn
-    withLock conn:
-      await conn.socket.query1("reporting", conn.id.int32)
+    let (cid, conn) = await pool.getConn
+    defer: pool.endConn cid
+    withLock conn: await conn.socket.query1("temptest", conn.id.int32)
+    #await conn.socket.query1("temptest", conn.id.int32)
     echo "end conn: ", conn.id
-    pool.endConn conn.id
+    echo "end cid: ", cid
 
   proc main {.async.} =
     let poolSize = 16
+    #let poolSize = 4
     let loopsize = poolsize * 3
+    #let loopsize = poolsize div 2
+    #let loopsize = 1
     var pool = initPool(poolSize)
     waitFor pool.connect("localhost", 27017)
+    if not waitFor pool.authenticate("rdruffy", "rdruffy"):
+      echo "cannot authenticate"
+      return
 
     let starttime = cpuTime()
-    var count = 0
-    var ops = newseq[Future[void]]()
+    var ops = newseq[Future[void]](loopsize)
     for count in 0 ..< loopSize:
-      ops.add pool.toHandshake(count)
-    await all(ops)
+      #ops.add pool.toHandshake(count)
+      ops[count] = pool.toHandshake(count)
+    try:
+      #waitFor all(ops)
+      await all(ops)
+    except:
+      echo getCurrentExceptionMsg()
+    when not defined(release):
+      dump pool.available
     echo "ended loop at: ", cpuTime() - starttime
 
     close pool
