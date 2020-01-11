@@ -1,26 +1,19 @@
 import deques, math, tables, strformat
-import sugar, options, locks, times
+import sugar, options, times
 import bson, wire, auth
 import scram/client
 
 type
   Connection* = object
-    socket* {.guard: lock.}: AsyncSocket
+    socket*: AsyncSocket
     id*: uint
-    lock*: Lock
 
   Pool* = ref object
     connections: TableRef[int, Connection]
     available*: Deque[int]
 
-template withLock*(l, ops: untyped): untyped =
-  {.locks: [l.lock].}:
-    ops
-
 proc initConnection*(id = 0): Connection =
-  initLock result.lock
-  withLock result:
-    result.socket = newAsyncSocket()
+  result.socket = newAsyncSocket()
   result.id = id.uint
 
 proc contains*(p: Pool, i: int): bool =
@@ -55,35 +48,28 @@ proc getConn*(p: Pool): Future[(int, Connection)] {.async.} =
 
 proc connect*(p: Pool, address: string, port: int) {.async.} =
   for i, c in p.connections:
-    withLock c: await c.socket.connect(address, Port port)
-    #await c.socket.connect(address, Port port)
-    echo "connection: ", i, " is connected"
+    await c.socket.connect(address, Port port)
+    when not defined(release):
+      echo "connection: ", i, " is connected"
 
 proc close*(p: Pool) =
   for _, c in p.connections:
-    withLock c:
       if not c.socket.isClosed:
         close c.socket
-        echo "connection: ", c.id, " is closed"
+        when not defined(release):
+          echo "connection: ", c.id, " is closed"
 
 proc endConn*(p: Pool, i: Positive) =
   p.available.addFirst i.int
-  echo &"endConn: addFirst {i}"
 
 proc authenticate*(p: Pool, user, pass: string, T: typedesc = Sha1Digest,
   dbname = "admin.$cmd"): Future[bool] {.async.} =
   result = true
   for i, c in p.connections:
     echo &"conn {i} to auth."
-    withLock c:
-      if not await c.socket.authenticate(user, pass, T, dbname):
-        result = false
-        return
-    #[
     if not await c.socket.authenticate(user, pass, T, dbname):
       result = false
       return
-    ]#
     echo &"connection {i} authenticated."
 
 when isMainModule:
@@ -119,17 +105,12 @@ when isMainModule:
     echo "spawning: ", i
     let (cid, conn) = await pool.getConn
     defer: pool.endConn cid
-    withLock conn: await conn.socket.query1("temptest", conn.id.int32)
-    #await conn.socket.query1("temptest", conn.id.int32)
+    await conn.socket.query1("temptest", conn.id.int32)
     echo "end conn: ", conn.id
-    echo "end cid: ", cid
 
   proc main {.async.} =
     let poolSize = 16
-    #let poolSize = 4
     let loopsize = poolsize * 3
-    #let loopsize = poolsize div 2
-    #let loopsize = 1
     var pool = initPool(poolSize)
     waitFor pool.connect("localhost", 27017)
     if not waitFor pool.authenticate("rdruffy", "rdruffy"):
@@ -139,10 +120,8 @@ when isMainModule:
     let starttime = cpuTime()
     var ops = newseq[Future[void]](loopsize)
     for count in 0 ..< loopSize:
-      #ops.add pool.toHandshake(count)
       ops[count] = pool.toHandshake(count)
     try:
-      #waitFor all(ops)
       await all(ops)
     except:
       echo getCurrentExceptionMsg()

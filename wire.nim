@@ -109,9 +109,9 @@ proc look*(reply: ReplyFormat) =
   if reply.numberReturned > 0 and
      "cursor" in reply.documents[0] and
      "firstBatch" in reply.documents[0]["cursor"].get.ofEmbedded:
-    echo "printing cursor"
-    for d in reply.documents[0]["cursor"]
-      .get.ofEmbedded["firstBatch"].get.ofArray:
+    when not defined(release):
+      echo "printing cursor"
+    for d in reply.documents[0]["cursor"].get["firstBatch"].ofArray:
       dump d
   else:
     for d in reply.documents:
@@ -205,7 +205,8 @@ proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
     skip: skip,
     limit: limit
   })
-  dump findq
+  when not defined(release):
+    dump findq
   discard s.prepareQuery(id, 0, opQuery.int32, 0, dbname & ".$cmd",
     skip.int32, 1, findq)
   await sock.send s.readAll
@@ -216,7 +217,7 @@ proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
     writeConcern = newbson()): Future[ReplyFormat] {.async.} =
   var q = newbson(("dropDatabase", 1.toBson))
   if not writeConcern.isNil:
-    q["writeConcern"] = writeConcern.toBson
+    q["writeConcern"] = writeConcern
   var s = newStringStream()
   discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     0, 1, q)
