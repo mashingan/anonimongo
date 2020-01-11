@@ -51,12 +51,12 @@ proc replyParse*(s: Stream): ReplyFormat =
     responseFlags: s.readIntLE int32,
     cursorId: s.readIntLE int64,
     startingFrom: s.readIntLE int32,
-    numberReturned: s.readIntLE int32,
-    documents: newSeq[BsonDocument]()
+    numberReturned: s.readIntLE int32
   )
-  for _ in 1 .. result.numberReturned:
+  result.documents = newSeq[BsonDocument](result.numberReturned)
+  for i in 0 ..< result.numberReturned:
     let doclen = s.peekInt32LE
-    result.documents.add s.readStr(doclen).decode
+    result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
 proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
