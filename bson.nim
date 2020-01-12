@@ -582,11 +582,11 @@ converter ofInt32*(b: BsonBase): int32 =
 converter ofInt64*(b: BsonBase): int64 =
   bsonFetcher(b, bkInt64, BsonInt64, int64)
 
-converter ofInt*(b: BsonBase): int64 =
+converter ofInt*(b: BsonBase): int =
   if b.kind == bkInt32:
-    bsonFetcher(b, bkInt32, BsonInt32, int64)
+    bsonFetcher(b, bkInt32, BsonInt32, int)
   else:
-    bsonFetcher(b, bkInt64, BsonInt64, int64)
+    bsonFetcher(b, bkInt64, BsonInt64, int)
 
 converter ofDouble*(b: BsonBase): float64 =
   bsonFetcher(b, bkDouble, BsonDouble, float64)
@@ -619,6 +619,26 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
   bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
 
 template bson*(): untyped = bson({})
+
+macro modif(r, nf, v: untyped): untyped =
+  let idn = ident(strval nf)
+  result = newAssignment(
+    newDotExpr(r, idn),
+    v)
+
+proc to(b: BsonDocument, t: typedesc): t =
+  var placeholder = t()
+  result = t()
+  for n, v in placeholder.fieldPairs:
+    if n in b:
+      #[
+      if n == "name":
+        result.name = b[n].get
+      elif n == "str":
+        result.str = b[n].get
+        ]#
+      result.modif(n, b[n].get)
+
 
 when isMainModule:
   from sugar import dump
@@ -788,3 +808,25 @@ when isMainModule:
     # modify first elem object with key q to 5
     arrayembed.mget("objects").mget(0).mget("q") = 5
     dump arrayembed["objects"].get[0]["q"]
+  
+  block:
+    type
+      SimpleIntString = object
+        name: int
+        str: string
+      
+      SSIntString = object
+        outerName: string
+        sis: SimpleIntString
+    
+    var theb = bson({
+      name: 10,
+      str: "hello 異世界"
+    })
+    let outer1 = bson({
+      outerName: "outer 1",
+      sis: theb
+    })
+
+    dump theb.to(SimpleIntString)
+    #dump outer1.to(SSintString)
