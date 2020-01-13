@@ -9,6 +9,7 @@ from options import Option, some, none, get, isSome
 from lenientops import `/`, `+`, `*`
 from typetraits import name
 import macros, endians
+from sugar import dump
 
 export typetraits
 export strutils
@@ -620,34 +621,45 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 
 template bson*(): untyped = bson({})
 
-macro modif(r, nf, v: untyped): untyped =
-  if nf.kind in {nnkIntLit, nnkStrLit}:
-    let idn = ident(strval nf)
-    result = newAssignment(
-      newDotExpr(r, idn),
-      v)
-  else:
-    result = newNimNode nnkDiscardStmt
+proc isPrimitive(fimpl: NimNode): bool {.compiletime.} =
+  fimpl.kind == nnkSym and fimpl.len == 0
 
-proc to(b: BsonDocument, t: typedesc): t =
-  var placeholder = t()
-  result = t()
-  for n, v in placeholder.fieldPairs:
-    if n in b:
-      result.modif(n, b[n].get)
-  #[
-macro to(b: typed, t: typed): untyped =
-  assert t.getType.typeKind == ntyTypeDesc
-  var placeholder = t.getTypeImpl
-  result = t()
-  for n, v in placeholder.fieldPairs:
-    if n in b:
-      result.modif(n, b[n].get)
-      ]#
+proc primAssign(thevar, jn, identdef: NimNode): NimNode {.compiletime.} =
+  let fieldstr = identdef[0].strval.newStrLitNode
+  let identname = identdef[0]
+  let checkcontain = newCall("contains", jn, fieldstr)
+  let dotexpr = newDotExpr(thevar, identname)
+  let valnode = newCall("get", newNimNode(nnkBracketExpr).add(jn, fieldstr))
+  let body = newAssignment(dotexpr, valnode)
+  result = newIfStmt(
+    (checkcontain, body)
+  )
+  dump result.repr
+
+macro to(b: untyped, t: typed): untyped =
+  let st = getType t
+  result = newStmtList()
+  var resvar = genSym(nskVar, "res")
+  result.add newNimNode(nnkVarSection).add(
+    newIdentDefs(resvar, st[1])
+  )
+  dump st[1].repr
+  let reclist = st[1].getTypeImpl[2]
+  dump reclist.repr
+  for field in reclist:
+    if field.kind == nnkEmpty: continue
+    var fimpl = if field[1].kind == nnkSym: field[1].getTypeImpl
+                else: newEmptyNode()
+    dump fimpl.repr
+    if fimpl.isPrimitive:
+      result.add primAssign(resvar, b, field)
+    elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
+      discard
+  result.add resvar
+  dump result.repr
 
 
 when isMainModule:
-  from sugar import dump
   let hellodoc = newbson(
     [("hello", 100.toBson),
     ("array world", bsonArray("red", 50, 4.2)),
@@ -834,7 +846,6 @@ when isMainModule:
       sis: theb
     })
 
-    dump outer1
     dump theb.to(SimpleIntString)
     #dump outer1.to(SSintString)
 
