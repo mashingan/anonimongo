@@ -161,6 +161,9 @@ iterator pairs*(b: BsonDocument): (string, BsonBase) =
   for k, v in b.table:
     yield (k, v)
 
+# Added to bypass getting from Option or BsonBase
+proc get*(b: BsonBase): BsonBase = b
+
 proc contains*(b: BsonDocument, key: sink string): bool =
   key in b.table
 
@@ -629,12 +632,39 @@ proc primAssign(thevar, jn, identdef: NimNode): NimNode {.compiletime.} =
   let identname = identdef[0]
   let checkcontain = newCall("contains", jn, fieldstr)
   let dotexpr = newDotExpr(thevar, identname)
+  dump jn.repr
   let valnode = newCall("get", newNimNode(nnkBracketExpr).add(jn, fieldstr))
   let body = newAssignment(dotexpr, valnode)
   result = newIfStmt(
     (checkcontain, body)
   )
   dump result.repr
+
+proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
+    {.compiletime.} =
+  if fielddef.kind == nnkRefTy:
+    result = objAssign(thevar, jn, fld, fielddef[1].getTypeImpl)
+    return
+  result = newStmtList()
+  var resvar = genSym(nskVar, "objres")
+  result.add(newNimNode(nnkVarSection).add(
+    newIdentDefs(resvar, fld[1])))
+  let reclist = fielddef[2]
+  for field in reclist:
+    if field.kind == nnkEmpty: continue
+    var fimpl = if field[1].kind == nnkSym: field[1].getTypeImpl
+                else: newEmptyNode()
+    if fimpl.isPrimitive:
+      result.add primAssign(resvar, jn, field)
+    elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
+      #var resfield = quote do: `resvar`.`field[1]`
+      var resfield = newDotExpr(resvar, field[0])
+      var jnfieldstr = field[1].strval.newStrLitNode
+      #var jnfield = quote do: `jn`[`jnfieldstr`]
+      var jnfield = newNimNode(nnkBracketExpr).add(jn, jnfieldstr)
+      result.add objAssign(resfield, jnfield, field, fimpl)
+  #let asgn = newAssignment(thevar, resvar)
+  result.add newAssignment(thevar, resvar)
 
 macro to(b: untyped, t: typed): untyped =
   let st = getType t
@@ -654,7 +684,12 @@ macro to(b: untyped, t: typed): untyped =
     if fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
-      discard
+      var resfield = newDotExpr(resvar, field[0])
+      let fldname = field[0].strval.newStrLitNode
+      #var nodefield = quote do: `b`[`fldname`].get
+      var nodefield = newCall("get", newNimNode(nnkBracketExpr).add(b, fldname))
+      let resobj = objAssign(resfield, nodefield, field, fimpl)
+      result.add resobj
   result.add resvar
   dump result.repr
 
@@ -847,7 +882,6 @@ when isMainModule:
     })
 
     dump theb.to(SimpleIntString)
-    #dump outer1.to(SSintString)
 
     #manual transformation
     var ssis: SSIntString
@@ -859,3 +893,4 @@ when isMainModule:
       if "str" in outer1["sis"].get:
         ssis.sis.str = outer1["sis"].get["str"]
     dump ssis
+    dump outer1.to(SSintString)
