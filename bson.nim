@@ -621,23 +621,29 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 template bson*(): untyped = bson({})
 
 macro modif(r, nf, v: untyped): untyped =
-  let idn = ident(strval nf)
-  result = newAssignment(
-    newDotExpr(r, idn),
-    v)
+  if nf.kind in {nnkIntLit, nnkStrLit}:
+    let idn = ident(strval nf)
+    result = newAssignment(
+      newDotExpr(r, idn),
+      v)
+  else:
+    result = newNimNode nnkDiscardStmt
 
 proc to(b: BsonDocument, t: typedesc): t =
   var placeholder = t()
   result = t()
   for n, v in placeholder.fieldPairs:
     if n in b:
-      #[
-      if n == "name":
-        result.name = b[n].get
-      elif n == "str":
-        result.str = b[n].get
-        ]#
       result.modif(n, b[n].get)
+  #[
+macro to(b: typed, t: typed): untyped =
+  assert t.getType.typeKind == ntyTypeDesc
+  var placeholder = t.getTypeImpl
+  result = t()
+  for n, v in placeholder.fieldPairs:
+    if n in b:
+      result.modif(n, b[n].get)
+      ]#
 
 
 when isMainModule:
@@ -828,5 +834,17 @@ when isMainModule:
       sis: theb
     })
 
+    dump outer1
     dump theb.to(SimpleIntString)
     #dump outer1.to(SSintString)
+
+    #manual transformation
+    var ssis: SSIntString
+    if "outerName" in outer1:
+      ssis.outerName = outer1["outerName"].get
+    if "sis" in outer1:
+      if "name" in outer1["sis"].get:
+        ssis.sis.name = outer1["sis"].get["name"]
+      if "str" in outer1["sis"].get:
+        ssis.sis.str = outer1["sis"].get["str"]
+    dump ssis
