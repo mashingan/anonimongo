@@ -632,23 +632,23 @@ proc primAssign(thevar, jn, identdef: NimNode): NimNode {.compiletime.} =
   let identname = identdef[0]
   let checkcontain = newCall("contains", jn, fieldstr)
   let dotexpr = newDotExpr(thevar, identname)
-  dump jn.repr
   let valnode = newCall("get", newNimNode(nnkBracketExpr).add(jn, fieldstr))
   let body = newAssignment(dotexpr, valnode)
   result = newIfStmt(
     (checkcontain, body)
   )
-  dump result.repr
 
 proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
     {.compiletime.} =
-  if fielddef.kind == nnkRefTy:
-    result = objAssign(thevar, jn, fld, fielddef[1].getTypeImpl)
-    return
   result = newStmtList()
   var resvar = genSym(nskVar, "objres")
-  result.add(newNimNode(nnkVarSection).add(
-    newIdentDefs(resvar, fld[1])))
+  if fielddef.kind == nnkRefTy or fld[1].kind == nnkRefTy:
+    result.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, fld[1])))
+    result.add(newCall("new", resvar))
+  elif fielddef.kind == nnkObjectTy:
+    result.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, fld[1])))
   let reclist = fielddef[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
@@ -678,7 +678,10 @@ macro to(b: untyped, t: typed): untyped =
   dump reclist.repr
   for field in reclist:
     if field.kind == nnkEmpty: continue
-    var fimpl = if field[1].kind == nnkSym: field[1].getTypeImpl
+    var fimpl = if field[1].kind == nnkSym:
+                  field[1].getTypeImpl
+                elif field[1].kind == nnkRefTy:
+                  field[1][0].getTypeImpl
                 else: newEmptyNode()
     dump fimpl.repr
     if fimpl.isPrimitive:
@@ -870,7 +873,11 @@ when isMainModule:
       
       SSIntString = object
         outerName: string
-        sis: SimpleIntString
+        sis: ref SimpleIntString
+
+      S2IntString = object
+        sis1: SimpleIntString
+        sisref: ref SimpleIntString
     
     var theb = bson({
       name: 10,
@@ -880,17 +887,22 @@ when isMainModule:
       outerName: "outer 1",
       sis: theb
     })
+    let s2b = bson({
+      sis1: theb,
+      sisref: theb
+    })
 
     dump theb.to(SimpleIntString)
 
-    #manual transformation
-    var ssis: SSIntString
-    if "outerName" in outer1:
-      ssis.outerName = outer1["outerName"].get
-    if "sis" in outer1:
-      if "name" in outer1["sis"].get:
-        ssis.sis.name = outer1["sis"].get["name"]
-      if "str" in outer1["sis"].get:
-        ssis.sis.str = outer1["sis"].get["str"]
-    dump ssis
-    dump outer1.to(SSintString)
+    let ssis2 = outer1.to SSIntString
+    dump ssis2
+    dump ssis2.sis.repr
+    doAssert ssis2.outerName == outer1["outerName"].get
+    doAssert ssis2.sis.name == outer1["sis"].get["name"]
+
+    let s2sis = s2b.to S2IntString
+    dump s2sis
+    dump s2sis.sis1
+    dump s2sis.sisref.repr
+    doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
+    doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
