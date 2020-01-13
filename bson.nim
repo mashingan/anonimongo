@@ -5,7 +5,7 @@ from strutils import parseHexInt, join, parseInt, toHex,
 from strformat import fmt
 from sequtils import toSeq
 from times import Time, toUnix, getTime, nanosecond, initTime, `$`
-from options import Option, some, none, get, isSome
+from options import Option, some, none, get, isSome, isNone
 from lenientops import `/`, `+`, `*`
 from typetraits import name
 import macros, endians
@@ -434,7 +434,7 @@ proc isNil*(b: BsonDocument): bool =
   b == nil or b.len == 0
 
 proc isNil*(b: Option[BsonBase]): bool =
-  b.isSome and b.get.isNil
+  not b.isNone and b.get.isNil
 
 proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
   (@args).toBson
@@ -664,7 +664,15 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
       var jnfield = newNimNode(nnkBracketExpr).add(jn, jnfieldstr)
       result.add objAssign(resfield, jnfield, field, fimpl)
   #let asgn = newAssignment(thevar, resvar)
-  result.add newAssignment(thevar, resvar)
+  result.add newAssignment(thevar, newCall("unown", resvar))
+
+proc getImpl(n: NimNode): NimNode {.compiletime.} =
+  if n.kind == nnkSym:
+    result = n.getTypeImpl
+  elif n.kind == nnkRefTy:
+    result = n[0].getTypeImpl
+  else:
+    result = newEmptyNode()
 
 macro to(b: untyped, t: typed): untyped =
   let st = getType t
@@ -678,11 +686,7 @@ macro to(b: untyped, t: typed): untyped =
   dump reclist.repr
   for field in reclist:
     if field.kind == nnkEmpty: continue
-    var fimpl = if field[1].kind == nnkSym:
-                  field[1].getTypeImpl
-                elif field[1].kind == nnkRefTy:
-                  field[1][0].getTypeImpl
-                else: newEmptyNode()
+    var fimpl = field[1].getImpl
     dump fimpl.repr
     if fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
@@ -693,7 +697,11 @@ macro to(b: untyped, t: typed): untyped =
       var nodefield = newCall("get", newNimNode(nnkBracketExpr).add(b, fldname))
       let resobj = objAssign(resfield, nodefield, field, fimpl)
       result.add resobj
-  result.add resvar
+    else:
+      # temporary placeholder
+      dump field[1].kind
+      dump field[1].repr
+  result.add(newCall("unown", resvar))
   dump result.repr
 
 
@@ -739,8 +747,9 @@ when isMainModule:
     dump revdoc[hellofield].get.ofInt
 
   dump revdoc["this is null"]
-  dump revdoc["this is null"].isNil
-  dump revdoc[hellofield].get.isNil
+  doAssert revdoc["this is null"].isNil
+  doAssert revdoc["this is null"].get.isNil
+  doAssert not revdoc[hellofield].get.isNil
 
   let macrodoc = bson({
     hello: 100,
