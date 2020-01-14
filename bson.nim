@@ -5,16 +5,18 @@ from strutils import parseHexInt, join, parseInt, toHex,
 from strformat import fmt
 from sequtils import toSeq
 from times import Time, toUnix, getTime, nanosecond, initTime, `$`
-from options import Option, some, none, get, isSome
+from options import Option, some, none, get, isSome, isNone
 from lenientops import `/`, `+`, `*`
 from typetraits import name
 import macros, endians
+from sugar import dump
 
 export typetraits
 export strutils
 export options
 
 include bsonify
+include macroto
 
 template writeLE*[T](s: Stream, val: T): untyped =
   when cpuEndian == bigEndian:
@@ -159,6 +161,11 @@ type
 iterator pairs*(b: BsonDocument): (string, BsonBase) =
   for k, v in b.table:
     yield (k, v)
+
+# Added to bypass getting from Option or BsonBase
+proc get*(b: BsonBase): BsonBase = b
+proc isSome*(b: BsonBase): bool = true
+proc isNone*(b: BsonBase): bool = false
 
 proc contains*(b: BsonDocument, key: sink string): bool =
   key in b.table
@@ -430,7 +437,7 @@ proc isNil*(b: BsonDocument): bool =
   b == nil or b.len == 0
 
 proc isNil*(b: Option[BsonBase]): bool =
-  b.isSome and b.get.isNil
+  not b.isNone and b.get.isNil
 
 proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
   (@args).toBson
@@ -582,11 +589,11 @@ converter ofInt32*(b: BsonBase): int32 =
 converter ofInt64*(b: BsonBase): int64 =
   bsonFetcher(b, bkInt64, BsonInt64, int64)
 
-converter ofInt*(b: BsonBase): int64 =
+converter ofInt*(b: BsonBase): int =
   if b.kind == bkInt32:
-    bsonFetcher(b, bkInt32, BsonInt32, int64)
+    bsonFetcher(b, bkInt32, BsonInt32, int)
   else:
-    bsonFetcher(b, bkInt64, BsonInt64, int64)
+    bsonFetcher(b, bkInt64, BsonInt64, int)
 
 converter ofDouble*(b: BsonBase): float64 =
   bsonFetcher(b, bkDouble, BsonDouble, float64)
@@ -621,7 +628,6 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 template bson*(): untyped = bson({})
 
 when isMainModule:
-  from sugar import dump
   let hellodoc = newbson(
     [("hello", 100.toBson),
     ("array world", bsonArray("red", 50, 4.2)),
@@ -663,8 +669,9 @@ when isMainModule:
     dump revdoc[hellofield].get.ofInt
 
   dump revdoc["this is null"]
-  dump revdoc["this is null"].isNil
-  dump revdoc[hellofield].get.isNil
+  doAssert revdoc["this is null"].isNil
+  doAssert revdoc["this is null"].get.isNil
+  doAssert not revdoc[hellofield].get.isNil
 
   let macrodoc = bson({
     hello: 100,
@@ -788,3 +795,6 @@ when isMainModule:
     # modify first elem object with key q to 5
     arrayembed.mget("objects").mget(0).mget("q") = 5
     dump arrayembed["objects"].get[0]["q"]
+  
+  block:
+    include macroto_test
