@@ -679,16 +679,16 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1], tempres)))
 
-template arrObjField(acc, fld: untyped, pos = 1): untyped =
+template arrObjField(acc, fldready: untyped): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
-  let fimpl = fld[1][pos].getImpl
+  let fimpl = fldready.getImpl
   var forbody {.inject.} = newStmtList(
-    nnkVarSection.newTree(newIdentDefs(fldvar, fld[1][pos]))
+    nnkVarSection.newTree(newIdentDefs(fldvar, fldready))
   )
   let objnode = objAssign(
     fldvar,
     acc,
-    newIdentDefs(ident"", fld[1][pos]),
+    newIdentDefs(ident"", fldready),
     fimpl
   )
   forbody.add objnode
@@ -709,19 +709,22 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   let resvar = genSym(nskVar, "arrres")
   let testif = newCall("isSome", jn)
   
-  #[
-  var bodyif = newStmtList newNimNode(nnkVarSection).add(
-    newIdentDefs(resvar, fld[1]))
-    ]#
   var bodyif = newStmtList()
   if fld[1].isSeq:
     bodyif.add nnkVarSection.newTree(newIdentDefs(resvar, fld[1]))
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(newCall("get", jn), ident"ofArray"))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
-      arrObjField(ident"obj", fld)
-      forbody.add newCall("add", resvar, fldvar)
-      seqfor.add forbody
+      if isDistinct:
+        arrObjField(ident"obj", distTy[0])
+        forbody.add newCall("add", resvar, newCall(
+          $fld[1][1], fldvar
+        ))
+        seqfor.add forbody
+      else:
+        arrObjField(ident"obj", fld[1][1])
+        forbody.add newCall("add", resvar, fldvar)
+        seqfor.add forbody
     elif fielddef.isPrimitive:
       if not isDistinct:
         seqfor.add newCall("add", resvar, ident"obj")
@@ -746,10 +749,17 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
         newCall("min", newCall("len", arrobj), newCall("len", thevar))
     ))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
-      arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld, 2)
-      forbody.add newAssignment(nnkBracketExpr.newTree(thevar, ident"i"), fldvar)
-      arrfor.add forbody
-      #arrfor.add nnkDiscardStmt.newTree(newEmptyNode())
+      if isDistinct:
+        arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), distTy[0])
+        forbody.add newAssignment(
+          nnkBracketExpr.newTree(thevar, ident"i"),
+          newCall($fld[1][2], fldvar)
+        )
+        arrfor.add forbody
+      else:
+        arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld[1][2])
+        forbody.add newAssignment(nnkBracketExpr.newTree(thevar, ident"i"), fldvar)
+        arrfor.add forbody
     elif fielddef.isPrimitive:
       if not isDistinct:
         arrfor.add newAssignment(
@@ -1055,6 +1065,8 @@ when isMainModule:
         siss: seq[SimpleIntString]
         sissref: seq[ref SimpleIntString]
         sissref2: seq[RSintString]
+        sissdist: seq[DSIntString]
+        sissdistref: seq[DSisRef]
         bar: Bar
         seqbar: seq[Bar]
         district: BarDistrict
@@ -1065,6 +1077,10 @@ when isMainModule:
         arrbar: array[2, Bar]
         arrdbar: array[2, DBar]
         arrsis: array[1, SimpleIntString]
+        arrsisref: array[1, ref SimpleIntString]
+        arrsisrefalias: array[1, RSintString]
+        arrsisrefdist: array[1, DSIntString]
+        arrsisdistref: array[1, DSisRef]
         anosis: SimpleIntString # no bson data
         aint: int
         abar: Bar
@@ -1085,6 +1101,8 @@ when isMainModule:
       siss: [theb, theb],
       sissref: [theb, theb],
       sissref2: [theb, theb],
+      sissdist: [theb, theb],
+      sissdistref: [theb, theb],
       bar: "Barbar 勝利",
       seqbar: ["hello", "異世界", "another world"],
       district: "Barbar 勝利",
@@ -1101,6 +1119,10 @@ when isMainModule:
       arrbar: ["hello", "異世界", "another world"],
       arrdbar: ["hello", "異世界", "another world"],
       arrsis: [theb, theb],
+      arrsisref: [theb, theb],
+      arrsisrefalias: [theb, theb],
+      arrsisrefdist: [theb, theb],
+      arrsisdistref: [theb, theb],
     })
 
     dump theb.to(SimpleIntString)
@@ -1123,7 +1145,12 @@ when isMainModule:
     dump s2sis.dsisref.repr
     dump seq[Bar](s2sis.sqdbar)
     dump array[2, Bar](s2sis.arrdbar)
-    dump s2sis.arrsis
+    dump s2sis.arrsisref[0].repr
+    dump s2sis.arrsisrefalias[0].repr
+    dump seq[SimpleIntString](s2sis.sissdist)
+    dump RSintString(s2sis.sissdistref[0]).repr
+    dump SimpleIntString(s2sis.arrsisrefdist[0])
+    dump RSintString(s2sis.arrsisdistref[0]).repr
     doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
     doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
     doAssert s2sis.district.string == s2b["district"].get
