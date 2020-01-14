@@ -679,16 +679,16 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1], tempres)))
 
-template arrObjField(acc, fld: untyped): untyped =
+template arrObjField(acc, fld: untyped, pos = 1): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
-  let fimpl = fld[1][1].getImpl
+  let fimpl = fld[1][pos].getImpl
   var forbody {.inject.} = newStmtList(
-    nnkVarSection.newTree(newIdentDefs(fldvar, fld[1][1]))
+    nnkVarSection.newTree(newIdentDefs(fldvar, fld[1][pos]))
   )
   let objnode = objAssign(
     fldvar,
     acc,
-    newIdentDefs(ident"", fld[1][1]),
+    newIdentDefs(ident"", fld[1][pos]),
     fimpl
   )
   forbody.add objnode
@@ -708,9 +708,14 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   let isDistinct {.used.} = distTy.kind == nnkDistinctTy
   let resvar = genSym(nskVar, "arrres")
   let testif = newCall("isSome", jn)
+  
+  #[
   var bodyif = newStmtList newNimNode(nnkVarSection).add(
     newIdentDefs(resvar, fld[1]))
+    ]#
+  var bodyif = newStmtList()
   if fld[1].isSeq:
+    bodyif.add nnkVarSection.newTree(newIdentDefs(resvar, fld[1]))
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(newCall("get", jn), ident"ofArray"))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
@@ -741,7 +746,7 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
         newCall("min", newCall("len", arrobj), newCall("len", thevar))
     ))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
-      arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld)
+      arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld, 2)
       forbody.add newAssignment(nnkBracketExpr.newTree(thevar, ident"i"), fldvar)
       arrfor.add forbody
       #arrfor.add nnkDiscardStmt.newTree(newEmptyNode())
@@ -778,7 +783,13 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   if fielddef.kind == nnkRefTy or fld[1].kind == nnkRefTy or
       (isDistinct and distTy[0].kind == nnkRefTy):
     bodyif.add(newCall("new", resvar))
-  let reclist = fielddef[2]
+  var reclist: NimNode
+  if fielddef.kind == nnkObjectTy:
+    reclist = fielddef[2]
+  elif fielddef.kind == nnkRefTy:
+    let tmp = fielddef[0].getImpl
+    tmp.expectKind nnkObjectTy
+    reclist = tmp[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
     let fimpl = field[1].getImpl
@@ -848,7 +859,7 @@ macro to(b: untyped, t: typed): untyped =
       # temporary placeholder
       checknode field[1]
   result.add(newCall("unown", resvar))
-  dump result.repr
+  #dump result.repr
 
 
 when isMainModule:
@@ -1043,6 +1054,7 @@ when isMainModule:
         seqs: seq[string]
         siss: seq[SimpleIntString]
         sissref: seq[ref SimpleIntString]
+        sissref2: seq[RSintString]
         bar: Bar
         seqbar: seq[Bar]
         district: BarDistrict
@@ -1052,6 +1064,7 @@ when isMainModule:
         sqdbar: seq[DBar]
         arrbar: array[2, Bar]
         arrdbar: array[2, DBar]
+        arrsis: array[1, SimpleIntString]
         anosis: SimpleIntString # no bson data
         aint: int
         abar: Bar
@@ -1071,6 +1084,7 @@ when isMainModule:
       seqs: ["hello", "異世界", "another world"],
       siss: [theb, theb],
       sissref: [theb, theb],
+      sissref2: [theb, theb],
       bar: "Barbar 勝利",
       seqbar: ["hello", "異世界", "another world"],
       district: "Barbar 勝利",
@@ -1086,6 +1100,7 @@ when isMainModule:
       sqdbar: ["hello", "異世界", "another world"],
       arrbar: ["hello", "異世界", "another world"],
       arrdbar: ["hello", "異世界", "another world"],
+      arrsis: [theb, theb],
     })
 
     dump theb.to(SimpleIntString)
@@ -1100,13 +1115,15 @@ when isMainModule:
     let s2sis = s2b.to S2IntString
     dump s2sis
     dump s2sis.sis1
-    dump s2sis.sisref.repr
+    dump s2sis.sissref.repr
+    dump s2sis.sissref2.repr
     dump s2sis.district.string
     dump s2sis.dsis.SimpleIntString
     dump s2sis.dbar.Bar
     dump s2sis.dsisref.repr
     dump seq[Bar](s2sis.sqdbar)
     dump array[2, Bar](s2sis.arrdbar)
+    dump s2sis.arrsis
     doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
     doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
     doAssert s2sis.district.string == s2b["district"].get
