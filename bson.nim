@@ -679,6 +679,27 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1], tempres)))
 
+template arrObjField(acc, fld: untyped): untyped =
+  let fldvar {.inject.} = gensym(nskVar, "field")
+  let fimpl = fld[1][1].getImpl
+  var forbody {.inject.} = newStmtList(
+    nnkVarSection.newTree(newIdentDefs(fldvar, fld[1][1]))
+  )
+  let objnode = objAssign(
+    fldvar,
+    acc,
+    newIdentDefs(ident"", fld[1][1]),
+    fimpl
+  )
+  forbody.add objnode
+
+template arrPrimDistinct(dty, idn, finalizer: untyped): untyped =
+  let arrbody {.inject.} = newStmtList(
+    newNimNode(nnkVarSection).add(
+      newIdentDefs(ident"tmp", dty[0], idn)),
+    finalizer
+    )
+
 proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     NimNode {.compiletime.}
 proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
@@ -693,43 +714,50 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(newCall("get", jn), ident"ofArray"))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
-      var fldvar = gensym(nskVar, "field")
-      var fimpl = fld[1][1].getImpl
-      var seqbody = newStmtList(
-        newNimNode(nnkVarSection).add(newIdentDefs(fldvar, fld[1][1]))
-      )
-      var objnode = objAssign(
-        fldvar,
-        ident"obj",
-        newIdentDefs(ident"", fld[1][1]),
-        fimpl
-      )
-      seqbody.add objnode
-      seqbody.add newCall("add", resvar, fldvar)
-      seqfor.add seqbody
+      arrObjField(ident"obj", fld)
+      forbody.add newCall("add", resvar, fldvar)
+      seqfor.add forbody
     elif fielddef.isPrimitive:
       if not isDistinct:
         seqfor.add newCall("add", resvar, ident"obj")
       else:
-        let seqbody = newStmtList(
-          newNimNode(nnkVarSection).add(
-            newIdentDefs(ident"tmp", distTy[0], ident"obj")),
+        arrPrimDistinct(distTy, ident"obj",
           newCall("add", resvar, newCall(
-            $fld[1][1], ident"tmp")))
-        seqfor.add seqbody
+            $fld[1][1], ident"tmp"
+          )))
+        seqfor.add arrbody
     bodyif.add seqfor
     bodyif.add newAssignment(thevar, newCall("unown", resvar))
   elif fld[1].isArray:
+    let arrobj = ident "arrobj"
+    bodyif.add newNimNode(nnkLetSection).add(
+      newIdentDefs(arrobj, newEmptyNode(), newDotExpr(newCall("get", jn), ident"ofArray"))
+    )
     var arrfor = newNimNode(nnkForStmt).add(
       ident"i",
       newNimNode(nnkInfix).add(
         ident"..<",
         newIntLitNode(0),
-        newCall("min", newCall("len", jn), newCall("high", thevar))
+        newCall("min", newCall("len", arrobj), newCall("len", thevar))
     ))
-    arrfor.add newAssignment(
-      newNimNode(nnkBracketExpr).add(thevar, ident"i"),
-      newNimNode(nnkBracketExpr).add(jn, ident"i"))
+    if fielddef.kind in {nnkObjectTy, nnkRefTy}:
+      arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld)
+      forbody.add newAssignment(nnkBracketExpr.newTree(thevar, ident"i"), fldvar)
+      arrfor.add forbody
+      #arrfor.add nnkDiscardStmt.newTree(newEmptyNode())
+    elif fielddef.isPrimitive:
+      if not isDistinct:
+        arrfor.add newAssignment(
+          newNimNode(nnkBracketExpr).add(thevar, ident"i"),
+          newNimNode(nnkBracketExpr).add(arrobj, ident"i"))
+      else:
+        arrPrimDistinct(distTy,
+          nnkBracketExpr.newTree(arrobj, ident"i"),
+          newAssignment(
+            nnkBracketExpr.newTree(thevar, ident"i"),
+            newCall($fld[1][2], ident"tmp"))
+        )
+        arrfor.add arrbody
     bodyif.add arrfor
   result = newIfStmt((testif, bodyif))
 
@@ -1022,6 +1050,8 @@ when isMainModule:
         dsisref: DSisRef
         dbar: DBar
         sqdbar: seq[DBar]
+        arrbar: array[2, Bar]
+        arrdbar: array[2, DBar]
         anosis: SimpleIntString # no bson data
         aint: int
         abar: Bar
@@ -1053,7 +1083,9 @@ when isMainModule:
         str: "why the field is name but it's integer!?"
       },
       dbar: "Barbar 勝利",
-      sqbar: ["hello", "異世界", "another world"],
+      sqdbar: ["hello", "異世界", "another world"],
+      arrbar: ["hello", "異世界", "another world"],
+      arrdbar: ["hello", "異世界", "another world"],
     })
 
     dump theb.to(SimpleIntString)
@@ -1074,8 +1106,7 @@ when isMainModule:
     dump s2sis.dbar.Bar
     dump s2sis.dsisref.repr
     dump seq[Bar](s2sis.sqdbar)
+    dump array[2, Bar](s2sis.arrdbar)
     doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
     doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
     doAssert s2sis.district.string == s2b["district"].get
-    for s in s2sis.sissref:
-      dump s.repr
