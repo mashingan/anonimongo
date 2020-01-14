@@ -163,6 +163,8 @@ iterator pairs*(b: BsonDocument): (string, BsonBase) =
 
 # Added to bypass getting from Option or BsonBase
 proc get*(b: BsonBase): BsonBase = b
+proc isSome*(b: BsonBase): bool = true
+proc isNone*(b: BsonBase): bool = false
 
 proc contains*(b: BsonDocument, key: sink string): bool =
   key in b.table
@@ -647,12 +649,11 @@ proc getImpl(n: NimNode): NimNode {.compiletime.} =
   else:
     result = newEmptyNode()
 
-when not defined(release):
-  # node helper check
-  template checknode(n: untyped): untyped {.used.} =
-    dump `n`.kind
-    dump `n`.len
-    dump `n`.repr
+# node helper check
+template checknode(n: untyped): untyped {.used.} =
+  dump `n`.kind
+  dump `n`.len
+  dump `n`.repr
 
 proc isPrimitive(fimpl: NimNode): bool {.compiletime.} =
   fimpl.kind == nnkSym and fimpl.len == 0
@@ -678,7 +679,8 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1], tempres)))
 
-proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode {.compiletime.}
+proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+    NimNode {.compiletime.}
 proc arrAssign(thevar, jn, fld, fielddef: NimNode): NimNode
     {.compiletime.} =
   fld[1].expectKind nnkBracketExpr
@@ -722,79 +724,80 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode): NimNode
     bodyif.add arrfor
   result = newIfStmt((testif, bodyif))
 
-proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
-    {.compiletime.} =
-  result = newStmtList()
-  var resvar = genSym(nskVar, "objres")
-  if fielddef.kind == nnkRefTy or fld[1].kind == nnkRefTy:
-    result.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, fld[1])))
-    result.add(newCall("new", resvar))
-  elif fielddef.kind == nnkObjectTy:
-    result.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, fld[1])))
+proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+    NimNode {.compiletime.} =
+  let
+    isDistinct = distTy.kind != nnkEmpty
+    testif = newCall("isSome", jn)
+    jnobj = gensym(nskVar, "jnobj")
+    resvar = genSym(nskVar, "objres")
+    identresvar = if isDistinct: newIdentDefs(resvar, distTy[0])
+                  else: newIdentDefs(resvar, fld[1])
+  var bodyif = newStmtList()
+  bodyif.add(newNimNode(nnkVarSection).add(
+    identresvar,
+    newIdentDefs(jnobj, newEmptyNode(), newCall("get", jn)))
+  )
+  if fielddef.kind == nnkRefTy or fld[1].kind == nnkRefTy or
+      (isDistinct and distTy[0].kind == nnkRefTy):
+    bodyif.add(newCall("new", resvar))
   let reclist = fielddef[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
-    var fimpl = field[1].getImpl
+    let fimpl = field[1].getImpl
+    let resfield = newDotExpr(resvar, field[0])
     if field[1].kind == nnkBracketExpr:
-      var resfield = newDotExpr(resvar, field[0])
-      #var resfield = quote do: `resvar`.`field[1]`
-      var jnfieldstr = field[0].strval.newStrLitNode
-      #var jnfield = quote do: `thevar`[`jnfieldstr`]
-      var jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
-      var arr = arrAssign(resfield, jnfield, field, fimpl)
-      result.add arr
+      let jnfieldstr = field[0].strval.newStrLitNode
+      let jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
+      let arr = arrAssign(resfield, jnfield, field, fimpl)
+      bodyif.add arr
     elif fimpl.isPrimitive:
-      result.add primAssign(resvar, jn, field)
+      bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
-      #var resfield = quote do: `resvar`.`field[1]`
-      var resfield = newDotExpr(resvar, field[0])
-      var jnfieldstr = field[1].strval.newStrLitNode
-      #var jnfield = quote do: `jn`[`jnfieldstr`]
-      var jnfield = newNimNode(nnkBracketExpr).add(jn, jnfieldstr)
-      result.add objAssign(resfield, jnfield, field, fimpl)
-  #let asgn = newAssignment(thevar, resvar)
-  result.add newAssignment(thevar, newCall("unown", resvar))
+      let jnfieldstr = field[1].strval.newStrLitNode
+      let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
+      bodyif.add objAssign(resfield, jnfield, field, fimpl)
+  if isDistinct:
+    bodyif.add newAssignment(thevar, newcall("unown",
+      newCall($fld[1], resvar)
+    ))
+  else:
+    bodyif.add newAssignment(thevar, newCall("unown", resvar))
+  result = newIfStmt((testif, bodyif))
 
 macro to(b: untyped, t: typed): untyped =
-  let st = getType t
   result = newStmtList()
-  var resvar = genSym(nskVar, "res")
+  let st = getType t
+  let resvar = genSym(nskVar, "res")
   result.add newNimNode(nnkVarSection).add(
     newIdentDefs(resvar, st[1])
   )
   let reclist = st[1].getTypeImpl[2]
+  let objtyp = {nnkObjectTy, nnkRefTy}
   for field in reclist:
     if field.kind == nnkEmpty: continue
-    var fimpl = field[1].getImpl
+    let fimpl = field[1].getImpl
+    let resfield = newDotExpr(resvar, field[0])
+    let nodefield = newNimNode(nnkBracketExpr).add(b, newStrLitNode $field[0])
     if field[1].kind == nnkBracketExpr:
-      var resfield = newDotExpr(resvar, field[0])
-      #var resfield = quote do: `resvar`.`field[1]`
-      var jnfieldstr = field[0].strval.newStrLitNode
-      #var jnfield = quote do: `thevar`[`jnfieldstr`]
-      #var jnfield = newCall("get", newNimNode(nnkBracketExpr).add(b, jnfieldstr))
-      var jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
-      var arr = arrAssign(resfield, jnfield, field, fimpl)
+      let jnfieldstr = field[0].strval.newStrLitNode
+      let jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
+      let arr = arrAssign(resfield, jnfield, field, fimpl)
       result.add arr
     elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
-    elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
-      var resfield = newDotExpr(resvar, field[0])
-      let fldname = field[0].strval.newStrLitNode
-      #var nodefield = quote do: `b`[`fldname`].get
-      var nodefield = newCall("get", newNimNode(nnkBracketExpr).add(b, fldname))
+    elif fimpl.kind in objtyp:
       let resobj = objAssign(resfield, nodefield, field, fimpl)
       result.add resobj
     elif fimpl.kind == nnkDistinctTy:
       let distinctimpl = fimpl[0].getImpl
       if distinctimpl.isPrimitive:
-        var resfield = newDotExpr(resvar, field[0])
         result.add primDistinct(resfield, b, field, distinctimpl)
+      elif distinctimpl.kind in objtyp:
+        result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
     else:
       # temporary placeholder
-      dump field[1].kind
-      dump field[1].repr
+      checknode field[1]
   result.add(newCall("unown", resvar))
   dump result.repr
 
@@ -972,6 +975,9 @@ when isMainModule:
     type
       Bar = string
       BarDistrict = distinct string
+      DSIntString = distinct SimpleIntString
+      DSisRef = distinct ref SimpleIntString
+      DBar = distinct Bar
 
       SimpleIntString = object
         name: int
@@ -990,6 +996,13 @@ when isMainModule:
         bar: Bar
         seqbar: seq[string]
         district: BarDistrict
+        dsis: DSIntString
+        dsisref: DSisRef
+        dbar: DBar
+        anosis: SimpleIntString # no bson data
+        aint: int
+        abar: Bar
+        adsis: DSIntString
     
     var theb = bson({
       name: 10,
@@ -1008,6 +1021,15 @@ when isMainModule:
       bar: "Barbar 勝利",
       seqbar: ["hello", "異世界", "another world"],
       district: "Barbar 勝利",
+      dsis: {
+        name: 15,
+        str: "why the field is name but it's integer!?"
+      },
+      dsisref: {
+        name: 15,
+        str: "why the field is name but it's integer!?"
+      },
+      dbar: "Barbar 勝利",
     })
 
     dump theb.to(SimpleIntString)
@@ -1023,6 +1045,9 @@ when isMainModule:
     dump s2sis.sis1
     dump s2sis.sisref.repr
     dump s2sis.district.string
+    dump s2sis.dsis.SimpleIntString
+    dump s2sis.dbar.Bar
+    dump s2sis.dsisref.repr
     doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
     doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
     doAssert s2sis.district.string == s2b["district"].get
