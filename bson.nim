@@ -661,6 +661,7 @@ proc primAssign(thevar, jn, identdef: NimNode): NimNode {.compiletime.} =
     (checkcontain, body)
   )
 
+proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode {.compiletime.}
 proc arrAssign(thevar, jn, fld, fielddef: NimNode): NimNode
     {.compiletime.} =
   fld[1].expectKind nnkBracketExpr
@@ -668,14 +669,24 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode): NimNode
   var testif = newCall("isSome", jn)
   var bodyif = newStmtList newNimNode(nnkVarSection).add(
     newIdentDefs(resvar, fld[1]))
-  dump fielddef.repr
-  dump fielddef.kind
-  dump fielddef.len
   if fld[1].isSeq:
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(newCall("get", jn), ident"ofArray"))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
-      seqfor.add newNimNode(nnkDiscardStmt).add(newEmptyNode())
+      var fldvar = gensym(nskVar, "field")
+      var fimpl = fld[1][1].getImpl
+      var seqbody = newStmtList(
+        newNimNode(nnkVarSection).add(newIdentDefs(fldvar, fld[1][1]))
+      )
+      var objnode = objAssign(
+        fldvar,
+        ident"obj",
+        newIdentDefs(ident"", fld[1][1]),
+        fimpl
+      )
+      seqbody.add objnode
+      seqbody.add newCall("add", resvar, fldvar)
+      seqfor.add seqbody
     elif fielddef.isPrimitive:
       seqfor.add newCall("add", resvar, ident"obj")
     dump seqfor.repr
@@ -955,6 +966,7 @@ when isMainModule:
         sisref: ref SimpleIntString
         seqs: seq[string]
         siss: seq[SimpleIntString]
+        sissref: seq[ref SimpleIntString]
     
     var theb = bson({
       name: 10,
@@ -967,7 +979,9 @@ when isMainModule:
     let s2b = bson({
       sis1: theb,
       sisref: theb,
-      seqs: ["hello", "異世界", "another world"]
+      seqs: ["hello", "異世界", "another world"],
+      siss: [theb, theb],
+      sissref: [theb, theb]
     })
 
     dump theb.to(SimpleIntString)
@@ -984,3 +998,5 @@ when isMainModule:
     dump s2sis.sisref.repr
     doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
     doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
+    for s in s2sis.sissref:
+      dump s.repr
