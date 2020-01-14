@@ -624,6 +624,29 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 
 template bson*(): untyped = bson({})
 
+proc isSeq(n: NimNode): bool {.compiletime.} =
+  n.expectKind nnkBracketExpr
+  n.len == 2
+
+proc isArray(n: NimNode): bool {.compiletime.} =
+  n.expectKind nnkBracketExpr
+  n.len == 3
+
+proc getImpl(n: NimNode): NimNode {.compiletime.} =
+  if n.kind == nnkSym:
+    result = n.getTypeImpl
+  elif n.kind == nnkRefTy:
+    result = n[0].getTypeImpl
+  elif n.kind == nnkBracketExpr:
+    if n.isSeq:
+      result = n[1].getTypeImpl
+    elif n.isArray:
+      result = n[2].getTypeImpl
+    else:
+      result = newEmptyNode()
+  else:
+    result = newEmptyNode()
+
 proc isPrimitive(fimpl: NimNode): bool {.compiletime.} =
   fimpl.kind == nnkSym and fimpl.len == 0
 
@@ -637,6 +660,41 @@ proc primAssign(thevar, jn, identdef: NimNode): NimNode {.compiletime.} =
   result = newIfStmt(
     (checkcontain, body)
   )
+
+proc arrAssign(thevar, jn, fld, fielddef: NimNode): NimNode
+    {.compiletime.} =
+  fld[1].expectKind nnkBracketExpr
+  var resvar = genSym(nskVar, "arrres")
+  var testif = newCall("isSome", jn)
+  var bodyif = newStmtList newNimNode(nnkVarSection).add(
+    newIdentDefs(resvar, fld[1]))
+  dump fielddef.repr
+  dump fielddef.kind
+  dump fielddef.len
+  if fld[1].isSeq:
+    var seqfor = newNimNode(nnkForStmt).add(
+      ident"obj", newDotExpr(newCall("get", jn), ident"ofArray"))
+    if fielddef.kind in {nnkObjectTy, nnkRefTy}:
+      seqfor.add newNimNode(nnkDiscardStmt).add(newEmptyNode())
+    elif fielddef.isPrimitive:
+      seqfor.add newCall("add", resvar, ident"obj")
+    dump seqfor.repr
+    bodyif.add seqfor
+    bodyif.add newAssignment(thevar, newCall("unown", resvar))
+  elif fld[1].isArray:
+    var arrfor = newNimNode(nnkForStmt).add(
+      ident"i",
+      newNimNode(nnkInfix).add(
+        ident"..<",
+        newIntLitNode(0),
+        newCall("min", newCall("len", jn), newCall("high", thevar))
+    ))
+    arrfor.add newAssignment(
+      newNimNode(nnkBracketExpr).add(thevar, ident"i"),
+      newNimNode(nnkBracketExpr).add(jn, ident"i"))
+    dump arrfor.repr
+    bodyif.add arrfor
+  result = newIfStmt((testif, bodyif))
 
 proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
     {.compiletime.} =
@@ -652,9 +710,16 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
   let reclist = fielddef[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
-    var fimpl = if field[1].kind == nnkSym: field[1].getTypeImpl
-                else: newEmptyNode()
-    if fimpl.isPrimitive:
+    var fimpl = field[1].getImpl
+    if field[1].kind == nnkBracketExpr:
+      var resfield = newDotExpr(resvar, field[0])
+      #var resfield = quote do: `resvar`.`field[1]`
+      var jnfieldstr = field[0].strval.newStrLitNode
+      #var jnfield = quote do: `thevar`[`jnfieldstr`]
+      var jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
+      var arr = arrAssign(resfield, jnfield, field, fimpl)
+      result.add arr
+    elif fimpl.isPrimitive:
       result.add primAssign(resvar, jn, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
       #var resfield = quote do: `resvar`.`field[1]`
@@ -665,14 +730,6 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode): NimNode
       result.add objAssign(resfield, jnfield, field, fimpl)
   #let asgn = newAssignment(thevar, resvar)
   result.add newAssignment(thevar, newCall("unown", resvar))
-
-proc getImpl(n: NimNode): NimNode {.compiletime.} =
-  if n.kind == nnkSym:
-    result = n.getTypeImpl
-  elif n.kind == nnkRefTy:
-    result = n[0].getTypeImpl
-  else:
-    result = newEmptyNode()
 
 macro to(b: untyped, t: typed): untyped =
   let st = getType t
@@ -688,7 +745,16 @@ macro to(b: untyped, t: typed): untyped =
     if field.kind == nnkEmpty: continue
     var fimpl = field[1].getImpl
     dump fimpl.repr
-    if fimpl.isPrimitive:
+    if field[1].kind == nnkBracketExpr:
+      var resfield = newDotExpr(resvar, field[0])
+      #var resfield = quote do: `resvar`.`field[1]`
+      var jnfieldstr = field[0].strval.newStrLitNode
+      #var jnfield = quote do: `thevar`[`jnfieldstr`]
+      #var jnfield = newCall("get", newNimNode(nnkBracketExpr).add(b, jnfieldstr))
+      var jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
+      var arr = arrAssign(resfield, jnfield, field, fimpl)
+      result.add arr
+    elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
       var resfield = newDotExpr(resvar, field[0])
@@ -887,6 +953,8 @@ when isMainModule:
       S2IntString = object
         sis1: SimpleIntString
         sisref: ref SimpleIntString
+        seqs: seq[string]
+        siss: seq[SimpleIntString]
     
     var theb = bson({
       name: 10,
@@ -898,7 +966,8 @@ when isMainModule:
     })
     let s2b = bson({
       sis1: theb,
-      sisref: theb
+      sisref: theb,
+      seqs: ["hello", "異世界", "another world"]
     })
 
     dump theb.to(SimpleIntString)
