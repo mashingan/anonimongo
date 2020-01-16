@@ -196,7 +196,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     bodyif.add newAssignment(thevar, newCall("unown", resvar))
   result = newIfStmt((testif, bodyif))
 
-macro to(b: untyped, t: typed): untyped =
+macro to*(b: untyped, t: typed): untyped =
   result = newStmtList()
   let st = getType t
   let resvar = genSym(nskVar, "res")
