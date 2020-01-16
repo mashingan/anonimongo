@@ -186,6 +186,9 @@ proc `[]`*(b: BsonBase, idx: int): BsonBase =
     raise BsonFetchError(msg: fmt"Invalid indexed retrieval, get {b.kind}")
   result = (b as BsonArray).value[idx]
 
+proc `[]`*[T: int | string](b: Option[BsonBase], key: T): BsonBase =
+  result = b.get[key]
+
 proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
   b.table[key] = val
 
@@ -699,24 +702,24 @@ when isMainModule:
       ]
     })
     dump arrayembed
-    doAssert arrayembed["objects"].get[2]["u"]["$set"]["truth"].ofInt32 == 42
-    let q2: int32 = arrayembed["objects"].get[1]["q"]
+    doAssert arrayembed["objects"][2]["u"]["$set"]["truth"].ofInt32 == 42
+    let q2: int32 = arrayembed["objects"][1]["q"]
     doAssert q2 == 2
 
     try:
-      dump arrayembed["objects"].get["hello"]
+      dump arrayembed["objects"]["hello"]
     except BsonFetchError:
       echo getCurrentExceptionMsg()
     try:
-      dump arrayembed["objects"].get[4]
+      dump arrayembed["objects"][4]
     except IndexError:
       echo getCurrentExceptionMsg()
     try:
-      dump arrayembed["objects"].get[1]["q"]["hello"]
+      dump arrayembed["objects"][1]["q"]["hello"]
     except BsonFetchError:
       echo getCurrentExceptionMsg()
     try:
-      dump arrayembed["objects"].get[0][3]
+      dump arrayembed["objects"][0][3]
     except BsonFetchError:
       echo getCurrentExceptionMsg()
 
@@ -790,11 +793,11 @@ when isMainModule:
         { q: 3, u: { "$set": { truth: 42 }}}
       ]
     })
-    dump arrayembed["objects"].get[0]["q"]
+    dump arrayembed["objects"][0]["q"]
 
     # modify first elem object with key q to 5
     arrayembed.mget("objects").mget(0).mget("q") = 5
-    dump arrayembed["objects"].get[0]["q"]
+    dump arrayembed["objects"][0]["q"]
   
   block:
     include macroto_test
