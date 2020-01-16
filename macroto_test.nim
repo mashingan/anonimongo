@@ -86,28 +86,53 @@ dump theb.to(SimpleIntString)
 dump (theb.to(RSintString)).repr
 
 let ssis2 = outer1.to SSIntString
-dump ssis2
-dump ssis2.sis.repr
 doAssert ssis2.outerName == outer1["outerName"].get
 doAssert ssis2.sis.name == outer1["sis"].get["name"]
 
 let s2sis = s2b.to S2IntString
-dump s2sis
-dump s2sis.sis1
-dump s2sis.sissref.repr
-dump s2sis.sissref2.repr
-dump s2sis.district.string
-dump s2sis.dsis.SimpleIntString
-dump s2sis.dbar.Bar
-dump s2sis.dsisref.repr
-dump seq[Bar](s2sis.sqdbar)
-dump array[2, Bar](s2sis.arrdbar)
-dump s2sis.arrsisref[0].repr
-dump s2sis.arrsisrefalias[0].repr
-dump seq[SimpleIntString](s2sis.sissdist)
-dump RSintString(s2sis.sissdistref[0]).repr
-dump SimpleIntString(s2sis.arrsisrefdist[0])
-dump RSintString(s2sis.arrsisdistref[0]).repr
 doAssert s2sis.sis1.name == s2b["sis1"].get["name"]
 doAssert s2sis.sisref.name == s2b["sis1"].get["name"]
+doAssert s2sis.sissref[0].name == s2b["sissref"].get[0]["name"]
+doAssert s2sis.sissref2[0].str == s2b["sissref2"].get[0]["str"]
 doAssert s2sis.district.string == s2b["district"].get
+doAssert s2sis.dsis.SimpleIntString.str == s2b["dsis"].get["str"]
+doAssert s2sis.dbar.Bar == s2b["dbar"].get
+doAssert s2sis.dsisref.RSintString.str == s2b["dsisref"].get["str"]
+doAssert s2sis.sqdbar.len == s2b["sqdbar"].get.ofArray.len
+doAssert s2sis.sqdbar[0].Bar == s2b["sqdbar"].get[0]
+doAssert s2sis.arrdbar.len == 2
+doAssert s2sis.arrdbar[0].Bar == s2b["arrdbar"].get[0]
+doAssert s2sis.arrsisref.len == 1
+doAssert s2sis.arrsisref[0].str == s2b["arrsisref"].get[0]["str"]
+doAssert s2sis.arrsisrefalias.len == 1
+doAssert s2sis.arrsisrefalias[0].name == s2b["arrsisrefalias"].get[0]["name"]
+doAssert s2sis.sissdist.len == s2b["sissdist"].get.ofArray.len
+doAssert s2sis.sissdist[0].SimpleIntString.str == s2b["sissdist"].get[0]["str"]
+doAssert s2sis.sissdistref.len == s2b["sissdistref"].get.ofArray.len
+doAssert s2sis.sissdistref[0].RSintString.name == s2b["sissdistref"].get[0]["name"]
+doAssert s2sis.arrsisrefdist.len == 1
+doAssert s2sis.arrsisrefdist[0].SimpleIntString.str == s2b["arrsisrefdist"].get[0]["str"]
+doAssert s2sis.arrsisdistref.len == 1
+doAssert s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"].get[0]["name"]
+
+type
+  NotHomogenousSeq = object
+    theseq: seq[string]
+try:
+  dump bson({
+    theseq: ["異世界", "hello", 4.2, 10]
+  }).to NotHomogenousSeq
+except BsonFetchError:
+  echo "catched the expection: ", getCurrentExceptionMsg()
+
+#[ will be added later
+type
+  MapString = Table[string, string]
+
+let bmapstr = bson({
+  key1: "value1",
+  key2: "value2",
+  key3: "value3",
+})
+dump bmapstr.to(MapString)
+]#

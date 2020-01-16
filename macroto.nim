@@ -52,7 +52,7 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1], tempres)))
 
-template arrObjField(acc, fldready: untyped): untyped =
+template arrObjField(acc, fldready: untyped, visited: var seq[string]): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
   let fimpl = fldready.getImpl
   var forbody {.inject.} = newStmtList(
@@ -62,7 +62,7 @@ template arrObjField(acc, fldready: untyped): untyped =
     fldvar,
     acc,
     newIdentDefs(ident"", fldready),
-    fimpl
+    fimpl, visited
   )
   forbody.add objnode
 
@@ -73,9 +73,11 @@ template arrPrimDistinct(dty, idn, finalizer: untyped): untyped =
     finalizer
     )
 
-proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+proc objAssign(thevar, jn, fld, fielddef: NimNode,
+    visited: var seq[string], distTy = newEmptyNode()):
     NimNode {.compiletime.}
-proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+proc arrAssign(thevar, jn, fld, fielddef: NimNode,
+    visited: var seq[string], distTy = newEmptyNode()):
     NimNode {.compiletime.} =
   fld[1].expectKind nnkBracketExpr
   let isDistinct {.used.} = distTy.kind == nnkDistinctTy
@@ -89,13 +91,13 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       ident"obj", newDotExpr(newCall("get", jn), ident"ofArray"))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
       if isDistinct:
-        arrObjField(ident"obj", distTy[0])
+        arrObjField(ident"obj", distTy[0], visited)
         forbody.add newCall("add", resvar, newCall(
           $fld[1][1], fldvar
         ))
         seqfor.add forbody
       else:
-        arrObjField(ident"obj", fld[1][1])
+        arrObjField(ident"obj", fld[1][1], visited)
         forbody.add newCall("add", resvar, fldvar)
         seqfor.add forbody
     elif fielddef.isPrimitive:
@@ -123,14 +125,14 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     ))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
       if isDistinct:
-        arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), distTy[0])
+        arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), distTy[0], visited)
         forbody.add newAssignment(
           nnkBracketExpr.newTree(thevar, ident"i"),
           newCall($fld[1][2], fldvar)
         )
         arrfor.add forbody
       else:
-        arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld[1][2])
+        arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld[1][2], visited)
         forbody.add newAssignment(nnkBracketExpr.newTree(thevar, ident"i"), fldvar)
         arrfor.add forbody
     elif fielddef.isPrimitive:
@@ -149,7 +151,8 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     bodyif.add arrfor
   result = newIfStmt((testif, bodyif))
 
-proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+proc objAssign(thevar, jn, fld, fielddef: NimNode,
+    visited: var seq[string], distTy = newEmptyNode()):
     NimNode {.compiletime.} =
   let
     isDistinct = distTy.kind != nnkEmpty
@@ -180,14 +183,14 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     if field[1].kind == nnkBracketExpr:
       let jnfieldstr = field[0].strval.newStrLitNode
       let jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
-      let arr = arrAssign(resfield, jnfield, field, fimpl)
+      let arr = arrAssign(resfield, jnfield, field, fimpl, visited)
       bodyif.add arr
     elif fimpl.isPrimitive:
       bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
       let jnfieldstr = field[1].strval.newStrLitNode
       let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
-      bodyif.add objAssign(resfield, jnfield, field, fimpl)
+      bodyif.add objAssign(resfield, jnfield, field, fimpl, visited)
   if isDistinct:
     bodyif.add newAssignment(thevar, newcall("unown",
       newCall($fld[1], resvar)
@@ -204,6 +207,10 @@ macro to(b: untyped, t: typed): untyped =
     newIdentDefs(resvar, st[1])
   )
   let stimpl = st[1].getTypeImpl
+  #var visited = @[$st[1]]
+  var visited = newseq[string]()
+  checknode st[1]
+  checknode stimpl
   var isref = false
   var reclist: NimNode
   if stimpl.kind != nnkRefTy:
@@ -224,20 +231,22 @@ macro to(b: untyped, t: typed): untyped =
       let jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
       if fimpl.kind == nnkDistinctTy:
         let actimpl = fimpl[0].getImpl
-        result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
+        result.add arrAssign(resfield, jnfield, field, actimpl, visited,
+          distTy = fimpl)
       else:
-        result.add arrAssign(resfield, jnfield, field, fimpl)
+        result.add arrAssign(resfield, jnfield, field, fimpl, visited)
     elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in objtyp:
-      let resobj = objAssign(resfield, nodefield, field, fimpl)
+      let resobj = objAssign(resfield, nodefield, field, fimpl, visited)
       result.add resobj
     elif fimpl.kind == nnkDistinctTy:
       let distinctimpl = fimpl[0].getImpl
       if distinctimpl.isPrimitive:
         result.add primDistinct(resfield, b, field, distinctimpl)
       elif distinctimpl.kind in objtyp:
-        result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
+        result.add objAssign(resfield, nodefield, field, distinctimpl,
+          visited, distTy = fimpl)
     else:
       # temporary placeholder
       checknode field[1]
