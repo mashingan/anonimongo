@@ -1,8 +1,10 @@
 import wire, bson
 import scram/client
 import md5, strformat
+when not defined(release):
+  import sugar
 
-proc authenticate(sock: AsyncSocket, user, pass: string,
+proc authenticate*(sock: AsyncSocket, user, pass: string,
   T: typedesc = Sha1Digest, dbname = "admin.$cmd"): Future[bool] {.async.} =
   var
     scram = newScramClient[T]()
@@ -18,7 +20,12 @@ proc authenticate(sock: AsyncSocket, user, pass: string,
   await sock.send stream.readAll
   let res1 = await sock.getReply
   if res1.documents.len > 0 and res1.documents[0]["ok"].get.ofDouble.int32 == 0:
-    echo res1.documents[0]["errMsg"].get
+    when not defined(releaes):
+      dump res1.documents
+    if "errMsg" in res1.documents[0]:
+      echo res1.documents[0]["errMsg"].get
+    elif "$err" in res1.documents[0]:
+      echo res1.documents[0]["$err"].get
     return false
 
   let
