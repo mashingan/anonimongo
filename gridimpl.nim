@@ -84,10 +84,10 @@ proc uploadFile(s: AsyncSocket, fname, buckname: string, chunkSize: int32 = 255)
   let length = 12 + 4 + 8 + filename.len + mlen
   var fileentry = bson({
     "_id": objid,
-    length: length.int32,
+    length: fsize.int32,
     chunkSize: chunkSize,
     uploadDate: now().toTime,
-    filename: filename,
+    filename: filename & ext,
     metadata: {
       mime: m.getMimetype(ext),
       ext: ext,
@@ -122,8 +122,62 @@ proc uploadFile(s: AsyncSocket, fname, buckname: string, chunkSize: int32 = 255)
       echo &"error insert chunk {chunkn} with msg: {msg}"
       return
     inc chunkn
+    #[
+proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
+  query = newbson(), selector = newbson(),
+  sort = newbson(), skip = 0, limit = 0): Future[ReplyFormat] {.async.} =
+]#
 
-  discard
+proc downloadFile(s: AsyncSocket, fname, buckname: string):
+  Future[(AsyncFile, bool)]{.async.} =
+  result = (nil, false)
+  let sort = bson({n: 1.int32})
+  let selector = bson({data: 1.int32})
+  let buckf = buckname & ".files"
+  dump buckf
+  let (dirname, filename, extname) = splitFile fname
+  var query = bson({filename: filename & extname})
+  var reply = await s.queryAck(0, "temptest", buckname & ".files",
+    query = query, sort = bson({"_id": (-1).int32}), limit = 1)
+
+  dump query
+  dump buckname
+  dump reply
+  if reply.numberReturned <= 0:
+    echo &"no file found for {fname}"
+    return
+  var docs = reply.documents
+  if "errmsg" in docs[0] or docs[0]["ok"].get.ofDouble.int != 1:
+    let msg = docs[0]["errmsg"].get.ofString
+    echo &"failed to retrieve file: {msg}"
+    return
+  let fileid = docs[0]["cursor"]["firstBatch"][0]["_id"]
+  query = bson({
+    "files_id": fileid,
+  })
+  try:
+    result[0] = openAsync(fname, fmReadWrite)
+  except:
+    echo getCurrentExceptionMsg()
+    return
+  reply = await s.queryAck(0, "temptest", buckname & ".chunks",
+    query, sort = sort, selector = selector)
+
+  dump reply.numberReturned
+  if reply.numberReturned <= 0:
+    close result[0]
+    echo &"not found {fname}"
+    return
+
+  docs = reply.documents
+  for d in docs:
+    if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
+      for doc in d["cursor"]["firstBatch"].ofArray:
+        await result[0].write(doc["data"].get.ofBinary.stringbytes)
+    else:
+      await result[0].write(d["data"].get.ofBinary.stringbytes)
+
+  result[1] = true
 
 when isMainModule:
   proc main {.async.} =
@@ -158,6 +212,13 @@ when isMainModule:
     #await conn.socket.uploadFile(fname, buckname, chunkSize = 1024 * 1024)
     #pool.endConn cid
     ]#
-    await conn.socket.uploadFile(fname, buckname, chunkSize = 1024 * 1024)
+    #await conn.socket.uploadFile(fname, buckname, chunkSize = 1024 * 1024)
+    let (_, filename, ext) = splitFile fname
+    let (f, success) = await conn.socket.downloadFile("." / (filename & ext), buckname)
+    if success:
+      echo &"""success writing file {"./" / (filename & ext)}, now closing"""
+      close f
+    else:
+      echo "some error happened and cannot download file"
 
   waitFor main()
