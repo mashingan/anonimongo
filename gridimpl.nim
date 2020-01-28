@@ -122,17 +122,27 @@ proc uploadFile(s: AsyncSocket, fname, buckname: string, chunkSize: int32 = 255)
       echo &"error insert chunk {chunkn} with msg: {msg}"
       return
     inc chunkn
-    #[
-proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
-  query = newbson(), selector = newbson(),
-  sort = newbson(), skip = 0, limit = 0): Future[ReplyFormat] {.async.} =
-]#
+
+proc iterate(docs: seq[BsonDocument], f: AsyncFile, currbatch, currsize: int):
+  Future[(int, int)] {.async.} =
+  for d in docs:
+    if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
+      result[0] += currbatch + d["cursor"]["firstBatch"].ofArray.len
+      dump result[0]
+      for doc in d["cursor"]["firstBatch"].ofArray:
+        let binstr = doc["data"].get.ofBinary.stringbytes
+        result[1] += currsize + binstr.len
+        await f.write(binstr)
+    else:
+      let binstr = d["data"].get.ofBinary.stringbytes
+      result[1] += currsize + binstr.len
+      await f.write(d["data"].get.ofBinary.stringbytes)
 
 proc downloadFile(s: AsyncSocket, fname, buckname: string):
   Future[(AsyncFile, bool)]{.async.} =
   result = (nil, false)
   let sort = bson({n: 1.int32})
-  let selector = bson({data: 1.int32})
+  let selector = bson({data: 1.int32, n: 1.int32})
   let buckf = buckname & ".files"
   dump buckf
   let (dirname, filename, extname) = splitFile fname
@@ -151,7 +161,10 @@ proc downloadFile(s: AsyncSocket, fname, buckname: string):
     let msg = docs[0]["errmsg"].get.ofString
     echo &"failed to retrieve file: {msg}"
     return
-  let fileid = docs[0]["cursor"]["firstBatch"][0]["_id"]
+  let doc1 = docs[0]["cursor"]["firstBatch"][0]
+  let fileid = doc1["_id"]
+  let fsize: int32 = doc1["length"].get
+  dump fsize
   query = bson({
     "files_id": fileid,
   })
@@ -160,24 +173,66 @@ proc downloadFile(s: AsyncSocket, fname, buckname: string):
   except:
     echo getCurrentExceptionMsg()
     return
-  reply = await s.queryAck(0, "temptest", buckname & ".chunks",
+  var reply2 = await s.queryAck(0, "temptest", buckname & ".chunks",
     query, sort = sort, selector = selector)
 
-  dump reply.numberReturned
-  if reply.numberReturned <= 0:
+  let cursorid = reply2.cursorId
+  if reply2.numberReturned <= 0:
     close result[0]
     echo &"not found {fname}"
     return
 
-  docs = reply.documents
+  docs = reply2.documents
+  var (fbatch, currsize) = await iterate(docs, result[0], 0, 0)
+  #[
   for d in docs:
     if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
+      fbatch = d["cursor"]["firstBatch"].ofArray.len
+      dump fbatch
       for doc in d["cursor"]["firstBatch"].ofArray:
-        await result[0].write(doc["data"].get.ofBinary.stringbytes)
+        let binstr = doc["data"].get.ofBinary.stringbytes
+        currsize += binstr.len
+        await result[0].write(binstr)
     else:
+      let binstr = d["data"].get.ofBinary.stringbytes
+      currsize += binstr.len
       await result[0].write(d["data"].get.ofBinary.stringbytes)
+      ]#
 
+  dump currsize
+  while currsize < fsize:
+    echo &"still {currsize.float / fsize.float * 100}%"
+    reply2 = await s.queryAck(0, "temptest", buckname & ".chunks",
+      query, sort = sort, selector = selector, skip = fbatch)
+    if reply2.numberReturned <= 0:
+      break
+    docs = reply2.documents
+    let (tempbatch, tempsize) = await iterate(docs, result[0], fbatch, currsize)
+    fbatch += tempbatch
+    currsize += tempsize
+    #[
+    if docs[0]["ok"].get.ofDouble.int != 1 and "errmsg" in docs[0]:
+      let msg = docs[0]["errmsg"].get.ofString
+      echo &"cannot get the rest of file: {msg}"
+      close result[0]
+      return
+    for d in docs:
+      if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
+        fbatch += d["cursor"]["firstBatch"].ofArray.len
+        for doc in d["cursor"]["firstBatch"].ofArray:
+          let binstr = doc["data"].get.ofBinary.stringbytes
+          currsize += binstr.len
+          await result[0].write(binstr)
+      else:
+        let binstr = d["data"].get.ofBinary.stringbytes
+        currsize += binstr.len
+        await result[0].write(d["data"].get.ofBinary.stringbytes)
+        ]#
+    dump currsize
+    #if currsize >= fsize:
+    #  break
   result[1] = true
+
 
 when isMainModule:
   proc main {.async.} =
@@ -212,11 +267,12 @@ when isMainModule:
     #await conn.socket.uploadFile(fname, buckname, chunkSize = 1024 * 1024)
     #pool.endConn cid
     ]#
-    #await conn.socket.uploadFile(fname, buckname, chunkSize = 1024 * 1024)
     let (_, filename, ext) = splitFile fname
-    let (f, success) = await conn.socket.downloadFile("." / (filename & ext), buckname)
+    #let (f, success) = await conn.socket.downloadFile("." / (filename & ext), buckname)
+    let (f, success) = await conn.socket.downloadFile(filename & ext, buckname)
     if success:
-      echo &"""success writing file {"./" / (filename & ext)}, now closing"""
+      #echo &"""success writing file {"./" / (filename & ext)}, now closing"""
+      echo &"""success writing file {filename & ext}, now closing"""
       close f
     else:
       echo "some error happened and cannot download file"
