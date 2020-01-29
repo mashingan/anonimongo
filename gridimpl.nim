@@ -125,17 +125,18 @@ proc uploadFile(s: AsyncSocket, fname, buckname: string, chunkSize: int32 = 255)
 
 proc iterate(docs: seq[BsonDocument], f: AsyncFile, currbatch, currsize: int):
   Future[(int, int)] {.async.} =
+  result = (currbatch, currsize)
   for d in docs:
     if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
-      result[0] += currbatch + d["cursor"]["firstBatch"].ofArray.len
+      result[0] += d["cursor"]["firstBatch"].ofArray.len
       dump result[0]
       for doc in d["cursor"]["firstBatch"].ofArray:
         let binstr = doc["data"].get.ofBinary.stringbytes
-        result[1] += currsize + binstr.len
+        result[1] += binstr.len
         await f.write(binstr)
     else:
       let binstr = d["data"].get.ofBinary.stringbytes
-      result[1] += currsize + binstr.len
+      result[1] += binstr.len
       await f.write(d["data"].get.ofBinary.stringbytes)
 
 proc downloadFile(s: AsyncSocket, fname, buckname: string):
@@ -184,20 +185,6 @@ proc downloadFile(s: AsyncSocket, fname, buckname: string):
 
   docs = reply2.documents
   var (fbatch, currsize) = await iterate(docs, result[0], 0, 0)
-  #[
-  for d in docs:
-    if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
-      fbatch = d["cursor"]["firstBatch"].ofArray.len
-      dump fbatch
-      for doc in d["cursor"]["firstBatch"].ofArray:
-        let binstr = doc["data"].get.ofBinary.stringbytes
-        currsize += binstr.len
-        await result[0].write(binstr)
-    else:
-      let binstr = d["data"].get.ofBinary.stringbytes
-      currsize += binstr.len
-      await result[0].write(d["data"].get.ofBinary.stringbytes)
-      ]#
 
   dump currsize
   while currsize < fsize:
@@ -207,30 +194,8 @@ proc downloadFile(s: AsyncSocket, fname, buckname: string):
     if reply2.numberReturned <= 0:
       break
     docs = reply2.documents
-    let (tempbatch, tempsize) = await iterate(docs, result[0], fbatch, currsize)
-    fbatch += tempbatch
-    currsize += tempsize
-    #[
-    if docs[0]["ok"].get.ofDouble.int != 1 and "errmsg" in docs[0]:
-      let msg = docs[0]["errmsg"].get.ofString
-      echo &"cannot get the rest of file: {msg}"
-      close result[0]
-      return
-    for d in docs:
-      if "cursor" in d and "firstBatch" in d["cursor"].get.ofEmbedded:
-        fbatch += d["cursor"]["firstBatch"].ofArray.len
-        for doc in d["cursor"]["firstBatch"].ofArray:
-          let binstr = doc["data"].get.ofBinary.stringbytes
-          currsize += binstr.len
-          await result[0].write(binstr)
-      else:
-        let binstr = d["data"].get.ofBinary.stringbytes
-        currsize += binstr.len
-        await result[0].write(d["data"].get.ofBinary.stringbytes)
-        ]#
+    (fbatch, currsize) = await iterate(docs, result[0], fbatch, currsize)
     dump currsize
-    #if currsize >= fsize:
-    #  break
   result[1] = true
 
 
