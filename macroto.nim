@@ -50,7 +50,8 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
     newNimNode(nnkVarSection).add(newIdentDefs(tempres, impl))
   )
   result.add primAssign(tempres, jn, newident, direct = true)
-  result.add newAssignment(thevar, newCall("unown", newCall($fld[1], tempres)))
+  result.add newAssignment(thevar, newCall("unown", newCall($fld[1],
+    newCall("move", tempres))))
 
 template arrObjField(acc, fldready: untyped): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
@@ -91,12 +92,12 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       if isDistinct:
         arrObjField(ident"obj", distTy[0])
         forbody.add newCall("add", resvar, newCall(
-          $fld[1][1], fldvar
+          $fld[1][1], newCall("move", fldvar)
         ))
         seqfor.add forbody
       else:
         arrObjField(ident"obj", fld[1][1])
-        forbody.add newCall("add", resvar, fldvar)
+        forbody.add newCall("add", resvar, newCall("move", fldvar))
         seqfor.add forbody
     elif fielddef.isPrimitive:
       if not isDistinct:
@@ -104,7 +105,7 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       else:
         arrPrimDistinct(distTy, ident"obj",
           newCall("add", resvar, newCall(
-            $fld[1][1], ident"tmp"
+            $fld[1][1], newCall("move", ident"tmp")
           )))
         seqfor.add arrbody
     bodyif.add seqfor
@@ -143,7 +144,7 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
           nnkBracketExpr.newTree(arrobj, ident"i"),
           newAssignment(
             nnkBracketExpr.newTree(thevar, ident"i"),
-            newCall($fld[1][2], ident"tmp"))
+            newCall($fld[1][2], newCall("move", ident"tmp")))
         )
         arrfor.add arrbody
     bodyif.add arrfor

@@ -162,15 +162,16 @@ iterator pairs*(b: BsonDocument): (string, BsonBase) =
   for k, v in b.table:
     yield (k, v)
 
+
 # Added to bypass getting from Option or BsonBase
 proc get*(b: BsonBase): BsonBase = b
 proc isSome*(b: BsonBase): bool = true
 proc isNone*(b: BsonBase): bool = false
 
-proc contains*(b: BsonDocument, key: sink string): bool =
+proc contains*(b: BsonDocument, key: string): bool =
   key in b.table
 
-proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
+proc `[]`*(b: BsonDocument, key: string): Option[BsonBase] =
   if key in b:
     result = some b.table[key]
   else:
@@ -184,12 +185,15 @@ proc `[]`*(b: BsonBase, key: string): BsonBase =
 proc `[]`*(b: BsonBase, idx: int): BsonBase =
   if b.kind != bkArray:
     raise BsonFetchError(msg: fmt"Invalid indexed retrieval, get {b.kind}")
-  result = (b as BsonArray).value[idx]
+  let value = (b as BsonArray).value
+  if idx >= value.len:
+    raise newException(IndexError, fmt"{idx} not in 0..{value.len-1}")
+  result = value[idx]
 
 proc `[]`*[T: int | string](b: Option[BsonBase], key: T): BsonBase =
   result = b.get[key]
 
-proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
+proc `[]=`*(b: var BsonDocument, key: sink string, val: sink BsonBase) =
   b.table[key] = val
 
 proc mget*(b: var BsonDocument, key: string): var BsonBase =
@@ -209,15 +213,15 @@ proc mget*(b: var BsonBase, index: int): var BsonBase =
 proc len*(b: BsonDocument): int =
   b.table.len
 
-proc quote(key: sink string): string =
+proc quote(key: string): string =
   result = '"' & key & '"'
 
-proc `$`*(doc: sink BsonDocument): string
+proc `$`*(doc: BsonDocument): string
 
 proc `$`(doc: BsonBinary): string =
   result = fmt"binary({quote($doc.subtype)}, {quote(doc.value.stringbytes)})"
 
-proc `$`*(v: sink BsonBase): string =
+proc `$`*(v: BsonBase): string =
   case v.kind
   of bkString:
     result = quote $(v as BsonString).value
@@ -247,7 +251,7 @@ proc `$`*(v: sink BsonBase): string =
   else:
     result = ""
 
-proc `$`*(doc: sink BsonDocument): string =
+proc `$`*(doc: BsonDocument): string =
   result = "{"
   for k, v in doc:
     result &= k.quote & ":" & $v & ','
@@ -257,7 +261,7 @@ proc `$`*(doc: sink BsonDocument): string =
     result &= '}'
 
 
-proc writeKey(s: Stream, key: sink string, kind: BsonKind) =
+proc writeKey(s: Stream, key: string, kind: BsonKind) =
   s.write kind.byte
   s.write key
   s.write 0x00.byte
@@ -465,7 +469,7 @@ proc decodeKey(s: Stream): (string, BsonKind) =
     buff &= achar
   result = (buff, kind)
 
-proc decode*(strbytes: sink string): BsonDocument
+proc decode*(strbytes: string): BsonDocument
 
 proc decodeArray(s: Stream): seq[BsonBase] =
   let length = s.peekInt32LE
@@ -551,7 +555,7 @@ proc decode(s: Stream): (string, BsonBase) =
     val = bsonNull()
   result = (key, val)
 
-proc decode*(strbytes: sink string): BsonDocument =
+proc decode*(strbytes: string): BsonDocument =
   var
     stream = newStringStream(strbytes)
     table = newOrderedTable[string, BsonBase]()
