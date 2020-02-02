@@ -171,18 +171,18 @@ proc isNone*(b: BsonBase): bool = false
 proc contains*(b: BsonDocument, key: string): bool =
   key in b.table
 
-proc `[]`*(b: BsonDocument, key: string): Option[BsonBase] =
+proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
   if key in b:
     result = some b.table[key]
   else:
     result = none BsonBase
 
-proc `[]`*(b: BsonBase, key: string): BsonBase =
+proc `[]`*(b: BsonBase, key: sink string): BsonBase =
   if b.kind != bkEmbed:
     raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
   result = ((b as BsonEmbed).value)[key].get
 
-proc `[]`*(b: BsonBase, idx: int): BsonBase =
+proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
   if b.kind != bkArray:
     raise BsonFetchError(msg: fmt"Invalid indexed retrieval, get {b.kind}")
   let value = (b as BsonArray).value
@@ -190,21 +190,21 @@ proc `[]`*(b: BsonBase, idx: int): BsonBase =
     raise newException(IndexError, fmt"{idx} not in 0..{value.len-1}")
   result = value[idx]
 
-proc `[]`*[T: int | string](b: Option[BsonBase], key: T): BsonBase =
+proc `[]`*[T: int | string](b: Option[BsonBase], key: sink T): BsonBase =
   result = b.get[key]
 
 proc `[]=`*(b: var BsonDocument, key: sink string, val: sink BsonBase) =
   b.table[key] = val
 
-proc mget*(b: var BsonDocument, key: string): var BsonBase =
+proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
   b.table[key]
 
-proc mget*(b: var BsonBase, key: string): var BsonBase =
+proc mget*(b: var BsonBase, key: sink string): var BsonBase =
   if b.kind != bkEmbed:
     raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
   result = (b as BsonEmbed).value.table[key]
 
-proc mget*(b: var BsonBase, index: int): var BsonBase =
+proc mget*(b: var BsonBase, index: sink int): var BsonBase =
   if b.kind != bkArray:
     raise BsonFetchError(msg: fmt"Invalid index retrieval, get {b.kind}")
   result = (b as BsonArray).value[index]
