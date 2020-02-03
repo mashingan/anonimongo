@@ -14,6 +14,8 @@ type
     authenticated: bool
     host: string
     port: Port
+    username: string
+    password: string
     db*: string
     query: TableRef[string, seq[string]]
     pool*: Pool
@@ -31,6 +33,8 @@ type
     collname*: string
     dbname*: string
     db*: Mongo
+
+  MongoError* = ref object of Exception
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()
@@ -61,6 +65,8 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
   result = Mongo(
     isMaster: master,
     host: uri.hostname,
+    username: uri.username,
+    password: uri.password,
     port: Port port,
     query: decodeQuery(uri.query),
     pool: initPool(poolconn)
@@ -79,6 +85,12 @@ proc authenticate[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   if await m.pool.authenticate(user, pass, T, adm):
     m.authenticated = true
     result = true
+
+proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo):
+  Future[bool] {.async.} =
+  if m.username == "" or m.password == "":
+    raise newException(MongoError, "username or password not available")
+  result = authenticate[T](m, m.username, m.password)
 
 proc `appname=`*(m: Mongo, name: string) =
   m.query["appname"] = @[name]
