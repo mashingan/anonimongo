@@ -6,6 +6,7 @@ type
   DSisRef = distinct ref SimpleIntString
   DBar = distinct Bar
   RSintString = ref SimpleIntString
+  DTime = distinct Time
 
   SimpleIntString = object
     name: int
@@ -38,6 +39,8 @@ type
     arrsisrefalias: array[1, RSintString]
     arrsisrefdist: array[1, DSIntString]
     arrsisdistref: array[1, DSisRef]
+    timenow: Time
+    dtimenow: DTime
     anosis: SimpleIntString # no bson data
     aint: int
     abar: Bar
@@ -51,6 +54,7 @@ let outer1 = bson({
   outerName: "outer 1",
   sis: theb
 })
+let currtime = now().toTime
 let s2b = bson({
   sis1: theb,
   sisref: theb,
@@ -80,6 +84,8 @@ let s2b = bson({
   arrsisrefalias: [theb, theb],
   arrsisrefdist: [theb, theb],
   arrsisdistref: [theb, theb],
+  timenow: currtime,
+  dtimenow: currtime,
 })
 
 dump theb.to(SimpleIntString)
@@ -114,6 +120,8 @@ doAssert s2sis.arrsisrefdist.len == 1
 doAssert s2sis.arrsisrefdist[0].SimpleIntString.str == s2b["arrsisrefdist"].get[0]["str"]
 doAssert s2sis.arrsisdistref.len == 1
 doAssert s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"].get[0]["name"]
+doAssert s2sis.timenow == currtime
+doAssert s2sis.dtimenow.Time == currtime
 
 type
   NotHomogenousSeq = object
