@@ -197,6 +197,29 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     bodyif.add newAssignment(thevar, newCall("unown", resvar))
   result = newIfStmt((testif, bodyif))
 
+proc timeAssgn(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
+  NimNode {.compiletime.} =
+  let
+    isDistinct = distTy.kind != nnkEmpty
+    testif = newCall("isSome", jn)
+    resvar = genSym(nskVar, "timeres")
+  var bodyif = newStmtList()
+  if not isDistinct:
+    bodyif.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, fld[1], newCall("get", jn))),
+      newAssignment(thevar, newCall("unown", resvar))
+    )
+  else:
+    bodyif.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, distTy[0], newCall("get", jn))),
+      newAssignment(thevar, newCall("unown", newCall($fld[1], resvar)))
+    )
+
+  result = newIfStmt((testif, bodyif))
+
+proc isTime(node: NimNode): bool {.compiletime.} =
+  node.kind == nnkSym and $node == "Time"
+
 macro to*(b: untyped, t: typed): untyped =
   result = newStmtList()
   let st = getType t
@@ -231,6 +254,9 @@ macro to*(b: untyped, t: typed): untyped =
     elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in objtyp:
+      if field[1].isTime:
+        result.add timeAssgn(resfield, nodefield, field)
+        continue
       let resobj = objAssign(resfield, nodefield, field, fimpl)
       result.add resobj
     elif fimpl.kind == nnkDistinctTy:
@@ -238,9 +264,12 @@ macro to*(b: untyped, t: typed): untyped =
       if distinctimpl.isPrimitive:
         result.add primDistinct(resfield, b, field, distinctimpl)
       elif distinctimpl.kind in objtyp:
-        result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
+        if fimpl[0].isTime:
+          result.add timeAssgn(resfield, nodefield, field, fimpl)
+        else:
+          result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
     else:
       # temporary placeholder
       checknode field[1]
   result.add(newCall("unown", resvar))
-  #dump result.repr
+  checknode result

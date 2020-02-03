@@ -1,17 +1,13 @@
-import streams, tables, oids
+import streams, tables, oids,  times
+import macros, endians, options
 from unicode import Rune, runes, `$`
 from strutils import parseHexInt, join, parseInt, toHex,
   toLowerAscii, `%`
 from strformat import fmt
 from sequtils import toSeq
-from times import Time, toUnix, getTime, nanosecond, initTime, `$`
-from options import Option, some, none, get, isSome, isNone
 from lenientops import `/`, `+`, `*`
-from typetraits import name
-import macros, endians
 from sugar import dump
 
-export typetraits
 export strutils
 export options
 
@@ -586,7 +582,7 @@ template bsonFetcher(b: BsonBase, targetKind: BsonKind,
     inheritedType: typedesc, targetType: untyped): untyped =
   if b.kind != targetKind:
     raise BsonFetchError(msg: "Cannot convert $# to $#" %
-      [$b.kind, targetType.name])
+      [$b.kind, $targetType])
   else:
     result = (b as inheritedType).value as targetType
 
