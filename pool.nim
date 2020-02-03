@@ -3,6 +3,8 @@ import sugar, options, times
 import bson, wire, auth
 import scram/client
 
+{.warning[UnusedImport]: off.}
+
 type
   Connection* = object
     socket*: AsyncSocket

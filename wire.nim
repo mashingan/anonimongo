@@ -212,6 +212,22 @@ proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
   await sock.send s.readAll
   result = await sock.getReply
 
+proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
+  batchSize = 50, maxTimeMS = 0): Future[ReplyFormat] {.async.} =
+  var ss = newStringStream()
+  let moreq = bson({
+    getMore: id,
+    collection: collname,
+    batchSize: batchSize,
+    maxTimeMS: maxTimeMS,
+  })
+  when not defined(release):
+    dump moreq
+  discard ss.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
+    0, 1, moreq)
+  await s.send ss.readAll
+  result = await s.getReply
+
 # not tested when there's no way to create database
 proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
     writeConcern = newbson()): Future[ReplyFormat] {.async.} =

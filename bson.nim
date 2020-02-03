@@ -189,7 +189,8 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
 proc `[]`*[T: int | string](b: Option[BsonBase], key: sink T): BsonBase =
   result = b.get[key]
 
-proc `[]=`*(b: var BsonDocument, key: sink string, val: sink BsonBase) =
+proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
+  b.encoded = false
   b.table[key] = val
 
 proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
@@ -447,6 +448,9 @@ proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
 
 proc bsonBinary*(binstr: string, subtype = stGeneric): BsonBase =
   BsonBinary(value: binstr.bytes, subtype: subtype, kind: bkBinary)
+
+proc bsonBinary*(binseq: seq[byte], subtype = stGeneric): BsonBase =
+  BsonBinary(value: binseq, subtype: subtype, kind: bkBinary)
 
 proc newBson*(table = newOrderedTable[string, BsonBase](),
     stream: Stream = newStringStream()): BsonDocument =
