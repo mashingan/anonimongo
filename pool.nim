@@ -8,15 +8,18 @@ import scram/client
 type
   Connection* = object
     socket*: AsyncSocket
-    id*: uint
+    id*: int
 
   Pool* = ref object
     connections: TableRef[int, Connection]
     available*: Deque[int]
 
+proc connections*(p: Pool): lent TableRef[int, Connection] =
+  p.connections
+
 proc initConnection*(id = 0): Connection =
   result.socket = newAsyncSocket()
-  result.id = id.uint
+  result.id = id
 
 proc contains*(p: Pool, i: int): bool =
   i in p.connections
