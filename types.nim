@@ -1,4 +1,4 @@
-import uri, tables, strutils
+import uri, tables, strutils, net
 from asyncdispatch import Port
 
 import sha1, nimSHA2
@@ -19,6 +19,12 @@ type
     db*: string
     query: TableRef[string, seq[string]]
     pool*: Pool
+
+  SslInfo* = object
+    keyfile*: string
+    certfile*: string
+    when defined(ssl):
+      protocol*: SslProtVersion
 
   Database* = ref object of RootObj
     name*: string
@@ -49,8 +55,16 @@ proc decodeQuery(s: string): TableRef[string, seq[string]] =
       else:
         result[k] = @[v]
 
+when defined(ssl):
+  proc initSslInfo*(keyfile, certfile: string, prot = protSSLv23): SSLInfo =
+    result = SSLInfo(
+      keyfile: keyfile,
+      certfile: certfile,
+      protocol: prot
+    )
+
 proc newMongo*(host = "localhost", port = 27017, master = true,
-  poolconn = poolconn): Mongo =
+  poolconn = poolconn, sslinfo = SslInfo()): Mongo =
   result = Mongo(
     isMaster: master,
     host: host,
@@ -58,6 +72,15 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
     query: newTable[string, seq[string]](),
     pool: initPool(poolconn)
   )
+  if sslinfo.keyfile != "" and sslinfo.certfile != "":
+    when defined(ssl):
+      let ctx = newContext(protVersion = sslinfo.protocol,
+        certFile = sslinfo.certfile,
+        keyfile = sslinfo.keyfile,
+        verifyMode = CVerifyNone)
+      for _, c in result.pool.connections:
+        ctx.wrapSocket(c.socket)
+      result.tls = true
 
 proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
   let port = try: parseInt(uri.port)

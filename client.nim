@@ -1,5 +1,5 @@
 import asyncdispatch, tables, deques, strformat
-import os
+import os, net
 when not defined(release):
   import sugar
 
@@ -35,10 +35,6 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
   discard stream.prepareQuery(id, 0, opQuery.int32, 0, db,
     0, 1, q)
   await s.send stream.readAll
-  try:
-    m.pool.endConn id
-  except:
-    echo getCurrentExceptionMsg()
   when not defined(release):
     look(await s.getReply)
   else:
@@ -57,9 +53,8 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
     else: "Anonimongo client apps"
   var ops = newSeqOfCap[Future[void]](m.pool.available.len)
   let dbname = if m.db != "": (m.db & "$.cmd") else: "admin.$cmd"
-  while m.pool.available.len > 0:
-    let (id, conn) = await m.pool.getConn
-    ops.add m.handshake(conn.socket, dbname, id.int32, appname)
+  for id, c in m.pool.connections:
+    ops.add m.handshake(c.socket, dbname, id.int32, appname)
   await all(ops)
   result = true
 
@@ -72,7 +67,13 @@ proc `[]`*(dbase: Database, name: string): Collection =
   result.db = dbase.db
 
 when isMainModule:
-  let mongo = newMongo(poolconn = 2)
+  when defined(ssl):
+    const key {.strdefine.} = "d:/dev/self-signed-cert/key.pem"
+    const cert {.strdefine.} = "d:/dev/self-signed-cert/cert.pem"
+    let sslinfo = initSSLInfo(key, cert)
+  else:
+    let sslinfo = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
+  let mongo = newMongo(poolconn = 2, sslinfo = sslinfo)
   echo &"is mongo authenticated: {mongo.authenticated}"
   mongo.appname = "Test driver"
   echo &"now mongo app name is {mongo.appname}"
