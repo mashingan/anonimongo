@@ -3,7 +3,7 @@ from asyncdispatch import Port
 
 import sha1, nimSHA2
 
-import pool, wire
+import pool, wire, bson
 
 const poolconn* {.intdefine.} = 64
 
@@ -19,6 +19,7 @@ type
     db*: string
     query: TableRef[string, seq[string]]
     pool*: Pool
+    writeConcern*: BsonDocument
 
   SslInfo* = object
     keyfile*: string

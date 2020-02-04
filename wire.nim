@@ -1,9 +1,7 @@
-import streams
+import streams, strformat
 import asyncdispatch, asyncnet
 from sugar import dump
-#from endians import littleEndian32, swapEndian32, swapEndian64
 import bson
-#import nesm
 
 export streams, asyncnet, asyncdispatch
 
@@ -76,6 +74,20 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
   s.writeLE result.int32
   s.setPosition 0
 
+template prepare*(q: BsonDocument, dbname: string): untyped =
+  var s = newStringStream()
+  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 0, q)
+  s
+
+template check*(r: ReplyFormat): (bool, string) =
+  var res = (false, "")
+  if r.numberReturned <= 0 and r.responseFlags != opReply.int32:
+    res[1] = "some error happened, cannot get, get response flag " &
+      $r.responseFlags
+  else:
+    res = (true, "")
+  res
+
 proc queryOp(s: Stream, query = newbson(), selector = newbson()): int =
   s.prepareQuery(0, 0, opQuery.int32, 0, "temptest.role",
     0, 0, query, selector)
@@ -117,6 +129,16 @@ proc look*(reply: ReplyFormat) =
     for d in reply.documents:
       dump d
     
+proc ok*(b: BsonDocument): bool =
+  "ok" in b and b["ok"].get.ofDouble.int == 1
+
+proc errMsg*(b: BsonDocument): string =
+  if "errMsg" in b:
+    result = b["errMsg"].get
+
+proc code*(b: BsonDocument): int =
+  if "code" in b:
+    result = b["code"].get
 
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
   var bstrhead = newStringStream(await socket.recv(size = 16))

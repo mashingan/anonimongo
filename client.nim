@@ -66,6 +66,84 @@ proc `[]`*(dbase: Database, name: string): Collection =
   result.name = name
   result.db = dbase.db
 
+proc createUser*(db: Mongo | Database, query: BsonDocument):
+  Future[(bool, string)] {.async.} =
+  when db is Database:
+    let mdb = db.db
+    let pool = db.db.pool
+  else:
+    let mdb = db
+    let pool = db.pool
+  let dbname = if mdb.db == "": "admin.$cmd" else: mdb.db & ".$cmd"
+  let (id, conn) = await pool.getConn()
+  var s = prepare(q, dbname)
+  await conn.socket.send s.readAll
+  let reply = await conn.socket.getReply
+  try:
+    pool.endConn id
+  except IndexError:
+    # because of deque bug with index-bound check
+    echo getCurrentExceptionMsg()
+    pool.available.addFirst id
+  let (success, reason) = check reply
+  if not success:
+    result[1] = reason
+    return
+  let res = reply.documents[0]
+  if not res.ok:
+    result[1] = res.errMsg
+    return
+  result[0] = true
+
+template dropPrologue(db: Database, qfield, val: untyped): untyped =
+  let dbname = db.name & "$.cmd"
+  var q = bson({`qfield`: `val`})
+  if not db.db.writeConcern.isNil:
+    q["writeConcern"] = db.db.writeConcern
+  (dbname, q)
+
+template tryEnd(p: Pool, id: int) =
+  try:
+    p.endConn id
+  except IndexError:
+    echo getCurrentExceptionMsg()
+    p.available.addFirst id
+
+
+proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
+  let (dbname, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
+  var s = prepare(q, dbname)
+  let (id, conn) = await db.db.pool.getConn
+  await conn.socket.send s.readAll
+  let reply = await conn.socket.getReply
+  tryEnd(db.db.pool, id)
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    return
+  let stat = reply.documents[0]
+  if not stat.ok:
+    echo stat.errMsg
+    return
+  result = (true, stat["n"].get.ofInt)
+
+proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
+  let (dbname, q) = dropPrologue(db, dropUser, user)
+  var s = prepare(q, dbname)
+  let (id, conn) = await db.db.pool.getConn
+  await conn.socket.send s.readAll
+  let reply = await conn.socket.getReply
+  tryEnd(db.db.pool, id)
+  let (success, reason) = check reply
+  if not success:
+    result[1] = reason
+    return
+  let stat = reply.documents[0]
+  if not stat.ok:
+    result[1] = stat.errMsg
+    return
+  result = (true, "")
+
 when isMainModule:
   when defined(ssl):
     const key {.strdefine.} = "d:/dev/self-signed-cert/key.pem"
