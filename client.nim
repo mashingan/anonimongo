@@ -90,11 +90,10 @@ template tryEnd(p: Pool, id: int) =
     echo getCurrentExceptionMsg()
     #p.available.addFirst id
 
-proc createUser*(db: Database, query: BsonDocument):
+proc cuUsers(db: Database, query: BsonDocument):
   Future[(bool, string)] {.async.} =
   var mdb = db.db
   var pool = mdb.pool
-  #let dbname = if mdb.db == "": "admin.$cmd" else: mdb.db & ".$cmd"
   let dbname = if db.name != "": (db.name & ".$cmd") else: "admin.$cmd"
   let (id, conn) = await pool.getConn()
   var s = prepare(query, (mdb.flags as int32), dbname)
@@ -112,6 +111,49 @@ template dropPrologue(db: Database, qfield, val: untyped): untyped =
   if not db.db.writeConcern.isNil:
     q["writeConcern"] = db.db.writeConcern
   (dbname, q)
+
+template cuPrep(db: Database, field, val, pwd: string,
+  roles, restrictions, mechanism: BsonBase,
+  writeConcern, customData: BsonBase): untyped =
+  var q = bson()
+  q[field] = val
+  q["pwd"] = pwd
+  if not customData.isNil:
+    q["customData"] = customData
+  q["roles"] = roles
+  if field == "createUser":
+    if not writeConcern.isNil:
+      q["writeConcern"] = writeConcern
+    elif not db.db.writeConcern.isNil:
+      q["writeConcern"] = db.db.writeConcern
+    q["authenticationRestrictions"] = restrictions
+    q["mechanisms"] = mechanism
+  elif field == "updateUser":
+    q["authenticationRestrictions"] = restrictions
+    q["mechanisms"] = mechanism
+    if not writeConcern.isNil:
+      q["writeConcern"] = writeConcern
+    elif not db.db.writeConcern.isNil:
+      q["writeConcern"] = db.db.writeConcern
+  unown(q)
+
+proc createUser*(db: Database, user, pwd: string, roles = bsonArray(),
+    restrictions = bsonArray(),
+    mechanism = bsonArray("SCRAM-SHA-256", "SCRAM-SHA-1"),
+    writeConcern = bsonNull(),
+    customData = bsonNull()): Future[(bool, string)] {.async.} =
+  let q = cuPrep(db, "createUser", user, pwd, roles, restrictions,
+    mechanism, writeConcern, customData)
+  result = await cuUsers(db, q)
+
+proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
+    restrictions = bsonArray(),
+    mechanism = bsonArray("SCRAM-SHA-256", "SCRAM-SHA-1"),
+    writeConcern = bsonNull(),
+    customData = bsonNull()): Future[(bool, string)] {.async.} =
+  let q = cuPrep(db, "updateUser", user, pwd, roles, restrictions,
+    mechanism, writeConcern, customData)
+  result = await cuUsers(db, q)
 
 proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
   let dbname = db.name & ".$cmd"
@@ -156,7 +198,7 @@ proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
     db.db.pool.endConn id
   result[0] = epilogueCheck(reply, result[1])
 
-proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
+proc roleOps(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
   let dbname = db.name & "$.cmd"
   var q = bson({
@@ -177,6 +219,14 @@ proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
   else:
     dbm.pool.endConn id
   result[0] = epilogueCheck(reply, result[1])
+
+proc grantRolesToUser(db: Database, user: string, roles = bsonArray(),
+  writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
+  result = await roleOps(db, user, roles, writeConcern)
+
+proc revokeRolesFromUser(db: Database, user: string, roles = bsonArray(),
+  writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
+  result = await roleOps(db, user, roles, writeConcern)
 
 when isMainModule:
   when defined(ssl):
@@ -199,16 +249,10 @@ when isMainModule:
     var db = mongo["temptest"]
     look waitFor db.usersInfo(bson({
       usersInfo: { user: "rdruffy", db: "admin" },
-      showPrivileges: true,
+      #showPrivileges: true,
     }))
-    var (success, reason) = waitFor db.createUser(bson({
-      createUser: "testuser01",
-      pwd: "testtest",
-      customData: { role: "testing" },
-      roles: [
-        "read",
-      ],
-    }))
+    var (success, reason) = waitFor db.createUser("testuser01", "testtest",
+      roles = bsonArray("read"), customData = bson({ role: "testing"}))
     if not success:
       echo "create user not success: ", reason
     else:
@@ -230,6 +274,23 @@ when isMainModule:
       usersInfo: "testuser01",
       #showPrivileges: true,
     }))
+
+    (success, reason) = waitFor db.revokeRolesFromUser("testuser01",
+      roles = bsonArray("write"))
+    if not success:
+      echo "revoke role not success: ", reason
+    else:
+      echo "revoke role success"
+
+    (success, reason) = waitFor db.updateUser("testuser01", "testtest",
+      roles = bsonArray("readWrite"))
+    if not success:
+      echo "update user not success: ", reason
+    else:
+      echo "update user success, now checking the user"
+      look waitFor db.usersInfo(bson({
+        usersInfo: "testuser01",
+      }))
 
     # now deleting the user
     (success, reason) = waitFor db.dropUser("testuser01")
