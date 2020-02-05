@@ -3,7 +3,7 @@ from asyncdispatch import Port
 
 import sha1, nimSHA2
 
-import pool, wire
+import pool, wire, bson
 
 const poolconn* {.intdefine.} = 64
 
@@ -19,6 +19,8 @@ type
     db*: string
     query: TableRef[string, seq[string]]
     pool*: Pool
+    writeConcern*: BsonDocument
+    flags: QueryFlags
 
   SslInfo* = object
     keyfile*: string
@@ -40,7 +42,7 @@ type
     dbname*: string
     db*: Mongo
 
-  MongoError* = ref object of Exception
+  MongoError* = object of Exception
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()
@@ -79,6 +81,7 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
         keyfile = sslinfo.keyfile,
         verifyMode = CVerifyNone)
       for _, c in result.pool.connections:
+        echo "wrapping ssl socket"
         ctx.wrapSocket(c.socket)
       result.tls = true
 
@@ -101,19 +104,20 @@ proc host*(m: Mongo): string = m.host
 proc port*(m: Mongo): Port = m.port
 proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
+proc flags*(m: Mongo): QueryFlags = m.flags
 
-proc authenticate[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
+proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   Future[bool] {.async.} =
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
   if await m.pool.authenticate(user, pass, T, adm):
     m.authenticated = true
     result = true
 
-proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo):
+proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo):
   Future[bool] {.async.} =
   if m.username == "" or m.password == "":
     raise newException(MongoError, "username or password not available")
-  result = authenticate[T](m, m.username, m.password)
+  result = await authenticate[T](m, m.username, m.password)
 
 proc `appname=`*(m: Mongo, name: string) =
   m.query["appname"] = @[name]
@@ -124,3 +128,9 @@ proc appname*(m: Mongo): string =
     result = mq[0]
   else:
     result = ""
+
+proc tailableCursor*(m: Mongo) =
+  m.flags.incl Flags.TailableCursor
+
+proc slaveOk*(m: Mongo) =
+  m.flags.incl Flags.SlaveOk
