@@ -73,7 +73,6 @@ proc `[]`*(dbase: Database, name: string): Collection =
   result.db = dbase.db
 
 proc epilogueCheck(reply: ReplyFormat, target: var string): bool =
-  dump reply
   let (success, reason) = check reply
   if not success:
     target = reason
@@ -97,26 +96,33 @@ proc createUser*(db: Database, query: BsonDocument):
   var pool = mdb.pool
   #let dbname = if mdb.db == "": "admin.$cmd" else: mdb.db & ".$cmd"
   let dbname = if db.name != "": (db.name & ".$cmd") else: "admin.$cmd"
-  dump dbname
-  dump query
   let (id, conn) = await pool.getConn()
   var s = prepare(query, (mdb.flags as int32), dbname)
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
-  dump reply
   when not dangerBuild:
     tryEnd(pool, id)
   else:
     pool.endConn(id)
-  #epilogueCheck(reply, result[1])
   result[0] = epilogueCheck(reply, result[1])
 
 template dropPrologue(db: Database, qfield, val: untyped): untyped =
-  let dbname = db.name & "$.cmd"
+  let dbname = db.name & ".$cmd"
   var q = bson({`qfield`: `val`})
   if not db.db.writeConcern.isNil:
     q["writeConcern"] = db.db.writeConcern
   (dbname, q)
+
+proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
+  let dbname = db.name & ".$cmd"
+  var s = prepare(query, (db.db.flags as int32), dbname)
+  let (id, conn) = await db.db.pool.getConn
+  await conn.socket.send s.readAll
+  result = await conn.socket.getReply
+  when not dangerBuild:
+    tryEnd(db.db.pool, id)
+  else:
+    db.db.pool.endConn id
 
 proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
   let (dbname, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
@@ -141,7 +147,6 @@ proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
 proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
   let (dbname, q) = dropPrologue(db, dropUser, user)
   var s = prepare(q, (db.db.flags as int32), dbname)
-  #var s = prepare(q, "admin.$cmd")
   let (id, conn) = await db.db.pool.getConn
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
@@ -154,7 +159,6 @@ proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
 proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
   let dbname = db.name & "$.cmd"
-  #let dbname = "admin.$cmd"
   var q = bson({
     grantRolesToUser: user,
     roles: roles,
@@ -193,13 +197,16 @@ when isMainModule:
   echo &"is mongo authenticated: {mongo.authenticated}"
   if mongo.authenticated:
     var db = mongo["temptest"]
+    look waitFor db.usersInfo(bson({
+      usersInfo: { user: "rdruffy", db: "admin" },
+      showPrivileges: true,
+    }))
     var (success, reason) = waitFor db.createUser(bson({
       createUser: "testuser01",
       pwd: "testtest",
       customData: { role: "testing" },
       roles: [
-        { role: "readAnyDatabase", db: "admin" },
-        "readWrite",
+        "read",
       ],
     }))
     if not success:
@@ -207,12 +214,22 @@ when isMainModule:
     else:
       echo "create user success"
 
+    look waitFor db.usersInfo(bson({
+      usersInfo: "testuser01",
+      #showPrivileges: true,
+    }))
+
     (success, reason) = waitFor db.grantRolesToUser("testuser01",
-      roles = bsonArray(bson({role: "dropUser", db: "admin"}).toBson, "dropUser"))
+      roles = bsonArray("write"))
     if not success:
       echo "grant role not success: ", reason
     else:
       echo "grant role success"
+
+    look waitFor db.usersInfo(bson({
+      usersInfo: "testuser01",
+      #showPrivileges: true,
+    }))
 
     # now deleting the user
     (success, reason) = waitFor db.dropUser("testuser01")
@@ -221,5 +238,4 @@ when isMainModule:
     else:
       echo "dropping user success"
   
-  sleep 1000
   mongo.pool.close
