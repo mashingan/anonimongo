@@ -220,11 +220,11 @@ proc roleOps(db: Database, user: string, roles = bsonArray(),
     dbm.pool.endConn id
   result[0] = epilogueCheck(reply, result[1])
 
-proc grantRolesToUser(db: Database, user: string, roles = bsonArray(),
+proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
   result = await roleOps(db, user, roles, writeConcern)
 
-proc revokeRolesFromUser(db: Database, user: string, roles = bsonArray(),
+proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
   result = await roleOps(db, user, roles, writeConcern)
 
