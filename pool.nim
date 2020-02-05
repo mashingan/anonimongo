@@ -35,7 +35,7 @@ proc initPool*(size = 16): Pool =
   let realsize = nextPowerOfTwo size
   result.connections = newTable[int, Connection](realsize)
   result.available = initDeque[int](realsize)
-  for i in 0 ..< realsize:
+  for i in 1 .. realsize:
     result[i] = i.initConnection
     result.available.addFirst i
 
@@ -43,9 +43,10 @@ proc getConn*(p: Pool): Future[(int, Connection)] {.async.} =
   while true:
     if p.available.len > 0:
       let id = p.available.popLast
-      when not defined(release):
-        dump id
-      result = (id, p.connections[id])
+      let conn = p.connections[id]
+      #when not defined(release):
+        #dump id
+      result = (id, conn)
       return
     else:
       try: poll(100)
@@ -113,19 +114,29 @@ when isMainModule:
     await conn.socket.query1("temptest", conn.id.int32)
     echo "end conn: ", conn.id
 
+  proc dummy(pool: Pool, i: int) {.async.} =
+    echo "spawning: ", i
+    let (cid, conn) = await pool.getConn
+    defer: pool.endConn cid
+    await sleepAsync(200)
+    echo "end conn: ", conn.id
+
   proc main {.async.} =
     let poolSize = 16
     let loopsize = poolsize * 3
     var pool = initPool(poolSize)
+    #[
     waitFor pool.connect("localhost", 27017)
     if not waitFor pool.authenticate("rdruffy", "rdruffy"):
       echo "cannot authenticate"
       return
+      ]#
 
     let starttime = cpuTime()
     var ops = newseq[Future[void]](loopsize)
     for count in 0 ..< loopSize:
-      ops[count] = pool.toHandshake(count)
+      #ops[count] = pool.toHandshake(count)
+      ops[count] = pool.dummy(count)
     try:
       await all(ops)
     except:

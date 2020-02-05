@@ -96,13 +96,10 @@ proc cuUsers(db: Database, query: BsonDocument):
   var pool = mdb.pool
   let dbname = if db.name != "": (db.name & ".$cmd") else: "admin.$cmd"
   let (id, conn) = await pool.getConn()
+  defer: pool.endConn(id)
   var s = prepare(query, (mdb.flags as int32), dbname)
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
-  when not dangerBuild:
-    tryEnd(pool, id)
-  else:
-    pool.endConn(id)
   result[0] = epilogueCheck(reply, result[1])
 
 template dropPrologue(db: Database, qfield, val: untyped): untyped =
@@ -159,23 +156,17 @@ proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.}
   let dbname = db.name & ".$cmd"
   var s = prepare(query, (db.db.flags as int32), dbname)
   let (id, conn) = await db.db.pool.getConn
+  defer: db.db.pool.endConn id
   await conn.socket.send s.readAll
   result = await conn.socket.getReply
-  when not dangerBuild:
-    tryEnd(db.db.pool, id)
-  else:
-    db.db.pool.endConn id
 
 proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
   let (dbname, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
   var s = prepare(q, (db.db.flags as int32), dbname)
   let (id, conn) = await db.db.pool.getConn
+  defer: db.db.pool.endConn id
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
-  when not dangerBuild:
-    tryEnd(db.db.pool, id)
-  else:
-    db.db.pool.endConn id
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -190,12 +181,9 @@ proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
   let (dbname, q) = dropPrologue(db, dropUser, user)
   var s = prepare(q, (db.db.flags as int32), dbname)
   let (id, conn) = await db.db.pool.getConn
+  defer: db.db.pool.endConn id
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
-  when not dangerBuild:
-    tryEnd(db.db.pool, id)
-  else:
-    db.db.pool.endConn id
   result[0] = epilogueCheck(reply, result[1])
 
 proc roleOps(db: Database, user: string, roles = bsonArray(),
@@ -212,12 +200,9 @@ proc roleOps(db: Database, user: string, roles = bsonArray(),
     q["writeConcern"] = dbm.writeConcern
   var s = prepare(q, (dbm.flags as int32), dbname)
   let (id, conn) = await dbm.pool.getConn()
+  defer: dbm.pool.endConn id
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
-  when not dangerBuild:
-    tryEnd(dbm.pool, id)
-  else:
-    dbm.pool.endConn id
   result[0] = epilogueCheck(reply, result[1])
 
 proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
