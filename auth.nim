@@ -1,7 +1,8 @@
 import wire, bson
 import scram/client
 import md5, strformat
-when not defined(release):
+const notrelease = not defined(release)
+when notrelease:
   import sugar
 
 proc authenticate*(sock: AsyncSocket, user, pass: string,
@@ -9,21 +10,39 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   var
     scram = newScramClient[T]()
     stream = newStringStream()
-  let
-    msg = getMD5 &"{user}:mongo:{pass}"
-    fst = scram.prepareFirstMessage(user)
-  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
-      saslStart: int32 1,
-      mechanism: "SCRAM-SHA-1",
-      payload: bsonBinary fst
-  }))
+  when T is Sha1Digest:
+    let
+      mechanism = "SCRAM-SHA-1"
+      msg = getMD5 &"{user}:mongo:{pass}"
+  else:
+    let
+      mechanism = "SCRAM-SHA-256"
+      msg = pass
+  let fst = scram.prepareFirstMessage(user)
+
+  var q = bson({
+    saslStart: int32 1,
+    mechanism: mechanism,
+    payload: bsonBinary fst,
+  })
+
+  when T is SHA256Digest:
+    q["options"] = bson({skipEmptyExchange: true})
+
+  when notrelease:
+    dump q
+    dump mechanism
+
+  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, q)
   await sock.send stream.readAll
   let res1 = await sock.getReply
-  if res1.documents.len > 0 and res1.documents[0]["ok"].get.ofDouble.int32 == 0:
-    when not defined(releaes):
+  when notrelease:
+    dump res1
+  if res1.documents.len > 0 and not res1.documents[0].ok:
+    when notrelease:
       dump res1.documents
-    if "errMsg" in res1.documents[0]:
-      echo res1.documents[0]["errMsg"].get
+    if "errmsg" in res1.documents[0]:
+      echo res1.documents[0]["errmsg"].get
     elif "$err" in res1.documents[0]:
       echo res1.documents[0]["$err"].get
     return false
@@ -39,9 +58,20 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   }))
   await sock.send stream.readAll()
   let res2 = await sock.getReply
-  if res2.documents.len <= 0 or res2.documents[0]["ok"].get.ofDouble.int32 == 0:
-    echo res2.documents[0]["errMsg"].get
+  when notrelease:
+    dump res2
+  if res2.documents.len >= 1 and not res2.documents[0].ok:
+    let d = res2.documents[0]
+    if "errmsg" in d:
+      echo d["errmsg"].get
+    elif "$err" in d:
+      echo d["$err"].get
     return false
+  let doc = res2.documents[0]
+  if doc.ok and doc["done"].get.ofBool:
+    echo "success"
+    result = true
+    return
   stream = newStringStream()
   discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
     saslContinue: int32 1,

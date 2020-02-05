@@ -24,6 +24,24 @@ type
     numberReturned*: int32
     documents*: seq[BsonDocument]
 
+  Flags* {.size: sizeof(int32), pure.} = enum
+    Reserved
+    TailableCursor
+    SlaveOk
+    OplogReplay     # mongodb internal use only, don't set
+    NoCursorTimeout # disable cursor timeout, default timeout 10 minutes
+    AwaitData       # used with tailable cursor
+    Exhaust
+    Partial         # get partial data instead of error when some shards are down
+  QueryFlags* = set[Flags]
+
+  RFlags* {.size: sizeof(int32), pure.} = enum
+    CursorNotFound
+    QueryFailure
+    ShardConfigStale
+    AwaitCapable
+  ResponseFlags* = set[RFlags]
+
 proc serialize(s: Stream, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
   result = doclen
@@ -74,19 +92,38 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
   s.writeLE result.int32
   s.setPosition 0
 
-template prepare*(q: BsonDocument, dbname: string): untyped =
+template prepare*(q: BsonDocument, flags: int32, dbname: string,
+  id = 0, skip = 0): untyped =
   var s = newStringStream()
-  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 0, q)
-  s
+  discard s.prepareQuery(flags, id, opQuery.int32, skip, dbname, 0, 1, q)
+  unown(s)
 
 template check*(r: ReplyFormat): (bool, string) =
   var res = (false, "")
-  if r.numberReturned <= 0 and r.responseFlags != opReply.int32:
+  let rflags = r.responseFlags as ResponseFlags
+  if r.numberReturned <= 0:
     res[1] = "some error happened, cannot get, get response flag " &
-      $r.responseFlags
+      $rflags
+  elif r.numberReturned >= 1:
+    let doc = r.documents[0]
+    if RFlags.QueryFailure in rflags and "$err" in doc:
+      res[1] = doc["$err"].get
+    elif "errmsg" in doc:
+      res[1] = doc["errmsg"].get
   else:
-    res = (true, "")
-  res
+    res[0] = true
+  unown(res)
+
+proc ok*(b: BsonDocument): bool =
+  "ok" in b and b["ok"].get.ofDouble.int == 1
+
+proc errmsg*(b: BsonDocument): string =
+  if "errmsg" in b:
+    result = b["errmsg"].get
+
+proc code*(b: BsonDocument): int =
+  if "code" in b:
+    result = b["code"].get
 
 proc queryOp(s: Stream, query = newbson(), selector = newbson()): int =
   s.prepareQuery(0, 0, opQuery.int32, 0, "temptest.role",
@@ -129,16 +166,6 @@ proc look*(reply: ReplyFormat) =
     for d in reply.documents:
       dump d
     
-proc ok*(b: BsonDocument): bool =
-  "ok" in b and b["ok"].get.ofDouble.int == 1
-
-proc errMsg*(b: BsonDocument): string =
-  if "errMsg" in b:
-    result = b["errMsg"].get
-
-proc code*(b: BsonDocument): int =
-  if "code" in b:
-    result = b["code"].get
 
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
   var bstrhead = newStringStream(await socket.recv(size = 16))
