@@ -3,7 +3,7 @@ import os, net, sha1, nimsha2
 when not defined(release):
   import sugar
 
-import types, wire, bson, pool
+import types, wire, bson, pool, utils
 
 {.warning[UnusedImport]: off.}
 {.hint[XDeclaredButNotUsed]: off.}
@@ -62,26 +62,6 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
     ops.add m.handshake(c.socket, dbname, id.int32, appname)
   await all(ops)
   result = true
-
-proc `[]`*(m: Mongo, name: string): Database =
-  new result
-  result.db = m
-  result.name = name
-
-proc `[]`*(dbase: Database, name: string): Collection =
-  result.name = name
-  result.db = dbase.db
-
-proc epilogueCheck(reply: ReplyFormat, target: var string): bool =
-  let (success, reason) = check reply
-  if not success:
-    target = reason
-    return false
-  let stat = reply.documents[0]
-  if not stat.ok:
-    target = stat.errMsg
-    return false
-  true
 
 template tryEnd(p: Pool, id: int) =
   try:

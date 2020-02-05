@@ -134,3 +134,12 @@ proc tailableCursor*(m: Mongo) =
 
 proc slaveOk*(m: Mongo) =
   m.flags.incl Flags.SlaveOk
+
+proc `[]`*(m: Mongo, name: string): Database =
+  new result
+  result.db = m
+  result.name = name
+
+proc `[]`*(dbase: Database, name: string): Collection =
+  result.name = name
+  result.db = dbase.db
