@@ -1,14 +1,9 @@
 import asyncdispatch, tables, deques, strformat
-import os, net, sha1, nimsha2
+import os, net
 when not defined(release):
   import sugar
 
 import types, wire, bson, pool, utils
-
-{.warning[UnusedImport]: off.}
-{.hint[XDeclaredButNotUsed]: off.}
-
-const dangerBuild = defined(danger)
 
 const
   drivername = "anonimongo"
@@ -152,22 +147,8 @@ proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
   result = await roleOps(db, user, roles, writeConcern)
 
 when isMainModule:
-  when defined(ssl):
-    const key {.strdefine.} = "d:/dev/self-signed-cert/key.pem"
-    const cert {.strdefine.} = "d:/dev/self-signed-cert/cert.pem"
-    let sslinfo = initSSLInfo(key, cert)
-  else:
-    let sslinfo = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
-  let mongo = newMongo(poolconn = 2, sslinfo = sslinfo)
-  mongo.appname = "Test driver"
-  echo &"now mongo app name is {mongo.appname}"
-  if not waitFor mongo.connect:
-    echo "error connecting, quit"
-  echo &"current available conns: {mongo.pool.available.len}"
-  if not waitFor(authenticate[Sha256Digest](mongo, "rdruffy", "rdruffy")):
-  #if not waitFor(authenticate[Sha1Digest](mongo, "rdruffy", "rdruffy")):
-    echo "cannot authenticate the connection"
-  echo &"is mongo authenticated: {mongo.authenticated}"
+  import testutils
+  var mongo = testsetup()
   if mongo.authenticated:
     var db = mongo["temptest"]
     look waitFor db.usersInfo(bson({

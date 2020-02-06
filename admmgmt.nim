@@ -1,4 +1,5 @@
-import types, bson, wire, utils
+import strformat
+import types, bson, wire, utils, pool
 
 proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   storageEngine = bsonNull(),
@@ -68,8 +69,8 @@ proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
 
 proc listCollectionNames*(db: Database, dbname = ""):
   Future[seq[string]] {.async.} =
-  let filter = bson({ name: 1 })
-  for b in await db.listCollections(dbname, filter):
+  #let filter = bson({ name: 1 })
+  for b in await db.listCollections(dbname):
     result.add b["name"].get
 
 proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
@@ -86,7 +87,7 @@ proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
   let res = reply.documents[0]
   if res.ok:
     when not defined(release):
-      echo "All database size: ", res["totalSize"].get.ofInt
+      echo "All database size: ", res["totalSize"].get.ofDouble
     result = res["databases"].get
   else:
     echo res.errmsg
@@ -109,13 +110,15 @@ proc listIndexes*(db: Database, coll: string):
 
 proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
   Future[(bool, string)] {.async.} =
+  let source = &"{db.name}.{`from`}"
+  let dest = &"{db.name}.{to}"
   var q = bson({
-    renameCollection: `from`,
-    to: to,
+    renameCollection: source,
+    to: dest,
     dropTarget: false,
   })
   q.addWriteConcern(db, wt)
-  result = await db.proceed(q)
+  result = await db.proceed(q, "admin")
 
 proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
     Future[(bool, string)] {.async.} =
@@ -124,4 +127,62 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
     let mdb = db["admin"]
   else:
     let mdb = db
-  result = await mdb.proceed(q, "admin")
+  #result = await mdb.proceed(q, "admin")
+  var s = prepare(q, mdb.flags, "admin".cmd)
+  let (id, conn) = await mdb.db.pool.getConn()
+  defer: mdb.db.pool.endConn id
+  await conn.socket.send s.readAll
+  if not conn.socket.isClosed:
+    try:
+      result = check await conn.socket.getReply
+    except:
+      result =(true, getCurrentExceptionMsg())
+  else:
+    result = (true, "")
+
+when isMainModule:
+  import sugar
+  import testutils
+  var mongo = testsetup()
+  if mongo.authenticated:
+    for db in waitFor mongo.listDatabases:
+      dump db
+    var db = mongo["admin"]
+    let targetColl = "testtemptest"
+    let newtgcoll = "newtemptest"
+    # test create collection
+    db.name = "temptest"
+    var (success, reason) = waitFor db.create(targetColl)
+    if not success:
+      echo "Cannot create collection: ", reason
+    else:
+      echo "successfully create collection", targetColl
+
+    for c in waitFor db.listCollections(filter = bson({
+      idIndex: 1, info: 1, options: 1
+    })):
+      dump c
+
+    (success, reason) = waitFor db.renameCollection(targetColl, newtgcoll)
+    if not success:
+      echo &"Cannot rename collection from {targetColl} to {newtgcoll}: {reason}"
+    else:
+      echo &"successfully rename from {targetColl} to {newtgcoll}"
+
+    for name in waitFor db.listCollectionNames:
+      dump name
+
+    (success, reason) = waitFor db.dropCollection(newtgcoll)
+    if not success:
+      echo &"Cannot drop collection {newtgcoll}: {reason}"
+    else:
+      echo &"Collection {newtgcoll} dropped"
+
+    for currname in waitFor db.listCollectionNames:
+      dump currname
+
+    (success, reason) = waitFor mongo.shutdown(timeout = 10)
+    dump success
+    dump reason
+
+    close mongo.pool
