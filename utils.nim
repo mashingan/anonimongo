@@ -24,6 +24,10 @@ template addOptional*(q: var BsonDocument, name: string, f: BsonBase) =
   if not f.isNil:
     q[name] = f
 
+template addConditional*(q: var BsonDocument, field: string, val: BsonBase) =
+  if val:
+    q[field] = val
+
 proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
   let (success, reason) = check reply
   if not success:
