@@ -35,7 +35,7 @@ type
   Collection* = object
     name*: string
     dbname: string
-    db*: Mongo
+    db*: Database
 
   Query* = object
     collname*: string
@@ -142,4 +142,4 @@ proc `[]`*(m: Mongo, name: string): Database =
 
 proc `[]`*(dbase: Database, name: string): Collection =
   result.name = name
-  result.db = dbase.db
+  result.db = dbase

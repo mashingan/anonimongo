@@ -94,3 +94,34 @@ proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
 proc listDatabaseNames*(db: Mongo | Database): Future[seq[string]] {.async.} =
   for d in await listDatabases(db):
     result.add d["name"].get
+
+proc listIndexes*(db: Database, coll: string):
+  Future[seq[BsonBase]]{.async.} =
+  let q = bson({ listIndexes: coll })
+  let reply = await sendops(q, db)
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    return
+  let res = reply.documents[0]
+  if res.ok:
+    result = res["cursor"]["firstBatch"].get
+
+proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
+  Future[(bool, string)] {.async.} =
+  var q = bson({
+    renameCollection: `from`,
+    to: to,
+    dropTarget: false,
+  })
+  q.addWriteConcern(db, wt)
+  result = await db.proceed(q)
+
+proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
+    Future[(bool, string)] {.async.} =
+  var q = bson({ shutdown: 1, force: force, timeoutSecs: timeout })
+  when db is Mongo:
+    let mdb = db["admin"]
+  else:
+    let mdb = db
+  result = await mdb.proceed(q, "admin")
