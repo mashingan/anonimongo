@@ -1,5 +1,6 @@
 import strformat
 import types, bson, wire, utils, pool
+import sugar
 
 proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   storageEngine = bsonNull(),
@@ -9,17 +10,21 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   Future[(bool, string)] {.async.} =
   var q = bson({
     create: name,
-    capped: capsizemax[0],
-    size: capsizemax[1],
-    max: capsizemax[2],
-    storageEngine: storageEngine,
-    validator: validator,
-    validationLevel: validationLevel,
-    validationAction: validationAction,
-    viewOn: viewOn,
-    pipeline: pipeline,
-    collation: collation,
   })
+  if capsizemax[0]:
+    q["capped"] = true
+    q["size"] = capsizemax[1]
+    q["max"] = capsizemax[2]
+  q.addOptional("storageEngine", storageEngine)
+  q.addOptional("validator", validator)
+  q["validationLevel"] = validationLevel
+  q["validationAction"] = validationAction
+  q.addOptional("indexOptionDefaults", indexOptionDefaults)
+  if viewOn != "":
+    q["viewOn"] = viewOn
+  if pipeline.ofArray.len != 0:
+    q["pipeline"] = pipeline
+  q.addOptional("collation", collation)
   q.addWriteConcern(db, writeConcern)
   result = await db.proceed(q)
 
@@ -69,7 +74,6 @@ proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
 
 proc listCollectionNames*(db: Database, dbname = ""):
   Future[seq[string]] {.async.} =
-  #let filter = bson({ name: 1 })
   for b in await db.listCollections(dbname):
     result.add b["name"].get
 
@@ -127,21 +131,12 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
     let mdb = db["admin"]
   else:
     let mdb = db
-  #result = await mdb.proceed(q, "admin")
-  var s = prepare(q, mdb.flags, "admin".cmd)
-  let (id, conn) = await mdb.db.pool.getConn()
-  defer: mdb.db.pool.endConn id
-  await conn.socket.send s.readAll
-  if not conn.socket.isClosed:
-    try:
-      result = check await conn.socket.getReply
-    except:
-      result =(true, getCurrentExceptionMsg())
-  else:
-    result = (true, "")
+  try:
+    result = await mdb.proceed(q, "admin")
+  except IOError:
+    result = (true, getCurrentExceptionMsg())
 
 when isMainModule:
-  import sugar
   import testutils
   var mongo = testsetup()
   if mongo.authenticated:
@@ -183,6 +178,6 @@ when isMainModule:
 
     (success, reason) = waitFor mongo.shutdown(timeout = 10)
     dump success
-    dump reason
+    #dump reason
 
     close mongo.pool

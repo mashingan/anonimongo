@@ -4,13 +4,14 @@ func cmd*(name: string): string = name & ".$cmd"
 
 func flags*(d: Database): int32 = d.db.flags as int32
 
-proc sendOps*(q: BsonDocument, db: Database, name = ""): Future[ReplyFormat]{.async.} =
+proc sendOps*(q: BsonDocument, db: Database, name = ""):
+  Future[ReplyFormat]{.async.} =
   let dbname = if name == "": db.name.cmd else: name.cmd
-  var s = prepare(q, db.flags, dbname)
   let (id, conn) = await db.db.pool.getConn()
+  defer: db.db.pool.endConn(id)
+  var s = prepare(q, db.flags, dbname, id.int32)
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
-  defer: db.db.pool.endConn(id)
   result = unown(reply)
 
 proc addWriteConcern*(q: var BsonDocument, db: Database, wt: BsonBase) =
@@ -18,6 +19,10 @@ proc addWriteConcern*(q: var BsonDocument, db: Database, wt: BsonBase) =
     q["writeConcern"] = wt
   elif not db.db.writeConcern.isNil:
     q["writeConcern"] = db.db.writeConcern
+
+template addOptional*(q: var BsonDocument, name: string, f: BsonBase) =
+  if not f.isNil:
+    q[name] = f
 
 proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
   let (success, reason) = check reply

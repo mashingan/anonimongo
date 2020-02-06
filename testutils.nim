@@ -1,8 +1,22 @@
 import asyncdispatch, strformat, deques, tables
+import osproc
 
 import nimsha2
 
 import types, pool, client, auth, bson
+
+proc startmongo*: Process =
+  let exe = "d:/installer/mongodb/bin/mongod"
+  let pem = "d:/dev/self-signed-cert/srv.key.pem"
+  let args = @[
+    "--port", "27017",
+    "--dbpath", "d:/dev/mongodata",
+    "--bind_ip_all",
+    "--sslMode", "requireSSL",
+    "--sslPEMKeyFile", pem,
+    "--auth"]
+  let opt = {poUsePath, poStdErrToStdOut}
+  result = unown startProcess(exe, args = args, options = opt)
 
 proc testsetup*: Mongo =
   when defined(ssl):
