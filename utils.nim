@@ -30,7 +30,7 @@ proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
     return false
   true
 
-proc proceed*(db: Database, q: BsonDocument):
+proc proceed*(db: Database, q: BsonDocument, dbname = ""):
   Future[(bool, string)] {.async.} =
-  let reply = await sendops(q, db)
+  let reply = await sendops(q, db, dbname)
   result[0] = epilogueCheck(reply, result[1])
