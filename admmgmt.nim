@@ -147,6 +147,8 @@ when isMainModule:
     let newtgcoll = "newtemptest"
     # test create collection
     db.name = "temptest"
+    for index in waitFor db.listIndexes("role"):
+      dump index
     var (success, reason) = waitFor db.create(targetColl)
     if not success:
       echo "Cannot create collection: ", reason
