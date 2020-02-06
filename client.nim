@@ -3,7 +3,7 @@ import os, net, sha1, nimsha2
 when not defined(release):
   import sugar
 
-import types, wire, bson, pool
+import types, wire, bson, pool, utils
 
 {.warning[UnusedImport]: off.}
 {.hint[XDeclaredButNotUsed]: off.}
@@ -36,14 +36,10 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
   when not defined(release):
     echo "Handshake id: ", id
     dump q
-  var stream = newStringStream()
-  discard stream.prepareQuery(id, 0, opQuery.int32, 0, db,
-    0, 1, q)
-  await s.send stream.readAll
+  let dbc = m[db]
+  let reply = await sendops(q, dbc)
   when not defined(release):
-    look(await s.getReply)
-  else:
-    discard await s.getReply
+    look reply
 
 proc connect*(m: Mongo): Future[bool] {.async.} =
   try:
@@ -57,50 +53,16 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
       m.query["appname"][0]
     else: "Anonimongo client apps"
   var ops = newSeqOfCap[Future[void]](m.pool.available.len)
-  let dbname = if m.db != "": (m.db & "$.cmd") else: "admin.$cmd"
+  let dbname = if m.db != "": m.db else: "admin"
   for id, c in m.pool.connections:
     ops.add m.handshake(c.socket, dbname, id.int32, appname)
   await all(ops)
   result = true
 
-proc `[]`*(m: Mongo, name: string): Database =
-  new result
-  result.db = m
-  result.name = name
-
-proc `[]`*(dbase: Database, name: string): Collection =
-  result.name = name
-  result.db = dbase.db
-
-proc epilogueCheck(reply: ReplyFormat, target: var string): bool =
-  let (success, reason) = check reply
-  if not success:
-    target = reason
-    return false
-  let stat = reply.documents[0]
-  if not stat.ok:
-    target = stat.errMsg
-    return false
-  true
-
-template tryEnd(p: Pool, id: int) =
-  try:
-    p.endConn id
-  except RangeError:
-    echo getCurrentExceptionMsg()
-    #p.available.addFirst id
-
 proc cuUsers(db: Database, query: BsonDocument):
   Future[(bool, string)] {.async.} =
-  var mdb = db.db
-  var pool = mdb.pool
-  let dbname = if db.name != "": (db.name & ".$cmd") else: "admin.$cmd"
-  let (id, conn) = await pool.getConn()
-  defer: pool.endConn(id)
-  var s = prepare(query, (mdb.flags as int32), dbname)
-  await conn.socket.send s.readAll
-  let reply = await conn.socket.getReply
-  result[0] = epilogueCheck(reply, result[1])
+  let dbname = if db.name != "": db.name else: "admin"
+  result = await db.proceed(query, dbname)
 
 template dropPrologue(db: Database, qfield, val: untyped): untyped =
   let dbname = db.name & ".$cmd"
@@ -153,20 +115,11 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
   result = await cuUsers(db, q)
 
 proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
-  let dbname = db.name & ".$cmd"
-  var s = prepare(query, (db.db.flags as int32), dbname)
-  let (id, conn) = await db.db.pool.getConn
-  defer: db.db.pool.endConn id
-  await conn.socket.send s.readAll
-  result = await conn.socket.getReply
+  result = await sendops(query, db)
 
 proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
-  let (dbname, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
-  var s = prepare(q, (db.db.flags as int32), dbname)
-  let (id, conn) = await db.db.pool.getConn
-  defer: db.db.pool.endConn id
-  await conn.socket.send s.readAll
-  let reply = await conn.socket.getReply
+  let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
+  let reply = await sendops(q, db)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -178,32 +131,17 @@ proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
   result = (true, stat["n"].get.ofInt)
 
 proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
-  let (dbname, q) = dropPrologue(db, dropUser, user)
-  var s = prepare(q, (db.db.flags as int32), dbname)
-  let (id, conn) = await db.db.pool.getConn
-  defer: db.db.pool.endConn id
-  await conn.socket.send s.readAll
-  let reply = await conn.socket.getReply
-  result[0] = epilogueCheck(reply, result[1])
+  let (_, q) = dropPrologue(db, dropUser, user)
+  result = await db.proceed(q)
 
 proc roleOps(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
-  let dbname = db.name & "$.cmd"
   var q = bson({
     grantRolesToUser: user,
     roles: roles,
   })
-  var dbm = db.db
-  if not writeConcern.isNil:
-    q["writeConcern"] = writeConcern
-  elif not dbm.writeConcern.isNil:
-    q["writeConcern"] = dbm.writeConcern
-  var s = prepare(q, (dbm.flags as int32), dbname)
-  let (id, conn) = await dbm.pool.getConn()
-  defer: dbm.pool.endConn id
-  await conn.socket.send s.readAll
-  let reply = await conn.socket.getReply
-  result[0] = epilogueCheck(reply, result[1])
+  q.addWriteConcern(db, writeConcern)
+  result = await db.proceed(q)
 
 proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
