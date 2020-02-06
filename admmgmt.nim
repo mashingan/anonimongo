@@ -52,20 +52,45 @@ proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
-proc listCollections*(db: Database, dname = "", filter = bsonNull()):
-  Future[seq[string]] {.async.} =
+proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
+  Future[seq[BsonBase]] {.async.} =
   var q = bson({ listCollections: 1})
   if not filter.isNil:
     q["filter"] = filter
-  let reply = await sendops(q, db, dname)
+  let reply = await sendops(q, db, dbname)
   let (success, reason) = check reply
   if not success:
     echo reason
     return
   let res = reply.documents[0]
   if res.ok:
-    let arr = res["cursor"]["firstBatch"].ofArray
-    result = newseq[string](arr.len)
-    for i, d in arr:
-      # assume it's ok
-      result[i] = d["name"].get
+    result = res["cursor"]["firstBatch"].ofArray
+
+proc listCollectionNames*(db: Database, dbname = ""):
+  Future[seq[string]] {.async.} =
+  let filter = bson({ name: 1 })
+  for b in await db.listCollections(dbname, filter):
+    result.add b["name"].get
+
+proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
+  let q = bson({ listDatabases: 1 })
+  when db is Mongo:
+    let dbm = db["admin"]
+  else:
+    let dbm = db
+  let reply = await sendops(q, dbm, "admin")
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    return
+  let res = reply.documents[0]
+  if res.ok:
+    when not defined(release):
+      echo "All database size: ", res["totalSize"].get.ofInt
+    result = res["databases"].get
+  else:
+    echo res.errmsg
+
+proc listDatabaseNames*(db: Mongo | Database): Future[seq[string]] {.async.} =
+  for d in await listDatabases(db):
+    result.add d["name"].get
