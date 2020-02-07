@@ -133,14 +133,26 @@ try:
 except BsonFetchError:
   echo "catched the expection: ", getCurrentExceptionMsg()
 
-#[ will be added later
 type
-  MapString = Table[string, string]
+  SeqOfBson = object
+    label: string
+    documents: seq[BsonDocument]
 
-let bmapstr = bson({
-  key1: "value1",
-  key2: "value2",
-  key3: "value3",
+let bsob = bson({
+  label: "fix-macro-to",
+  documents:[
+    {
+      field1: "ok",
+      field2: 2,
+      field3: true,
+    },
+    {
+      field3: 4,
+      field0: [],
+      fieldfield: "異世界",
+      field5: 4.2
+    }
+  ]
 })
-dump bmapstr.to(MapString)
-]#
+let osob = bsob.to SeqOfBson
+dump osob

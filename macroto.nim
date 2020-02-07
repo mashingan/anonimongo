@@ -1,3 +1,8 @@
+# node helper check
+template checknode(n: untyped): untyped {.used.} =
+  dump `n`.kind
+  dump `n`.len
+  dump `n`.repr
 
 proc isSeq(n: NimNode): bool {.compiletime.} =
   n.expectKind nnkBracketExpr
@@ -6,6 +11,12 @@ proc isSeq(n: NimNode): bool {.compiletime.} =
 proc isArray(n: NimNode): bool {.compiletime.} =
   n.expectKind nnkBracketExpr
   n.len == 3
+
+proc isTime(node: NimNode): bool {.compiletime.} =
+  node.kind == nnkSym and $node == "Time"
+
+proc isBsonDocument(node: NimNode): bool {.compiletime.} =
+  node.kind == nnkSym and $node == "BsonDocument"
 
 proc getImpl(n: NimNode): NimNode {.compiletime.} =
   if n.kind == nnkSym:
@@ -21,12 +32,6 @@ proc getImpl(n: NimNode): NimNode {.compiletime.} =
       result = newEmptyNode()
   else:
     result = newEmptyNode()
-
-# node helper check
-template checknode(n: untyped): untyped {.used.} =
-  dump `n`.kind
-  dump `n`.len
-  dump `n`.repr
 
 proc isPrimitive(fimpl: NimNode): bool {.compiletime.} =
   fimpl.kind == nnkSym and fimpl.len == 0
@@ -95,6 +100,9 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
           $fld[1][1], newCall("move", fldvar)
         ))
         seqfor.add forbody
+      elif fld[1][1].isBsonDocument:
+        seqfor.add newCall("add", resvar, newDotExpr(ident"obj",
+          ident"ofEmbedded"))
       else:
         arrObjField(ident"obj", fld[1][1])
         forbody.add newCall("add", resvar, newCall("move", fldvar))
@@ -217,9 +225,6 @@ proc timeAssgn(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
 
   result = newIfStmt((testif, bodyif))
 
-proc isTime(node: NimNode): bool {.compiletime.} =
-  node.kind == nnkSym and $node == "Time"
-
 macro to*(b: untyped, t: typed): untyped =
   result = newStmtList()
   let st = getType t
@@ -251,14 +256,22 @@ macro to*(b: untyped, t: typed): untyped =
         result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
       else:
         result.add arrAssign(resfield, jnfield, field, fimpl)
+    elif field[1].isBsonDocument:
+        discard
+        echo "got bson document"
+        #result.add
     elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in objtyp:
       if field[1].isTime:
         result.add timeAssgn(resfield, nodefield, field)
-        continue
-      let resobj = objAssign(resfield, nodefield, field, fimpl)
-      result.add resobj
+      elif field[1].isBsonDocument:
+        discard
+        echo "got bson document"
+        #result.add
+      else:
+        let resobj = objAssign(resfield, nodefield, field, fimpl)
+        result.add resobj
     elif fimpl.kind == nnkDistinctTy:
       let distinctimpl = fimpl[0].getImpl
       if distinctimpl.isPrimitive:
@@ -272,4 +285,4 @@ macro to*(b: untyped, t: typed): untyped =
       # temporary placeholder
       checknode field[1]
   result.add(newCall("unown", resvar))
-  checknode result
+  #checknode result
