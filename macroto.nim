@@ -220,7 +220,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     elif fimpl.isPrimitive or field[1].isTime:
       bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
-      let jnfieldstr = field[1].strval.newStrLitNode
+      let jnfieldstr = field[0].strval.newStrLitNode
       let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
       bodyif.add objAssign(resfield, jnfield, field, fimpl)
   if isDistinct:
@@ -271,10 +271,6 @@ macro to*(b: untyped, t: typed): untyped =
     elif fimpl.kind in objtyp:
       if field[1].isTime:
         result.add timeAssgn(resfield, nodefield, field)
-      elif field[1].isBsonDocument:
-        discard
-        echo "got bson document"
-        #result.add
       else:
         let resobj = objAssign(resfield, nodefield, field, fimpl)
         result.add resobj

@@ -181,3 +181,29 @@ let botw = bson({
 let ootw = botw.to OTimeWrap
 doAssert ootw.timewrap.time == currtime
 dump ootw
+
+# many object wraps
+type
+  OOOSSIntString = object
+    ootimewrap: OOTimewrap
+    oosis: SSIntString
+  OOTimeWrap = object
+    otimewrap: OTimeWrap
+  ManyObjects = object
+    wrap*: SSIntString
+    ootimewrap*: OOTimewrap
+    o3sis*: OOOSSintString
+var bmo = bson({
+  wrap: outer1,
+  ootimewrap: {
+    otimewrap: botw,
+  },
+  o3sis: {
+    ootimewrap: { otimewrap: botw },
+    oosis: outer1,
+  }
+})
+let omo = bmo.to ManyObjects
+doAssert omo.wrap.outerName == outer1["outerName"].get
+doAssert omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
+doAssert omo.ootimewrap.otimewrap.timewrap.time == currtime
