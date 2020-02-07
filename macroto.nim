@@ -12,11 +12,14 @@ proc isArray(n: NimNode): bool {.compiletime.} =
   n.expectKind nnkBracketExpr
   n.len == 3
 
+proc isIt(node: NimNode, it: string): bool {.compiletime.} =
+  node.kind == nnkSym and $node == it
+
 proc isTime(node: NimNode): bool {.compiletime.} =
-  node.kind == nnkSym and $node == "Time"
+  node.isIt "Time"
 
 proc isBsonDocument(node: NimNode): bool {.compiletime.} =
-  node.kind == nnkSym and $node == "BsonDocument"
+  node.isIt "BsonDocument"
 
 proc getImpl(n: NimNode): NimNode {.compiletime.} =
   if n.kind == nnkSym:
@@ -57,6 +60,26 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1],
     newCall("move", tempres))))
+
+proc timeAssgn(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
+  NimNode {.compiletime.} =
+  let
+    isDistinct = distTy.kind != nnkEmpty
+    testif = newCall("isSome", jn)
+    resvar = genSym(nskVar, "timeres")
+  var bodyif = newStmtList()
+  if not isDistinct:
+    bodyif.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, fld[1], newCall("get", jn))),
+      newAssignment(thevar, newCall("unown", resvar))
+    )
+  else:
+    bodyif.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, distTy[0], newCall("get", jn))),
+      newAssignment(thevar, newCall("unown", newCall($fld[1], resvar)))
+    )
+
+  result = newIfStmt((testif, bodyif))
 
 template arrObjField(acc, fldready: untyped): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
@@ -103,6 +126,9 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       elif fld[1][1].isBsonDocument:
         seqfor.add newCall("add", resvar, newDotExpr(ident"obj",
           ident"ofEmbedded"))
+      elif fld[1][1].isTime:
+        seqfor.add newCall("add", resvar, ident"obj")
+        #seqfor.add newEmptyNode()
       else:
         arrObjField(ident"obj", fld[1][1])
         forbody.add newCall("add", resvar, newCall("move", fldvar))
@@ -191,7 +217,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       let jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
-    elif fimpl.isPrimitive:
+    elif fimpl.isPrimitive or field[1].isTime:
       bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
       let jnfieldstr = field[1].strval.newStrLitNode
@@ -203,26 +229,6 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     ))
   else:
     bodyif.add newAssignment(thevar, newCall("unown", resvar))
-  result = newIfStmt((testif, bodyif))
-
-proc timeAssgn(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
-  NimNode {.compiletime.} =
-  let
-    isDistinct = distTy.kind != nnkEmpty
-    testif = newCall("isSome", jn)
-    resvar = genSym(nskVar, "timeres")
-  var bodyif = newStmtList()
-  if not isDistinct:
-    bodyif.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, fld[1], newCall("get", jn))),
-      newAssignment(thevar, newCall("unown", resvar))
-    )
-  else:
-    bodyif.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, distTy[0], newCall("get", jn))),
-      newAssignment(thevar, newCall("unown", newCall($fld[1], resvar)))
-    )
-
   result = newIfStmt((testif, bodyif))
 
 macro to*(b: untyped, t: typed): untyped =

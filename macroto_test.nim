@@ -155,4 +155,29 @@ let bsob = bson({
   ]
 })
 let osob = bsob.to SeqOfBson
+doAssert osob.label == bsob["label"].get
+doAssert osob.documents[0]["field1"].get == bsob["documents"][0]["field1"]
 dump osob
+
+type ManyTimes = object
+  times: seq[Time]
+
+var btimes = bson({
+  times: [currtime, currtime, currtime]
+})
+let otimes = btimes.to ManyTImes
+doAssert otimes.times[1] == currtime
+dump otimes
+
+type
+  TimeWrap = object
+    time: Time
+  OTimeWrap = object
+    timewrap: TimeWrap
+
+let botw = bson({
+  timewrap: { time: currtime },
+})
+let ootw = botw.to OTimeWrap
+doAssert ootw.timewrap.time == currtime
+dump ootw
