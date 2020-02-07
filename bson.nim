@@ -136,17 +136,28 @@ type
     encoded*: bool
 
   BsonKind* = enum
-    bkEmptyArray = 0x00.byte
-    bkDouble = 0x01.byte
-    bkString bkEmbed bkArray bkBinary
+    bkEmptyArray = (0x00.byte, "BsonEmptyArray")
+    bkDouble = (0x01.byte, "BsonDouble")
+    bkString = (0x02.byte, "BsonString")
+    bkEmbed = "BsonEmbed"
+    bkArray = "BsonArray"
+    bkBinary = "BsonBinary"
     bkUndefined # bson spec: deprecated
-    bkObjectId bkBool bkTime bkNull bkRegex
+    bkObjectId = "BsonObjectId"
+    bkBool = "BsonBool"
+    bkTime = "BsonTime"
+    bkNull = "BsonNull"
+    bkRegex
     bkDbPointer # bson spec: deprecated
     bkJs
     bkSymbol    # bson spec: deprecated
-    bkJsScope bkInt32 bkTimestamp bkInt64 bkDecimal
-    bkMaxKey = 0x7f.byte
-    bkMinKey = 0xff.byte
+    bkJsScope
+    bkInt32 = "BsonInt32"
+    bkTimestamp = "BsonTimestamp"
+    bkInt64 = "BsonInt64"
+    bkDecimal = "BsonDecimal"
+    bkMaxKey = (0x7f.byte, "BsonMaxKey")
+    bkMinKey = (0xff.byte, "BsonMinKey")
   
   BsonSubtype* = enum
     stGeneric = 0x00.byte

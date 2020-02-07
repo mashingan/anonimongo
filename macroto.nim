@@ -1,3 +1,8 @@
+# node helper check
+template checknode(n: untyped): untyped {.used.} =
+  dump `n`.kind
+  dump `n`.len
+  dump `n`.repr
 
 proc isSeq(n: NimNode): bool {.compiletime.} =
   n.expectKind nnkBracketExpr
@@ -6,6 +11,15 @@ proc isSeq(n: NimNode): bool {.compiletime.} =
 proc isArray(n: NimNode): bool {.compiletime.} =
   n.expectKind nnkBracketExpr
   n.len == 3
+
+proc isIt(node: NimNode, it: string): bool {.compiletime.} =
+  node.kind == nnkSym and $node == it
+
+proc isTime(node: NimNode): bool {.compiletime.} =
+  node.isIt "Time"
+
+proc isBsonDocument(node: NimNode): bool {.compiletime.} =
+  node.isIt "BsonDocument"
 
 proc getImpl(n: NimNode): NimNode {.compiletime.} =
   if n.kind == nnkSym:
@@ -21,12 +35,6 @@ proc getImpl(n: NimNode): NimNode {.compiletime.} =
       result = newEmptyNode()
   else:
     result = newEmptyNode()
-
-# node helper check
-template checknode(n: untyped): untyped {.used.} =
-  dump `n`.kind
-  dump `n`.len
-  dump `n`.repr
 
 proc isPrimitive(fimpl: NimNode): bool {.compiletime.} =
   fimpl.kind == nnkSym and fimpl.len == 0
@@ -52,6 +60,26 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   result.add newAssignment(thevar, newCall("unown", newCall($fld[1],
     newCall("move", tempres))))
+
+proc timeAssgn(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
+  NimNode {.compiletime.} =
+  let
+    isDistinct = distTy.kind != nnkEmpty
+    testif = newCall("isSome", jn)
+    resvar = genSym(nskVar, "timeres")
+  var bodyif = newStmtList()
+  if not isDistinct:
+    bodyif.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, fld[1], newCall("get", jn))),
+      newAssignment(thevar, newCall("unown", resvar))
+    )
+  else:
+    bodyif.add(newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, distTy[0], newCall("get", jn))),
+      newAssignment(thevar, newCall("unown", newCall($fld[1], resvar)))
+    )
+
+  result = newIfStmt((testif, bodyif))
 
 template arrObjField(acc, fldready: untyped): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
@@ -95,6 +123,12 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
           $fld[1][1], newCall("move", fldvar)
         ))
         seqfor.add forbody
+      elif fld[1][1].isBsonDocument:
+        seqfor.add newCall("add", resvar, newDotExpr(ident"obj",
+          ident"ofEmbedded"))
+      elif fld[1][1].isTime:
+        seqfor.add newCall("add", resvar, ident"obj")
+        #seqfor.add newEmptyNode()
       else:
         arrObjField(ident"obj", fld[1][1])
         forbody.add newCall("add", resvar, newCall("move", fldvar))
@@ -183,10 +217,10 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       let jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
-    elif fimpl.isPrimitive:
+    elif fimpl.isPrimitive or field[1].isTime:
       bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
-      let jnfieldstr = field[1].strval.newStrLitNode
+      let jnfieldstr = field[0].strval.newStrLitNode
       let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
       bodyif.add objAssign(resfield, jnfield, field, fimpl)
   if isDistinct:
@@ -196,29 +230,6 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   else:
     bodyif.add newAssignment(thevar, newCall("unown", resvar))
   result = newIfStmt((testif, bodyif))
-
-proc timeAssgn(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
-  NimNode {.compiletime.} =
-  let
-    isDistinct = distTy.kind != nnkEmpty
-    testif = newCall("isSome", jn)
-    resvar = genSym(nskVar, "timeres")
-  var bodyif = newStmtList()
-  if not isDistinct:
-    bodyif.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, fld[1], newCall("get", jn))),
-      newAssignment(thevar, newCall("unown", resvar))
-    )
-  else:
-    bodyif.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, distTy[0], newCall("get", jn))),
-      newAssignment(thevar, newCall("unown", newCall($fld[1], resvar)))
-    )
-
-  result = newIfStmt((testif, bodyif))
-
-proc isTime(node: NimNode): bool {.compiletime.} =
-  node.kind == nnkSym and $node == "Time"
 
 macro to*(b: untyped, t: typed): untyped =
   result = newStmtList()
@@ -251,14 +262,18 @@ macro to*(b: untyped, t: typed): untyped =
         result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
       else:
         result.add arrAssign(resfield, jnfield, field, fimpl)
+    elif field[1].isBsonDocument:
+        discard
+        echo "got bson document"
+        #result.add
     elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in objtyp:
       if field[1].isTime:
         result.add timeAssgn(resfield, nodefield, field)
-        continue
-      let resobj = objAssign(resfield, nodefield, field, fimpl)
-      result.add resobj
+      else:
+        let resobj = objAssign(resfield, nodefield, field, fimpl)
+        result.add resobj
     elif fimpl.kind == nnkDistinctTy:
       let distinctimpl = fimpl[0].getImpl
       if distinctimpl.isPrimitive:
@@ -272,4 +287,4 @@ macro to*(b: untyped, t: typed): untyped =
       # temporary placeholder
       checknode field[1]
   result.add(newCall("unown", resvar))
-  checknode result
+  #checknode result

@@ -133,14 +133,77 @@ try:
 except BsonFetchError:
   echo "catched the expection: ", getCurrentExceptionMsg()
 
-#[ will be added later
 type
-  MapString = Table[string, string]
+  SeqOfBson = object
+    label: string
+    documents: seq[BsonDocument]
 
-let bmapstr = bson({
-  key1: "value1",
-  key2: "value2",
-  key3: "value3",
+let bsob = bson({
+  label: "fix-macro-to",
+  documents:[
+    {
+      field1: "ok",
+      field2: 2,
+      field3: true,
+    },
+    {
+      field3: 4,
+      field0: [],
+      fieldfield: "異世界",
+      field5: 4.2
+    }
+  ]
 })
-dump bmapstr.to(MapString)
-]#
+let osob = bsob.to SeqOfBson
+doAssert osob.label == bsob["label"].get
+doAssert osob.documents[0]["field1"].get == bsob["documents"][0]["field1"]
+dump osob
+
+type ManyTimes = object
+  times: seq[Time]
+
+var btimes = bson({
+  times: [currtime, currtime, currtime]
+})
+let otimes = btimes.to ManyTImes
+doAssert otimes.times[1] == currtime
+dump otimes
+
+type
+  TimeWrap = object
+    time: Time
+  OTimeWrap = object
+    timewrap: TimeWrap
+
+let botw = bson({
+  timewrap: { time: currtime },
+})
+let ootw = botw.to OTimeWrap
+doAssert ootw.timewrap.time == currtime
+dump ootw
+
+# many object wraps
+type
+  OOOSSIntString = object
+    ootimewrap: OOTimewrap
+    oosis: SSIntString
+  OOTimeWrap = object
+    otimewrap: OTimeWrap
+  ManyObjects = object
+    wrap*: SSIntString
+    ootimewrap*: OOTimewrap
+    o3sis*: OOOSSintString
+var bmo = bson({
+  wrap: outer1,
+  ootimewrap: {
+    otimewrap: botw,
+  },
+  o3sis: {
+    ootimewrap: { otimewrap: botw },
+    oosis: outer1,
+  }
+})
+let omo = bmo.to ManyObjects
+doAssert omo.wrap.outerName == outer1["outerName"].get
+doAssert omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
+doAssert omo.ootimewrap.otimewrap.timewrap.time == currtime
