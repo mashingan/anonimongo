@@ -37,10 +37,11 @@ type
     dbname: string
     db*: Database
 
-  Query* = object
-    collname*: string
-    dbname*: string
+  Cursor* = object
+    id*: int64
+    firstBatch*: seq[BsonDocument]
     db*: Mongo
+    ns*: string
 
   MongoError* = object of Exception
 
@@ -143,3 +144,6 @@ proc `[]`*(m: Mongo, name: string): Database =
 proc `[]`*(dbase: Database, name: string): Collection =
   result.name = name
   result.db = dbase
+
+proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
+proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]

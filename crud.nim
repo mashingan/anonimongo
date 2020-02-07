@@ -55,5 +55,7 @@ when isMainModule:
     dump resfind
     resfind = waitFor db.find("role", bson(), batchSize = 1)
     dump resfind
+    let cur = (resfind["cursor"].get.ofEmbedded).to Cursor
+    dump cur
     discard waitFor mongo.shutdown(timeout = 10)
     close mongo.pool
