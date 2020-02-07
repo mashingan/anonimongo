@@ -88,8 +88,8 @@ let s2b = bson({
   dtimenow: currtime,
 })
 
-dump theb.to(SimpleIntString)
-dump (theb.to(RSintString)).repr
+#dump theb.to(SimpleIntString)
+#dump (theb.to(RSintString)).repr
 
 let ssis2 = outer1.to SSIntString
 doAssert ssis2.outerName == outer1["outerName"].get
@@ -157,7 +157,7 @@ let bsob = bson({
 let osob = bsob.to SeqOfBson
 doAssert osob.label == bsob["label"].get
 doAssert osob.documents[0]["field1"].get == bsob["documents"][0]["field1"]
-dump osob
+doAssert osob.documents[1]["fieldfield"].get == bsob["documents"][1]["fieldfield"].ofString
 
 type ManyTimes = object
   times: seq[Time]
@@ -167,7 +167,6 @@ var btimes = bson({
 })
 let otimes = btimes.to ManyTImes
 doAssert otimes.times[1] == currtime
-dump otimes
 
 type
   TimeWrap = object
@@ -180,7 +179,6 @@ let botw = bson({
 })
 let ootw = botw.to OTimeWrap
 doAssert ootw.timewrap.time == currtime
-dump ootw
 
 # many object wraps
 type
@@ -207,3 +205,19 @@ let omo = bmo.to ManyObjects
 doAssert omo.wrap.outerName == outer1["outerName"].get
 doAssert omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
 doAssert omo.ootimewrap.otimewrap.timewrap.time == currtime
+
+# test with skip pragma
+type
+  WithSkip = object
+    skip: string
+    get: BsonDocument
+let bws = bson({
+  skip: "won't be copied",
+  get: {
+    field1: "random",
+    field2: 42,
+    field3: 4.2,
+  }
+})
+let ows = bws.to WithSkip
+dump ows

@@ -263,9 +263,7 @@ macro to*(b: untyped, t: typed): untyped =
       else:
         result.add arrAssign(resfield, jnfield, field, fimpl)
     elif field[1].isBsonDocument:
-        discard
-        echo "got bson document"
-        #result.add
+      result.add primAssign(resvar, b, field)
     elif fimpl.isPrimitive:
       result.add primAssign(resvar, b, field)
     elif fimpl.kind in objtyp:
