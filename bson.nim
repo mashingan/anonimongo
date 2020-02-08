@@ -178,6 +178,43 @@ proc get*(b: BsonBase): BsonBase = b
 proc isSome*(b: BsonBase): bool = true
 proc isNone*(b: BsonBase): bool = false
 
+proc ms*(a: Time): int64 =
+  ## Unix epoch in milliseconds.
+  int64(a.toUnix*1000 + a.nanosecond/1e6)
+
+proc `==`*(b: BsonBase, t: Time): bool =
+  if b.kind != bkTime:
+    raise BsonFetchError(msg: fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
+  (b as BsonTime).value.ms == t.ms
+
+proc `==`*(t: Time, b: BsonBase): bool =
+  if b.kind != bkTime:
+    raise BsonFetchError(msg: fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
+  t.ms == (b as BsonTime).value.ms
+
+#[ will be completed later
+template eqType(a, b: BsonBase, t: typedesc): bool =
+  (a as t).value == (b as t).value
+
+proc `==`*(a, b: BsonBase): bool =
+  result = a.kind == b.kind and not (a.isNil or b.isNil)
+  case a.kind
+  of bkNull:
+    result = true
+  of bkString:
+    result = $(a as BsonString).value == $(b as BsonString).value
+  of bkInt32:
+    result = eqType(a, b, BsonInt32)
+  of bkInt64:
+    result = eqType(a, b, BsonInt64)
+  of bkDouble:
+    result = eqType(a, b, BsonDouble)
+  of bkTime:
+    result = eqType(a, b, BsonTime)
+  else:
+    discard
+]#
+
 proc contains*(b: BsonDocument, key: string): bool =
   key in b.table
 
@@ -331,9 +368,7 @@ proc encode(s: Stream, key: string, doc: BsonBool): int =
 proc encode(s: Stream, key: string, doc: BsonTime): int =
   result = 1 + key.len + 1 + 8
   s.writeKey key, bkTime
-  let timesec = doc.value.toUnix
-  let timenano = doc.value.nanosecond
-  let timeval = int64(timesec*1000 + timenano/1e6)
+  let timeval = doc.value.ms
   s.writeLE timeval
 
 proc encode(s: Stream, key: string, doc: BsonDocument): int =
@@ -638,10 +673,12 @@ converter ofDouble*(b: BsonBase): float64 =
   bsonFetcher(b, bkDouble, BsonDouble, float64)
 
 converter ofString*(b: BsonBase): string =
-  if b.kind != bkString:
-    raise BsonFetchError(msg: fmt"""Cannot convert {b.kind} to string""")
-  else:
+  if b.kind == bkString:
     $(b as BsonString).value
+  elif b.kind == bkJs:
+    $(b as BsonJs).value
+  else:
+    raise BsonFetchError(msg: fmt"""Cannot convert {b.kind} to string or JsCode""")
 
 converter ofTime*(b: BsonBase): Time =
   bsonFetcher(b, bkTime, BsonTime, Time)
@@ -664,193 +701,7 @@ converter ofBinary*(b: BsonBase): seq[byte] =
 converter ofTimestamp*(b: BsonBase): TimestampInternal =
   bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
 
-converter ofJs*(b: BsonBase): string =
-  if b.kind != bkJs:
-    raise BsonFetchError(msg: fmt"Cannot convert {b.kind} to JsCode string")
-  $(b as BsonString).value
-
 template bson*(): untyped = bson({})
 
 when isMainModule:
-  let hellodoc = newbson(
-    [("hello", 100.toBson),
-    ("array world", bsonArray("red", 50, 4.2)),
-    ("hello world", "hello, 異世界".toBson)
-  ])
-
-  dump hellodoc
-  let (hellolen, hellostr) = encode hellodoc
-  let newdoc = newBson(
-    table = newOrderedTable([
-      ("hello", 100.toBson),
-      ("hello world", "hello, 異世界".toBson),
-      ("a percent of truth", 0.42.toBson),
-      ("array world", bsonArray("red", 50, 4.2)),
-      ("this is null", bsonNull()),
-      ("now", getTime().toBson),
-      ("_id", genOid().toBson)
-    ]),
-    stream = newFileStream("bsonimpl_encode.bson", mode = fmReadWrite)
-  )
-  let (_, newhelstr) = encode newdoc
-  dump hellolen
-  dump hellostr
-  dump newdoc
-
-  let revdoc = decode newhelstr
-  echo "this is decoded"
-  dump revdoc
-
-  let hellofield = "hello"
-  dump revdoc[hellofield].get.ofInt32
-  doAssert revdoc[hellofield].get.ofInt == newdoc[hellofield].get.ofInt
-  try:
-    dump revdoc[hellofield].get.ofDouble
-  except BsonFetchError:
-    echo getCurrentExceptionMsg()
-
-  if hellofield in revdoc and revdoc[hellofield].isSome:
-    dump revdoc[hellofield].get.ofInt
-
-  dump revdoc["this is null"]
-  doAssert revdoc["this is null"].isNil
-  doAssert revdoc["this is null"].get.isNil
-  doAssert not revdoc[hellofield].get.isNil
-
-  let macrodoc = bson({
-    hello: 100,
-    hello_world: "hello, 異世界",
-    array_world: ["red", 50, 4.2],
-    embedding: {
-      "key 1": "nahaha",
-      ok: true
-    }
-  })
-  dump macrodoc
-  doAssert macrodoc["embedding"].get.ofEmbedded is BsonDocument
-
-  dump bson({})
-
-  let simplearray = bson({fields: [{haha: "haha"}, 2, 4.3, "road"]})
-  dump simplearray
-
-  block:
-    let arrayembed = bson({
-      objects: [
-        { q: 1, u: { "$set": { role_name: "ok" }}},
-        { q: 2, u: { "$set": { key_name: "ok" }}},
-        { q: 3, u: { "$set": { truth: 42 }}}
-      ]
-    })
-    dump arrayembed
-    doAssert arrayembed["objects"][2]["u"]["$set"]["truth"].ofInt32 == 42
-    let q2: int32 = arrayembed["objects"][1]["q"]
-    doAssert q2 == 2
-
-    try:
-      dump arrayembed["objects"]["hello"]
-    except BsonFetchError:
-      echo getCurrentExceptionMsg()
-    try:
-      dump arrayembed["objects"][4]
-    except IndexError:
-      echo getCurrentExceptionMsg()
-    try:
-      dump arrayembed["objects"][1]["q"]["hello"]
-    except BsonFetchError:
-      echo getCurrentExceptionMsg()
-    try:
-      dump arrayembed["objects"][0][3]
-    except BsonFetchError:
-      echo getCurrentExceptionMsg()
-
-  let stringbin = "MwahahaBinaryGotoki"
-  let testbinary = bson({
-    dummy_binary: bsonBinary stringbin
-  })
-  let (_, tbencoded) = encode testbinary
-  let dectestbin = decode tbencoded
-  dump dectestbin
-  doAssert dectestbin["dummy_binary"].get.
-    ofBinary.stringbytes == stringbin
-
-  let qrimg = readFile "qrcode-me.png"
-  dump qrimg.len
-  let pngbin = bson({
-    "qr-me": bsonBinary qrimg
-  })
-  let (_, pngbinencode) = encode pngbin
-  let pngdec = decode pngbinencode
-  doAssert pngdec["qr-me"].get.ofBinary.stringbytes == qrimg
-
-  block:
-    let currtime = getTime().toUnix.uint32
-    let timestampdoc = bson({
-      timestamp: (0'u32, currtime)
-    })
-    dump timestampdoc
-    let (_, timestampstr) = encode timestampdoc
-    let timestampdec = decode timestampstr
-    dump timestampdec
-    let decurrtime = timestampdec["timestamp"].get.ofTimestamp[1]
-    dump currtime
-    dump decurrtime
-    doAssert decurrtime == currtime
-
-  block:
-    # empty bson
-    let empty = bson()
-    dump empty
-    empty.stream.setPosition 0
-    let emptystr = empty.stream.readAll
-    dump emptystr.len
-    for c in emptystr:
-      stdout.write c.ord, " "
-    echo()
-    doAssert empty.isNil
-
-  block:
-    let emptyarr = newBson(
-      table = newOrderedTable([
-        ("emptyarr", bsonArray())]),
-      stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
-    dump emptyarr
-    let (_, empstr) = encode emptyarr
-    let empdec = decode empstr
-    dump empdec
-    doAssert empdec["emptyarr"].get.ofArray.len == 0
-
-  block:
-    let emptyarr = decode(readFile "emptyarr.bson")
-    dump emptyarr
-    doAssert emptyarr["emptyarr"].get.ofArray.len == 0
-
-  block:
-    # test mutable bson object
-    var arrayembed = bson({
-      objects: [
-        { q: 1, u: { "$set": { role_name: "ok" }}},
-        { q: 2, u: { "$set": { key_name: "ok" }}},
-        { q: 3, u: { "$set": { truth: 42 }}}
-      ]
-    })
-    dump arrayembed["objects"][0]["q"]
-
-    # modify first elem object with key q to 5
-    arrayembed.mget("objects").mget(0).mget("q") = 5
-    dump arrayembed["objects"][0]["q"]
-  
-  block:
-    include macroto_test
-
-  block:
-    #test js code
-    let jscode = "function double(x) { return x*2; }"
-    let jsbson = bsonJs jscode
-    let bjs = bson({
-      js: jsbson,
-    })
-    doAssert bjs["js"].get.ofJs == jscode
-    let (_, encstr) = encode bjs
-    let bjsdec = decode encstr
-    doAssert bjsdec["js"].get.ofJs == bjs["js"].get.ofJs
+  import bson_test

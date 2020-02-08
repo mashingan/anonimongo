@@ -156,7 +156,7 @@ let bsob = bson({
 })
 let osob = bsob.to SeqOfBson
 doAssert osob.label == bsob["label"].get
-doAssert osob.documents[0]["field1"].get == bsob["documents"][0]["field1"]
+doAssert osob.documents[0]["field1"].get == bsob["documents"][0]["field1"].ofString
 doAssert osob.documents[1]["fieldfield"].get == bsob["documents"][1]["fieldfield"].ofString
 
 type ManyTimes = object
