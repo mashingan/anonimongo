@@ -40,6 +40,7 @@ type
   Cursor* = object
     id*: int64
     firstBatch*: seq[BsonDocument]
+    nextBatch*: seq[BsonDocument]
     db*: Mongo
     ns*: string
 

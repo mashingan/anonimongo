@@ -45,17 +45,40 @@ proc find*(db: Database, coll: string,query: BsonDocument,
     raise newException(MongoError, reason)
   result = reply.documents[0]
 
+proc getMore*(db: Database, cursorId: int64, collname: string, batchSize: int,
+  maxTimeMS = 0): Future[BsonDocument]{.async.} =
+  var q = bson({
+    getMore: cursorId,
+    collection: collname,
+    batchSize: batchSize,
+    maxTimeMS: maxTimeMS,
+   })
+  let reply = await sendops(q, db)
+  let (success, reason) = check reply
+  if not success:
+    raise newException(MongoError, reason)
+  result = reply.documents[0]
+
 when isMainModule:
   import testutils, pool
   var mongo = testsetup()
   if mongo.authenticated:
     var db = mongo["temptest"]
-    dump waitFor db.find("role", bson())
-    var resfind = waitFor db.find("role", bson(), batchSize = 1, singleBatch = true)
-    dump resfind
-    resfind = waitFor db.find("role", bson(), batchSize = 1)
-    dump resfind
-    let cur = (resfind["cursor"].get.ofEmbedded).to Cursor
-    dump cur
+    try:
+      dump waitFor db.find("role", bson())
+      var resfind = waitFor db.find("role", bson(), batchSize = 1, singleBatch = true)
+      dump resfind
+      resfind = waitFor db.find("role", bson(), batchSize = 1)
+      dump resfind
+      var cur = (resfind["cursor"].get.ofEmbedded).to Cursor
+      dump cur
+      while true:
+        resfind = waitfor db.getMore(cur.id, "role", 1)
+        cur = (resfind["cursor"].get.ofEmbedded).to Cursor
+        dump cur
+        if cur.nextBatch.len == 0:
+          break
+    except MongoError, UnpackError:
+      echo getCurrentExceptionMsg()
     discard waitFor mongo.shutdown(timeout = 10)
     close mongo.pool
