@@ -3,14 +3,6 @@ import bson, types, wire, utils
 import admmgmt
 import sugar
 
-#template crudops(db: Database, q: BsonDocument): untyped {.async.} =
-proc crudops(db: Database, q: BsonDocument): Future[BsonDocument]{.async.} =
-  let reply = await sendops(q, db)
-  let (success, reason) = check reply
-  if not success:
-    raise newException(MongoError, reason)
-  result = reply.documents[0]
-
 proc find*(db: Database, coll: string,query: BsonDocument,
   sort = bsonNull(), selector = bsonNull(), hint = bsonNull(),
   skip = 0, limit = 0, batchSize = 101, singleBatch = false, comment = "",
