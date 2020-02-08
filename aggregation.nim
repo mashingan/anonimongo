@@ -1,4 +1,4 @@
-import sequtils
+import tables, sequtils
 import bson, types, wire, utils
 
 proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
@@ -55,4 +55,33 @@ proc `distinct`*(db: Database, coll, key: string, query = bson(),
     ("collation", collation)
   ]:
     q.addOptional(kv[0], kv[1])
+  result = await db.crudops(q)
+
+proc mapReduce*(db: Database, coll: string, map, reduce: BsonJs,
+  `out`: BsonBase, query = bson(), sort = bsonNull(), limit = 0,
+  finalize = bsonNull(), scope = bsonNull(), jsMode = false, verbose = false,
+  bypass = false, collation = bsonNull(), wt = bsonNull()):
+  Future[BsonDocument]{.async.} =
+  var q = bson({
+    mapReduce: coll,
+    map: map,
+    reduce: reduce,
+    `out`: `out`,
+    query: query
+  })
+  q.addOptional("sort", sort)
+  if limit > 0: q["limit"] = limit
+  for k, v in {
+    "finalize": finalize,
+    "scope": scope
+  }.toTable:
+    q.addOptional(k, v)
+  for k, v in {
+    "jsMode": jsMode,
+    "verbose": verbose,
+    "bypassDocumentValidation": bypass
+  }.toTable:
+    q.addConditional(k, v)
+  q.addOptional("collation", collation)
+  q.addWriteConcern(db, q)
   result = await db.crudops(q)
