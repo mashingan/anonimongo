@@ -85,3 +85,16 @@ proc mapReduce*(db: Database, coll: string, map, reduce: BsonJs,
   q.addOptional("collation", collation)
   q.addWriteConcern(db, q)
   result = await db.crudops(q)
+
+proc geoSearch*(db: Database, coll: string, search: BsonDocument,
+  near: seq[BsonDocument], maxDistance = 0, limit = 0,
+  readConcern = bsonNull()): Future[BsonDocument]{.async.} =
+  var q = bson({
+    geoSearch: coll,
+    search: search,
+    near: near.map toBson,
+  })
+  if maxDistance > 0: q["maxDistance"] = maxDistance
+  if limit > 0: q["limit"] = limit
+  q.addOptional("readConcern", readConcern)
+  result = await db.crudops(q)
