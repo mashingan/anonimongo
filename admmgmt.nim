@@ -43,7 +43,7 @@ proc dropCollection*(db: Database, coll: string, wt = bsonNull()):
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
-proc dropDatabase*(db: Database, coll: string, wt = bsonNull()):
+proc dropDatabase*(db: Database, wt = bsonNull()):
   Future[(bool, string)]{.async.} =
   var q = bson({ dropDatabase: 1 })
   q.addWriteConcern(db, wt)
@@ -137,49 +137,4 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
     result = (true, getCurrentExceptionMsg())
 
 when isMainModule:
-  import testutils
-  var mongo = testsetup()
-  if mongo.authenticated:
-    for db in waitFor mongo.listDatabases:
-      dump db
-    var db = mongo["admin"]
-    let targetColl = "testtemptest"
-    let newtgcoll = "newtemptest"
-    # test create collection
-    db.name = "temptest"
-    for index in waitFor db.listIndexes("role"):
-      dump index
-    var (success, reason) = waitFor db.create(targetColl)
-    if not success:
-      echo "Cannot create collection: ", reason
-    else:
-      echo "successfully create collection", targetColl
-
-    for c in waitFor db.listCollections(filter = bson({
-      idIndex: 1, info: 1, options: 1
-    })):
-      dump c
-
-    (success, reason) = waitFor db.renameCollection(targetColl, newtgcoll)
-    if not success:
-      echo &"Cannot rename collection from {targetColl} to {newtgcoll}: {reason}"
-    else:
-      echo &"successfully rename from {targetColl} to {newtgcoll}"
-
-    for name in waitFor db.listCollectionNames:
-      dump name
-
-    (success, reason) = waitFor db.dropCollection(newtgcoll)
-    if not success:
-      echo &"Cannot drop collection {newtgcoll}: {reason}"
-    else:
-      echo &"Collection {newtgcoll} dropped"
-
-    for currname in waitFor db.listCollectionNames:
-      dump currname
-
-    (success, reason) = waitFor mongo.shutdown(timeout = 10)
-    dump success
-    #dump reason
-
-    close mongo.pool
+  import admmgmt_test
