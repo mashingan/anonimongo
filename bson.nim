@@ -119,6 +119,9 @@ type
   BsonString* = ref object of BsonBase
     value*: seq[Rune]
 
+  BsonJs* = ref object of BsonBase
+    value*: seq[Rune]
+
   BsonEmbed* = ref object of BsonBase
     value*: BsonDocument
 
@@ -149,7 +152,7 @@ type
     bkNull = "BsonNull"
     bkRegex
     bkDbPointer # bson spec: deprecated
-    bkJs
+    bkJs = "BsonJSFunction"
     bkSymbol    # bson spec: deprecated
     bkJsScope
     bkInt32 = "BsonInt32"
@@ -261,6 +264,8 @@ proc `$`*(v: BsonBase): string =
   of bkTimestamp:
     let doc = v as BsonTimestamp
     result = fmt"timestamp(increment:{doc.value[0]}, timestamp:{doc.value[1]})"
+  of bkJs:
+    result = quote $(v as BsonJs).value
   else:
     result = ""
 
@@ -291,10 +296,10 @@ proc encode(s: Stream, key: string, doc: BsonInt64): int =
   s.writeKey key, bkInt64
   s.writeLE doc.value
 
-proc encode(s: Stream, key: string, doc: BsonString): int =
+proc encode(s: Stream, key: string, doc: BsonString | BsonJs): int =
   let sbytes = ($doc.value).bytes
   result = 1 + key.len + 1 + 4 + sbytes.len + 1
-  s.writeKey key, bkString
+  s.writeKey key, doc.kind
   s.writeLE (sbytes.len + 1).int32
   for c in sbytes: s.write c
   s.write 0x00.byte
@@ -397,6 +402,8 @@ proc encode*(doc: BsonDocument): (int, string) =
       length += doc.stream.encode(k, v as BsonBinary)
     of bkTimestamp:
       length += doc.stream.encode(k, v as BsonTimestamp)
+    of bkJs:
+      length += doc.stream.encode(k, v as BsonJs)
     else:
       discard
 
@@ -467,6 +474,13 @@ proc bsonBinary*(binstr: string, subtype = stGeneric): BsonBase =
 
 proc bsonBinary*(binseq: seq[byte], subtype = stGeneric): BsonBase =
   BsonBinary(value: binseq, subtype: subtype, kind: bkBinary)
+
+proc bsonJs*(code: string | seq[Rune]): BsonBase =
+  when code.type is string:
+    let value = toSeq code.runes
+  else:
+    let value = code
+  BsonJs(value: value, kind: bkJs)
 
 proc newBson*(table = newOrderedTable[string, BsonBase](),
     stream: Stream = newStringStream()): BsonDocument =
@@ -567,6 +581,8 @@ proc decode(s: Stream): (string, BsonBase) =
     val = BsonBinary(kind: kind, subtype: subtype, value: thebyte)
   of bkTimestamp:
     val = BsonTimestamp(kind: kind, value: (s.readUint32, s.readUint32))
+  of bkJs:
+    val = BsonJs(kind: kind, value: s.decodeString)
   else:
     val = bsonNull()
   result = (key, val)
@@ -647,6 +663,11 @@ converter ofBinary*(b: BsonBase): seq[byte] =
 
 converter ofTimestamp*(b: BsonBase): TimestampInternal =
   bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
+
+converter ofJs*(b: BsonBase): string =
+  if b.kind != bkJs:
+    raise BsonFetchError(msg: fmt"Cannot convert {b.kind} to JsCode string")
+  $(b as BsonString).value
 
 template bson*(): untyped = bson({})
 
@@ -821,3 +842,15 @@ when isMainModule:
   
   block:
     include macroto_test
+
+  block:
+    #test js code
+    let jscode = "function double(x) { return x*2; }"
+    let jsbson = bsonJs jscode
+    let bjs = bson({
+      js: jsbson,
+    })
+    doAssert bjs["js"].get.ofJs == jscode
+    let (_, encstr) = encode bjs
+    let bjsdec = decode encstr
+    doAssert bjsdec["js"].get.ofJs == bjs["js"].get.ofJs
