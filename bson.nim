@@ -178,6 +178,11 @@ proc isNone*(b: BsonBase): bool = false
 proc contains*(b: BsonDocument, key: string): bool =
   key in b.table
 
+proc contains*(b: BsonBase, key: string): bool =
+  if b.kind != bkEmbed:
+    raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
+  key in (b as BsonEmbed).value
+
 proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
   if key in b:
     result = some b.table[key]

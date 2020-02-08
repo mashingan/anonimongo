@@ -128,7 +128,6 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
           ident"ofEmbedded"))
       elif fld[1][1].isTime:
         seqfor.add newCall("add", resvar, ident"obj")
-        #seqfor.add newEmptyNode()
       else:
         arrObjField(ident"obj", fld[1][1])
         forbody.add newCall("add", resvar, newCall("move", fldvar))
@@ -213,11 +212,14 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     let fimpl = field[1].getImpl
     let resfield = newDotExpr(resvar, field[0])
     if field[1].kind == nnkBracketExpr:
+      if $field[1][0] in ["TableRef", "Deque"]:
+        bodyif.add newEmptyNode()
+        continue
       let jnfieldstr = field[0].strval.newStrLitNode
       let jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
-    elif fimpl.isPrimitive or field[1].isTime:
+    elif fimpl.isPrimitive or field[1].isTime or field[1].isBsonDocument:
       bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
       let jnfieldstr = field[0].strval.newStrLitNode
