@@ -67,7 +67,7 @@ proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
     ordered: ordered,
   })
   q.addWriteConcern(db, wt)
-  q.addOptional("bypassDocumentValidation", bypass)
+  q.addConditional("bypassDocumentValidation", bypass)
   result = await db.crudops(q)
 
 proc delete*(db: Database, coll: string, deletes: seq[BsonDocument],
@@ -89,7 +89,30 @@ proc update*(db: Database, coll: string, updates: seq[BsonDocument],
     ordered: ordered,
   })
   q.addWriteConcern(db, wt)
-  q.addOptional("bypassDocumentValidation", bypass)
+  q.addConditional("bypassDocumentValidation", bypass)
+  result = await db.crudops(q)
+
+proc findAndModify*(db: Database, coll: string, query = bson(),
+  sort = bsonNull(), remove = false, update = bsonNull(),
+  `new` = false, fields = bsonNull(), upsert = false, bypass = false,
+  wt = bsonNull(), collation = bsonNull(),
+  arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]{.async.} =
+  var q = bson({
+    findAndModify: coll,
+    query: query,
+  })
+  let bopts = [("sort", sort), ("update", update), ("fields", fields)]
+  let conds = [("remove", remove), ("new", `new`), ("upsert", upsert)]
+  for i in 0 .. conds.high:
+    let b = bopts[i]
+    q.addOptional(b[0], b[1])
+    let c = conds[i]
+    q.addConditional(c[0], c[1])
+  q.addConditional("bypassDocumentValidation", bypass)
+  q.addWriteConcern(db, wt)
+  q.addOptional("collation", collation)
+  if arrayFilters.len > 0:
+    q["arrayFilters"] = arrayFilters.map toBson
   result = await db.crudops(q)
 
 when isMainModule:
@@ -120,6 +143,9 @@ when isMainModule:
       dump resfind
       var cur = (resfind["cursor"].get.ofEmbedded).to Cursor
       dump cur
+      resfind = waitfor db.findAndModify("role", query = bson({
+        countId: 8 }), update = bson({ "$set": { countId: 80 }}))
+      dump resfind
       resfind = waitfor db.update("role", @[
         bson({
           q: { countId: 9 },
