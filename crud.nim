@@ -1,7 +1,15 @@
-import tables
+import tables, sequtils
 import bson, types, wire, utils
 import admmgmt
 import sugar
+
+#template crudops(db: Database, q: BsonDocument): untyped {.async.} =
+proc crudops(db: Database, q: BsonDocument): Future[BsonDocument]{.async.} =
+  let reply = await sendops(q, db)
+  let (success, reason) = check reply
+  if not success:
+    raise newException(MongoError, reason)
+  result = reply.documents[0]
 
 proc find*(db: Database, coll: string,query: BsonDocument,
   sort = bsonNull(), selector = bsonNull(), hint = bsonNull(),
@@ -38,12 +46,7 @@ proc find*(db: Database, coll: string,query: BsonDocument,
   }.toTable:
     q.addConditional(k, v)
   q.addOptional("collation", collation)
-  dump q
-  let reply = await sendops(q, db)
-  let (success, reason) = check reply
-  if not success:
-    raise newException(MongoError, reason)
-  result = reply.documents[0]
+  result = await crudops(db, q)
 
 proc getMore*(db: Database, cursorId: int64, collname: string, batchSize: int,
   maxTimeMS = 0): Future[BsonDocument]{.async.} =
@@ -53,20 +56,43 @@ proc getMore*(db: Database, cursorId: int64, collname: string, batchSize: int,
     batchSize: batchSize,
     maxTimeMS: maxTimeMS,
    })
-  let reply = await sendops(q, db)
-  let (success, reason) = check reply
-  if not success:
-    raise newException(MongoError, reason)
-  result = reply.documents[0]
+  result = await db.crudops(q)
+
+proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
+  ordered = true, wt = bsonNull(), bypass = false):
+  Future[BsonDocument] {.async.} =
+  var q = bson({
+    insert: coll,
+    documents: documents.map(toBson),
+    ordered: ordered,
+  })
+  q.addWriteConcern(db, wt)
+  q.addOptional("bypassDocumentValidation", bypass)
+  result = await db.crudops(q)
 
 when isMainModule:
+  import times
   import testutils, pool
   var mongo = testsetup()
   if mongo.authenticated:
     var db = mongo["temptest"]
+    var insertingdocs = newseq[BsonDocument](10)
+    let currtime = now().toTime
+    for i in 0 ..< 10:
+      insertingdocs[i] = bson({
+        countId: i,
+        addedTime: currtime + initDuration(hours = i),
+        `type`: "insertTest",
+      })
+    dump insertingdocs
     try:
-      dump waitFor db.find("role", bson())
-      var resfind = waitFor db.find("role", bson(), batchSize = 1, singleBatch = true)
+      var resfind = waitfor db.find("role", bson())
+      dump resfind 
+      resfind = waitfor db.insert("role", insertingdocs)
+      dump resfind
+      resfind = waitfor db.find("role", bson())
+      dump resfind
+      resfind = waitFor db.find("role", bson(), batchSize = 1, singleBatch = true)
       dump resfind
       resfind = waitFor db.find("role", bson(), batchSize = 1)
       dump resfind
@@ -80,5 +106,5 @@ when isMainModule:
           break
     except MongoError, UnpackError:
       echo getCurrentExceptionMsg()
-    discard waitFor mongo.shutdown(timeout = 10)
+    #discard waitFor mongo.shutdown(timeout = 10)
     close mongo.pool
