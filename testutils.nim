@@ -13,6 +13,8 @@ const
   dbpath* {.strdefine.} = "d:/dev/mongodata"
   user* {.strdefine.} = "rdruffy"
   pass* {.strdefine.} = "rdruffy"
+  host* {.strdefine.} = "localhost"
+  port* {.intdefine.} = 27017
 
 proc startmongo*: Process =
   let args = @[
@@ -34,7 +36,7 @@ proc testsetup*: Mongo =
     let sslinfo = initSSLInfo(key, cert)
   else:
     let sslinfo = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
-  let mongo = newMongo(poolconn = 2, sslinfo = sslinfo)
+  let mongo = newMongo(host = host, port = port, poolconn = 2, sslinfo = sslinfo)
   mongo.appname = "Test driver"
   if not waitFor mongo.connect:
     echo "error connecting, quit"

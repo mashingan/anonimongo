@@ -79,50 +79,10 @@ suite "Administration APIs tests":
     if not success:
       "drop database failed: ".tell reason
 
-#[
-  if mongo.authenticated:
-    for db in waitFor mongo.listDatabases:
-      dump db
-    var db = mongo["admin"]
-    let targetColl = "testtemptest"
-    let newtgcoll = "newtemptest"
-    # test create collection
-    db.name = "temptest"
-    for index in waitFor db.listIndexes("role"):
-      dump index
-    var (success, reason) = waitFor db.create(targetColl)
-    if not success:
-      echo "Cannot create collection: ", reason
-    else:
-      echo "successfully create collection", targetColl
+  test "Shutdown mongo":
+    let (success, _) = waitFor mongo.shutdown(timeout = 10)
+    check success
 
-    for c in waitFor db.listCollections(filter = bson({
-      idIndex: 1, info: 1, options: 1
-    })):
-      dump c
-
-    (success, reason) = waitFor db.renameCollection(targetColl, newtgcoll)
-    if not success:
-      echo &"Cannot rename collection from {targetColl} to {newtgcoll}: {reason}"
-    else:
-      echo &"successfully rename from {targetColl} to {newtgcoll}"
-
-    for name in waitFor db.listCollectionNames:
-      dump name
-
-    (success, reason) = waitFor db.dropCollection(newtgcoll)
-    if not success:
-      echo &"Cannot drop collection {newtgcoll}: {reason}"
-    else:
-      echo &"Collection {newtgcoll} dropped"
-
-    for currname in waitFor db.listCollectionNames:
-      dump currname
-
-    (success, reason) = waitFor mongo.shutdown(timeout = 10)
-    dump success
-    #dump reason
-
-    ]#
-    close mongo.pool
-    kill mongorun
+  close mongo.pool
+  if mongorun.running: kill mongorun
+  close mongorun
