@@ -80,6 +80,18 @@ proc delete*(db: Database, coll: string, deletes: seq[BsonDocument],
   q.addWriteConcern(db, wt)
   result = await db.crudops(q)
 
+proc update*(db: Database, coll: string, updates: seq[BsonDocument],
+  ordered = true, wt = bsonNull(), bypass = false):
+  Future[BsonDocument]{.async.} =
+  var q = bson({
+    update: coll,
+    updates: updates.map toBson,
+    ordered: ordered,
+  })
+  q.addWriteConcern(db, wt)
+  q.addOptional("bypassDocumentValidation", bypass)
+  result = await db.crudops(q)
+
 when isMainModule:
   import times
   import testutils, pool
@@ -108,6 +120,14 @@ when isMainModule:
       dump resfind
       var cur = (resfind["cursor"].get.ofEmbedded).to Cursor
       dump cur
+      resfind = waitfor db.update("role", @[
+        bson({
+          q: { countId: 9 },
+          u: { "$set": { "type": "異世界召喚" }, "$inc": { countId: 90 }},
+          upsert: false,
+          multi: true,
+        })
+      ])
       while true:
         resfind = waitfor db.getMore(cur.id, "role", 1)
         cur = (resfind["cursor"].get.ofEmbedded).to Cursor
