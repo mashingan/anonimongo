@@ -70,6 +70,16 @@ proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
   q.addOptional("bypassDocumentValidation", bypass)
   result = await db.crudops(q)
 
+proc delete*(db: Database, coll: string, deletes: seq[BsonDocument],
+  ordered = true, wt = bsonNull()): Future[BsonDocument]{.async.} =
+  var q = bson({
+    delete: coll,
+    deletes: deletes.map toBson,
+    ordered: ordered,
+  })
+  q.addWriteConcern(db, wt)
+  result = await db.crudops(q)
+
 when isMainModule:
   import times
   import testutils, pool
@@ -104,6 +114,15 @@ when isMainModule:
         dump cur
         if cur.nextBatch.len == 0:
           break
+      resfind = waitfor db.delete("role", @[
+        bson({ q: {
+          "type": "insertTest",
+        }, limit: 0, collation: {
+          locale: "en_US_POSIX",
+          caseLevel: false,
+        }})
+      ])
+      dump resfind
     except MongoError, UnpackError:
       echo getCurrentExceptionMsg()
     #discard waitFor mongo.shutdown(timeout = 10)
