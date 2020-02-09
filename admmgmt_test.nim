@@ -1,10 +1,20 @@
 import unittest, asyncdispatch, strformat
 import osproc, os
-import testutils, admmgmt, bson, types, pool, wire
+import testutils, admmgmt, bson, types, wire
+
+const localhost = testutils.host == "localhost"
+
+var mongorun: Process
+if localhost:
+  mongorun = startmongo()
+  sleep 3000 # waiting for mongod to be ready
 
 suite "Administration APIs tests":
-  var mongorun = startmongo()
-  sleep 3000 # waiting for mongod to be ready
+  test "Require mongorun is running":
+    if localhost:
+      require(mongorun.running)
+    else:
+      check true
 
   let targetColl = "testtemptest"
   let newtgcoll = "newtemptest"
@@ -13,8 +23,6 @@ suite "Administration APIs tests":
   var db: Database
   var dbs: seq[string]
   var colls: seq[string]
-  test "Require mongorun is running":
-    require(mongorun.running)
   test "Connect to localhost and authentication":
     mongo = testsetup()
     require(mongo.authenticated)
@@ -89,5 +97,6 @@ suite "Administration APIs tests":
     check success
 
   close mongo
-  if mongorun.running: kill mongorun
-  close mongorun
+  if localhost:
+    if mongorun.running: kill mongorun
+    close mongorun

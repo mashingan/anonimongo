@@ -2,19 +2,26 @@ import unittest, osproc, os, strformat
 
 import types, wire, bson, utils, testutils, admmgmt, client
 
-var mongorun = startmongo()
-sleep 3000 # waiting for mongod to be ready
+const localhost = testutils.host == "localhost"
+
+var mongorun: Process
+if localhost:
+  mongorun = startmongo()
+  sleep 3000 # waiting for mongod to be ready
 
 suite "Client connection and user management tests":
   test "Required mongo is running":
-    require mongorun.running
+    if localhost:
+      require mongorun.running
+    else:
+      check true
 
   var mongo: Mongo
   var db: Database
 
   let existingDb = "temptest"
   let existingUser = bson({
-    usersInfo: { user: "rdruffy", db: "admin" },
+    usersInfo: { user: user, db: "admin" },
   })
   let newuser = "temptest-user"
 
@@ -62,6 +69,7 @@ suite "Client connection and user management tests":
     let (success, _) = waitFor db.shutdown(timeout = 10)
     check success
 
-  if mongorun.running: kill mongorun
-  close mongorun
+  if localhost:
+    if mongorun.running: kill mongorun
+    close mongorun
   close mongo
