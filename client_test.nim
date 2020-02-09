@@ -23,6 +23,7 @@ suite "Client connection and user management tests":
     require mongo.authenticated
 
   test "Look users info":
+    require mongo != nil
     db = mongo[existingDb]
     # test looking for not existing user
     var reply = waitFor db.usersInfo(bson({
@@ -57,6 +58,7 @@ suite "Client connection and user management tests":
     skip()
 
   test "Shutdown mongo":
+    require mongo != nil
     let (success, _) = waitFor db.shutdown(timeout = 10)
     check success
 

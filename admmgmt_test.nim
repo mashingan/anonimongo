@@ -19,28 +19,34 @@ suite "Administration APIs tests":
     mongo = testsetup()
     require(mongo.authenticated)
   test "Get admin database":
+    require mongo != nil
     db = mongo["admin"]
     require not db.isNil
     check db.name == "admin"
 
   test "List databases in BsonBase":
+    require db != nil
     let dbs = waitFor db.listDatabases
     check(dbs.len > 0)
 
   test "List database names":
+    require db != nil
     dbs = waitFor db.listDatabaseNames
     check dbs.len > 0
     check db.name in dbs
 
   test &"Change to {newdb} db":
+    require db != nil
     db.name = newdb
     check(db.name notin dbs)
 
   test &"List collections name on {db.name}":
+    require db != nil
     colls = waitFor db.listCollectionNames
     check colls.len == 0
 
   test &"Create collection {targetColl} on {db.name}":
+    require db != nil
     let (success, reason) = waitFor db.create(targetColl)
     check success
     check targetColl notin colls
@@ -54,6 +60,7 @@ suite "Administration APIs tests":
     #let indexes = waitFor db.listIndexes(targetColl)
     skip()
   test &"Rename collection {targetColl} to {newtgcoll}":
+    require db != nil
     var (success, reason) = waitFor db.renameCollection("notexists", newtgcoll)
     check not success
     (success, reason) = waitFor db.renameCollection(targetColl, newtgcoll)
@@ -70,15 +77,17 @@ suite "Administration APIs tests":
       "drop collection failed: ".tell reason
 
   test &"Drop database {db.name}":
+    require db != nil
     let (success, reason) = waitFor db.dropDatabase
     check success
     if not success:
       "drop database failed: ".tell reason
 
   test "Shutdown mongo":
+    require mongo != nil
     let (success, _) = waitFor mongo.shutdown(timeout = 10)
     check success
 
-  close mongo.pool
+  close mongo
   if mongorun.running: kill mongorun
   close mongorun
