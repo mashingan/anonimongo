@@ -148,3 +148,5 @@ proc `[]`*(dbase: Database, name: string): Collection =
 
 proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
 proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
+
+proc close*(m: Mongo) = close m.pool
