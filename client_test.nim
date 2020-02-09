@@ -50,19 +50,33 @@ suite "Client connection and user management tests":
     if not success: "Look users failed: ".tell reason
 
   test &"Create new user: {newuser}":
-    skip()
+    let (success, reason) = waitFor db.createUser(newuser, newuser,
+      roles = bsonArray("read"), customData = bson({ role: "testing"}))
+    check success
+    if not success: (&"Create user {newuser} not success: ").tell reason
 
   test &"Grant roles to {newuser}":
-    skip()
+    let (success, reason) = waitFor db.grantRolesToUser(newuser,
+      roles = bsonArray("readWrite"))
+    check success
+    if not success: (&"Grant role to {newuser} not success: ").tell reason
 
   test &"Revoke roles to {newuser}":
-    skip()
+    let (success, reason) = waitFor db.revokeRolesFromUser(newuser,
+      roles = bsonArray("readWrite"))
+    check success
+    if not success: (&"Revoke role from {newuser} not success: ").tell reason
 
   test &"Update {newuser}":
-    skip()
+    let (success, reason) = waitFor db.updateUser(newuser, newuser,
+      roles = bsonArray("read"))
+    check success
+    if not success: (&"Update user {newuser} not success: ").tell reason
 
   test &"Delete/drop the {newuser}":
-    skip()
+    let (success, reason) = waitFor db.dropUser(newuser)
+    check success
+    if not success: (&"Drop user {newuser} not success: ").tell reason
 
   test "Shutdown mongo":
     require mongo != nil
