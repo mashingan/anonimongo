@@ -46,37 +46,31 @@ suite "Client connection and user management tests":
     "Look user with invalid command: ".tell reason
     reply = waitFor db.usersInfo(existingUser)
     (success, reason) = check reply
-    check success
-    if not success: "Look users failed: ".tell reason
+    success.reasonedCheck("usersInfo error", reason)
 
   test &"Create new user: {newuser}":
     let (success, reason) = waitFor db.createUser(newuser, newuser,
       roles = bsonArray("read"), customData = bson({ role: "testing"}))
-    check success
-    if not success: (&"Create user {newuser} not success: ").tell reason
+    success.reasonedCheck("createUser error", reason)
 
   test &"Grant roles to {newuser}":
     let (success, reason) = waitFor db.grantRolesToUser(newuser,
       roles = bsonArray("readWrite"))
-    check success
-    if not success: (&"Grant role to {newuser} not success: ").tell reason
+    success.reasonedCheck("grantRolesToUser error", reason)
 
   test &"Revoke roles to {newuser}":
     let (success, reason) = waitFor db.revokeRolesFromUser(newuser,
       roles = bsonArray("readWrite"))
-    check success
-    if not success: (&"Revoke role from {newuser} not success: ").tell reason
+    success.reasonedCheck("revokeRolesFromUser error", reason)
 
   test &"Update {newuser}":
     let (success, reason) = waitFor db.updateUser(newuser, newuser,
       roles = bsonArray("read"))
-    check success
-    if not success: (&"Update user {newuser} not success: ").tell reason
+    success.reasonedCheck("updateUser error", reason)
 
   test &"Delete/drop the {newuser}":
     let (success, reason) = waitFor db.dropUser(newuser)
-    check success
-    if not success: (&"Drop user {newuser} not success: ").tell reason
+    success.reasonedCheck("dropUser error", reason)
 
   test "Shutdown mongo":
     require mongo != nil

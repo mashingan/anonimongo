@@ -1,9 +1,9 @@
 import asyncdispatch, tables
-import osproc, sugar
+import osproc, sugar, unittest
 
 import nimsha2
 
-import types, pool, client, auth, bson
+import types, pool, client, auth, bson, wire
 
 const
   pem* {.strdefine.} = "d:/dev/self-signed-cert/srv.key.pem"
@@ -49,3 +49,11 @@ proc testsetup*: Mongo =
 proc tell*(label, reason: string) =
   stdout.write label
   dump reason
+
+template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
+  when b is BsonDocument:
+    check b.ok
+    if not b.ok: (label & ": ").tell b.errmsg
+  else:
+    check b
+    if not b: (label & ": ").tell reason
