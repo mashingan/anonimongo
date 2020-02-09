@@ -1,14 +1,10 @@
-import unittest, sugar, asyncdispatch, strformat
+import unittest, asyncdispatch, strformat
 import osproc, os
 import testutils, admmgmt, bson, types, pool, wire
 
-proc tell(label, reason: string) =
-  stdout.write label
-  dump reason
-
 suite "Administration APIs tests":
   var mongorun = startmongo()
-  sleep 1000
+  sleep 3000 # waiting for mongod to be ready
 
   let targetColl = "testtemptest"
   let newtgcoll = "newtemptest"

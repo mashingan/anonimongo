@@ -1,5 +1,5 @@
 import asyncdispatch, strformat, deques, tables
-import osproc
+import osproc, sugar
 
 import nimsha2
 
@@ -45,3 +45,7 @@ proc testsetup*: Mongo =
     echo "cannot authenticate the connection"
   echo &"is mongo authenticated: {mongo.authenticated}"
   result = mongo
+
+proc tell*(label, reason: string) =
+  stdout.write label
+  dump reason
