@@ -56,11 +56,9 @@ suite "Administration APIs tests":
   test &"Create collection {targetColl} on {db.name}":
     require db != nil
     let (success, reason) = waitFor db.create(targetColl)
-    check success
+    success.reasonedCheck("create error", reason)
     check targetColl notin colls
     colls.add targetColl
-    if not success:
-      "create collection failed: ".tell reason
 
   test &"Create indexes on {db.name}.{targetColl}":
     skip()
@@ -80,16 +78,12 @@ suite "Administration APIs tests":
     var (success, reason) = waitFor db.dropCollection(targetColl)
     check not success # already renamed to newgtcoll
     (success, reason) = waitFor db.dropCollection(newtgcoll)
-    check success
-    if not success:
-      "drop collection failed: ".tell reason
+    success.reasonedCheck("dropCollection error", reason)
 
   test &"Drop database {db.name}":
     require db != nil
     let (success, reason) = waitFor db.dropDatabase
-    check success
-    if not success:
-      "drop database failed: ".tell reason
+    success.reasonedCheck("dropDatabase", reason)
 
   test "Shutdown mongo":
     require mongo != nil

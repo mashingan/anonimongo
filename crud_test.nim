@@ -159,9 +159,7 @@ suite "CRUD tests":
   test &"Drop database {db.name}":
     require db != nil
     let (success, reason) = waitFor db.dropDatabase
-    check success
-    if not success:
-      "drop database failed: ".tell reason
+    success.reasonedCheck("dropDatabase error", reason)
 
   if localhost:
     if mongorun.running: kill mongorun
