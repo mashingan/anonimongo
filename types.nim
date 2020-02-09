@@ -1,11 +1,13 @@
-import uri, tables, strutils, net
+import uri, tables, strutils, net, strformat
 from asyncdispatch import Port
 
 import sha1, nimSHA2
 
 import pool, wire, bson
 
-const poolconn* {.intdefine.} = 64
+const
+  poolconn* {.intdefine.} = 64
+  verbose* {.booldefine.} = false
 
 type
   Mongo* = ref object of RootObj
@@ -32,7 +34,7 @@ type
     name*: string
     db*: Mongo
 
-  Collection* = object
+  Collection* = ref object
     name*: string
     dbname: string
     db*: Database
@@ -67,6 +69,18 @@ when defined(ssl):
       protocol: prot
     )
 
+proc setSsl(m: Mongo, sslinfo: SslInfo) =
+  if sslinfo.keyfile != "" and sslinfo.certfile != "":
+    when defined(ssl):
+      let ctx = newContext(protVersion = sslinfo.protocol,
+        certfile = sslinfo.certfile,
+        keyfile = sslinfo.keyfile,
+        verifyMode = CVerifyNone)
+      for i, c in m.pool.connections:
+        when verbose: echo &"wrapping ssl socket {i}"
+        ctx.wrapSocket c.socket
+      m.tls = true
+
 proc newMongo*(host = "localhost", port = 27017, master = true,
   poolconn = poolconn, sslinfo = SslInfo()): Mongo =
   result = Mongo(
@@ -76,18 +90,10 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
     query: newTable[string, seq[string]](),
     pool: initPool(poolconn)
   )
-  if sslinfo.keyfile != "" and sslinfo.certfile != "":
-    when defined(ssl):
-      let ctx = newContext(protVersion = sslinfo.protocol,
-        certFile = sslinfo.certfile,
-        keyfile = sslinfo.keyfile,
-        verifyMode = CVerifyNone)
-      for _, c in result.pool.connections:
-        echo "wrapping ssl socket"
-        ctx.wrapSocket(c.socket)
-      result.tls = true
+  result.setSsl sslInfo
 
-proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
+proc newMongo*(uri: Uri, master = true, poolconn = poolconn,
+  sslInfo = SslInfo()): Mongo =
   let port = try: parseInt(uri.port)
              except ValueError: 27017
   result = Mongo(
@@ -99,6 +105,7 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
     query: decodeQuery(uri.query),
     pool: initPool(poolconn)
   )
+  result.setSsl sslinfo
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated

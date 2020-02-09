@@ -1,9 +1,8 @@
 import wire, bson
 import scram/client
 import md5, strformat
-const notrelease = not defined(release)
-when notrelease:
-  import sugar
+
+const verbose {.booldefine.} = false
 
 proc authenticate*(sock: AsyncSocket, user, pass: string,
   T: typedesc = Sha1Digest, dbname = "admin.$cmd"): Future[bool] {.async.} =
@@ -29,18 +28,10 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   when T is SHA256Digest:
     q["options"] = bson({skipEmptyExchange: true})
 
-  when notrelease:
-    dump q
-    dump mechanism
-
   discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, q)
   await sock.send stream.readAll
   let res1 = await sock.getReply
-  when notrelease:
-    dump res1
   if res1.documents.len > 0 and not res1.documents[0].ok:
-    when notrelease:
-      dump res1.documents
     if "errmsg" in res1.documents[0]:
       echo res1.documents[0]["errmsg"].get
     elif "$err" in res1.documents[0]:
@@ -58,8 +49,6 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   }))
   await sock.send stream.readAll()
   let res2 = await sock.getReply
-  when notrelease:
-    dump res2
   if res2.documents.len >= 1 and not res2.documents[0].ok:
     let d = res2.documents[0]
     if "errmsg" in d:
@@ -79,9 +68,12 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
     payload: bsonBinary ""
   }))
   await sock.send stream.readAll()
-  let res3 = await sock.getReply
-  if res3.documents.len > 0 and res3.documents[0]["done"].get.ofBool:
-    echo "success"
+  when verbose:
+    let res3 = await sock.getReply
+    if res3.documents.len > 0 and res3.documents[0]["done"].get.ofBool:
+      echo "success"
+  else:
+    discard await sock.getReply
   result = true
 
 when isMainModule:

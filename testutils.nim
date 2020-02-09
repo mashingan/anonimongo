@@ -1,4 +1,4 @@
-import asyncdispatch, strformat, deques, tables
+import asyncdispatch, tables
 import osproc, sugar
 
 import nimsha2
@@ -40,10 +40,10 @@ proc testsetup*: Mongo =
   mongo.appname = "Test driver"
   if not waitFor mongo.connect:
     echo "error connecting, quit"
-  echo &"current available conns: {mongo.pool.available.len}"
+  #echo &"current available conns: {mongo.pool.available.len}"
   if not waitFor(authenticate[Sha256Digest](mongo, user, pass)):
     echo "cannot authenticate the connection"
-  echo &"is mongo authenticated: {mongo.authenticated}"
+  #echo &"is mongo authenticated: {mongo.authenticated}"
   result = mongo
 
 proc tell*(label, reason: string) =

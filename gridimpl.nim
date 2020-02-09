@@ -1,7 +1,5 @@
 
-import wire
-import bson
-import pool
+import wire, bson, pool
 
 import sugar, times, oids, asyncfile
 import mimetypes, os, strformat

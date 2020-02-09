@@ -5,6 +5,8 @@ import scram/client
 
 {.warning[UnusedImport]: off.}
 
+const verbose {.booldefine.} = false
+
 type
   Connection* = object
     socket*: AsyncSocket
@@ -55,14 +57,14 @@ proc getConn*(p: Pool): Future[(int, Connection)] {.async.} =
 proc connect*(p: Pool, address: string, port: int) {.async.} =
   for i, c in p.connections:
     await c.socket.connect(address, Port port)
-    when not defined(release):
+    when not defined(release) and verbose:
       echo "connection: ", i, " is connected"
 
 proc close*(p: Pool) =
   for _, c in p.connections:
       if not c.socket.isClosed:
         close c.socket
-        when not defined(release):
+        when not defined(release) and verbose:
           echo "connection: ", c.id, " is closed"
 
 proc endConn*(p: Pool, i: Positive) =
@@ -72,47 +74,13 @@ proc authenticate*(p: Pool, user, pass: string, T: typedesc = Sha1Digest,
   dbname = "admin.$cmd"): Future[bool] {.async.} =
   result = true
   for i, c in p.connections:
-    echo &"conn {i} to auth."
+    when verbose: echo &"conn {i} to auth."
     if not await c.socket.authenticate(user, pass, T, dbname):
       result = false
       return
-    echo &"connection {i} authenticated."
+    when verbose: echo &"connection {i} authenticated."
 
 when isMainModule:
-
-  proc query1(s: AsyncSocket, db: string, id: int32) {.async.} =
-    look(await queryAck(s, id, db, "role", limit = 1))
-
-  #[
-  proc handshake(s: AsyncSocket, db: string, id: int32) {.async.} =
-    let q = bson({
-      isMaster: 1,
-      client: {
-        application: { name: "test connection pool: " & $id },
-        driver: {
-          name: "anonimongo - nim mongo driver",
-          version: "0.0.4",
-        },
-        os: {
-          "type": "Windows",
-          architecture: "amd64"
-        }
-      }
-    })
-    echo "Handshake id: ", id
-    dump q
-    var stream = newStringStream()
-    discard stream.prepareQuery(id, 0, opQuery.int32, 0, db,
-      0, 1, q)
-    await s.send stream.readAll
-    look(await s.getReply)
-    ]#
-  proc toHandshake(pool: Pool, i: int) {.async.} =
-    echo "spawning: ", i
-    let (cid, conn) = await pool.getConn
-    defer: pool.endConn cid
-    await conn.socket.query1("temptest", conn.id.int32)
-    echo "end conn: ", conn.id
 
   proc dummy(pool: Pool, i: int) {.async.} =
     echo "spawning: ", i
@@ -125,12 +93,6 @@ when isMainModule:
     let poolSize = 16
     let loopsize = poolsize * 3
     var pool = initPool(poolSize)
-    #[
-    waitFor pool.connect("localhost", 27017)
-    if not waitFor pool.authenticate("rdruffy", "rdruffy"):
-      echo "cannot authenticate"
-      return
-      ]#
 
     let starttime = cpuTime()
     var ops = newseq[Future[void]](loopsize)

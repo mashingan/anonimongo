@@ -1,9 +1,10 @@
 import asyncdispatch, tables, deques, strformat
 import os, net
-when not defined(release):
-  import sugar
 
 import types, wire, bson, pool, utils
+
+when not defined(release) and verbose:
+  import sugar
 
 const
   drivername = "anonimongo"
@@ -28,13 +29,14 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
       }
     }
   })
-  when not defined(release):
+  when not defined(release) and verbose:
     echo "Handshake id: ", id
     dump q
   let dbc = m[db]
-  let reply = await sendops(q, dbc)
-  when not defined(release):
-    look reply
+  when not defined(release) and verbose:
+    look await sendops(q, dbc)eply
+  else:
+    discard await sendops(q, dbc)
 
 proc connect*(m: Mongo): Future[bool] {.async.} =
   try:
@@ -52,7 +54,6 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
   for id, c in m.pool.connections:
     ops.add m.handshake(c.socket, dbname, id.int32, appname)
   await all(ops)
-  result = true
 
 proc cuUsers(db: Database, query: BsonDocument):
   Future[(bool, string)] {.async.} =

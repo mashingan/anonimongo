@@ -1,7 +1,5 @@
 import tables, sequtils
 import bson, types, wire, utils
-import admmgmt
-import sugar
 
 proc find*(db: Database, coll: string,query: BsonDocument,
   sort = bsonNull(), selector = bsonNull(), hint = bsonNull(),
@@ -108,7 +106,7 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
   result = await db.crudops(q)
 
 when isMainModule:
-  import times
+  import times, sugar
   import testutils, pool
   var mongo = testsetup()
   if mongo.authenticated:
