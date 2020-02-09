@@ -1,7 +1,7 @@
 import tables, sequtils
 import bson, types, wire, utils
 
-proc find*(db: Database, coll: string,query: BsonDocument,
+proc find*(db: Database, coll: string,query = bson(),
   sort = bsonNull(), selector = bsonNull(), hint = bsonNull(),
   skip = 0, limit = 0, batchSize = 101, singleBatch = false, comment = "",
   maxTimeMS = 0, readConcern = bsonNull(),
