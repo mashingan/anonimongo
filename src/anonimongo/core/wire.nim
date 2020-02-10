@@ -1,30 +1,48 @@
-import streams, tables, oids
+import streams, strformat
 import asyncdispatch, asyncnet
 from sugar import dump
 import bson
-#import nesm
 
 export streams, asyncnet, asyncdispatch
+
+const wireVerbose {.booldefine.} = false
 
 type
   OpCode* = enum
     opReply = 1'i32
     opUpdate = 2001'i32
     opInsert opReserved opQuery opGetMore opDelete opKillCursors
-    opNo1 opNo2 # not used
-    opCommand opCommandReply
-    opNo3       # not used
-    opMsg
+    opCommand = 2010'i32
+    opCommandReply
+    opMsg = 2013'i32
 
   MsgHeader* = object
-    messageLength, requestId, responseTo, opCode: int32
+    messageLength*, requestId*, responseTo*, opCode*: int32
 
   ReplyFormat* = object
-    responseFlags: int32
-    cursorId: int64
-    startingFrom: int32
-    numberReturned: int32
-    documents: seq[BsonDocument]
+    responseFlags*: int32
+    cursorId*: int64
+    startingFrom*: int32
+    numberReturned*: int32
+    documents*: seq[BsonDocument]
+
+  Flags* {.size: sizeof(int32), pure.} = enum
+    Reserved
+    TailableCursor
+    SlaveOk
+    OplogReplay     # mongodb internal use only, don't set
+    NoCursorTimeout # disable cursor timeout, default timeout 10 minutes
+    AwaitData       # used with tailable cursor
+    Exhaust
+    Partial         # get partial data instead of error when some shards are down
+  QueryFlags* = set[Flags]
+
+  RFlags* {.size: sizeof(int32), pure.} = enum
+    CursorNotFound
+    QueryFailure
+    ShardConfigStale
+    AwaitCapable
+  ResponseFlags* = set[RFlags]
 
 proc serialize(s: Stream, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
@@ -34,29 +52,29 @@ proc serialize(s: Stream, doc: BsonDocument): int =
 proc msgHeader(s: Stream, reqId, returnTo, opCode: int32): int=
   result = 16
   s.write 0'i32
-  s.write reqId
-  s.write returnTo
-  s.write opCode
+  s.writeLE reqId
+  s.writeLE returnTo
+  s.writeLE opCode
 
 proc msgHeaderFetch(s: Stream): MsgHeader =
   MsgHeader(
-    messageLength: s.readInt32,
-    requestId: s.readInt32,
-    responseTo: s.readInt32,
-    opCode: s.readInt32
+    messageLength: s.readIntLE int32,
+    requestId: s.readIntLE int32,
+    responseTo: s.readIntLE int32,
+    opCode: s.readIntLE int32
   )
 
 proc replyParse*(s: Stream): ReplyFormat =
   result = ReplyFormat(
-    responseFlags: s.readInt32,
-    cursorId: s.readInt64,
-    startingFrom: s.readInt32,
-    numberReturned: s.readInt32,
-    documents: newSeq[BsonDocument]()
+    responseFlags: s.readIntLE int32,
+    cursorId: s.readIntLE int64,
+    startingFrom: s.readIntLE int32,
+    numberReturned: s.readIntLE int32
   )
-  for _ in 1 .. result.numberReturned:
-    let doclen = s.peekInt32
-    result.documents.add s.readStr(doclen).decode
+  result.documents = newSeq[BsonDocument](result.numberReturned)
+  for i in 0 ..< result.numberReturned:
+    let doclen = s.peekInt32LE
+    result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
 proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
@@ -64,17 +82,53 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     query = newbson(), selector = newbson()): int =
   result = s.msgHeader(reqId, target, opcode)
 
-  s.write flags;                       result += 4
+  s.writeLE flags;                     result += 4
   s.write collname; s.write 0x00.byte; result += collname.len + 1
-  s.write nskip; s.write nreturn;      result += 2 * 4
+  s.writeLE nskip; s.writeLE nreturn;  result += 2 * 4
 
   result += s.serialize query
   if not selector.isNil:
     result += s.serialize selector
 
   s.setPosition 0
-  s.write result.int32
+  s.writeLE result.int32
   s.setPosition 0
+
+template prepare*(q: BsonDocument, flags: int32, dbname: string,
+  id = 0, skip = 0, limit = 1): untyped =
+  var s = newStringStream()
+  discard s.prepareQuery(id, 0, opQuery.int32, flags, dbname, skip,
+    limit, q)
+  unown(s)
+
+proc ok*(b: BsonDocument): bool =
+  "ok" in b and b["ok"].get.ofDouble.int == 1
+
+proc errmsg*(b: BsonDocument): string =
+  if "errmsg" in b:
+    result = b["errmsg"].get
+
+proc code*(b: BsonDocument): int =
+  if "code" in b:
+    result = b["code"].get
+
+template check*(r: ReplyFormat): (bool, string) =
+  var res = (false, "")
+  let rflags = r.responseFlags as ResponseFlags
+  if r.numberReturned <= 0:
+    res[1] = "some error happened, cannot get, get response flag " &
+      $rflags
+  elif r.numberReturned == 1:
+    let doc = r.documents[0]
+    if doc.ok:
+      res[0] = true
+    elif RFlags.QueryFailure in rflags and "$err" in doc:
+      res[1] = doc["$err"].get
+    elif "errmsg" in doc:
+      res[1] = doc["errmsg"].get
+  else:
+    res[0] = true
+  unown(res)
 
 proc queryOp(s: Stream, query = newbson(), selector = newbson()): int =
   s.prepareQuery(0, 0, opQuery.int32, 0, "temptest.role",
@@ -91,7 +145,7 @@ proc insertOp(s: Stream, data: BsonDocument): int =
   dump data
   result += s.serialize data
   s.setPosition 0
-  s.write result.int32
+  s.writeLE result.int32
   s.setPosition 0
 
 proc acknowledgedInsert(s: Stream, data: BsonDocument,
@@ -105,13 +159,14 @@ proc acknowledgedInsert(s: Stream, data: BsonDocument,
 
 
 proc look*(reply: ReplyFormat) =
-  dump reply.numberReturned
+  when wireVerbose:
+    dump reply.numberReturned
   if reply.numberReturned > 0 and
      "cursor" in reply.documents[0] and
      "firstBatch" in reply.documents[0]["cursor"].get.ofEmbedded:
-    echo "printing cursor"
-    for d in reply.documents[0]["cursor"]
-      .get.ofEmbedded["firstBatch"].get.ofArray:
+    when not defined(release):
+      echo "printing cursor"
+    for d in reply.documents[0]["cursor"].get["firstBatch"].ofArray:
       dump d
   else:
     for d in reply.documents:
@@ -121,39 +176,40 @@ proc look*(reply: ReplyFormat) =
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
-  dump msghdr
+  when not defined(release) and wireVerbose:
+    dump msghdr
   let bytelen = msghdr.messageLength
 
   let rest = await socket.recv(size = bytelen-16)
   var restStream = newStringStream rest
   result = replyParse restStream
 
-proc findAll(socket: AsyncSocket, selector = newbson()) {.async.} =
+proc findAll(socket: AsyncSocket, selector = newbson()) {.async, used.} =
   var stream = newStringStream()
   discard stream.queryOp(newbson(), selector)
   await socket.send stream.readAll
   look(await socket.getReply)
 
-proc insert(socket: AsyncSocket, doc: BsonDocument) {.async.} =
+proc insert(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
-  let length = s.insertOp doc
+  let _ = s.insertOp doc
   let data = s.readAll
   await socket.send data
 
-proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async.} =
+proc insertAcknowledged(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
-  let length = s.acknowledgedInsert doc
+  let _ = s.acknowledgedInsert doc
   let data = s.readAll
   await socket.send data
   look(await socket.getReply)
 
-proc insertAckNewColl(socket: AsyncSocket, doc: BsonDocument) {.async.} =
+proc insertAckNewColl(socket: AsyncSocket, doc: BsonDocument) {.async, used.} =
   var s = newStringStream()
   discard s.acknowledgedInsert(doc, collname = "newcoll.$cmd")
   await socket.send s.readAll
   look( await socket.getReply )
 
-let insertDoc = bson({
+let insertDoc {.used.} = bson({
   id: 3.toBson,
   role_name: "tester"
 })
@@ -168,9 +224,9 @@ proc deleteAck(s: Stream, query: BsonDocument, n = 0): int =
   s.prepareQuery(0, 0, opQuery.int32, 0, "temptest.$cmd",
     0, 1, deleteEntry)
 
-proc deleteAck(socket: AsyncSocket, query: BsonDocument, n = 0) {.async.} =
+proc deleteAck(socket: AsyncSocket, query: BsonDocument, n = 0) {.async, used.} =
   var s = newStringStream()
-  let length = s.deleteAck(query, n)
+  let _ = s.deleteAck(query, n)
   let data = s.readAll
   await socket.send data
   look( await socket.getReply )
@@ -185,14 +241,14 @@ proc updateAck(s: Stream, query, update: BsonDocument, multi = true,
 
 
 proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
-    multi = true) {.async.} =
+    multi = true) {.async, used.} =
   var s = newStringStream()
-  let length = s.updateAck(query, update, multi)
+  let _ = s.updateAck(query, update, multi)
   await socket.send s.readAll
   look( await socket.getReply )
 
 
-proc queryAck*(sock: AsyncSocket, dbname, collname: string,
+proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
   query = newbson(), selector = newbson(),
   sort = newbson(), skip = 0, limit = 0): Future[ReplyFormat] {.async.} =
   var s = newStringStream()
@@ -204,18 +260,35 @@ proc queryAck*(sock: AsyncSocket, dbname, collname: string,
     skip: skip,
     limit: limit
   })
-  dump findq
-  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
+  when not defined(release):
+    dump findq
+  discard s.prepareQuery(id, 0, opQuery.int32, 0, dbname & ".$cmd",
     skip.int32, 1, findq)
   await sock.send s.readAll
   result = await sock.getReply
+
+proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
+  batchSize = 50, maxTimeMS = 0): Future[ReplyFormat] {.async.} =
+  var ss = newStringStream()
+  let moreq = bson({
+    getMore: id,
+    collection: collname,
+    batchSize: batchSize,
+    maxTimeMS: maxTimeMS,
+  })
+  when wireVerbose:
+    dump moreq
+  discard ss.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
+    0, 1, moreq)
+  await s.send ss.readAll
+  result = await s.getReply
 
 # not tested when there's no way to create database
 proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
     writeConcern = newbson()): Future[ReplyFormat] {.async.} =
   var q = newbson(("dropDatabase", 1.toBson))
   if not writeConcern.isNil:
-    q["writeConcern"] = writeConcern.toBson
+    q["writeConcern"] = writeConcern
   var s = newStringStream()
   discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     0, 1, q)
@@ -274,7 +347,7 @@ when isMainModule:
 
   echo "\n======================"
   echo "find with acknowledged query"
-  dump waitFor socket.queryAck("temptest", "role", sort = bson({id: -1}))
+  dump waitFor socket.queryAck(0'i32, "temptest", "role", sort = bson({id: -1}))
 
 
   #[
