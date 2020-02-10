@@ -38,6 +38,7 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [x] `isMaster` connection
 - [x] `TailableCursor` connection
 - [x] `SlaveOk` operations
+- [ ] Compression connection
 </details>
 
 <details>

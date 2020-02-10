@@ -1,4 +1,4 @@
-import asyncdispatch, tables
+import asyncdispatch, tables, uri
 import osproc, sugar, unittest
 
 import nimsha2
@@ -19,6 +19,9 @@ const
   localhost* = host == "localhost"
   nomongod* = not defined(nomongod)
   runlocal* = localhost and nomongod
+  mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
+    "?tlscertificateKeyfile=certificate:" & encodeUrl(cert) &
+    ",key:" & encodeUrl(key)
 
 proc startmongo*: Process =
   let args = @[
@@ -40,7 +43,11 @@ proc testsetup*: Mongo =
     let sslinfo = initSSLInfo(key, cert)
   else:
     let sslinfo = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
-  let mongo = newMongo(host = host, port = port, poolconn = 2, sslinfo = sslinfo)
+  when not defined(uri):
+    let mongo = newMongo(host = host, port = port, poolconn = 2, sslinfo = sslinfo)
+  else:
+    let mongo = newMongo(parseUri mongourl, poolconn = 2)
+
   mongo.appname = "Test driver"
   if not waitFor mongo.connect:
     echo "error connecting, quit"
@@ -61,3 +68,7 @@ template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
   else:
     check b
     if not b: (label & ": ").tell reason
+
+when isMainModule:
+  let mongo = newMongo(parseUri mongourl, poolconn = 1)
+  dump mongo.query

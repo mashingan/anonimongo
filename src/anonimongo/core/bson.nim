@@ -249,6 +249,7 @@ proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
   b.table[key] = val
 
 proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
+  b.encoded = false
   b.table[key]
 
 proc mget*(b: var BsonBase, key: sink string): var BsonBase =
@@ -701,6 +702,3 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
   bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
 
 template bson*(): untyped = bson({})
-
-when isMainModule:
-  import ../bson_test

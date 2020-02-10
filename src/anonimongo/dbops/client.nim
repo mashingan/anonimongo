@@ -1,7 +1,9 @@
-import asyncdispatch, tables, deques, strformat
+import asyncdispatch, tables, deques, strformat, sequtils
 import os, net
 
 import ../core/[types, wire, bson, pool, utils]
+
+{.warning[UnusedImport]: off.}
 
 when not defined(release) and verbose:
   import sugar
@@ -15,7 +17,7 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
   appname = "Anonimongo client apps") {.async.} =
   let appname = appname
   let master = if m.isMaster: 1 else: 0
-  let q = bson({
+  var q = bson({
     isMaster: master,
     client: {
       application: { name: appname },
@@ -29,6 +31,10 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
       }
     }
   })
+  #[ TODO: will be enabled later
+  if "compressors" in m.query:
+    q["compression"] = m.query["compressors"].map toBson
+    ]#
   when not defined(release) and verbose:
     echo "Handshake id: ", id
     dump q
@@ -146,6 +152,3 @@ proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
 proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
   result = await roleOps(db, user, roles, writeConcern)
-
-when isMainModule:
-  import ../tests/client_test

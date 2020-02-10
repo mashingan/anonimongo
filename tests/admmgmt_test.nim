@@ -26,6 +26,7 @@ suite "Administration APIs tests":
   var colls: seq[string]
   test "Connect to localhost and authentication":
     mongo = testsetup()
+    require(mongo != nil)
     require(mongo.authenticated)
   test "Get admin database":
     require mongo != nil

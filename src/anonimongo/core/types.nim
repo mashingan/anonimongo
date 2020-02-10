@@ -1,5 +1,6 @@
-import uri, tables, strutils, net, strformat
+import uri, tables, strutils, net, strformat, sequtils, unicode
 from asyncdispatch import Port
+import sugar
 
 import sha1, nimSHA2
 
@@ -51,15 +52,18 @@ type
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()
   for kv in s.split('&'):
-    let kvsarr = kv.split(',')
-    for ksvs in kvsarr:
-      let kvsvr = ksvs.split('=')
-      let k = kvsvr[0]
-      let v = if kvsvr.len > 1: kvsvr[1] else: ""
-      if k in result:
-        result[k].add v
-      else:
-        result[k] = @[v]
+    let kvsarr = kv.split('=')
+    let key = kvsarr[0].toLower
+    let val = kvsarr[1]
+    if kvsarr.len > 1:
+      let kvals = val.split(',')
+      for kval in kvals:
+        if key in result:
+          result[key].add kval
+        else:
+          result[key] = @[kval]
+    else:
+      result[key] = @[]
 
 when defined(ssl):
   proc initSslInfo*(keyfile, certfile: string, prot = protSSLv23): SSLInfo =
@@ -105,7 +109,58 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn,
     query: decodeQuery(uri.query),
     pool: initPool(poolconn)
   )
-  result.setSsl sslinfo
+  if result.host == "": result.host = "localhost"
+  # need elaborate handling for URI connect
+  # ref:https://github.com/mongodb/specifications/blob/master/source/uri-options/uri-options.rst 
+  var writeConcern = bson()
+  if "w" in result.query and result.query["w"].len > 1:
+    #[
+    writeConcern["w"] = try: parseInt result.query["m"][0].toBson
+                        except: (-1).toBson
+                        ]#
+    let val = result.query["w"][0]
+    if val.all isDigit:
+      writeConcern["w"] = try: (parseInt val).toBson
+                          except: 1.toBson
+    else:
+      writeConcern["w"] = val
+  if "j" in result.query and result.query["j"].len > 1:
+    writeConcern["j"] = result.query["j"][0]
+
+  if "appname" notin result.query:
+    result.query["appname"] = @["Anonimongo driver client apps"]
+  let tlsCertInval = ["tlsInsecure", "tlsAllowInvalidCertificates"]
+  let tlsHostInval = ["tlsInsecure", "tlsAllowInvalidHostnames"]
+  if tlsCertInval.allIt(it.toLower in result.query):
+    raise newException(MongoError,
+      &"""Can't have {tlsCertInval.join(" and ")}""")
+  if tlsHostInval.allIt(it.toLower in result.query):
+    raise newException(MongoError,
+      &"""Can't have {tlsHostInval.join(" and ")}""")
+
+  proc setCertKey (s: var SslInfo, vals: seq[string]) =
+    for kv in vals:
+      let kvs = kv.split ':'
+      if kvs[0].toLower == "certificate":
+        s.certfile = decodeUrl kvs[1]
+      elif kvs[0].toLower == "key":
+        s.keyfile = decodeUrl kvs[1]
+  var newsslinfo = sslinfo
+  dump result.query
+  if ["ssl", "tls"].anyIt( it.toLower in result.query):
+    if "tlsCertificateKeyFile".toLower notin result.query:
+      raise newException(MongoError, "option tlsCertificateKeyFile not provided")
+    newsslinfo.setCertKey result.query["tlsCertificateKeyFile".toLower]
+  elif "tlsCertificateKeyFile".toLower in result.query:
+    echo "got tls certificate key"
+    newsslinfo.setCertKey result.query["tlsCertificatekeyFile".toLower]
+
+  dump newsslinfo
+  when defined(ssl):
+    newsslinfo.protocol = protSSLv23
+  result.setSsl newsslinfo
+  if not writeConcern.isNil:
+    result.writeConcern = writeConcern
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated
