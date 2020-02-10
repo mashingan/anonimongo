@@ -1,7 +1,7 @@
 import asyncdispatch, tables, deques, strformat
 import os, net
 
-import types, wire, bson, pool, utils
+import ../core/[types, wire, bson, pool, utils]
 
 when not defined(release) and verbose:
   import sugar
@@ -148,4 +148,4 @@ proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
   result = await roleOps(db, user, roles, writeConcern)
 
 when isMainModule:
-  import client_test
+  import ../tests/client_test

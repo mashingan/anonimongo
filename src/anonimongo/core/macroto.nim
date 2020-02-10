@@ -1,3 +1,4 @@
+from sugar import dump
 # node helper check
 template checknode(n: untyped): untyped {.used.} =
   dump `n`.kind

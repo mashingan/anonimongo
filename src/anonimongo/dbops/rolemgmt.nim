@@ -1,5 +1,5 @@
 import sequtils
-import bson, types, wire, utils
+import ../core/[bson, types, wire, utils]
 
 proc createRole*(db: Database, name: string, privileges, roles: seq[BsonDocument],
   authRestrict: seq[BsonDocument] = @[], wt = bsonNull()):

@@ -1,6 +1,9 @@
 import unittest, asyncdispatch, strformat
 import osproc, os
-import testutils, admmgmt, bson, types, wire
+
+import testutils
+import dbops/admmgmt
+import core/[bson, types, wire]
 
 const localhost = testutils.host == "localhost"
 

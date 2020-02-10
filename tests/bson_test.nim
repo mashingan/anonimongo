@@ -1,5 +1,8 @@
 import unittest, times, oids, streams, tables, os
-import bson
+import core/bson
+import sugar
+
+{.warning[UnusedImport]: off.}
 
 suite "Bson operations tests":
   let isekai = "hello, 異世界"
@@ -80,7 +83,7 @@ suite "Bson operations tests":
       discard arrayembed["objects"][0][3]
 
   test "Bson binary operations":
-    require(fileExists "qrcode-me.png")
+    require(fileExists "tests/qrcode-me.png")
     let stringbin = "MwahahaBinaryGotoki"
     let testbinary = bson({
       dummy_binary: bsonBinary stringbin
@@ -90,7 +93,7 @@ suite "Bson operations tests":
     check dectestbin["dummy_binary"].get.
       ofBinary.stringbytes == stringbin
 
-    let qrimg = readFile "qrcode-me.png"
+    let qrimg = readFile "tests/qrcode-me.png"
     let pngbin = bson({
       "qr-me": bsonBinary qrimg
     })

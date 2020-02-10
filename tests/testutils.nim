@@ -3,7 +3,8 @@ import osproc, sugar, unittest
 
 import nimsha2
 
-import types, pool, client, auth, bson, wire
+import core/[types, pool, auth, bson, wire]
+import dbops/client
 
 const
   pem* {.strdefine.} = "d:/dev/self-signed-cert/srv.key.pem"

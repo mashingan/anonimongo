@@ -1,5 +1,5 @@
 import tables, sequtils
-import bson, types, wire, utils
+import ../core/[bson, types, wire, utils]
 
 proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
   explain = false, diskuse = false, cursor = bson(), maxTimeMS = 0,

@@ -1,5 +1,5 @@
 import tables, sequtils
-import bson, types, wire, utils
+import ../core/[bson, types, wire, utils]
 
 proc find*(db: Database, coll: string,query = bson(),
   sort = bsonNull(), selector = bsonNull(), hint = bsonNull(),
@@ -106,60 +106,4 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
   result = await db.crudops(q)
 
 when isMainModule:
-  import times, sugar
-  import testutils, pool
-  var mongo = testsetup()
-  if mongo.authenticated:
-    var db = mongo["temptest"]
-    var insertingdocs = newseq[BsonDocument](10)
-    let currtime = now().toTime
-    for i in 0 ..< 10:
-      insertingdocs[i] = bson({
-        countId: i,
-        addedTime: currtime + initDuration(hours = i),
-        `type`: "insertTest",
-      })
-    dump insertingdocs
-    try:
-      var resfind = waitfor db.find("role", bson())
-      dump resfind 
-      resfind = waitfor db.insert("role", insertingdocs)
-      dump resfind
-      resfind = waitfor db.find("role", bson())
-      dump resfind
-      resfind = waitFor db.find("role", bson(), batchSize = 1, singleBatch = true)
-      dump resfind
-      resfind = waitFor db.find("role", bson(), batchSize = 1)
-      dump resfind
-      var cur = (resfind["cursor"].get.ofEmbedded).to Cursor
-      dump cur
-      resfind = waitfor db.findAndModify("role", query = bson({
-        countId: 8 }), update = bson({ "$set": { countId: 80 }}))
-      dump resfind
-      resfind = waitfor db.update("role", @[
-        bson({
-          q: { countId: 9 },
-          u: { "$set": { "type": "異世界召喚" }, "$inc": { countId: 90 }},
-          upsert: false,
-          multi: true,
-        })
-      ])
-      while true:
-        resfind = waitfor db.getMore(cur.id, "role", 1)
-        cur = (resfind["cursor"].get.ofEmbedded).to Cursor
-        dump cur
-        if cur.nextBatch.len == 0:
-          break
-      resfind = waitfor db.delete("role", @[
-        bson({ q: {
-          "type": "insertTest",
-        }, limit: 0, collation: {
-          locale: "en_US_POSIX",
-          caseLevel: false,
-        }})
-      ])
-      dump resfind
-    except MongoError, UnpackError:
-      echo getCurrentExceptionMsg()
-    #discard waitFor mongo.shutdown(timeout = 10)
-    close mongo.pool
+  import ../tests/crud_test

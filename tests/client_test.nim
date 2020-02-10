@@ -1,6 +1,8 @@
 import unittest, osproc, os, strformat
 
-import types, wire, bson, utils, testutils, admmgmt, client
+import testutils
+import core/[types, wire, bson, utils]
+import dbops/[admmgmt, client]
 
 const localhost = testutils.host == "localhost"
 

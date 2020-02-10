@@ -6,7 +6,6 @@ from strutils import parseHexInt, join, parseInt, toHex,
 from strformat import fmt
 from sequtils import toSeq
 from lenientops import `/`, `+`, `*`
-from sugar import dump
 
 export strutils
 export options
@@ -704,4 +703,4 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 template bson*(): untyped = bson({})
 
 when isMainModule:
-  import bson_test
+  import ../bson_test

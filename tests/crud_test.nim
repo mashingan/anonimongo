@@ -1,7 +1,9 @@
 import unittest, os, osproc, times, strformat
 import sugar
 
-import types, wire, testutils, bson, crud, admmgmt
+import testutils
+import core/[types, wire, bson]
+import dbops/[admmgmt, crud]
 
 const localhost = testutils.host == "localhost"
 

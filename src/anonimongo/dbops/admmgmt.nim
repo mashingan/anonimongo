@@ -1,6 +1,5 @@
 import strformat
-import types, bson, wire, utils, pool
-import sugar
+import ../core/[types, bson, wire, utils, pool]
 
 proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   storageEngine = bsonNull(),
@@ -137,4 +136,4 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
     result = (true, getCurrentExceptionMsg())
 
 when isMainModule:
-  import admmgmt_test
+  import ../tests/admmgmt_test
