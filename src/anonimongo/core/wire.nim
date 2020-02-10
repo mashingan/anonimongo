@@ -5,7 +5,7 @@ import bson
 
 export streams, asyncnet, asyncdispatch
 
-const wireVerbose {.booldefine.} = false
+const verbose {.booldefine.} = false
 
 type
   OpCode* = enum
@@ -159,7 +159,7 @@ proc acknowledgedInsert(s: Stream, data: BsonDocument,
 
 
 proc look*(reply: ReplyFormat) =
-  when wireVerbose:
+  when verbose:
     dump reply.numberReturned
   if reply.numberReturned > 0 and
      "cursor" in reply.documents[0] and
@@ -176,7 +176,7 @@ proc look*(reply: ReplyFormat) =
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
-  when not defined(release) and wireVerbose:
+  when not defined(release) and verbose:
     dump msghdr
   let bytelen = msghdr.messageLength
 
@@ -276,7 +276,7 @@ proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
     batchSize: batchSize,
     maxTimeMS: maxTimeMS,
   })
-  when wireVerbose:
+  when verbose:
     dump moreq
   discard ss.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
     0, 1, moreq)

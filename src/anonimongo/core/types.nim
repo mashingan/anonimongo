@@ -141,8 +141,14 @@ proc appname*(m: Mongo): string =
 proc tailableCursor*(m: Mongo) =
   m.flags.incl Flags.TailableCursor
 
+proc noTailable*(m: Mongo) =
+  m.flags.excl Flags.TailableCursor
+
 proc slaveOk*(m: Mongo) =
   m.flags.incl Flags.SlaveOk
+
+proc noSlave*(m: Mongo) =
+  m.flags.excl Flags.SlaveOk
 
 proc `[]`*(m: Mongo, name: string): Database =
   new result
