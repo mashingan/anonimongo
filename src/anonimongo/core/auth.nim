@@ -5,7 +5,7 @@ import md5, strformat
 const verbose {.booldefine.} = false
 
 proc authenticate*(sock: AsyncSocket, user, pass: string,
-  T: typedesc = Sha1Digest, dbname = "admin.$cmd"): Future[bool] {.async.} =
+  T: typedesc = Sha256Digest, dbname = "admin.$cmd"): Future[bool] {.async.} =
   var
     scram = newScramClient[T]()
     stream = newStringStream()

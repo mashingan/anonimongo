@@ -22,8 +22,8 @@ requires "https://github.com/mashingan/anonimongo#head"
 ```
 
 ## Implemented APIs
-This implemented APIs for Mongo from [Mongo reference manual]
-and [mongo spec].
+This implemented APIs for Mongo from [Mongo reference manual](https://docs.mongodb.com/manual/reference/command/)
+and [mongo spec](https://github.com/mongodb/specifications).
 
 <details>
 <summary>Features connection</summary>
@@ -78,7 +78,7 @@ and [mongo spec].
 - [ ] `planCacheSetFilter`
 </details>
 
-<details><summary>:ballot_box_with_check: Database operations commands 1/6</summary>
+<details><summary>:ballot_box_with_check: Database operations commands 1/3</summary>
 
 - [x] `authenticate`, implemented as Mongo proc.
 - [ ] `getnonce`
@@ -235,6 +235,3 @@ and [mongo spec].
 - [ ] `logApplicationMessage`
 </details>
 </details>
-
-[Mongo reference manual]: (https://docs.mongodb.com/manual/reference/command/)
-[mongo spec]: (https://github.com/mongodb/specifications)

@@ -4,16 +4,14 @@ import testutils
 import core/[types, wire, bson, utils]
 import dbops/[admmgmt, client]
 
-const localhost = testutils.host == "localhost"
-
 var mongorun: Process
-if localhost:
+if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
 suite "Client connection and user management tests":
   test "Required mongo is running":
-    if localhost:
+    if runlocal:
       require mongorun.running
     else:
       check true
@@ -79,7 +77,7 @@ suite "Client connection and user management tests":
     let (success, _) = waitFor db.shutdown(timeout = 10)
     check success
 
-  if localhost:
+  if runlocal:
     if mongorun.running: kill mongorun
     close mongorun
   close mongo

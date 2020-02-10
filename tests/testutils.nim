@@ -16,6 +16,9 @@ const
   pass* {.strdefine.} = "rdruffy"
   host* {.strdefine.} = "localhost"
   port* {.intdefine.} = 27017
+  localhost* = host == "localhost"
+  nomongod* = not defined(nomongod)
+  runlocal* = localhost and nomongod
 
 proc startmongo*: Process =
   let args = @[

@@ -5,18 +5,16 @@ import testutils
 import core/[types, wire, bson]
 import dbops/[admmgmt, crud]
 
-const localhost = testutils.host == "localhost"
-
 {.warning[UnusedImport]: off.}
 
 var mongorun: Process
-if localhost:
+if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
 suite "CRUD tests":
   test "Mongo server is running":
-    if localhost:
+    if runlocal:
       require mongorun.running
     else:
       check true
@@ -163,7 +161,7 @@ suite "CRUD tests":
     let (success, reason) = waitFor db.dropDatabase
     success.reasonedCheck("dropDatabase error", reason)
 
-  if localhost:
+  if runlocal:
     if mongorun.running: kill mongorun
     close mongorun
   close mongo
