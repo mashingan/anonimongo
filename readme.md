@@ -166,7 +166,7 @@ and [mongo spec][3].
 - [ ] `refreshSessions`
 - [ ] `startSession`
 </details>
-<details><summary>:ballot_box_with_check: Administration commands 10/29</summary>
+<details><summary>:ballot_box_with_check: Administration commands 13/29</summary>
 
 - [ ] `clean` (internal namespace command)
 - [ ] `cloneCollection`
@@ -177,7 +177,7 @@ and [mongo spec][3].
 - [ ] `convertToCapped`
 - [x] `create`
 - [x] `createIndexes`
-- [ ] `currentOp`
+- [x] `currentOp`
 - [x] `drop`
 - [x] `dropDatabase`
 - [ ] `dropConnections`
@@ -186,8 +186,8 @@ and [mongo spec][3].
 - [ ] `fsync`
 - [ ] `fsyncUnlock`
 - [ ] `getParameter`
-- [ ] `killCursors`
-- [ ] `killOp`
+- [x] `killCursors`
+- [x] `killOp`
 - [x] `listCollections`
 - [x] `listDatabases`
 - [x] `listIndexes`
