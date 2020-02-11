@@ -126,8 +126,6 @@ proc remove*(c: Collection, query, opt: BsonDocument):
   let doc = await c.db.delete(c.name, @[delq], wt = wt)
   result = (doc.ok, doc["n"].get.ofInt)
 
-#proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
-#  ordered = true, wt = bsonNull(), bypass = false):
 proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
   Future[(bool, int)] {.async.} =
   let wt = if "writeConcern" in opt: opt["writeConcern"].get else: bsonNull()
@@ -138,11 +136,6 @@ proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
 proc drop*(c: Collection, wt = bsonNull()): Future[(bool, string)] {.async.} =
   result = await c.db.dropCollection(c.name, wt)
 
-#[
-proc count*(db: Database, coll: string, query = bson(),
-  limit = 0, skip = 0, hint = bsonNull(), readConcern = bsonNull(),
-  collation = bsonNull()): Future[BsonDocument] {.async.} =
-  ]#
 proc count*(c: Collection, query = bson(), opt = bson()):
   Future[int] {.async.} =
   var

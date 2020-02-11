@@ -69,6 +69,23 @@ suite "CRUD tests":
     resfind = waitfor db.count(collname)
     resfind.reasonedCheck("count error")
     check resfind["n"].get == foundDocs.len
+
+  test &"Aggregate documents on {namespace}":
+    require db != nil
+    let tensOfMinutes = 5
+    let lesstime = currtime + initDuration(minutes = tensOfMinutes * 10)
+    let pipeline = @[
+      bson({ "$match": { addedTime: { "$gte": currtime, "$lt": lesstime }}}),
+      bson({ "$project": {
+        addedTime: { "$dateToString": {
+          date: "$addedTime",
+          format: "%G-%m-%dT-%H-%M-%S%z",
+          timezone: "+07:00", }}}})
+    ]
+    resfind = waitfor db.aggregate(collname, pipeline)
+    resfind.reasonedCheck("db.aggregate error")
+    let doc = resfind["cursor"]["firstBatch"].ofArray
+    check doc.len == tensOfMinutes
   
   test &"Find and modify some document(s) on {namespace}":
     require db != nil

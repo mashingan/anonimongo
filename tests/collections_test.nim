@@ -1,4 +1,4 @@
-import unittest, os, osproc, strformat, times
+import unittest, os, osproc, strformat, times, sequtils
 
 import testutils
 import ../src/anonimongo
@@ -51,6 +51,14 @@ suite "Collections APIs tests":
 
   test &"Count documents on {namespace}":
     check insertDocs.len == waitfor coll.count()
+
+  test &"Remove countId 1 and 5 on {namespace}":
+    let toremove = [1, 5]
+    let (success, removed) = waitfor coll.remove(bson({
+      countId: { "$in": toremove.map toBson },
+    }))
+    check success
+    check toremove.len == removed
 
   test &"Drop collection {coll.db.name}.{targetColl}":
     require coll != nil

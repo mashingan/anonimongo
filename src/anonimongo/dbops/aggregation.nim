@@ -13,7 +13,7 @@ proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
     q.addConditional(kv[0], kv[1])
   if not explain:
     q["cursor"] = cursor
-  q["maxTImeMS"] = maxTimeMS
+  q["maxTimeMS"] = maxTimeMS
   q.addConditional("bypassDocumentValidation", bypass)
   for kv in [
     ("readConcern", readConcern),
