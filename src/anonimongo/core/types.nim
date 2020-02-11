@@ -146,7 +146,6 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn,
       elif kvs[0].toLower == "key":
         s.keyfile = decodeUrl kvs[1]
   var newsslinfo = sslinfo
-  dump result.query
   if ["ssl", "tls"].anyIt( it.toLower in result.query):
     if "tlsCertificateKeyFile".toLower notin result.query:
       raise newException(MongoError, "option tlsCertificateKeyFile not provided")
@@ -155,7 +154,6 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn,
     echo "got tls certificate key"
     newsslinfo.setCertKey result.query["tlsCertificatekeyFile".toLower]
 
-  dump newsslinfo
   when defined(ssl):
     newsslinfo.protocol = protSSLv23
   result.setSsl newsslinfo

@@ -1,10 +1,10 @@
-# Anonimongo - Another pure NIM MONGO driver (WIP)
-[Mongodb](https://www.mongodb.com) is a document-based key-value database which emphasize in high performance read
+# Anonimongo - ANOther pure NIM MONGO driver (WIP)
+[Mongodb][1] is a document-based key-value database which emphasize in high performance read
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
 Anonimongo is a driver for Mongodb developed using pure Nim. As library, it's developed to enable
 developers to be able to access and use Mongodb in projects using Nim. Currently the low level APIs is implemented
-however the higher level APIs for easier usage in development<sup>TM</sup>.
+however the higher level APIs for easier usage is still in heavy development<sup>TM</sup>.
 
 ## Example
 TBA, for now see tests code examples.
@@ -22,8 +22,8 @@ requires "https://github.com/mashingan/anonimongo#head"
 ```
 
 ## Implemented APIs
-This implemented APIs for Mongo from [Mongo reference manual](https://docs.mongodb.com/manual/reference/command/)
-and [mongo spec](https://github.com/mongodb/specifications).
+This implemented APIs for Mongo from [Mongo reference manual][2]
+and [mongo spec][3].
 
 <details>
 <summary>Features connection</summary>
@@ -236,3 +236,7 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [ ] `logApplicationMessage`
 </details>
 </details>
+
+[1]: https://www.mongodb.com
+[2]: https://docs.mongodb.com/manual/reference/command/
+[3]: https://github.com/mongodb/specifications

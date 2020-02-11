@@ -1,8 +1,7 @@
 import unittest, osproc, os, strformat
 
 import testutils
-import core/[types, wire, bson, utils]
-import dbops/[admmgmt, client]
+import anonimongo
 
 var mongorun: Process
 if runlocal:

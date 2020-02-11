@@ -2,8 +2,7 @@ import unittest, asyncdispatch, strformat
 import osproc, os
 
 import testutils
-import dbops/admmgmt
-import core/[bson, types, wire]
+import anonimongo
 
 var mongorun: Process
 if runlocal:

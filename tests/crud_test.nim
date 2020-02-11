@@ -2,8 +2,7 @@ import unittest, os, osproc, times, strformat
 import sugar
 
 import testutils
-import core/[types, wire, bson]
-import dbops/[admmgmt, crud]
+import anonimongo
 
 {.warning[UnusedImport]: off.}
 
