@@ -3,7 +3,7 @@ import osproc, sugar, unittest
 
 import nimsha2
 
-import anonimongo
+import ../src/anonimongo
 
 const
   pem* {.strdefine.} = "d:/dev/self-signed-cert/srv.key.pem"

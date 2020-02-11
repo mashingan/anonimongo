@@ -104,6 +104,3 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
   if arrayFilters.len > 0:
     q["arrayFilters"] = arrayFilters.map toBson
   result = await db.crudops(q)
-
-when isMainModule:
-  import ../tests/crud_test

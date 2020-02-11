@@ -1,1 +1,112 @@
+import sequtils
+import sugar
+
 import core/core
+import dbops/crud
+
+
+## Collection should return query/cursor type or anything that will run
+## for the actual query. Users can set the values for queries setting
+## before actual query request.
+
+# The strategies here will consist of:
+# 1. Collection invoke methods
+# 2. Got the query necessary
+# 3. Users chose how to run the query e.g.
+# 3.a. Find a document about it
+# 3.b. Find several documents about it
+# 3.c. Iterate the documents for it
+
+# Query will return Cursor that implement `item` iterators to iterate whether
+# firstBatch field or nextBatch field and will immediately `getMore` if it's empty
+
+proc one*(q: Query): Future[BsonDocument] {.async.} =
+  let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
+    q.projection, skip = q.skip, limit = 1, singleBatch = true)
+  result = doc["cursor"]["firstBatch"][0]
+
+proc all*(q: Query): Future[seq[BsonDocument]] {.async.} =
+  var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
+    q.projection, skip = q.skip, limit = q.limit)
+  var cursor = doc["cursor"].get.ofEmbedded.to Cursor
+  result = cursor.firstBatch
+  if result.len >= q.limit:
+    return
+  while true:
+    doc = await q.collection.db.getMore(cursor.id, q.collection.name,
+      batchSize = q.batchSize)
+    cursor = doc["cursor"].get.ofEmbedded.to Cursor
+    if cursor.nextBatch.len == 0:
+      break
+    result = concat(result, cursor.nextBatch)
+
+iterator items*(cur: Cursor): BsonDocument =
+  for b in cur.firstBatch:
+    yield b
+  let batchSize = if cur.firstBatch.len != 0: cur.firstBatch.len
+                  else: 101
+  var doc: BsonDocument
+  var newcur = cur
+  let collname = cur.collname
+  while cur.id != 0:
+    #doc = await cur.db.getMore(cur.id, collname, batchSize)
+    doc = waitfor cur.db.getMore(cur.id, collname, batchSize)
+    newcur = doc["cursor"].get.ofEmbedded.to Cursor
+    if newcur.nextBatch.len <= 0:
+      break
+    for b in newcur.nextBatch:
+      yield b
+
+proc iter*(q: Query): Future[Cursor] {.async.} =
+  var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
+    q.projection, skip = q.skip, limit = q.limit)
+  result = doc["cursor"].get.ofEmbedded.to Cursor
+  result.db = q.collection.db
+
+proc find*(c: Collection, query = bson(), projection = bsonNull()): Query =
+  result = initQuery(query, c)
+  result.projection = projection
+
+proc findOne*(c: Collection, query = bson(), projection = bsonNull(),
+  sort = bsonNull()): Future[BsonDocument] {.async.} =
+  var q = c.find(query, projection)
+  q.sort = sort
+  result = await q.one
+
+proc findAll*(c: Collection, query = bson(), projection = bsonNull(),
+  sort = bsonNull()): Future[seq[BsonDocument]] {.async.} =
+  var q = c.find(query, projection)
+  q.sort = sort
+  result = await q.all
+
+proc findIter*(c: Collection, query = bson(), projection = bsonNull(),
+  sort = bsonNull()): Future[Cursor] {.async.} =
+  var q = c.find(query, projection)
+  q.sort = sort
+  result = await q.iter
+
+when isMainModule:
+  import os, osproc
+  import ../../tests/testutils
+  let mongorun = startmongo()
+  sleep 3000
+  if not mongorun.running:
+    close mongorun
+    quit "Failed to run mongod"
+  try:
+    var mongo = testsetup()
+    var coll = mongo["temptest"]["role"]
+    #[
+    var q = coll.find()
+    var curs = waitfor q.iter
+    for d in curs:
+    ]#
+    for d in waitFor coll.findIter(
+      sort = bson({ "_id": -1 })
+    ):
+      dump d
+  except:
+    echo getCurrentExceptionMsg()
+  finally:
+    kill mongorun
+    close mongorun
