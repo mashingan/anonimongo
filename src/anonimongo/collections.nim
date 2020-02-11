@@ -93,18 +93,18 @@ proc findAndModify*(c: Collection, query = bson(), sort = bsonNull(),
   arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]{.async.} =
   let doc = await c.db.findAndModify(c.name, query, sort, remove, update, `new`,
     fields, upsert, bypass, wt, collation, arrayFilters)
-  result = doc["cursor"]["firstBatch"][0]
+  result = doc["value"].get.ofEmbedded
 
-proc update*(c: Collection, query = bson(), updates: BsonBase,
-  opt: BsonDocument): Future[(bool, int)] {.async.} =
+proc update*(c: Collection, query = bson(), updates = bsonNull(),
+  opt = bson()): Future[(bool, int)] {.async.} =
   var q = bson({
-    query: query,
-    updates: updates,
+    q: query,
+    u: updates,
    })
   for k, v in opt:
    q[k] = v
   let doc = await c.db.update(c.name, @[q])
-  result = (doc.ok, doc["n"].get.ofInt)
+  result = (doc.ok, doc["nModified"].get.ofInt)
 
 proc remove*(c: Collection, query: BsonDocument, justone = false):
     Future[(bool, int)] {.async.} =
@@ -152,3 +152,29 @@ proc count*(c: Collection, query = bson(), opt = bson()):
   let doc = await c.db.count(c.name, query, limit, skip, hint,
     readConcern, collation)
   result = doc["n"].get
+
+proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
+  Future[(bool, string)] {.async.} =
+  let wt = if "writeConcern" in opt: opt["writeConcern"].get
+           else: bsonNull()
+  var q = bson({ key: key })
+  for k, v in opt:
+    q[k] = v
+  let qarr = bsonArray q.toBson
+  result = await c.db.createIndexes(c.name, qarr, wt)
+
+proc `distinct`*(c: Collection, field: string, query = bson(),
+  opt = bson()): Future[seq[BsonBase]] {.async.} =
+  var readConcern, collation: BsonBase
+  if "readConcern" in opt: readConcern = opt["readConcern"].get
+  if "collation" in opt: collation = opt["collation"].get
+  let doc = await c.db.`distinct`(c.name, field, query, readConcern, collation)
+  result = doc["values"].get.ofArray
+
+proc dropIndex*(c: Collection, indexes: BsonBase):
+  Future[(bool, string)] {.async.} =
+  result = await c.db.dropIndexes(c.name, indexes)
+
+proc dropIndexes*(c: Collection, indexes: seq[string]):
+  Future[(bool, string)] {.async.} =
+  result = await c.db.dropIndexes(c.name, indexes.map toBson)

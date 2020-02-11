@@ -27,7 +27,7 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   q.addWriteConcern(db, writeConcern)
   result = await db.proceed(q)
 
-proc createIndexes*(db: Database, coll: string, indexes: BsonArray,
+proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
   writeConcern = bsonNull()): Future[(bool, string)]{.async.} =
   var q = bson({
     createIndexes: coll,

@@ -1,4 +1,4 @@
-import unittest, os, osproc, times, strformat
+import unittest, os, osproc, times, strformat, sequtils
 import sugar
 
 import testutils
@@ -86,6 +86,14 @@ suite "CRUD tests":
     resfind.reasonedCheck("db.aggregate error")
     let doc = resfind["cursor"]["firstBatch"].ofArray
     check doc.len == tensOfMinutes
+
+  test &"Distinct documents on {namespace}":
+    require db != nil
+    resfind = waitfor db.`distinct`(collname, "countId")
+    resfind.reasonedCheck "db.distinct error"
+    let docs = resfind["values"].get.ofArray
+    check docs.len == insertDocs.len
+    check docs.allIt( it.kind == bkInt32 )
   
   test &"Find and modify some document(s) on {namespace}":
     require db != nil

@@ -1,8 +1,10 @@
-import unittest, os, osproc, strformat, times, sequtils
+import unittest, os, osproc, strformat, times, sequtils, sugar
 
 import testutils
 import ../src/anonimongo
 import ../src/anonimongo/collections
+
+{.warning[UnusedImport]: off.}
 
 var mongorun: Process
 if runlocal:
@@ -49,8 +51,36 @@ suite "Collections APIs tests":
     check success
     check count == insertDocs.len
 
+  test &"Create index on {namespace}":
+    skip()
+
   test &"Count documents on {namespace}":
     check insertDocs.len == waitfor coll.count()
+
+  test &"Distinct documents on {namespace}":
+    require coll != nil
+    let values = waitFor coll.`distinct`("type")
+    check values.len == 1
+    check values[0].kind == bkString
+
+  test &"Find one query on {namespace}":
+    let doc = waitfor coll.findOne(bson({ countId: 5 }))
+    check doc["countId"].get == 5
+    check doc["type"].get == "insertTest"
+    check doc["addedTime"].get == (currtime + initDuration(minutes = 5 * 10))
+
+  test &"Find all on {namespace}":
+    let docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
+    let dlen = docs.len
+    check dlen == insertDocs.len
+    for i in 0 .. docs.high:
+      check docs[i]["countId"].get == dlen-i-1
+
+  test &"Find iterate on {namespace}":
+    var count = 0
+    for d in waitfor coll.findIter():
+      check d["countId"].get == count
+      inc count
 
   test &"Remove countId 1 and 5 on {namespace}":
     let toremove = [1, 5]
@@ -59,6 +89,36 @@ suite "Collections APIs tests":
     }))
     check success
     check toremove.len == removed
+
+  test &"FindAndModify countId 8 to be 80 on {namespace}":
+    require coll != nil
+    let oldcount = 8
+    let newcount = 80
+    let olddoc = waitfor coll.findAndModify(query = bson({
+      countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
+    dump olddoc
+    check olddoc["countId"].get == oldcount
+    let newdoc = waitFor coll.findOne(bson({ countId: newcount }))
+    check newdoc["countId"].get == newcount
+
+  test &"Update countId 9 $inc by 90 on {namespace}":
+    let addcount = 90
+    let oldcount = 9
+    let newtype = "異世界召喚"
+    let olddoc = waitFor coll.findOne(bson({ countId: oldcount }))
+    let (success, count) = waitfor coll.update(
+      bson({ countId: oldcount }),
+      bson({ "$set": { "type": newtype }, "$inc": { countId: addcount }}),
+      bson({ upsert: false, multi: true}))
+    check success
+    check count == 1
+    let newdoc = waitFor coll.findOne(bson({ countId: oldcount + addcount }))
+    check newdoc["countId"].get == olddoc["countId"].get + addcount
+    check newdoc["type"].get == newtype
+    check newdoc["addedTime"].get == olddoc["addedTime"].get.ofTime
+
+  test &"Drop indexes collection of {namespace}":
+    skip()
 
   test &"Drop collection {coll.db.name}.{targetColl}":
     require coll != nil
@@ -79,23 +139,3 @@ suite "Collections APIs tests":
   if runlocal:
     if mongorun.running: kill mongorun
     close mongorun
-
-#[
-  try:
-    var mongo = testsetup()
-    var coll = mongo["temptest"]["role"]
-    #[
-    var q = coll.find()
-    var curs = waitfor q.iter
-    for d in curs:
-    ]#
-    for d in waitFor coll.findIter(
-      sort = bson({ "_id": -1 })
-    ):
-      dump d
-  except:
-    echo getCurrentExceptionMsg()
-  finally:
-    kill mongorun
-    close mongorun
-    ]#
