@@ -2,7 +2,9 @@ import sequtils
 import sugar
 
 import core/core
-import dbops/crud
+import dbops/[admmgmt, aggregation, crud]
+
+{.warning[UnusedImport]: off.}
 
 
 ## Collection should return query/cursor type or anything that will run
@@ -85,28 +87,75 @@ proc findIter*(c: Collection, query = bson(), projection = bsonNull(),
   q.sort = sort
   result = await q.iter
 
-when isMainModule:
-  import os, osproc
-  import ../../tests/testutils
-  let mongorun = startmongo()
-  sleep 3000
-  if not mongorun.running:
-    close mongorun
-    quit "Failed to run mongod"
-  try:
-    var mongo = testsetup()
-    var coll = mongo["temptest"]["role"]
-    #[
-    var q = coll.find()
-    var curs = waitfor q.iter
-    for d in curs:
-    ]#
-    for d in waitFor coll.findIter(
-      sort = bson({ "_id": -1 })
-    ):
-      dump d
-  except:
-    echo getCurrentExceptionMsg()
-  finally:
-    kill mongorun
-    close mongorun
+proc findAndModify*(c: Collection, query = bson(), sort = bsonNull(),
+  remove = false, update = bsonNull(), `new` = false, fields = bsonNull(),
+  upsert = false, bypass = false, wt = bsonNull(), collation = bsonNull(),
+  arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]{.async.} =
+  let doc = await c.db.findAndModify(c.name, query, sort, remove, update, `new`,
+    fields, upsert, bypass, wt, collation, arrayFilters)
+  result = doc["cursor"]["firstBatch"][0]
+
+proc update*(c: Collection, query = bson(), updates: BsonBase,
+  opt: BsonDocument): Future[(bool, int)] {.async.} =
+  var q = bson({
+    query: query,
+    updates: updates,
+   })
+  for k, v in opt:
+   q[k] = v
+  let doc = await c.db.update(c.name, @[q])
+  result = (doc.ok, doc["n"].get.ofInt)
+
+proc remove*(c: Collection, query: BsonDocument, justone = false):
+    Future[(bool, int)] {.async.} =
+  let limit = if justone: 1 else: 0
+  var delq = bson({
+    q: query,
+    limit: limit
+  })
+  let doc = await c.db.delete(c.name, @[delq])
+  result = (doc.ok, doc["n"].get.ofInt)
+
+proc remove*(c: Collection, query, opt: BsonDocument):
+  Future[(bool, int)] {.async.} =
+  var delq = bson({ query: query })
+  var wt: BsonBase
+  for k, v in opt:
+    if k == "writeConcern": wt = v
+    else: delq[k] = v
+  let doc = await c.db.delete(c.name, @[delq], wt = wt)
+  result = (doc.ok, doc["n"].get.ofInt)
+
+#proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
+#  ordered = true, wt = bsonNull(), bypass = false):
+proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
+  Future[(bool, int)] {.async.} =
+  let wt = if "writeConcern" in opt: opt["writeConcern"].get else: bsonNull()
+  let ordered = if "ordered" in opt: opt["ordered"].get.ofBool else: true
+  let doc = await c.db.insert(c.name, docs, ordered, wt)
+  result = (doc.ok, doc["n"].get.ofInt)
+
+proc drop*(c: Collection, wt = bsonNull()): Future[(bool, string)] {.async.} =
+  result = await c.db.dropCollection(c.name, wt)
+
+#[
+proc count*(db: Database, coll: string, query = bson(),
+  limit = 0, skip = 0, hint = bsonNull(), readConcern = bsonNull(),
+  collation = bsonNull()): Future[BsonDocument] {.async.} =
+  ]#
+proc count*(c: Collection, query = bson(), opt = bson()):
+  Future[int] {.async.} =
+  var
+    hint, readConcern, collation: BsonBase
+    limit = 0
+    skip = 0
+  for k, v in opt:
+    case k
+    of "hint": hint = v
+    of "readConcern": readConcern = v
+    of "collation": collation = v
+    of "limit": limit = v
+    of "skip": skip = v
+  let doc = await c.db.count(c.name, query, limit, skip, hint,
+    readConcern, collation)
+  result = doc["n"].get

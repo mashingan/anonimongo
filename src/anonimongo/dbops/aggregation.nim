@@ -26,7 +26,7 @@ proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
   result = await db.crudops(q)
 
 proc count*(db: Database, coll: string, query = bson(),
-  limit = 1, skip = 0, hint = bsonNull(), readConcern = bsonNull(),
+  limit = 0, skip = 0, hint = bsonNull(), readConcern = bsonNull(),
   collation = bsonNull()): Future[BsonDocument] {.async.} =
   var q = bson({
     count: coll,

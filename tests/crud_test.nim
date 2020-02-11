@@ -63,6 +63,12 @@ suite "CRUD tests":
     for d in resfind["cursor"]["firstBatch"].ofArray:
       foundDocs.add d
     check foundDocs.len == insertDocs.len
+
+  test &"Count documents on {namespace}":
+    require db != nil
+    resfind = waitfor db.count(collname)
+    resfind.reasonedCheck("count error")
+    check resfind["n"].get == foundDocs.len
   
   test &"Find and modify some document(s) on {namespace}":
     require db != nil
