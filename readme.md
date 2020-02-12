@@ -198,34 +198,34 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [ ] `setParameter`
 - [x] `shutdown`
 </details>
-<details><summary>:x: Diagnostic commands 0/26</summary>
+<details><summary>:white_check_mark: Diagnostic commands 17/17 (<del>26</del>)</summary>
 
-- [ ] `availableQueryOptions`
-- [ ] `buildInfo`
-- [ ] `collStats`
-- [ ] `connPoolStats`
-- [ ] `connectionStatus`
-- [ ] `cursorInfo`
-- [ ] `dataSize`
-- [ ] `dbHash`
-- [ ] `dbStats`
-- [ ] `diagLogging`
-- [ ] `driverOIDTest`
-- [ ] `explain`
-- [ ] `features`
-- [ ] `getCmdLineOpts`
-- [ ] `getLog`
-- [ ] `hostInfo`
-- [ ] `isSelf`
-- [ ] `listCommands`
-- [ ] `netstat`
-- [ ] `ping`
-- [ ] `profile`
-- [ ] `serverStatus`
-- [ ] `shardConnPoolStats`
-- [ ] `top`
-- [ ] `validate`
-- [ ] `whatsmyuri`
+- [ ] `availableQueryOptions` (internal command)
+- [x] `buildInfo`
+- [x] `collStats`
+- [x] `connPoolStats`
+- [x] `connectionStatus`
+- [ ] `cursorInfo` (removed, use metrics.cursor from `serverStatus` instead)
+- [x] `dataSize`
+- [x] `dbHash`
+- [x] `dbStats`
+- [ ] `diagLogging` (removed, on Mongo 3.6, use mongoreplay instead)
+- [ ] `driverOIDTest` (internal command)
+- [x] `explain`
+- [ ] `features` (internal command)
+- [x] `getCmdLineOpts`
+- [x] `getLog`
+- [x] `hostInfo`
+- [ ] `isSelf` (internal command)
+- [x] `listCommands`
+- [ ] `netstat` (internal command)
+- [x] `ping`
+- [ ] `profile` (internal command)
+- [x] `serverStatus`
+- [x] `shardConnPoolStats`
+- [x] `top`
+- [x] `validate`
+- [ ] `whatsmyuri` (internal command)
 </details>
 <details><summary>:x: Free monitoring commands 0/1</summary>
 

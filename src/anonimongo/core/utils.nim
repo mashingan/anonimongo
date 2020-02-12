@@ -45,8 +45,8 @@ proc proceed*(db: Database, q: BsonDocument, dbname = ""):
   result[0] = epilogueCheck(reply, result[1])
 
 #template crudops(db: Database, q: BsonDocument): untyped {.async.} =
-proc crudops*(db: Database, q: BsonDocument): Future[BsonDocument]{.async.} =
-  let reply = await sendops(q, db)
+proc crudops*(db: Database, q: BsonDocument, dbname = ""): Future[BsonDocument]{.async.} =
+  let reply = await sendops(q, db, dbname)
   let (success, reason) = check reply
   if not success:
     raise newException(MongoError, reason)
