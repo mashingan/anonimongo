@@ -34,8 +34,8 @@ proc dbStats*(db: Database, scale = 1024): Future[BsonDocument]{.async.} =
     dbStats: 1, scale: scale
   }))
 
-proc explain*(db: Database, string, cmd = bson(),
-  verbosity = "allPlansExecution"): Future[BsonDocument] {.async.} =
+proc explain*(db: Database, cmd = bson(), verbosity = "allPlansExecution"):
+  Future[BsonDocument] {.async.} =
   let q = bson({ explain: cmd, verbosity: verbosity })
   result = await db.crudops(q)
 

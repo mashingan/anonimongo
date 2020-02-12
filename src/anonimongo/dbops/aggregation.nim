@@ -1,10 +1,12 @@
 import tables, sequtils
 import ../core/[bson, types, wire, utils]
+import diagnostic
 
 proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
   explain = false, diskuse = false, cursor = bson(), maxTimeMS = 0,
   bypass = false, readConcern = bsonNull(), collation = bsonNull(),
-  hint = bsonNull(), comment = "", wt = bsonNull()): Future[BsonDocument]{.async.} =
+  hint = bsonNull(), comment = "", wt = bsonNull(), explainVerbosity = ""):
+  Future[BsonDocument]{.async.} =
   var q = bson({
     aggregate: coll,
     pipeline: pipeline.map toBson,
@@ -23,11 +25,12 @@ proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
     q.addOptional(kv[0], kv[1])
   if comment != "": q["comment"] = comment
   q.addWriteConcern(db, wt)
-  result = await db.crudops(q)
+  if explainVerbosity != "": result = await db.explain(q, explainVerbosity)
+  else: result = await db.crudops(q)
 
 proc count*(db: Database, coll: string, query = bson(),
   limit = 0, skip = 0, hint = bsonNull(), readConcern = bsonNull(),
-  collation = bsonNull()): Future[BsonDocument] {.async.} =
+  collation = bsonNull(), explain = ""): Future[BsonDocument] {.async.} =
   var q = bson({
     count: coll,
     query: query,
@@ -40,10 +43,11 @@ proc count*(db: Database, coll: string, query = bson(),
     ("collation", collation)
   ]:
     q.addOptional(kv[0], kv[1])
-  result = await db.crudops(q)
+  if explain != "": result = await db.explain(q, explain)
+  else: result = await db.crudops(q)
 
 proc `distinct`*(db: Database, coll, key: string, query = bson(),
-  readConcern = bsonNull(), collation = bsonNull()):
+  readConcern = bsonNull(), collation = bsonNull(), explain = ""):
   Future[BsonDocument]{.async.} =
   var q = bson({
     `distinct`: coll,
@@ -55,7 +59,8 @@ proc `distinct`*(db: Database, coll, key: string, query = bson(),
     ("collation", collation)
   ]:
     q.addOptional(kv[0], kv[1])
-  result = await db.crudops(q)
+  if explain != "": result = await db.explain(q, explain)
+  else: result = await db.crudops(q)
 
 proc mapReduce*(db: Database, coll: string, map, reduce: BsonJs,
   `out`: BsonBase, query = bson(), sort = bsonNull(), limit = 0,
