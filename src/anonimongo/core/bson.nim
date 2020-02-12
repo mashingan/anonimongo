@@ -13,7 +13,56 @@ export options
 include bsonify
 include macroto
 
+# Bson
+# Copyright Rahmatullah
+# Bson implementation in Nim
+# License MIT
+
+## Bson
+## ****
+##
+## Bson implementation in Nim based on `Bson spec`_. Users mainly will
+## only need to use ``BsonDocument`` often as the main type instead
+## of ``BsonBase``. But for specific uses, users sometimes to use
+## ``sequtils.map`` to change the array/seq of some type to BsonArray
+## specifically and to BsonBase generically e.g.
+##
+## .. code-block:: Nim
+##
+##   import sequtils
+##   var arrint = [1, 2, 3, 4, 5]
+##   var bdoc = bson({
+##     intfield: 1,
+##     floatfield: 42.0,
+##     strfield: "hello 異世界",
+##     arrfield: arrint.map toBson,
+##   })
+##
+## In case of immediate BsonDocument definition, we can define it e.g.
+##
+## .. code-block:: Nim
+##
+##   var bdoc = bson({
+##     arrfield: ["hello", 1, 4.2, true]
+##   })
+##   doAssert $bdoc == """{"arfield":["hello",1,4.2,true]}"""
+##
+## Currently, based on test, we cannot add empty embed bson object literally
+## and had to define a variable for it, and also a field started with number,
+## e.g.
+##
+## .. code-block:: Nim
+##
+##   var _ = bson({ embed: {}, 1: "the field isn't supported too" })
+##
+## The snip above will throw compiler error because of empty set and macro
+## error because of something ``nnkIntLitNode``.
+##
+## .. _Bson spec: http://bsonspec.org
+
 template writeLE*[T](s: Stream, val: T): untyped =
+  ## Utility template to write any value to comply to
+  ## less endian byte stream.
   when cpuEndian == bigEndian:
     var old = val
     var temp: T
@@ -28,6 +77,9 @@ template writeLE*[T](s: Stream, val: T): untyped =
     s.write val
 
 template readIntLE*(s: Stream, which: typedesc): untyped =
+  ## Utility template to read int value which int type is
+  ## specified in less endian format and adapt accordingly
+  ## to current machine endianess.
   when cpuEndian == bigEndian:
     var tempLE: which
     when which is int32:
@@ -45,6 +97,7 @@ template readIntLE*(s: Stream, which: typedesc): untyped =
 
 
 template readFloatLE(s: Stream): untyped =
+  ## Read less endian float64
   when cpuEndian == bigEndian:
     var tempBE = s.readFloat64
     var tempLE: float64
@@ -54,6 +107,7 @@ template readFloatLE(s: Stream): untyped =
     s.readFloat64
 
 template peekInt32LE*(s: Stream): untyped =
+  ## Peek less endian int32
   when cpuEndian == bigEndian:
     var tempbe = s.peekInt32
     var temple: int32
@@ -63,11 +117,13 @@ template peekInt32LE*(s: Stream): untyped =
     s.peekInt32
 
 proc bytes*(s: string): seq[byte] =
+  ## Converts string to sequence of bytes.
   result = newseq[byte](s.len)
   for i, c in s:
     result[i] = c.byte
 
 proc bytes*(o: Oid): seq[byte] =
+  ## Converts ObjectId to sequence of bytes.
   result = newSeq[byte]()
   var
     count = 0
@@ -78,14 +134,19 @@ proc bytes*(o: Oid): seq[byte] =
     count += 2
 
 proc stringbytes*(s: seq[byte]): string =
+  ## Convert byte stream seq to string.
+  ## Usually used for reading binary stream.
   result = newstring(s.len)
   for i, b in s: result[i] = chr b
 
 template `as`*(a, b: untyped): untyped =
+  ## Sugar syntax for cast.
   cast[b](a)
 
 type
   BsonBase* = ref object of RootObj
+    ## BsonBase is type mimick object variant.
+    ## Used as base of others Bson.
     kind*: BsonKind
 
   BsonInt32* = ref object of BsonBase
@@ -99,6 +160,8 @@ type
     timestamp: uint32
 
   BsonTimestamp* = ref object of BsonBase
+    ## BsonTimestamp is actually int64 which represented
+    ## by low dword as increment and high dword as timestamp.
     value*: TimestampInternal
 
   BsonDouble* = ref object of BsonBase
@@ -116,28 +179,43 @@ type
     value*: seq[BsonBase]
 
   BsonString* = ref object of BsonBase
+    ## BsonString supports unicode string and the implementation
+    ## save it as Runes.
     value*: seq[Rune]
 
   BsonJs* = ref object of BsonBase
+    ## JS code which represented as string, it's implemented as
+    ## same as string.
     value*: seq[Rune]
 
   BsonEmbed* = ref object of BsonBase
+    ## Embedded object as BsonDocument as its value. Defined
+    ## in accordance with other BsonType for easier encoding/decoding
+    ## to Bson stream.
     value*: BsonDocument
 
   BsonObjectId* = ref object of BsonBase
     value*: Oid
 
   BsonBinary* = ref object of BsonBase
+    ## BsonBinary handles any kind of byte stream for
+    ## Bson encoding/decoding.
     subtype*: BsonSubtype
     value*: seq[byte]
 
   BsonInternal = OrderedTableRef[string, BsonBase]
   BsonDocument* = ref object
+    ## BsonDocument is the top of Bson type which
+    ## has different structure tree with BsonBase family.
+    ## Any user will mainly handle this often instead of
+    ## BsonBase.
     table: BsonInternal
     stream: Stream
-    encoded*: bool
+    encoded*: bool ## Flag whether the document already encoded\
+      ## to avoid repeated encoding.
 
   BsonKind* = enum
+    ## Available Bson kind in accordance to Bson spec
     bkEmptyArray = (0x00.byte, "BsonEmptyArray")
     bkDouble = (0x01.byte, "BsonDouble")
     bkString = (0x02.byte, "BsonString")
@@ -162,33 +240,45 @@ type
     bkMinKey = (0xff.byte, "BsonMinKey")
   
   BsonSubtype* = enum
+    ## BsonSubtype is used to identify which kind of binary
+    ## we encode/decode for that BsonBase. `stGeneric` is used
+    ## generically when no specific subtype should be used.
     stGeneric = 0x00.byte
     stFunction stBinaryOld stUuidOld stUuid stMd5
 
-  BsonFetchError* = ref object of Exception
+  BsonFetchError* = object of Exception
+    ## Bson error type converting wrong type from BsonBase
 
 iterator pairs*(b: BsonDocument): (string, BsonBase) =
   for k, v in b.table:
     yield (k, v)
 
 
-# Added to bypass getting from Option or BsonBase
 proc get*(b: BsonBase): BsonBase = b
+  ## functionalities to bypass whether it's Option or not.
 proc isSome*(b: BsonBase): bool = true
+  ## functionalities to bypass whether it's Option or not.
 proc isNone*(b: BsonBase): bool = false
+  ## functionalities to bypass whether it's Option or not.
 
 proc ms*(a: Time): int64 =
   ## Unix epoch in milliseconds.
   int64(a.toUnix*1000 + a.nanosecond/1e6)
 
 proc `==`*(b: BsonBase, t: Time): bool =
+  ## eq operator to fix some caveat caused by different precision
+  ## between Nim's ``Time`` and Bson's ``Time``. Bson precision
+  ## is milliseconds while Nim precision is nanoseconds.
   if b.kind != bkTime:
-    raise BsonFetchError(msg: fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
+    raise newException(BsonFetchError,
+      fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
   (b as BsonTime).value.ms == t.ms
 
 proc `==`*(t: Time, b: BsonBase): bool =
+  ## To support another eq operator position.
   if b.kind != bkTime:
-    raise BsonFetchError(msg: fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
+    raise newException(BsonFetchError,
+      fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
   t.ms == (b as BsonTime).value.ms
 
 #[ will be completed later
@@ -215,54 +305,211 @@ proc `==`*(a, b: BsonBase): bool =
 ]#
 
 proc contains*(b: BsonDocument, key: string): bool =
+  ## Check whether string ``key`` in BsonDocument ``b``
+  runnableExamples:
+    let bso = bson({
+      field1: 1,
+      field2: "field2",
+      dynamic: true
+    })
+    doAssert "field1" in bso
+    doAssert "field2" in bso
+    doAssert "dynamic" in bso
   key in b.table
 
 proc contains*(b: BsonBase, key: string): bool =
+  ## Check whether string ``key`` in BsonBase ``b``.
+  ## If the ``b`` is not BsonEmbed, throw ``BsonFetchError``.
+  runnableExamples:
+    let bso = bson({
+      embed: {
+        field1: 1,
+        field2: "field2",
+        dynamic: true
+      }
+    })
+    let embedbso = bso["embed"].get
+    doAssert "field1" in embedbso
+    doAssert "field2" in embedbso
+    doAssert "dynamic" in embedbso
+    #[ cannot add try-except clause in runnableExamples
+    let bsarr = bsonArray(1, 2, 3.14, true)
+    try:
+      discard bsarr["wrong-type"]
+      doAssert false
+    except BsonFetchError:
+      doAssert true
+      ]#
   if b.kind != bkEmbed:
-    raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
+    raise newException(BsonFetchError, fmt"Invalid key retrieval, get {b.kind}")
   key in (b as BsonEmbed).value
 
 proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
+  ## BsonDocument accessor for string key. The returned Option is
+  ## artifact of older API design.
+  runnableExamples:
+    let bso = bson({
+      field1: 1,
+      field2: "field2",
+      dynamic: true
+    })
+    doAssert bso["field1"].isSome
+    doAssert bso["not-exists"].isNone
   if key in b:
     result = some b.table[key]
   else:
     result = none BsonBase
 
 proc `[]`*(b: BsonBase, key: sink string): BsonBase =
+  ## BsonEmbed accessor for string key. Error when b is not BsonEmbed.
+  runnableExamples:
+    let bso = bson({
+      embed: {
+        field1: 1,
+        field2: "field2",
+        dynamic: true
+      }
+    })
+    doAssert bso["embed"]["field1"] == 1
+    doAssert bso["embed"]["field2"] == "field2"
+    doAssert bso["embed"]["dynamic"].ofBool
   if b.kind != bkEmbed:
-    raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
+    raise newException(BsonFetchError, fmt"Invalid key retrieval, get {b.kind}")
   result = ((b as BsonEmbed).value)[key].get
 
 proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
+  ## BsonArray accessor for int index. Error when b is not BsonArray.
+  runnableExamples:
+    let bso = bson({
+      embed: {
+        field1: 1,
+        field2: "field2",
+        dynamic: true,
+        bsarr: [1, 2, 3.14, true]
+      }
+    })
+    let embedbso = bso["embed"].get
+    doAssert bso["embed"]["bsarr"][0] == 1
+    doAssert bso["embed"]["bsarr"][1] == 2
+    doAssert bso["embed"]["bsarr"][2] == 3.14
+    doAssert bso["embed"]["bsarr"][3].ofBool
   if b.kind != bkArray:
-    raise BsonFetchError(msg: fmt"Invalid indexed retrieval, get {b.kind}")
+    raise newException(BsonFetchError, fmt"Invalid indexed retrieval, get {b.kind}")
   let value = (b as BsonArray).value
   if idx >= value.len:
     raise newException(IndexError, fmt"{idx} not in 0..{value.len-1}")
   result = value[idx]
 
 proc `[]`*[T: int | string](b: Option[BsonBase], key: sink T): BsonBase =
+  ## BsonBase Accessor whether indexed key or string key. Offload the
+  ## actual operations to actual BsonBase accessors.
+  runnableExamples:
+    let bso = bson({
+      embed: {
+        field1: 1,
+        field2: "field2",
+        dynamic: true,
+        bsarr: [1, 2, 3.14, true]
+      }
+    })
+    doAssert bso["embed"]["field1"] == 1
+    doAssert bso["embed"]["field2"] == "field2"
+    doAssert bso["embed"]["dynamic"].ofBool
+    doAssert bso["embed"]["bsarr"][0] == 1
+    doAssert bso["embed"]["bsarr"][1] == 2
+    doAssert bso["embed"]["bsarr"][2] == 3.14
+    doAssert bso["embed"]["bsarr"][3].ofBool
   result = b.get[key]
 
 proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
+  ## BsonDocument setter with string key and the value. Because
+  ## defined converter, any primitives and natives defined BsonKind
+  ## automatically converted to BsonBase.
+  runnableExamples:
+    import times
+    var bsonobj = bson()
+    let currtime = now().toTime
+    bsonobj["fieldstr"] = "this is string"
+    bsonobj["fieldint"] = 1
+    bsonobj["currtime"] = currtime
+    bsonobj["thefloat"] = 42.0
+    doAssert bsonobj["fieldstr"].get == "this is string"
+    doAssert bsonobj["fieldint"].get == 1
+    doAssert bsonobj["currtime"].get == currtime
+    doAssert bsonobj["thefloat"].get == 42.0
+  
   b.encoded = false
   b.table[key] = val
 
 proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
+  ## Return a mutable field access, any change to this variable
+  ## affect BsonDocument and immediately turned ``encoded`` field
+  ## off/false.
+  runnableExamples:
+    import times
+    var bsonobj = bson()
+    let currtime = now().toTime
+    bsonobj["fieldstr"] = "this is string"
+    bsonobj["fieldint"] = 1
+    bsonobj["currtime"] = currtime
+    bsonobj["thefloat"] = 42.0
+    let (_, _) = encode bsonobj
+    doAssert bsonobj.encoded
+    bsonobj.mget("fieldint") = 2
+    doAssert not bsonobj.encoded
+  
   b.encoded = false
   b.table[key]
 
 proc mget*(b: var BsonBase, key: sink string): var BsonBase =
+  ## Actual a mutable accessor for string key BsonEmbed.
+  ## Throw error when it's not BsonEmbed.
+  runnableExamples:
+    var bbase = bson({
+      embed: { f1: 1, f2: "nice", f3: true }
+    })
+    bbase.mget("embed").mget("f2") = false
+    doAssert not bbase["embed"]["f2"].get.ofBool
   if b.kind != bkEmbed:
-    raise BsonFetchError(msg: fmt"Invalid key retrieval, get {b.kind}")
+    raise newException(BsonFetchError,
+      fmt"Invalid key retrieval, get {b.kind}")
   result = (b as BsonEmbed).value.table[key]
 
 proc mget*(b: var BsonBase, index: sink int): var BsonBase =
+  ## Actual a mutable accessor for indexed key BsonArray.
+  ## Throw error when it's not BsonArray.
+  runnableExamples:
+    var bbase = bsonArray(1, 2, 3, 4.5)
+    bbase.mget(2) = 5
+    doAssert bbase[2] == 5
   if b.kind != bkArray:
-    raise BsonFetchError(msg: fmt"Invalid index retrieval, get {b.kind}")
+    raise newException(BsonFetchError,
+      fmt"Invalid index retrieval, get {b.kind}")
   result = (b as BsonArray).value[index]
 
+proc del*(b: var BsonDocument, key: string) =
+  ## Delete a field given from string key. Do nothing when there's no
+  ## targeted field
+  runnableExamples:
+    var b = bson({ f1: 1, f2: 2, f3: 3 })
+    doAssert b.len == 3
+    b.del "f1"
+    doAssert b.len == 2
+    b.del "f2"
+    doAssert b.len == 1
+    b.del "f2"
+    doAssert b.len == 1
+  b.table.del key
+
 proc len*(b: BsonDocument): int =
+  ## Return the how many key-value in BsonDocument.
+  runnableExamples:
+    var b = bson()
+    doAssert b.len == 0
+    b["field1"] = 1
+    doAssert b.len == 1
+    b.del "field1"
+    doAssert b.len == 0
   b.table.len
 
 proc quote(key: string): string =
@@ -271,9 +518,20 @@ proc quote(key: string): string =
 proc `$`*(doc: BsonDocument): string
 
 proc `$`(doc: BsonBinary): string =
+  ## Stringified BsonBinary.
   result = fmt"binary({quote($doc.subtype)}, {quote(doc.value.stringbytes)})"
 
 proc `$`*(v: BsonBase): string =
+  ## Stringified BsonBase.
+  runnableExamples:
+    import times
+    let currtime = now().toTime
+    doAssert $"hello 異世界".toBson == "\"hello 異世界\""
+    doAssert $1.toBson == $1
+    doAssert $(4.2.toBson) == $4.2
+    doAssert $(currtime.toBson) == '"' & $currtime & '"'
+    doAssert $(bsonNull()) == "null"
+    doAssert $bsonArray(1, 3.14, true) == "[1,3.14,true]"
   case v.kind
   of bkString:
     result = quote $(v as BsonString).value
@@ -306,6 +564,12 @@ proc `$`*(v: BsonBase): string =
     result = ""
 
 proc `$`*(doc: BsonDocument): string =
+  ## Stringified BsonDocument.
+  runnableExamples:
+    let bsonempty = bson({})
+    let simple = bson({ field1: 1, "field2": "two", "field3": 3.14,
+      arr: [], embed: bsonempty})
+    doAssert $simple == """{"field1":1,"field2":"two","field3":3.14,"arr":[],"embed":{}}"""
   result = "{"
   for k, v in doc:
     result &= k.quote & ":" & $v & ','
@@ -402,6 +666,8 @@ proc encode(s: Stream, key: string, doc: BsonTimestamp): int =
   s.writeLE doc.value[1]
 
 proc encode*(doc: BsonDocument): (int, string) =
+  ## Encode BsonDocument and return it into length of binary string
+  ## and the binary string itself.
   if doc.encoded:
     doc.stream.setPosition 0
     let docstr = doc.stream.readAll
@@ -450,14 +716,18 @@ proc encode*(doc: BsonDocument): (int, string) =
   result = (length, buff)
 
 converter toBson*(v: BsonBase): BsonBase = v
+  ## Id conversion BsonBase to itself. For bson macro.
 
 converter toBson*(value: int|int32): BsonBase =
+  ## Convert int or int32 to BsonBase automatically.
   BsonInt32(value: value.int32, kind: bkInt32) as BsonBase
 
 converter toBson*(value: int64): BsonBase =
+  ## Convert int64 to BsonBase automatically.
   BsonInt64(value: value, kind: bkInt64)# as BsonBase
 
 converter toBson*(values: string | seq[Rune]): BsonBase =
+  ## Convert whether string or Runes to BsonString/BsonBase.
   when values.type is string:
     let newval = toSeq(values.runes)
   else:
@@ -468,6 +738,7 @@ converter toBson*(value: SomeFloat): BsonBase =
   BsonDouble(value: value.float64, kind: bkDouble)# as BsonBase
 
 converter toBson*(value: seq[BsonBase]): BsonBase =
+  ## Convert seq of BsonBase into BsonArray/BsonBase.
   BsonArray(value: value, kind: bkArray)# as BsonBase
 
 converter toBson*(value: bool): BsonBase =
@@ -480,36 +751,46 @@ converter toBson*(value: Oid): BsonBase =
   BsonObjectId(value: value, kind: bkObjectId)
 
 converter toBson*(value: BsonDocument): BsonBase =
+  ## Convert BsonDocument into BsonEmbed.
   BsonEmbed(value: value, kind: bkEmbed)
 
 converter toBson*(value: openarray[byte]): BsonBase =
+  ## Convert any bytes into as generic BsonBinary.
   BsonBinary(value: @value, kind: bkBinary, subtype: stGeneric)
 
 converter toBson*(value: TimestampInternal): BsonBase =
   BsonTimestamp(value: value, kind: bkTimestamp)
 
 proc bsonNull*: BsonBase =
+  ## Convenient BsonNull init.
   BsonNull(kind: bkNull)
 
 proc isNil*(b: BsonBase): bool =
+  ## Check whether BsonBase is literally nil or it's BsonNull.
   b == nil or (b as BsonNull).kind == bkNull
 
 proc isNil*(b: BsonDocument): bool =
+  ## Check whether BsonDocument is literally nil or it's empty.
   b == nil or b.len == 0
 
 proc isNil*(b: Option[BsonBase]): bool =
+  ## Bypass Option to check the BsonBase.
   not b.isNone and b.get.isNil
 
 proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
+  ## Change a variable arguments into BsonArray.
   (@args).toBson
 
 proc bsonBinary*(binstr: string, subtype = stGeneric): BsonBase =
+  ## Change a string BsonBinary.
   BsonBinary(value: binstr.bytes, subtype: subtype, kind: bkBinary)
 
 proc bsonBinary*(binseq: seq[byte], subtype = stGeneric): BsonBase =
+  ## Overload with seq of byte to be BsonBinary
   BsonBinary(value: binseq, subtype: subtype, kind: bkBinary)
 
 proc bsonJs*(code: string | seq[Rune]): BsonBase =
+  ## BsonJs init for string or Runes.
   when code.type is string:
     let value = toSeq code.runes
   else:
@@ -518,6 +799,9 @@ proc bsonJs*(code: string | seq[Rune]): BsonBase =
 
 proc newBson*(table = newOrderedTable[string, BsonBase](),
     stream: Stream = newStringStream()): BsonDocument =
+  ## A primordial BsonDocument allocators. Preferably to use
+  ## bson macro instead, except the need to specify the stream
+  ## used for the BsonDocument.
   BsonDocument(
     table: table,
     stream: stream
@@ -622,6 +906,7 @@ proc decode(s: Stream): (string, BsonBase) =
   result = (key, val)
 
 proc decode*(strbytes: string): BsonDocument =
+  ## Decode a binary stream into BsonDocument.
   var
     stream = newStringStream(strbytes)
     table = newOrderedTable[string, BsonBase]()
@@ -641,6 +926,8 @@ proc decode*(strbytes: string): BsonDocument =
 
 proc newBson*(table: varargs[(string, BsonBase)]): BsonDocument =
   var tableres = newOrderedTable[string, BsonBase]()
+  ## Overload newBson with table definition only and stream default to
+  ## StringStream.
   for t in table:
     tableres[t[0]] = t[1]
   BsonDocument(
@@ -651,7 +938,7 @@ proc newBson*(table: varargs[(string, BsonBase)]): BsonDocument =
 template bsonFetcher(b: BsonBase, targetKind: BsonKind,
     inheritedType: typedesc, targetType: untyped): untyped =
   if b.kind != targetKind:
-    raise BsonFetchError(msg: "Cannot convert $# to $#" %
+    raise newException(BsonFetchError, "Cannot convert $# to $#" %
       [$b.kind, $targetType])
   else:
     result = (b as inheritedType).value as targetType
@@ -672,12 +959,16 @@ converter ofDouble*(b: BsonBase): float64 =
   bsonFetcher(b, bkDouble, BsonDouble, float64)
 
 converter ofString*(b: BsonBase): string =
+  ## ofString converter able to extract whether BsonString or BsonJs
+  ## because both of implementation is exactly same with only different
+  ## their BsonKind.
   if b.kind == bkString:
     $(b as BsonString).value
   elif b.kind == bkJs:
     $(b as BsonJs).value
   else:
-    raise BsonFetchError(msg: fmt"""Cannot convert {b.kind} to string or JsCode""")
+    raise newException(BsonFetchError,
+      fmt"""Cannot convert {b.kind} to string or JsCode""")
 
 converter ofTime*(b: BsonBase): Time =
   bsonFetcher(b, bkTime, BsonTime, Time)
@@ -701,3 +992,4 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
   bsonFetcher(b, bkTimestamp, BsonTimestamp, TimestampInternal)
 
 template bson*(): untyped = bson({})
+  ## Convenience for empty bson.

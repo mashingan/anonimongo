@@ -235,6 +235,34 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   result = newIfStmt((testif, bodyif))
 
 macro to*(b: untyped, t: typed): untyped =
+  ## Macro to is automatic conversion from symbol/variable BsonDocument
+  ## to specified Type. This doesn't support dynamic values of array, only
+  ## support homogeneous value-type array.
+  ##
+  ## .. code-block:: Nim
+  ##
+  ##    type MyFlatObject = object
+  ##      intfield: int
+  ##      strfield: string
+  ##      strarr: seq[string]
+  ##      documents: seq[BsonDocument]
+  ##    let bobj = bson({
+  ##       intfield: 1,
+  ##       strfield: "str",
+  ##       strarr: ["elm1", "elm2", "elm3"],
+  ##       documents: [
+  ##         { field1: 1, arbitrary: "fine" },
+  ##         { dynamic: true, field2: 2 },
+  ##         { phi: 3.14, field3: "nice" }
+  ##       ]
+  ##    })
+  ##    let flatobj = bobj.to MyFlatObject
+  ##    doAssert flatobj.documents.len == 3
+  ##    doAssert flatobj.intfield == 1
+  ##    doAssert flatobj.strarr[1] == "elm2"
+  ##    doAssert flatobj.documents[0]["field1"].get == 1
+  ##    doAssert flatobj.documents[1]["dynamic"].get.ofBool
+  ##  
   result = newStmtList()
   let st = getType t
   let resvar = genSym(nskVar, "res")
