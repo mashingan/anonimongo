@@ -1,5 +1,5 @@
 import unittest, times, oids, streams, tables, os
-import core/bson
+import anonimongo/core/bson
 import sugar
 
 {.warning[UnusedImport]: off.}

@@ -3,8 +3,7 @@ import osproc, sugar, unittest
 
 import nimsha2
 
-import core/[types, pool, auth, bson, wire]
-import dbops/client
+import ../src/anonimongo
 
 const
   pem* {.strdefine.} = "d:/dev/self-signed-cert/srv.key.pem"

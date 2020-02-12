@@ -44,8 +44,20 @@ type
     id*: int64
     firstBatch*: seq[BsonDocument]
     nextBatch*: seq[BsonDocument]
-    db*: Mongo
+    db*: Database
     ns*: string
+
+  Query* = object
+    ## Query is basically any options that will be used when calling dbcommand
+    ## find and others related commands. Must of these values are left to be
+    ## default with only exception of query field.
+    query*: BsonDocument
+    sort*: BsonBase
+    projection*: BsonBase
+    writeConcern*: BsonBase
+    collection*: Collection
+    skip*, limit*, batchSize*: int32
+    readConcern*, max*, min*: BsonBase
 
   MongoError* = object of Exception
 
@@ -146,7 +158,6 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn,
       elif kvs[0].toLower == "key":
         s.keyfile = decodeUrl kvs[1]
   var newsslinfo = sslinfo
-  dump result.query
   if ["ssl", "tls"].anyIt( it.toLower in result.query):
     if "tlsCertificateKeyFile".toLower notin result.query:
       raise newException(MongoError, "option tlsCertificateKeyFile not provided")
@@ -155,7 +166,6 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn,
     echo "got tls certificate key"
     newsslinfo.setCertKey result.query["tlsCertificatekeyFile".toLower]
 
-  dump newsslinfo
   when defined(ssl):
     newsslinfo.protocol = protSSLv23
   result.setSsl newsslinfo
@@ -211,10 +221,21 @@ proc `[]`*(m: Mongo, name: string): Database =
   result.name = name
 
 proc `[]`*(dbase: Database, name: string): Collection =
+  new result
   result.name = name
+  result.dbname = dbase.name
   result.db = dbase
 
 proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
 proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
 
 proc close*(m: Mongo) = close m.pool
+
+proc initQuery*(query = bson(), collection: Collection = nil,
+  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query =
+  result = Query(
+    query: query,
+    collection: collection,
+    skip: skip,
+    limit: limit,
+    batchSize: batchSize)

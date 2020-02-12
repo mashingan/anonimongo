@@ -1,13 +1,56 @@
-# Anonimongo - Another pure NIM MONGO driver (WIP)
-[Mongodb](https://www.mongodb.com) is a document-based key-value database which emphasize in high performance read
+# Anonimongo - ANOther pure NIM MONGO driver (WIP)
+[Mongodb][1] is a document-based key-value database which emphasize in high performance read
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
 Anonimongo is a driver for Mongodb developed using pure Nim. As library, it's developed to enable
 developers to be able to access and use Mongodb in projects using Nim. Currently the low level APIs is implemented
-however the higher level APIs for easier usage in development<sup>TM</sup>.
+however the higher level APIs for easier usage is still in heavy development<sup>TM</sup>.
 
-## Example
-TBA, for now see tests code examples.
+The APIs are closely following [Mongo documentation][4] with a bit variant for `explain` API. Each supported
+command for `explain` added optional string value to indicate the verbosity of `explain` command.  
+By default, it's empty string which also indicate the command operations working without the need to
+`explain` the queries. For others detailed caveats can be found [here](#caveats).
+
+## Examples
+<details><summary>Simple operations</summary>
+
+```nim
+import times
+import anonimongo
+import anonimongo/collection
+
+var mongo = newMongo(poolconn = 16) # default is 64
+if not waitFor mongo.connect:
+  quit "Cannot connect to mongo server"
+var coll = mongo["temptest"]["colltest"]
+var idoc = newseq[BsonDocument](10)
+for i in 0 .. idoc.high:
+  idoc[i] = bson({
+    datetime: currtime + initDuration(hours = i),
+    insertId: i
+  })
+let (success, inserted) = waitfor coll.insert(idoc)
+if not success:
+  echo "Cannot insert to collection: ", coll.name
+else:
+  echo "inserted documents: ", inserted
+
+let id5doc = waitfor coll.findOne(bson({
+  insertId: 5
+}))
+doAssert id5doc["datetime"].get == currtime + initDuration(hours = 5)
+
+let oldid8doc = waitfor coll.findAndModify(
+  bson({ insertId: 8},
+  bson({ "$set": { insertId: 80 }}))
+)
+let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
+doAssert oldid8doc["datetime"].get.ofTime == newid8doc["datetime"].get
+close mongo
+```
+</details>
+Check [tests](tests/readme.md) for more examples of detailed usages.
+
 
 ## Install
 
@@ -22,8 +65,8 @@ requires "https://github.com/mashingan/anonimongo#head"
 ```
 
 ## Implemented APIs
-This implemented APIs for Mongo from [Mongo reference manual](https://docs.mongodb.com/manual/reference/command/)
-and [mongo spec](https://github.com/mongodb/specifications).
+This implemented APIs for Mongo from [Mongo reference manual][2]
+and [mongo spec][3].
 
 <details>
 <summary>Features connection</summary>
@@ -57,7 +100,7 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [x] `geoSearch`
 </details>
 
-<details><summary>:ballot_box_with_check: Query and write operations commands 6/8</summary>
+<details><summary>:white_check_mark: Query and write operations commands 7/7 (<del>8</del>)</summary>
 
 - [x] `delete`
 - [x] `find`
@@ -65,8 +108,8 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [x] `getMore`
 - [x] `insert`
 - [x] `update`
-- [ ] `getLastError`
-- [ ] `resetError`
+- [x] `getLastError`
+- [ ] `resetError` (deprecated)
 </details>
 
 <details><summary>:x: Query plan cache commands 0/6</summary>
@@ -166,7 +209,7 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [ ] `refreshSessions`
 - [ ] `startSession`
 </details>
-<details><summary>:ballot_box_with_check: Administration commands 10/29</summary>
+<details><summary>:ballot_box_with_check: Administration commands 13/28 (<del>29</del>)</summary>
 
 - [ ] `clean` (internal namespace command)
 - [ ] `cloneCollection`
@@ -177,7 +220,7 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [ ] `convertToCapped`
 - [x] `create`
 - [x] `createIndexes`
-- [ ] `currentOp`
+- [x] `currentOp`
 - [x] `drop`
 - [x] `dropDatabase`
 - [ ] `dropConnections`
@@ -186,8 +229,8 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [ ] `fsync`
 - [ ] `fsyncUnlock`
 - [ ] `getParameter`
-- [ ] `killCursors`
-- [ ] `killOp`
+- [x] `killCursors`
+- [x] `killOp`
 - [x] `listCollections`
 - [x] `listDatabases`
 - [x] `listIndexes`
@@ -236,3 +279,30 @@ and [mongo spec](https://github.com/mongodb/specifications).
 - [ ] `logApplicationMessage`
 </details>
 </details>
+
+## Caveats
+There are several points the quite questionable and prone to change for later development.
+
+<details><summary>Those are:</summary>
+
+* `BsonDocument` will return `Option[BsonBase]` when accessing its field but `BsonBase`
+will immediately return `BsonBase` in case it's embedded Bson.
+* `BsonTime` which acquired from decoded Bson bytestream will not equal with `Time` from
+times module in stdlib. The different caused by Bson only support milliseconds time precision
+while Nim `Time` support to nanoseconds. The automatic conversion would supported by `BsonBase == Time`
+but not `Time == BsonBase` due defined automatic conversion.
+* `diagnostic.explain` and its corresponding `explain`-ed version of various commands haven't
+been undergone extensive testing.
+* `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
+anything regarded that.
+* Cannot provide `readPreference` option because cannot support multihost URI connection.
+* Will be added more laters when found out more.
+</details>
+
+### License
+MIT
+
+[1]: https://www.mongodb.com
+[2]: https://docs.mongodb.com/manual/reference/command/
+[3]: https://github.com/mongodb/specifications
+[4]: https://docs.mongodb.com/manual/reference

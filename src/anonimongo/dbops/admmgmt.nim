@@ -1,4 +1,4 @@
-import strformat
+import strformat, sequtils
 import ../core/[types, bson, wire, utils, pool]
 
 proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
@@ -27,7 +27,7 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   q.addWriteConcern(db, writeConcern)
   result = await db.proceed(q)
 
-proc createIndexes*(db: Database, coll: string, indexes: BsonArray,
+proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
   writeConcern = bsonNull()): Future[(bool, string)]{.async.} =
   var q = bson({
     createIndexes: coll,
@@ -135,5 +135,27 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
   except IOError:
     result = (true, getCurrentExceptionMsg())
 
-when isMainModule:
-  import ../tests/admmgmt_test
+proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
+  var q = bson({ currentOp: 1})
+  for k, v in opt:
+    q[k] = v
+  let reply = await sendops(q, db, "admin")
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    return
+  result = reply.documents[0]
+
+proc killOp*(db: Database, opid: int32): Future[(bool, string)] {.async.} =
+  let q = bson({ killerOp: 1, op: opid })
+  result = await db.proceed(q, "admin")
+
+proc killCursor*(db: Database, collname: string, cursorIds: seq[int]):
+  Future[BsonDocument] {.async.} =
+  let q = bson({ killCursors: collname, cursors: cursorIds.map toBson })
+  let reply = await sendops(q, db)
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    return
+  result = reply.documents[0]

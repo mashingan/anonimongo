@@ -1,9 +1,8 @@
-import unittest, os, osproc, times, strformat
+import unittest, os, osproc, times, strformat, sequtils
 import sugar
 
 import testutils
-import core/[types, wire, bson]
-import dbops/[admmgmt, crud]
+import anonimongo
 
 {.warning[UnusedImport]: off.}
 
@@ -64,6 +63,37 @@ suite "CRUD tests":
     for d in resfind["cursor"]["firstBatch"].ofArray:
       foundDocs.add d
     check foundDocs.len == insertDocs.len
+
+  test &"Count documents on {namespace}":
+    require db != nil
+    resfind = waitfor db.count(collname)
+    resfind.reasonedCheck("count error")
+    check resfind["n"].get == foundDocs.len
+
+  test &"Aggregate documents on {namespace}":
+    require db != nil
+    let tensOfMinutes = 5
+    let lesstime = currtime + initDuration(minutes = tensOfMinutes * 10)
+    let pipeline = @[
+      bson({ "$match": { addedTime: { "$gte": currtime, "$lt": lesstime }}}),
+      bson({ "$project": {
+        addedTime: { "$dateToString": {
+          date: "$addedTime",
+          format: "%G-%m-%dT-%H-%M-%S%z",
+          timezone: "+07:00", }}}})
+    ]
+    resfind = waitfor db.aggregate(collname, pipeline)
+    resfind.reasonedCheck("db.aggregate error")
+    let doc = resfind["cursor"]["firstBatch"].ofArray
+    check doc.len == tensOfMinutes
+
+  test &"Distinct documents on {namespace}":
+    require db != nil
+    resfind = waitfor db.`distinct`(collname, "countId")
+    resfind.reasonedCheck "db.distinct error"
+    let docs = resfind["values"].get.ofArray
+    check docs.len == insertDocs.len
+    check docs.allIt( it.kind == bkInt32 )
   
   test &"Find and modify some document(s) on {namespace}":
     require db != nil

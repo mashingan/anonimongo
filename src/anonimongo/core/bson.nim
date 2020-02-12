@@ -262,7 +262,6 @@ proc mget*(b: var BsonBase, index: sink int): var BsonBase =
     raise BsonFetchError(msg: fmt"Invalid index retrieval, get {b.kind}")
   result = (b as BsonArray).value[index]
 
-
 proc len*(b: BsonDocument): int =
   b.table.len
 

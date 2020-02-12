@@ -1,2 +1,2 @@
-switch("path", "../src/anonimongo")
+switch("path", "../src")
 switch("define", "ssl")
