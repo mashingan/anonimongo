@@ -1,6 +1,23 @@
 import strformat, sequtils
 import ../core/[types, bson, wire, utils, pool]
 
+## Administration Commands
+## ***********************
+##
+## The actual APIs documentation can be referred to `Mongo command`_
+## documentation for better understanding of each API and its return
+## value or BsonDocument. Any read commands will return either
+## ``seq[BsonBase]`` or ``seq[BsonDocument]`` for fine tune handling
+## query result.
+##
+## For any write/update/modify/delete commands, it will usually return
+## tuple of bool success and string reason or bool of success and int
+## n of affected documents.
+##
+## All APIs are async.
+##
+## .. _Mongo command: https://docs.mongodb.com/manual/reference/command/nav-administration/
+
 proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   storageEngine = bsonNull(),
   validator = bsonNull(), validationLevel = "strict", validationAction = "error",

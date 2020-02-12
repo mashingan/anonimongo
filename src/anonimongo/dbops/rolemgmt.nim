@@ -1,6 +1,19 @@
 import sequtils
 import ../core/[bson, types, wire, utils]
 
+## Role Management Methods
+## ***********************
+##
+## This APIs can be referred `here`_. All these APIs are returning various
+## values accordingly whether it's reading operations or writing operations.
+##
+## **Beware**: These APIs are not tested.
+##
+## All APIs are async.
+##
+## .. _here: https://docs.mongodb.com/manual/reference/method/js-role-management/
+## __ here_
+
 proc createRole*(db: Database, name: string, privileges, roles: seq[BsonDocument],
   authRestrict: seq[BsonDocument] = @[], wt = bsonNull()):
   Future[(bool, string)]{.async.} =

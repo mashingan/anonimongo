@@ -8,6 +8,18 @@ import ../core/[types, wire, bson, pool, utils]
 when not defined(release) and verbose:
   import sugar
 
+## Client module and User Management Commands
+## ******************************************
+##
+## This APIs handling connection for Mongo and also implement user management
+## APIs which can be referred `here`_. These APIs are for write/update/modify
+## and delete operations hence all of these return tuple of bool success
+## together string reason or int n affected documents.
+##
+## All APIs are async.
+##
+## .. _here: https://docs.mongodb.com/manual/reference/command/nav-user-management/
+
 const
   drivername = "anonimongo"
   description = "nim mongo driver"

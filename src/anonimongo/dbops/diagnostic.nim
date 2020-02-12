@@ -1,6 +1,19 @@
 import sequtils
 import ../core/core
 
+## Diagnostics Commands
+## ********************
+##
+## This APIs can be referred `here`_. All these APIs are returning BsonDocument
+## so check the `Mongo documentation`__.
+##
+## **Beware**: These APIs are not tested.
+##
+## All APIs are async.
+##
+## .. _here: https://docs.mongodb.com/manual/reference/command/nav-diagnostic/
+## __ here_
+
 proc buildInfo*(db: Database): Future[BsonDocument] {.async.} =
   result = await db.crudops(bson({ buildInfo: 1 }))
 

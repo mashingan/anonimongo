@@ -2,6 +2,31 @@ import tables, sequtils
 import ../core/[bson, types, wire, utils]
 import diagnostic
 
+## Query and Write Operation Commands
+## **********************************
+##
+## This APIs can be referred `here`_. This module handling all main
+## CRUD operations and all of these are returning BsonDocument to
+## give a higher-level APIs to handle the document. 
+##
+## One caveat that's different from the `Mongo documentation`__ is
+## each of these API has additional parameter ``explain`` string
+## which default to "" (empty string), or ``explainVerbosity``
+## in case ``explain`` already defined before.
+## Any non empty ``explain`` value will regarded as Cached Query
+## and will invoke the ``diagnostic.explain``.
+## Available ``explain`` values are "allPlansExecution", "queryPlanner",
+## and "executionStats".
+##
+## The usage of ``getLastError`` discouraged as it's backward compability
+## with older Mongo version and unnecessary with Acknowledged Query
+## as the error immediately returned when operation failed.
+##
+## All APIs are async.
+##
+## .. _here: https://docs.mongodb.com/manual/reference/command/nav-crud/
+## __ here_
+
 proc find*(db: Database, coll: string,query = bson(),
   sort = bsonNull(), selector = bsonNull(), hint = bsonNull(),
   skip = 0, limit = 0, batchSize = 101, singleBatch = false, comment = "",
