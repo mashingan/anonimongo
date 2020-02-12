@@ -111,3 +111,9 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
     q["arrayFilters"] = arrayFilters.map toBson
   if explain != "": result = await db.explain(q, explain)
   else: result = await db.crudops(q)
+
+proc getLastError*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
+  var q = bson({ getLastError: 1 })
+  for k, v in opt:
+    q[k] = v
+  result = await db.crudops(q)
