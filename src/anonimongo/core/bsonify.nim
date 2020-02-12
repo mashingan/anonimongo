@@ -31,6 +31,8 @@ proc embedBson(p: NimNode): NimNode {.compiletime.} =
     `br`.toBson
 
 macro bson*(p: untyped): untyped =
+  ## Macro for defining BsonDocument seamless as if
+  ## it's an immediate object syntax supported by Nim.
   result = newcall("newbson")
   for el in p:
     let ident = $el[0]

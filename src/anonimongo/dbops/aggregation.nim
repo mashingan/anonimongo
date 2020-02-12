@@ -2,6 +2,17 @@ import tables, sequtils
 import ../core/[bson, types, wire, utils]
 import diagnostic
 
+## Aggregation commands (and a Geospatial command)
+## ***********************************************
+##
+## Ref to `Mongo command`_ documentation for better understanding of each API
+## and its return value is BsonDocument. Geospatial command can be found `here`_.
+##
+## All APIs are async.
+##
+## .. _Mongo command: https://docs.mongodb.com/manual/reference/command/nav-aggregation/
+## .. _here: https://docs.mongodb.com/manual/reference/command/geoSearch/#dbcmd.geoSearch
+
 proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
   explain = false, diskuse = false, cursor = bson(), maxTimeMS = 0,
   bypass = false, readConcern = bsonNull(), collation = bsonNull(),

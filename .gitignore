@@ -5,6 +5,7 @@
 
 nimcache/
 .vscode/
+htmldocs/
 
 # Vim backup file
 *.swp
@@ -12,6 +13,8 @@ nimcache/
 
 *.exe
 *.bson
+
+*.html
 
 # disable for big files
 *.mkv

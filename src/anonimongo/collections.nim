@@ -1,26 +1,40 @@
 import sequtils
 import sugar
 
-import core/core
 import dbops/[admmgmt, aggregation, crud]
+import core/[bson, types, utils, wire]
 
 {.warning[UnusedImport]: off.}
 
-
+## Collection Methods
+## ******************
+##
+## Collection module implements selected APIs documented `here`_ in Mongo page.
+## Not all APIs will be implemented as there are several APIs that just
+## helper based on more basic APIs. This methods offload the actual operations
+## to ``dbops.crud`` module hence any resemblance on the parameter with a bit
+## differents in returned values. The APIs methods implemented here can be
+## viewed as higher-level than ``dbops.crud`` module APIs.
+##
 ## Collection should return query/cursor type or anything that will run
 ## for the actual query. Users can set the values for queries setting
 ## before actual query request.
 
-# The strategies here will consist of:
-# 1. Collection invoke methods
-# 2. Got the query necessary
-# 3. Users chose how to run the query e.g.
-# 3.a. Find a document about it
-# 3.b. Find several documents about it
-# 3.c. Iterate the documents for it
+## The strategies here will consist of:
+##
+## 1. Collection invoke methods
+## 2. Got the query necessary
+## 3. Users chose how to run the query e.g.
+##
+##      a. Find a document about it
+##      b. Find several documents about it
+##      c. Iterate the documents for it
+##
 
-# Query will return Cursor that implement `item` iterators to iterate whether
-# firstBatch field or nextBatch field and will immediately `getMore` if it's empty
+## Query will return Cursor that implement `item` iterators to iterate whether
+## firstBatch field or nextBatch field and will immediately `getMore` if it's empty.
+##
+## .. _here: https://docs.mongodb.com/manual/reference/method/js-collection/
 
 proc one*(q: Query): Future[BsonDocument] {.async.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
@@ -34,7 +48,7 @@ proc all*(q: Query): Future[seq[BsonDocument]] {.async.} =
   result = cursor.firstBatch
   if result.len >= q.limit:
     return
-  while true:
+  while cursor.id > 0:
     doc = await q.collection.db.getMore(cursor.id, q.collection.name,
       batchSize = q.batchSize)
     cursor = doc["cursor"].get.ofEmbedded.to Cursor
@@ -49,10 +63,10 @@ iterator items*(cur: Cursor): BsonDocument =
                   else: 101
   var doc: BsonDocument
   var newcur = cur
-  let collname = cur.collname
-  while cur.id != 0:
+  let collname = newcur.collname
+  while newcur.id != 0:
     #doc = await cur.db.getMore(cur.id, collname, batchSize)
-    doc = waitfor cur.db.getMore(cur.id, collname, batchSize)
+    doc = waitfor newcur.db.getMore(newcur.id, collname, batchSize)
     newcur = doc["cursor"].get.ofEmbedded.to Cursor
     if newcur.nextBatch.len <= 0:
       break

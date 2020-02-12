@@ -9,6 +9,7 @@ const verbose {.booldefine.} = false
 
 type
   OpCode* = enum
+    ## Wire protocol OP_CODE.
     opReply = 1'i32
     opUpdate = 2001'i32
     opInsert opReserved opQuery opGetMore opDelete opKillCursors
@@ -17,9 +18,11 @@ type
     opMsg = 2013'i32
 
   MsgHeader* = object
+    ## An object that will spearhead any exchanges of Bson data.
     messageLength*, requestId*, responseTo*, opCode*: int32
 
   ReplyFormat* = object
+    ## Object that actually holds the values from Bson data.
     responseFlags*: int32
     cursorId*: int64
     startingFrom*: int32
@@ -27,22 +30,26 @@ type
     documents*: seq[BsonDocument]
 
   Flags* {.size: sizeof(int32), pure.} = enum
+    ## Bitfield used when query the mongo command.
     Reserved
     TailableCursor
     SlaveOk
-    OplogReplay     # mongodb internal use only, don't set
-    NoCursorTimeout # disable cursor timeout, default timeout 10 minutes
-    AwaitData       # used with tailable cursor
+    OplogReplay     ## mongodb internal use only, don't set
+    NoCursorTimeout ## disable cursor timeout, default timeout 10 minutes
+    AwaitData       ## used with tailable cursor
     Exhaust
-    Partial         # get partial data instead of error when some shards are down
+    Partial         ## get partial data instead of error when some shards are down
   QueryFlags* = set[Flags]
+    ## Flags itself that holds which bit flags available.
 
   RFlags* {.size: sizeof(int32), pure.} = enum
+    ## RFlags is bitfield flag for ``ReplyFormat.responseFlags``
     CursorNotFound
     QueryFailure
     ShardConfigStale
     AwaitCapable
   ResponseFlags* = set[RFlags]
+    ## The actual available ResponseFlags.
 
 proc serialize(s: Stream, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
@@ -65,6 +72,7 @@ proc msgHeaderFetch(s: Stream): MsgHeader =
   )
 
 proc replyParse*(s: Stream): ReplyFormat =
+  ## Get the ReplyFormat from given data stream.
   result = ReplyFormat(
     responseFlags: s.readIntLE int32,
     cursorId: s.readIntLE int64,
@@ -80,6 +88,8 @@ proc replyParse*(s: Stream): ReplyFormat =
 proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
     query = newbson(), selector = newbson()): int =
+  ## Convert and encode the query into stream to be ready for sending
+  ## onto TCP wire socket.
   result = s.msgHeader(reqId, target, opcode)
 
   s.writeLE flags;                     result += 4
@@ -102,17 +112,22 @@ template prepare*(q: BsonDocument, flags: int32, dbname: string,
   unown(s)
 
 proc ok*(b: BsonDocument): bool =
+  ## Check whether BsonDocument is ``ok``.
   "ok" in b and b["ok"].get.ofDouble.int == 1
 
 proc errmsg*(b: BsonDocument): string =
+  ## Helper to fetch error message from BsonDocument.
   if "errmsg" in b:
     result = b["errmsg"].get
 
 proc code*(b: BsonDocument): int =
+  ## Fetch (error?) code from BsonDocument.
   if "code" in b:
     result = b["code"].get
 
 template check*(r: ReplyFormat): (bool, string) =
+  ## Utility that will check whether the ReplyFormat is successful
+  ## failed and return it as tuple of bool and string.
   var res = (false, "")
   let rflags = r.responseFlags as ResponseFlags
   if r.numberReturned <= 0:
@@ -159,6 +174,7 @@ proc acknowledgedInsert(s: Stream, data: BsonDocument,
 
 
 proc look*(reply: ReplyFormat) =
+  ## Helper for easier debugging and checking the returned ReplyFormat.
   when verbose:
     dump reply.numberReturned
   if reply.numberReturned > 0 and
@@ -174,6 +190,7 @@ proc look*(reply: ReplyFormat) =
     
 
 proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} =
+  ## Get data from socket and apply the replyParse into the result.
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
   when not defined(release) and verbose:
@@ -251,6 +268,7 @@ proc updateAck(socket: AsyncSocket, query, update: BsonDocument,
 proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
   query = newbson(), selector = newbson(),
   sort = newbson(), skip = 0, limit = 0): Future[ReplyFormat] {.async.} =
+  ## Artifact from older APIs development. Don't use it.
   var s = newStringStream()
   let findq = bson({
     find: collname,
@@ -269,6 +287,8 @@ proc queryAck*(sock: AsyncSocket, id: int32, dbname, collname: string,
 
 proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
   batchSize = 50, maxTimeMS = 0): Future[ReplyFormat] {.async.} =
+  ## Retrieve more data from cursor id. The returned documents
+  ## are in result["cursor"]["nextBatch"] instead of in firstBatch.
   var ss = newStringStream()
   let moreq = bson({
     getMore: id,
@@ -286,6 +306,7 @@ proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
 # not tested when there's no way to create database
 proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
     writeConcern = newbson()): Future[ReplyFormat] {.async.} =
+  ## Artifact from older APIs development. Don't use it.
   var q = newbson(("dropDatabase", 1.toBson))
   if not writeConcern.isNil:
     q["writeConcern"] = writeConcern
