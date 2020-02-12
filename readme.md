@@ -15,13 +15,14 @@ By default, it's empty string which also indicate the command operations working
 <details><summary>Simple operations</summary>
 
 ```nim
-import times
+import times, strformat
 import anonimongo
 import anonimongo/collection
 
 var mongo = newMongo(poolconn = 16) # default is 64
 if not waitFor mongo.connect:
-  quit "Cannot connect to mongo server"
+  # default is localhost:27017
+  quit &"Cannot connect to {mongo.host}.{int mongo.port}"
 var coll = mongo["temptest"]["colltest"]
 var idoc = newseq[BsonDocument](10)
 for i in 0 .. idoc.high:
@@ -49,7 +50,71 @@ doAssert oldid8doc["datetime"].get.ofTime == newid8doc["datetime"].get
 close mongo
 ```
 </details>
-Check [tests](tests/readme.md) for more examples of detailed usages.
+<details><summary>Authenticate</summary>
+
+```nim
+import strformat
+import nimSHA2
+import anonimongo
+
+var mongo = newMongo()
+let mhostport = &"{mongo.host}.{$mongo.port.int}"
+if waitfor not mongo.connect:
+  # default is localhost:27017
+  quit &"Cannot connect to {mhostport}"
+if not authenticate[SHA256Digest](mongo, username, password):
+  quit &"Cannot login to {mhostport}"
+close mongo
+
+# Another way to connect and login
+mongo = newMongo()
+mongo.username = username
+mongo.password = password
+if waitfor not mongo.connect and not waitfor authenticate[SHA256Digest](mongo):
+  quit &"Whether cannot connect or cannot login to {mhostport}"
+close mongo
+```
+</details>
+<details><summary>URI connect</summary>
+
+```nim
+import strformat, uri
+import anonimongo
+
+let uriserver = "mongo://username:password@localhost:27017/"
+#let sslkey = "/path/to/ssl/key.pem"
+#let sslcert = "/path/to/ssl/cert.pem"
+#let urissl = &"{uriserver}?tlsCertificateKeyFile=certificate:{encodeURL sslcert},key:{encodeURL sslkey}"
+
+var mongo = newMongo(parseURI uriserver)
+close mongo
+```
+
+</details>
+<details><summary>Manual/URI SSL connect</summary>
+
+```nim
+# need to compile with -d:ssl option to enable ssl
+import strformat, uri
+import anonimongo
+
+let uriserver = "mongo://username:password@localhost:27017/"
+let sslkey = "/path/to/ssl/key.pem"
+let sslcert = "/path/to/ssl/cert.pem"
+let urissl = &"{uriserver}?tlsCertificateKeyFile=certificate:{encodeURL sslcert},key:{encodeURL sslkey}"
+
+# uri ssl connection
+var mongo = newMongo(parseURI uriserver)
+close mongo
+
+# manual ssl connection
+var mongo = newMongo(sslinfo = initSSLInfo(sslkey, sslcert))
+close mongo
+```
+
+</details>
+
+Check [tests](tests/) for more examples of detailed usages.
 
 
 ## Install
