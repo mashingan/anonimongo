@@ -1,5 +1,5 @@
 import sequtils
-import ../core/core
+import ../core/[bson, types, utils, wire]
 
 ## Diagnostics Commands
 ## ********************

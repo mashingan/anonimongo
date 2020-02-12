@@ -1,5 +1,5 @@
 import strformat, sequtils
-import ../core/[types, bson, wire, utils, pool]
+import ../core/[types, bson, wire, utils]
 
 ## Administration Commands
 ## ***********************

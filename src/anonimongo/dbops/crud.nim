@@ -25,6 +25,7 @@ import diagnostic
 ## All APIs are async.
 ##
 ## .. _here: https://docs.mongodb.com/manual/reference/command/nav-crud/
+##
 ## __ here_
 
 proc find*(db: Database, coll: string,query = bson(),
