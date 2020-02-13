@@ -22,10 +22,10 @@ include macroto
 ## ****
 ##
 ## Bson implementation in Nim based on `Bson spec`_. Users mainly will
-## only need to use ``BsonDocument`` often as the main type instead
-## of ``BsonBase``. But for specific uses, users sometimes to use
-## ``sequtils.map`` to change the array/seq of some type to BsonArray
-## specifically and to BsonBase generically e.g.
+## only need to use `BsonDocument`_ often as the main type instead
+## of `BsonBase`_. But for specific uses, users sometimes to use
+## ``sequtils.map`` to change the array/seq of some type to `BsonArray`_
+## specifically and to `BsonBase`_ generically e.g.
 ##
 ## .. code-block:: Nim
 ##
@@ -59,6 +59,9 @@ include macroto
 ## error because of something ``nnkIntLitNode``.
 ##
 ## .. _Bson spec: http://bsonspec.org
+## .. _BsonDocument: #BsonDocument
+## .. _BsonBase: #BsonBase
+## .. _BsonArray: #BsonArray
 
 template writeLE*[T](s: Stream, val: T): untyped =
   ## Utility template to write any value to comply to
@@ -211,7 +214,8 @@ type
     ## BsonBase.
     table: BsonInternal
     stream: Stream
-    encoded*: bool ## Flag whether the document already encoded\
+    encoded*: bool
+      ## Flag whether the document already encoded
       ## to avoid repeated encoding.
 
   BsonKind* = enum
@@ -716,7 +720,7 @@ proc encode*(doc: BsonDocument): (int, string) =
   result = (length, buff)
 
 converter toBson*(v: BsonBase): BsonBase = v
-  ## Id conversion BsonBase to itself. For bson macro.
+  ## Id conversion BsonBase to itself. For `bson macro<#bson.m,untyped>`_.
 
 converter toBson*(value: int|int32): BsonBase =
   ## Convert int or int32 to BsonBase automatically.
@@ -800,8 +804,8 @@ proc bsonJs*(code: string | seq[Rune]): BsonBase =
 proc newBson*(table = newOrderedTable[string, BsonBase](),
     stream: Stream = newStringStream()): BsonDocument =
   ## A primordial BsonDocument allocators. Preferably to use
-  ## bson macro instead, except the need to specify the stream
-  ## used for the BsonDocument.
+  ## `bson macro<#bson.m,untyped>`_ instead, except the
+  ## need to specify the stream used for the BsonDocument.
   BsonDocument(
     table: table,
     stream: stream
@@ -927,7 +931,7 @@ proc decode*(strbytes: string): BsonDocument =
 proc newBson*(table: varargs[(string, BsonBase)]): BsonDocument =
   var tableres = newOrderedTable[string, BsonBase]()
   ## Overload newBson with table definition only and stream default to
-  ## StringStream.
+  ## StringStream. In most case, use `bson macro<#bson.m,untyped>`_.
   for t in table:
     tableres[t[0]] = t[1]
   BsonDocument(

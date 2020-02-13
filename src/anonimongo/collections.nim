@@ -12,13 +12,18 @@ import core/[bson, types, utils, wire]
 ## Collection module implements selected APIs documented `here`_ in Mongo page.
 ## Not all APIs will be implemented as there are several APIs that just
 ## helper based on more basic APIs. This methods offload the actual operations
-## to ``dbops.crud`` module hence any resemblance on the parameter with a bit
+## to `dbops crud`_ module hence any resemblance on the parameter with a bit
 ## differents in returned values. The APIs methods implemented here can be
-## viewed as higher-level than ``dbops.crud`` module APIs.
+## viewed as higher-level than `dbops crud`_ module APIs.
 ##
-## Collection should return query/cursor type or anything that will run
+## Collection should return `Query`_ / `Cursor`_ type or anything that will run
 ## for the actual query. Users can set the values for queries setting
 ## before actual query request.
+##
+## .. _here: https://docs.mongodb.com/manual/reference/method/js-collection/
+## .. _dbops crud: dbops/crud.html
+## .. _Query: core/types.html#Query
+## .. _Cursor: core/types.html#Cursor
 
 ## The strategies here will consist of:
 ##
@@ -31,10 +36,11 @@ import core/[bson, types, utils, wire]
 ##      c. Iterate the documents for it
 ##
 
-## Query will return Cursor that implement `item` iterators to iterate whether
-## firstBatch field or nextBatch field and will immediately `getMore` if it's empty.
+## Query will return Cursor that implement `items`_ iterators to iterate whether
+## firstBatch field or nextBatch field and will immediately `getMore`_ if it's empty.
 ##
-## .. _here: https://docs.mongodb.com/manual/reference/method/js-collection/
+## .. _items: #items.i,Cursor
+## .. _getMore: dbops/crud.html#getMore,Database,int64,string,int
 
 proc one*(q: Query): Future[BsonDocument] {.async.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,

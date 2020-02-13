@@ -40,12 +40,13 @@ type
       protocol*: SslProtVersion ## The SSL/TLS protocol
 
   Database* = ref object of RootObj
-    ## Database holds the Mongo data as ``db`` field.
+    ## Database holds the `Mongo<#Mongo>`_ data as ``db`` field.
     name*: string
     db*: Mongo
 
   Collection* = ref object
-    ## Collection holds the Database data as ``db`` field.
+    ## Collection holds the `Database<#Database>`_
+    ## data as ``db`` field.
     name*: string ## Collection name
     dbname: string ## Database name, easier than ``coll.db.name``
     db*: Database
@@ -63,8 +64,11 @@ type
     ## Query is basically any options that will be used when calling dbcommand
     ## find and others related commands. Must of these values are left to be
     ## default with only exception of query field.
-    ## ``sort``, ``projection``, ``writeConcern`` all are ``BsonBase`` instead of
-    ## ``BsonDocument`` because BsonBase is more flexible.
+    ## ``sort``, ``projection``, ``writeConcern`` all are `BsonBase`_ instead of
+    ## `BsonDocument`_ because `BsonBase`_ is more flexible.
+    ##
+    ## .. _BsonBase: bson.html#BsonBase
+    ## .. _BsonDocument: bson.html#BsonDocument
     query*: BsonDocument
     sort*: BsonBase
     projection*: BsonBase
@@ -116,7 +120,7 @@ proc setSsl(m: Mongo, sslinfo: SslInfo) =
 
 proc newMongo*(host = "localhost", port = 27017, master = true,
   poolconn = poolconn, sslinfo = SslInfo()): Mongo =
-  ## Give a new Mongo instance manually from given parameters.
+  ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
   result = Mongo(
     isMaster: master,
     host: host,
@@ -127,7 +131,7 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   result.setSsl sslInfo
 
 proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
-  ## Give a new mongo instance based on URI string.
+  ## Give a new `Mongo<#Mongo>`_ instance based on URI string.
   let port = try: parseInt(uri.port)
              except ValueError: 27017
   result = Mongo(
@@ -198,7 +202,7 @@ proc flags*(m: Mongo): QueryFlags = m.flags
 proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   Future[bool] {.async.} =
   ## Authenticate Mongo with given username and password and delegate it to
-  ## ``pool.authenticate``.
+  ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
   if await m.pool.authenticate(user, pass, T, adm):
     m.authenticated = true
@@ -206,18 +210,19 @@ proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
 
 proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo):
   Future[bool] {.async.} =
-  ## Authenticate Mongo with available username and password from Mongo
-  ## object and delegate it to ``pool.authenticate``.
+  ## Authenticate Mongo with available username and password from
+  ## `Mongo<#Mongo>`_ object and delegate it to
+  ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   if m.username == "" or m.password == "":
     raise newException(MongoError, "username or password not available")
   result = await authenticate[T](m, m.username, m.password)
 
 proc `appname=`*(m: Mongo, name: string) =
-  ## Set appname for Mongo client instance.
+  ## Set appname for `Mongo<#Mongo>`_ client instance.
   m.query["appname"] = @[name]
 
 proc appname*(m: Mongo): string =
-  ## Get appname from Mongo client instance.
+  ## Get appname from `Mongo<#Mongo>`_ client instance.
   let mq = m.query.getOrDefault("appname")
   if mq.len > 0:
     result = mq[0]
@@ -225,46 +230,48 @@ proc appname*(m: Mongo): string =
     result = ""
 
 proc tailableCursor*(m: Mongo) =
-  ## Set Mongo to support TailableCursor
+  ## Set `Mongo<#Mongo>`_ to support TailableCursor
   m.flags.incl Flags.TailableCursor
 
 proc noTailable*(m: Mongo) =
-  ## Set Mongo to not support TailableCursor
+  ## Set `Mongo<#Mongo>`_ to not support TailableCursor
   m.flags.excl Flags.TailableCursor
 
 proc slaveOk*(m: Mongo) =
-  ## Set Mongo to support SlaveOk flag
+  ## Set `Mongo<#Mongo>`_ to support SlaveOk flag
   m.flags.incl Flags.SlaveOk
 
 proc noSlave*(m: Mongo) =
-  ## Set Mongo to not support SlaveOk flag
+  ## Set `Mongo<#Mongo>`_ to not support SlaveOk flag
   m.flags.excl Flags.SlaveOk
 
 proc `[]`*(m: Mongo, name: string): Database =
-  ## Give new Database from Mongo, expected to long-live object.
+  ## Give new Database from `Mongo<#Mongo>`_,
+  ## expected to long-live object.
   new result
   result.db = m
   result.name = name
 
 proc `[]`*(dbase: Database, name: string): Collection =
-  ## Give new Collection from Database, expected to long-live object.
+  ## Give new `Collection<#Collection>`_ from
+  ## `Database<#Database>`_, expected to long-live object.
   new result
   result.name = name
   result.dbname = dbase.name
   result.db = dbase
 
 proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
-  ## Get Database name from Cursor.
+  ## Get `Database<#Database>`_, name from Cursor.
 proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
-  ## Get Collection name from Cursor.
+  ## Get `Collection<#Collection>`_ name from Cursor.
 
 proc close*(m: Mongo) = close m.pool
 
 proc initQuery*(query = bson(), collection: Collection = nil,
   skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query =
-  ## Init query to be used for next find. Apparently this should
-  ## be used for Query Plan Cache however currently the lib still
-  ## hasn't support that feature yet.
+  ## Init `query<#Query>`_ to be used for next find.
+  ## Apparently this should be used for Query Plan Cache
+  ## however currently the lib still hasn't support that feature yet.
   result = Query(
     query: query,
     collection: collection,

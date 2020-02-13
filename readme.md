@@ -104,7 +104,7 @@ let sslcert = "/path/to/ssl/cert.pem"
 let urissl = &"{uriserver}?tlsCertificateKeyFile=certificate:{encodeURL sslcert},key:{encodeURL sslkey}"
 
 # uri ssl connection
-var mongo = newMongo(parseURI uriserver)
+var mongo = newMongo(parseURI urissl)
 close mongo
 
 # manual ssl connection
