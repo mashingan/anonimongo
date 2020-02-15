@@ -11,6 +11,9 @@ command for `explain` added optional string value to indicate the verbosity of `
 By default, it's empty string which also indicate the command operations working without the need to
 `explain` the queries. For others detailed caveats can be found [here](#caveats).
 
+[This page][5] (`anonimongo.html`) is the elaborate documentation. It also explains several
+modules and the categories for those modules. [The index][6] also available.
+
 ## Examples
 <details><summary>Simple operations</summary>
 
@@ -371,3 +374,5 @@ MIT
 [2]: https://docs.mongodb.com/manual/reference/command/
 [3]: https://github.com/mongodb/specifications
 [4]: https://docs.mongodb.com/manual/reference
+[5]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo.html
+[6]: https://mashingan.github.io/anonimongo/src/htmldocs/theindex.html

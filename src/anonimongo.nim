@@ -18,10 +18,9 @@ export collections
 ##
 ## 1. Low level Mongo operations which in turn consisted of two main APIs:
 ##
-##    a. Modules `core` functionalities. (`auth`_, `bson`_, `pool`_, `types`,
-##       `utils`_, `wire`_).
-##    b. Modules `dbops` functionalities. (`aggregation`_, `admmgmt`_,
-##       `client`_, `crud`_, `diagnostic`_, `rolemgmt`_).
+##    a. Modules `core` functionalities. (`auth`_, `bson`_, `pool`_, `types`_, `utils`_, `wire`_).
+##    b. Modules `dbops` functionalities. (`aggregation`_, `admmgmt`_, `client`_, `crud`_, `diagnostic`_, `rolemgmt`_).
+##
 ## 2. Higher level which represented as `collections`_ module.
 ##
 ## Any casual user would only have to deal with `collections`_ module mainly
@@ -39,13 +38,16 @@ export collections
 ## `bson`_ module is by default accessible from `anonimongo` module lib itself, but
 ## in case user only wants to use the `BsonDocument`_ itself for data exchange,
 ## the user would able to access it with ``import anonimongo/core/bson`` to avoid
-## importing other `anonimongo` modules.
+## importing other `anonimongo` modules. Several examples for its APIs can be found
+## in `that page`__ too.
 ##
 ## Elaborate examples can be found in `tests<https://github.com/mashingan/anonimongo/tests>`_
 ## folder in the `Github repo`_ for references on how to do something.
 ## The specific examples would also be available in `readme.md`_ `examples`_
 ## from the repo so user can refer that often to check any additional snippet
 ## example codes.
+##
+## As usual, all of APIs `index`_ can be found in `that page`__.
 ##
 ## .. _auth: anonimongo/core/auth.html
 ## .. _bson: anonimongo/core/bson.html
@@ -62,6 +64,13 @@ export collections
 ## .. _collections: anonimongo/collections.html
 ## .. _Mongo: anonimongo/core/types.html#Mongo
 ## .. _Pool: anonimongo/core/pool.html#Pool
+## .. _BsonDocument: anonimongo/core/bson.html#BsonDocument
+##
+## .. __: bson_
+##
 ## .. _Github repo: https://github.com/mashingan/anonimongo
-## .. _readme.md: https://github.com/mashingan/anonimongo/readme.md
-## .. _examples: https://github.com/mashingan/anonimongo/readme.md#examples
+## .. _readme.md: https://github.com/mashingan/anonimongo/
+## .. _examples: https://github.com/mashingan/anonimongo/#examples
+## .. _index: https://mashingan.github.io/anonimongo/src/htmldocs/theindex.html
+##
+## .. __: index_
