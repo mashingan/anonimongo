@@ -1,0 +1,30 @@
+opReply	anonimongo/core/wire.html#opReply	OpCode.opReply	
+opUpdate	anonimongo/core/wire.html#opUpdate	OpCode.opUpdate	
+opInsert	anonimongo/core/wire.html#opInsert	OpCode.opInsert	
+opReserved	anonimongo/core/wire.html#opReserved	OpCode.opReserved	
+opQuery	anonimongo/core/wire.html#opQuery	OpCode.opQuery	
+opGetMore	anonimongo/core/wire.html#opGetMore	OpCode.opGetMore	
+opDelete	anonimongo/core/wire.html#opDelete	OpCode.opDelete	
+opKillCursors	anonimongo/core/wire.html#opKillCursors	OpCode.opKillCursors	
+opCommand	anonimongo/core/wire.html#opCommand	OpCode.opCommand	
+opCommandReply	anonimongo/core/wire.html#opCommandReply	OpCode.opCommandReply	
+opMsg	anonimongo/core/wire.html#opMsg	OpCode.opMsg	
+OpCode	anonimongo/core/wire.html#OpCode	wire: OpCode	
+MsgHeader	anonimongo/core/wire.html#MsgHeader	wire: MsgHeader	
+ReplyFormat	anonimongo/core/wire.html#ReplyFormat	wire: ReplyFormat	
+Flags	anonimongo/core/wire.html#Flags	wire: Flags	
+QueryFlags	anonimongo/core/wire.html#QueryFlags	wire: QueryFlags	
+RFlags	anonimongo/core/wire.html#RFlags	wire: RFlags	
+ResponseFlags	anonimongo/core/wire.html#ResponseFlags	wire: ResponseFlags	
+replyParse	anonimongo/core/wire.html#replyParse,Stream	wire: replyParse(s: Stream): ReplyFormat	
+prepareQuery	anonimongo/core/wire.html#prepareQuery,Stream,int32,int32,int32,int32,string,int32,int32	wire: prepareQuery(s: Stream; reqId, target, opcode, flags: int32; collname: string;\n             nskip, nreturn: int32; query = newbson(); selector = newbson()): int	
+prepare	anonimongo/core/wire.html#prepare.t,BsonDocument,int32,string,int,int,int	wire: prepare(q: BsonDocument; flags: int32; dbname: string; id = 0; skip = 0; limit = 1): untyped	
+ok	anonimongo/core/wire.html#ok,BsonDocument	wire: ok(b: BsonDocument): bool	
+errmsg	anonimongo/core/wire.html#errmsg,BsonDocument	wire: errmsg(b: BsonDocument): string	
+code	anonimongo/core/wire.html#code,BsonDocument	wire: code(b: BsonDocument): int	
+check	anonimongo/core/wire.html#check.t,ReplyFormat	wire: check(r: ReplyFormat): (bool, string)	
+look	anonimongo/core/wire.html#look,ReplyFormat	wire: look(reply: ReplyFormat)	
+getReply	anonimongo/core/wire.html#getReply,AsyncSocket	wire: getReply(socket: AsyncSocket): Future[ReplyFormat]	
+queryAck	anonimongo/core/wire.html#queryAck,AsyncSocket,int32,string,string,int,int	wire: queryAck(sock: AsyncSocket; id: int32; dbname, collname: string; query = newbson();\n         selector = newbson(); sort = newbson(); skip = 0; limit = 0): Future[ReplyFormat]	
+getMore	anonimongo/core/wire.html#getMore,AsyncSocket,int64,string,string,int,int	wire: getMore(s: AsyncSocket; id: int64; dbname, collname: string; batchSize = 50; maxTimeMS = 0): Future[\n    ReplyFormat]	
+dropDatabase	anonimongo/core/wire.html#dropDatabase,AsyncSocket,string	wire: dropDatabase(sock: AsyncSocket; dbname = &quot;temptest&quot;; writeConcern = newbson()): Future[\n    ReplyFormat]	

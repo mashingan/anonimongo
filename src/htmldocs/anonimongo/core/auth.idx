@@ -1,0 +1,1 @@
+authenticate	anonimongo/core/auth.html#authenticate,AsyncSocket,string,string,typedesc,string	auth: authenticate(sock: AsyncSocket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): Future[bool]	

@@ -1,0 +1,32 @@
+poolconn	anonimongo/core/types.html#poolconn	types: poolconn	
+verbose	anonimongo/core/types.html#verbose	types: verbose	
+Mongo	anonimongo/core/types.html#Mongo	types: Mongo	
+SslInfo	anonimongo/core/types.html#SslInfo	types: SslInfo	
+Database	anonimongo/core/types.html#Database	types: Database	
+Collection	anonimongo/core/types.html#Collection	types: Collection	
+Cursor	anonimongo/core/types.html#Cursor	types: Cursor	
+Query	anonimongo/core/types.html#Query	types: Query	
+MongoError	anonimongo/core/types.html#MongoError	types: MongoError	
+initSslInfo	anonimongo/core/types.html#initSslInfo,string,string	types: initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo	
+newMongo	anonimongo/core/types.html#newMongo,string,int	types: newMongo(host = &quot;localhost&quot;; port = 27017; master = true; poolconn = poolconn;\n         sslinfo = SslInfo()): Mongo	
+newMongo	anonimongo/core/types.html#newMongo,Uri	types: newMongo(uri: Uri; master = true; poolconn = poolconn): Mongo	
+tls	anonimongo/core/types.html#tls,Mongo	types: tls(m: Mongo): bool	
+authenticated	anonimongo/core/types.html#authenticated,Mongo	types: authenticated(m: Mongo): bool	
+host	anonimongo/core/types.html#host,Mongo	types: host(m: Mongo): string	
+port	anonimongo/core/types.html#port,Mongo	types: port(m: Mongo): Port	
+query	anonimongo/core/types.html#query,Mongo	types: query(m: Mongo): lent TableRef[string, seq[string]]	
+flags	anonimongo/core/types.html#flags,Mongo	types: flags(m: Mongo): QueryFlags	
+authenticate	anonimongo/core/types.html#authenticate,Mongo,string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo; user, pass: string): Future[bool]	
+authenticate	anonimongo/core/types.html#authenticate,Mongo	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo): Future[bool]	
+appname=	anonimongo/core/types.html#appname=,Mongo,string	types: appname=(m: Mongo; name: string)	
+appname	anonimongo/core/types.html#appname,Mongo	types: appname(m: Mongo): string	
+tailableCursor	anonimongo/core/types.html#tailableCursor,Mongo	types: tailableCursor(m: Mongo)	
+noTailable	anonimongo/core/types.html#noTailable,Mongo	types: noTailable(m: Mongo)	
+slaveOk	anonimongo/core/types.html#slaveOk,Mongo	types: slaveOk(m: Mongo)	
+noSlave	anonimongo/core/types.html#noSlave,Mongo	types: noSlave(m: Mongo)	
+`[]`	anonimongo/core/types.html#[],Mongo,string	types: `[]`(m: Mongo; name: string): Database	
+`[]`	anonimongo/core/types.html#[],Database,string	types: `[]`(dbase: Database; name: string): Collection	
+dbname	anonimongo/core/types.html#dbname,Cursor	types: dbname(cur: Cursor): string	
+collname	anonimongo/core/types.html#collname,Cursor	types: collname(cur: Cursor): string	
+close	anonimongo/core/types.html#close,Mongo	types: close(m: Mongo)	
+initQuery	anonimongo/core/types.html#initQuery,Collection,int32,int32,int32	types: initQuery(query = bson(); collection: Collection = nil; skip = 0&apos;i32; limit = 0&apos;i32;\n          batchSize = 101&apos;i32): Query	
