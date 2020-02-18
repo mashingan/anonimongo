@@ -1,5 +1,5 @@
 import streams, tables, oids,  times
-import macros, endians, options
+import macros, endians
 from unicode import Rune, runes, `$`
 from strutils import parseHexInt, join, parseInt, toHex,
   toLowerAscii, `%`
@@ -8,7 +8,6 @@ from sequtils import toSeq
 from lenientops import `/`, `+`, `*`
 
 export strutils
-export options
 
 include bsonify
 include macroto
@@ -258,13 +257,6 @@ iterator pairs*(b: BsonDocument): (string, BsonBase) =
     yield (k, v)
 
 
-proc get*(b: BsonBase): BsonBase = b
-  ## functionalities to bypass whether it's Option or not.
-proc isSome*(b: BsonBase): bool = true
-  ## functionalities to bypass whether it's Option or not.
-proc isNone*(b: BsonBase): bool = false
-  ## functionalities to bypass whether it's Option or not.
-
 proc ms*(a: Time): int64 =
   ## Unix epoch in milliseconds.
   int64(a.toUnix*1000 + a.nanosecond/1e6)
@@ -332,7 +324,7 @@ proc contains*(b: BsonBase, key: string): bool =
         dynamic: true
       }
     })
-    let embedbso = bso["embed"].get
+    let embedbso = bso["embed"]
     doAssert "field1" in embedbso
     doAssert "field2" in embedbso
     doAssert "dynamic" in embedbso
@@ -348,7 +340,7 @@ proc contains*(b: BsonBase, key: string): bool =
     raise newException(BsonFetchError, fmt"Invalid key retrieval, get {b.kind}")
   key in (b as BsonEmbed).value
 
-proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
+proc `[]`*(b: BsonDocument, key: sink string): BsonBase =
   ## BsonDocument accessor for string key. The returned Option is
   ## artifact of older API design.
   runnableExamples:
@@ -357,12 +349,9 @@ proc `[]`*(b: BsonDocument, key: sink string): Option[BsonBase] =
       field2: "field2",
       dynamic: true
     })
-    doAssert bso["field1"].isSome
-    doAssert bso["not-exists"].isNone
-  if key in b:
-    result = some b.table[key]
-  else:
-    result = none BsonBase
+    doAssert bso["field1"] == 1
+    #doAssert bso["not-exists"].isNone
+  result = b.table[key]
 
 proc `[]`*(b: BsonBase, key: sink string): BsonBase =
   ## BsonEmbed accessor for string key. Error when b is not BsonEmbed.
@@ -379,7 +368,7 @@ proc `[]`*(b: BsonBase, key: sink string): BsonBase =
     doAssert bso["embed"]["dynamic"].ofBool
   if b.kind != bkEmbed:
     raise newException(BsonFetchError, fmt"Invalid key retrieval, get {b.kind}")
-  result = ((b as BsonEmbed).value)[key].get
+  result = ((b as BsonEmbed).value)[key]
 
 proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
   ## BsonArray accessor for int index. Error when b is not BsonArray.
@@ -392,7 +381,7 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
         bsarr: [1, 2, 3.14, true]
       }
     })
-    let embedbso = bso["embed"].get
+    let embedbso = bso["embed"]
     doAssert bso["embed"]["bsarr"][0] == 1
     doAssert bso["embed"]["bsarr"][1] == 2
     doAssert bso["embed"]["bsarr"][2] == 3.14
@@ -404,7 +393,7 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
     raise newException(IndexError, fmt"{idx} not in 0..{value.len-1}")
   result = value[idx]
 
-proc `[]`*[T: int | string](b: Option[BsonBase], key: sink T): BsonBase =
+proc `[]`*[T: int | string](b: BsonBase, key: sink T): BsonBase =
   ## BsonBase Accessor whether indexed key or string key. Offload the
   ## actual operations to actual BsonBase accessors.
   runnableExamples:
@@ -423,7 +412,7 @@ proc `[]`*[T: int | string](b: Option[BsonBase], key: sink T): BsonBase =
     doAssert bso["embed"]["bsarr"][1] == 2
     doAssert bso["embed"]["bsarr"][2] == 3.14
     doAssert bso["embed"]["bsarr"][3].ofBool
-  result = b.get[key]
+  result = b[key]
 
 proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
   ## BsonDocument setter with string key and the value. Because
@@ -437,10 +426,10 @@ proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
     bsonobj["fieldint"] = 1
     bsonobj["currtime"] = currtime
     bsonobj["thefloat"] = 42.0
-    doAssert bsonobj["fieldstr"].get == "this is string"
-    doAssert bsonobj["fieldint"].get == 1
-    doAssert bsonobj["currtime"].get == currtime
-    doAssert bsonobj["thefloat"].get == 42.0
+    doAssert bsonobj["fieldstr"] == "this is string"
+    doAssert bsonobj["fieldint"] == 1
+    doAssert bsonobj["currtime"] == currtime
+    doAssert bsonobj["thefloat"] == 42.0
   
   b.encoded = false
   b.table[key] = val
@@ -473,7 +462,7 @@ proc mget*(b: var BsonBase, key: sink string): var BsonBase =
       embed: { f1: 1, f2: "nice", f3: true }
     })
     bbase.mget("embed").mget("f2") = false
-    doAssert not bbase["embed"]["f2"].get.ofBool
+    doAssert not bbase["embed"]["f2"].ofBool
   if b.kind != bkEmbed:
     raise newException(BsonFetchError,
       fmt"Invalid key retrieval, get {b.kind}")
@@ -776,10 +765,6 @@ proc isNil*(b: BsonBase): bool =
 proc isNil*(b: BsonDocument): bool =
   ## Check whether BsonDocument is literally nil or it's empty.
   b == nil or b.len == 0
-
-proc isNil*(b: Option[BsonBase]): bool =
-  ## Bypass Option to check the BsonBase.
-  not b.isNone and b.get.isNil
 
 proc bsonArray*(args: varargs[BsonBase, toBson]): BsonBase =
   ## Change a variable arguments into BsonArray.
