@@ -50,14 +50,14 @@ proc one*(q: Query): Future[BsonDocument] {.async.} =
 proc all*(q: Query): Future[seq[BsonDocument]] {.async.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
-  var cursor = doc["cursor"].get.ofEmbedded.to Cursor
+  var cursor = doc["cursor"].ofEmbedded.to Cursor
   result = cursor.firstBatch
   if result.len >= q.limit:
     return
   while cursor.id > 0:
     doc = await q.collection.db.getMore(cursor.id, q.collection.name,
       batchSize = q.batchSize)
-    cursor = doc["cursor"].get.ofEmbedded.to Cursor
+    cursor = doc["cursor"].ofEmbedded.to Cursor
     if cursor.nextBatch.len == 0:
       break
     result = concat(result, cursor.nextBatch)
@@ -73,7 +73,7 @@ iterator items*(cur: Cursor): BsonDocument =
   while newcur.id != 0:
     #doc = await cur.db.getMore(cur.id, collname, batchSize)
     doc = waitfor newcur.db.getMore(newcur.id, collname, batchSize)
-    newcur = doc["cursor"].get.ofEmbedded.to Cursor
+    newcur = doc["cursor"].ofEmbedded.to Cursor
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
@@ -82,7 +82,7 @@ iterator items*(cur: Cursor): BsonDocument =
 proc iter*(q: Query): Future[Cursor] {.async.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
-  result = doc["cursor"].get.ofEmbedded.to Cursor
+  result = doc["cursor"].ofEmbedded.to Cursor
   result.db = q.collection.db
 
 proc find*(c: Collection, query = bson(), projection = bsonNull()): Query =
@@ -113,7 +113,7 @@ proc findAndModify*(c: Collection, query = bson(), sort = bsonNull(),
   arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]{.async.} =
   let doc = await c.db.findAndModify(c.name, query, sort, remove, update, `new`,
     fields, upsert, bypass, wt, collation, arrayFilters)
-  result = doc["value"].get.ofEmbedded
+  result = doc["value"].ofEmbedded
 
 proc update*(c: Collection, query = bson(), updates = bsonNull(),
   opt = bson()): Future[(bool, int)] {.async.} =
@@ -124,7 +124,7 @@ proc update*(c: Collection, query = bson(), updates = bsonNull(),
   for k, v in opt:
    q[k] = v
   let doc = await c.db.update(c.name, @[q])
-  result = (doc.ok, doc["nModified"].get.ofInt)
+  result = (doc.ok, doc["nModified"].ofInt)
 
 proc remove*(c: Collection, query: BsonDocument, justone = false):
     Future[(bool, int)] {.async.} =
@@ -134,7 +134,7 @@ proc remove*(c: Collection, query: BsonDocument, justone = false):
     limit: limit
   })
   let doc = await c.db.delete(c.name, @[delq])
-  result = (doc.ok, doc["n"].get.ofInt)
+  result = (doc.ok, doc["n"].ofInt)
 
 proc remove*(c: Collection, query, opt: BsonDocument):
   Future[(bool, int)] {.async.} =
@@ -144,14 +144,14 @@ proc remove*(c: Collection, query, opt: BsonDocument):
     if k == "writeConcern": wt = v
     else: delq[k] = v
   let doc = await c.db.delete(c.name, @[delq], wt = wt)
-  result = (doc.ok, doc["n"].get.ofInt)
+  result = (doc.ok, doc["n"].ofInt)
 
 proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
   Future[(bool, int)] {.async.} =
-  let wt = if "writeConcern" in opt: opt["writeConcern"].get else: bsonNull()
-  let ordered = if "ordered" in opt: opt["ordered"].get.ofBool else: true
+  let wt = if "writeConcern" in opt: opt["writeConcern"] else: bsonNull()
+  let ordered = if "ordered" in opt: opt["ordered"].ofBool else: true
   let doc = await c.db.insert(c.name, docs, ordered, wt)
-  result = (doc.ok, doc["n"].get.ofInt)
+  result = (doc.ok, doc["n"].ofInt)
 
 proc drop*(c: Collection, wt = bsonNull()): Future[(bool, string)] {.async.} =
   result = await c.db.dropCollection(c.name, wt)
@@ -171,11 +171,11 @@ proc count*(c: Collection, query = bson(), opt = bson()):
     of "skip": skip = v
   let doc = await c.db.count(c.name, query, limit, skip, hint,
     readConcern, collation)
-  result = doc["n"].get
+  result = doc["n"]
 
 proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
   Future[(bool, string)] {.async.} =
-  let wt = if "writeConcern" in opt: opt["writeConcern"].get
+  let wt = if "writeConcern" in opt: opt["writeConcern"]
            else: bsonNull()
   var q = bson({ key: key })
   for k, v in opt:
@@ -186,10 +186,10 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
 proc `distinct`*(c: Collection, field: string, query = bson(),
   opt = bson()): Future[seq[BsonBase]] {.async.} =
   var readConcern, collation: BsonBase
-  if "readConcern" in opt: readConcern = opt["readConcern"].get
-  if "collation" in opt: collation = opt["collation"].get
+  if "readConcern" in opt: readConcern = opt["readConcern"]
+  if "collation" in opt: collation = opt["collation"]
   let doc = await c.db.`distinct`(c.name, field, query, readConcern, collation)
-  result = doc["values"].get.ofArray
+  result = doc["values"].ofArray
 
 proc dropIndex*(c: Collection, indexes: BsonBase):
   Future[(bool, string)] {.async.} =

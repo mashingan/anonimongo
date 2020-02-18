@@ -91,7 +91,7 @@ proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
 proc listCollectionNames*(db: Database, dbname = ""):
   Future[seq[string]] {.async.} =
   for b in await db.listCollections(dbname):
-    result.add b["name"].get
+    result.add b["name"]
 
 proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
   let q = bson({ listDatabases: 1 })
@@ -107,14 +107,14 @@ proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
   let res = reply.documents[0]
   if res.ok:
     when not defined(release):
-      echo "All database size: ", res["totalSize"].get.ofDouble
-    result = res["databases"].get
+      echo "All database size: ", res["totalSize"].ofDouble
+    result = res["databases"]
   else:
     echo res.errmsg
 
 proc listDatabaseNames*(db: Mongo | Database): Future[seq[string]] {.async.} =
   for d in await listDatabases(db):
-    result.add d["name"].get
+    result.add d["name"]
 
 proc listIndexes*(db: Database, coll: string):
   Future[seq[BsonBase]]{.async.} =
@@ -126,7 +126,7 @@ proc listIndexes*(db: Database, coll: string):
     return
   let res = reply.documents[0]
   if res.ok:
-    result = res["cursor"]["firstBatch"].get
+    result = res["cursor"]["firstBatch"]
 
 proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
   Future[(bool, string)] {.async.} =

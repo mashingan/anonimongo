@@ -113,17 +113,17 @@ template prepare*(q: BsonDocument, flags: int32, dbname: string,
 
 proc ok*(b: BsonDocument): bool =
   ## Check whether BsonDocument is ``ok``.
-  "ok" in b and b["ok"].get.ofDouble.int == 1
+  "ok" in b and b["ok"].ofDouble.int == 1
 
 proc errmsg*(b: BsonDocument): string =
   ## Helper to fetch error message from BsonDocument.
   if "errmsg" in b:
-    result = b["errmsg"].get
+    result = b["errmsg"]
 
 proc code*(b: BsonDocument): int =
   ## Fetch (error?) code from BsonDocument.
   if "code" in b:
-    result = b["code"].get
+    result = b["code"]
 
 template check*(r: ReplyFormat): (bool, string) =
   ## Utility that will check whether the ReplyFormat is successful
@@ -138,9 +138,9 @@ template check*(r: ReplyFormat): (bool, string) =
     if doc.ok:
       res[0] = true
     elif RFlags.QueryFailure in rflags and "$err" in doc:
-      res[1] = doc["$err"].get
+      res[1] = doc["$err"]
     elif "errmsg" in doc:
-      res[1] = doc["errmsg"].get
+      res[1] = doc["errmsg"]
   else:
     res[0] = true
   unown(res)
@@ -179,10 +179,10 @@ proc look*(reply: ReplyFormat) =
     dump reply.numberReturned
   if reply.numberReturned > 0 and
      "cursor" in reply.documents[0] and
-     "firstBatch" in reply.documents[0]["cursor"].get.ofEmbedded:
+     "firstBatch" in reply.documents[0]["cursor"].ofEmbedded:
     when not defined(release):
       echo "printing cursor"
-    for d in reply.documents[0]["cursor"].get["firstBatch"].ofArray:
+    for d in reply.documents[0]["cursor"]["firstBatch"].ofArray:
       dump d
   else:
     for d in reply.documents:

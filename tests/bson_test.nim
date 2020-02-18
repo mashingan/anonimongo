@@ -24,9 +24,9 @@ suite "Bson operations tests":
       ("array world", bsonArray("red", 50, 4.2)),
       ("hello world", isekai.toBson)
     ])
-    check hellodoc["hello"].get == 100
-    check hellodoc["array world"].get.ofArray.len == 3
-    check hellodoc["hello world"].get == isekai
+    check hellodoc["hello"] == 100
+    check hellodoc["array world"].ofArray.len == 3
+    check hellodoc["hello world"] == isekai
 
   test "Defining bson with explicit table and writing to output stream":
     let bsonFilename = "bsonimpl_encode.bson"
@@ -42,11 +42,11 @@ suite "Bson operations tests":
         ("_id", curroid.toBson)
       ]),
       stream = newFileStream(bsonFilename, mode = fmReadWrite))
-    check newdoc["hello world"].get == isekai
-    check newdoc["hello"].get == 100
+    check newdoc["hello world"] == isekai
+    check newdoc["hello"] == 100
     check newdoc["this is null"].isNil
-    check newdoc["now"].get == currtime
-    check newdoc["_id"].get == curroid
+    check newdoc["now"] == currtime
+    check newdoc["_id"] == curroid
     check fileExists bsonFilename
 
   test "Encode bson":
@@ -56,17 +56,17 @@ suite "Bson operations tests":
 
   test "Decode bson":
     nnewdoc = decode newdocstr
-    check nnewdoc["hello"].get.ofInt == 100
-    check nnewdoc["hello world"].get == isekai
-    check nnewdoc["array world"].get.ofArray.len == 3
+    check nnewdoc["hello"].ofInt == 100
+    check nnewdoc["hello world"] == isekai
+    check nnewdoc["array world"].ofArray.len == 3
     check nnewdoc["this is null"].isNil
-    check nnewdoc["now"].get.ofTime == newdoc["now"].get
+    check nnewdoc["now"].ofTime == newdoc["now"]
 
   test "Throw incorrect conversion value and accessing field":
     expect(BsonFetchError):
-      discard nnewdoc["hello"].get.ofDouble
-    expect(UnpackError):
-      discard nnewdoc["nonexistent-field"].get
+      discard nnewdoc["hello"].ofDouble
+    expect(KeyError):
+      discard nnewdoc["nonexistent-field"]
 
   test "Embedded bson document":
     check arrayembed["objects"][2]["u"]["$set"]["truth"].ofInt32 == 42
@@ -90,7 +90,7 @@ suite "Bson operations tests":
     })
     let (_, tbencoded) = encode testbinary
     let dectestbin = decode tbencoded
-    check dectestbin["dummy_binary"].get.
+    check dectestbin["dummy_binary"].
       ofBinary.stringbytes == stringbin
 
     let qrimg = readFile "tests/qrcode-me.png"
@@ -99,7 +99,7 @@ suite "Bson operations tests":
     })
     let (_, pngbinencode) = encode pngbin
     let pngdec = decode pngbinencode
-    check pngdec["qr-me"].get.ofBinary.stringbytes == qrimg
+    check pngdec["qr-me"].ofBinary.stringbytes == qrimg
 
   test "Bson timestamp codec operations":
     let currtime = getTime().toUnix.uint32
@@ -108,7 +108,7 @@ suite "Bson operations tests":
     })
     let (_, timestampstr) = encode timestampdoc
     let timestampdec = decode timestampstr
-    let decurrtime = timestampdec["timestamp"].get.ofTimestamp[1]
+    let decurrtime = timestampdec["timestamp"].ofTimestamp[1]
     check decurrtime == currtime
 
   test "Empty bson array codec and write to file":
@@ -118,10 +118,10 @@ suite "Bson operations tests":
       stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
     let (_, empstr) = encode emptyarr
     let empdec = decode empstr
-    check empdec["emptyarr"].get.ofArray.len == 0
+    check empdec["emptyarr"].ofArray.len == 0
   test "Read empty bson array from file":
     let emptyarr = decode(readFile "emptyarr.bson")
-    check emptyarr["emptyarr"].get.ofArray.len == 0
+    check emptyarr["emptyarr"].ofArray.len == 0
   
   test "Mutable bson field access":
     check arrayembed["objects"][0]["q"] == 1
@@ -137,10 +137,10 @@ suite "Bson operations tests":
     let bjs = bson({
       js: jsbson,
     })
-    check bjs["js"].get == jscode
+    check bjs["js"] == jscode
     let (_, encstr) = encode bjs
     let bjsdec = decode encstr
-    check bjsdec["js"].get.ofString == bjs["js"].get.ofString
+    check bjsdec["js"].ofString == bjs["js"].ofString
 
 suite "Macro to object conversion tests":
   type
@@ -196,8 +196,8 @@ suite "Macro to object conversion tests":
   })
   test "Simple convertion bson to flat object":
     let otheb = theb.to SimpleIntString
-    check otheb.name == theb["name"].get
-    check otheb.str == theb["str"].get
+    check otheb.name == theb["name"]
+    check otheb.str == theb["str"]
 
   let outer1 = bson({
     outerName: "outer 1",
@@ -205,7 +205,7 @@ suite "Macro to object conversion tests":
   })
   test "Conversion with 1 level object":
     let oouter1 = outer1.to SSIntString
-    check oouter1.outerName == outer1["outerName"].get
+    check oouter1.outerName == outer1["outerName"]
     check oouter1.sis.name == outer1["sis"]["name"]
   let currtime = now().toTime
   let s2b = bson({
@@ -239,40 +239,43 @@ suite "Macro to object conversion tests":
     arrsisdistref: [theb, theb],
     timenow: currtime,
     dtimenow: currtime,
+    "not-exists-field": true,
   })
 
-  let ssis2 = outer1.to SSIntString
+  var ssis2: SSIntString
   test "Ref object with 1 level hierarchy":
-    check ssis2.outerName == outer1["outerName"].get
-    check ssis2.sis.name == outer1["sis"].get["name"]
+    ssis2 = outer1.to SSIntString
+    check ssis2.outerName == outer1["outerName"]
+    check ssis2.sis.name == outer1["sis"]["name"]
 
-  let s2sis = s2b.to S2IntString
+  var s2sis: S2IntString
   test "Multiple aliased field 1 level hierarchial object and" &
     "ref object and array and array object":
-    check s2sis.sis1.name == s2b["sis1"].get["name"]
-    check s2sis.sisref.name == s2b["sis1"].get["name"]
-    check s2sis.sissref[0].name == s2b["sissref"].get[0]["name"]
-    check s2sis.sissref2[0].str == s2b["sissref2"].get[0]["str"]
-    check s2sis.district.string == s2b["district"].get
-    check s2sis.dsis.SimpleIntString.str == s2b["dsis"].get["str"]
-    check s2sis.dbar.Bar == s2b["dbar"].get
-    check s2sis.dsisref.RSintString.str == s2b["dsisref"].get["str"]
-    check s2sis.sqdbar.len == s2b["sqdbar"].get.ofArray.len
-    check s2sis.sqdbar[0].Bar == s2b["sqdbar"].get[0]
+    s2sis = s2b.to S2IntString
+    check s2sis.sis1.name == s2b["sis1"]["name"]
+    check s2sis.sisref.name == s2b["sis1"]["name"]
+    check s2sis.sissref[0].name == s2b["sissref"][0]["name"]
+    check s2sis.sissref2[0].str == s2b["sissref2"][0]["str"]
+    check s2sis.district.string == s2b["district"]
+    check s2sis.dsis.SimpleIntString.str == s2b["dsis"]["str"]
+    check s2sis.dbar.Bar == s2b["dbar"]
+    check s2sis.dsisref.RSintString.str == s2b["dsisref"]["str"]
+    check s2sis.sqdbar.len == s2b["sqdbar"].ofArray.len
+    check s2sis.sqdbar[0].Bar == s2b["sqdbar"][0]
     check s2sis.arrdbar.len == 2
-    check s2sis.arrdbar[0].Bar == s2b["arrdbar"].get[0]
+    check s2sis.arrdbar[0].Bar == s2b["arrdbar"][0]
     check s2sis.arrsisref.len == 1
-    check s2sis.arrsisref[0].str == s2b["arrsisref"].get[0]["str"]
+    check s2sis.arrsisref[0].str == s2b["arrsisref"][0]["str"]
     check s2sis.arrsisrefalias.len == 1
-    check s2sis.arrsisrefalias[0].name == s2b["arrsisrefalias"].get[0]["name"]
-    check s2sis.sissdist.len == s2b["sissdist"].get.ofArray.len
-    check s2sis.sissdist[0].SimpleIntString.str == s2b["sissdist"].get[0]["str"]
-    check s2sis.sissdistref.len == s2b["sissdistref"].get.ofArray.len
-    check s2sis.sissdistref[0].RSintString.name == s2b["sissdistref"].get[0]["name"]
+    check s2sis.arrsisrefalias[0].name == s2b["arrsisrefalias"][0]["name"]
+    check s2sis.sissdist.len == s2b["sissdist"].ofArray.len
+    check s2sis.sissdist[0].SimpleIntString.str == s2b["sissdist"][0]["str"]
+    check s2sis.sissdistref.len == s2b["sissdistref"].ofArray.len
+    check s2sis.sissdistref[0].RSintString.name == s2b["sissdistref"][0]["name"]
     check s2sis.arrsisrefdist.len == 1
-    check s2sis.arrsisrefdist[0].SimpleIntString.str == s2b["arrsisrefdist"].get[0]["str"]
+    check s2sis.arrsisrefdist[0].SimpleIntString.str == s2b["arrsisrefdist"][0]["str"]
     check s2sis.arrsisdistref.len == 1
-    check s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"].get[0]["name"]
+    check s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"][0]["name"]
     check s2sis.timenow == currtime
     check s2sis.dtimenow.Time == currtime
 
@@ -306,11 +309,12 @@ suite "Macro to object conversion tests":
       }
     ]
   })
-  let osob = bsob.to SeqOfBson
+  var osob: SeqOfBson
   test "Bypass when converting to BsonDocument object":
-    check osob.label == bsob["label"].get
-    check osob.documents[0]["field1"].get == bsob["documents"][0]["field1"].ofString
-    check osob.documents[1]["fieldfield"].get == bsob["documents"][1]["fieldfield"].ofString
+    osob = bsob.to SeqOfBson
+    check osob.label == bsob["label"]
+    check osob.documents[0]["field1"] == bsob["documents"][0]["field1"].ofString
+    check osob.documents[1]["fieldfield"] == bsob["documents"][1]["fieldfield"].ofString
 
   type ManyTimes = object
     times: seq[Time]
@@ -318,8 +322,9 @@ suite "Macro to object conversion tests":
   var btimes = bson({
     times: [currtime, currtime, currtime]
   })
-  let otimes = btimes.to ManyTImes
+  var otimes: ManyTImes
   test "Seq of Time conversion object":
+    otimes = btimes.to ManyTImes
     check otimes.times[1] == currtime
 
   type
@@ -331,8 +336,9 @@ suite "Macro to object conversion tests":
   let botw = bson({
     timewrap: { time: currtime },
   })
-  let ootw = botw.to OTimeWrap
+  var ootw: OTimeWrap
   test "Wrapped time conversion":
+    ootw = botw.to OTimeWrap
     check ootw.timewrap.time == currtime
 
   # many object wraps
@@ -356,8 +362,9 @@ suite "Macro to object conversion tests":
       oosis: outer1,
     }
   })
-  let omo = bmo.to ManyObjects
+  var omo: ManyObjects
   test "Many object wraps conversion":
-    check omo.wrap.outerName == outer1["outerName"].get
+    omo = bmo.to ManyObjects
+    check omo.wrap.outerName == outer1["outerName"]
     check omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
     check omo.ootimewrap.otimewrap.timewrap.time == currtime
