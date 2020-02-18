@@ -142,7 +142,7 @@ proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
   if not stat.ok:
     echo stat.errMsg
     return
-  result = (true, stat["n"].get.ofInt)
+  result = (true, stat["n"].ofInt)
 
 proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
   let (_, q) = dropPrologue(db, dropUser, user)

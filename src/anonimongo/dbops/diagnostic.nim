@@ -59,7 +59,7 @@ proc getLog*(db: Database, filter = "global"): Future[BsonDocument]{.async.} =
   result = await db.crudops(bson({ getLog: filter }), "admin")
 
 proc getLogFilters*(db: Database): Future[seq[string]] {.async.} =
-  result = (await db.getLog("*"))["names"].get.ofArray.map ofString
+  result = (await db.getLog("*"))["names"].ofArray.map ofString
 
 proc hostInfo*(db: Database): Future[BsonDocument]{.async.} =
   result = await db.crudops(bson({ hostInfo: 1 }), "admin")

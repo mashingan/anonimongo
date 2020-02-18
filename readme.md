@@ -42,14 +42,14 @@ else:
 let id5doc = waitfor coll.findOne(bson({
   insertId: 5
 }))
-doAssert id5doc["datetime"].get == currtime + initDuration(hours = 5)
+doAssert id5doc["datetime"] == currtime + initDuration(hours = 5)
 
 let oldid8doc = waitfor coll.findAndModify(
   bson({ insertId: 8},
   bson({ "$set": { insertId: 80 }}))
 )
 let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
-doAssert oldid8doc["datetime"].get.ofTime == newid8doc["datetime"].get
+doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
 close mongo
 ```
 </details>
@@ -353,8 +353,6 @@ There are several points the quite questionable and prone to change for later de
 
 <details><summary>Those are:</summary>
 
-* `BsonDocument` will return `Option[BsonBase]` when accessing its field but `BsonBase`
-will immediately return `BsonBase` in case it's embedded Bson.
 * `BsonTime` which acquired from decoded Bson bytestream will not equal with `Time` from
 times module in stdlib. The different caused by Bson only support milliseconds time precision
 while Nim `Time` support to nanoseconds. The automatic conversion would supported by `BsonBase == Time`

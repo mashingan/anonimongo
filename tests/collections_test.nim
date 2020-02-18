@@ -65,21 +65,21 @@ suite "Collections APIs tests":
 
   test &"Find one query on {namespace}":
     let doc = waitfor coll.findOne(bson({ countId: 5 }))
-    check doc["countId"].get == 5
-    check doc["type"].get == "insertTest"
-    check doc["addedTime"].get == (currtime + initDuration(minutes = 5 * 10))
+    check doc["countId"] == 5
+    check doc["type"] == "insertTest"
+    check doc["addedTime"] == (currtime + initDuration(minutes = 5 * 10))
 
   test &"Find all on {namespace}":
     let docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
     let dlen = docs.len
     check dlen == insertDocs.len
     for i in 0 .. docs.high:
-      check docs[i]["countId"].get == dlen-i-1
+      check docs[i]["countId"] == dlen-i-1
 
   test &"Find iterate on {namespace}":
     var count = 0
     for d in waitfor coll.findIter():
-      check d["countId"].get == count
+      check d["countId"] == count
       inc count
 
   test &"Remove countId 1 and 5 on {namespace}":
@@ -97,9 +97,9 @@ suite "Collections APIs tests":
     let olddoc = waitfor coll.findAndModify(query = bson({
       countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
     dump olddoc
-    check olddoc["countId"].get == oldcount
+    check olddoc["countId"] == oldcount
     let newdoc = waitFor coll.findOne(bson({ countId: newcount }))
-    check newdoc["countId"].get == newcount
+    check newdoc["countId"] == newcount
 
   test &"Update countId 9 $inc by 90 on {namespace}":
     let addcount = 90
@@ -113,9 +113,9 @@ suite "Collections APIs tests":
     check success
     check count == 1
     let newdoc = waitFor coll.findOne(bson({ countId: oldcount + addcount }))
-    check newdoc["countId"].get == olddoc["countId"].get + addcount
-    check newdoc["type"].get == newtype
-    check newdoc["addedTime"].get == olddoc["addedTime"].get.ofTime
+    check newdoc["countId"] == olddoc["countId"] + addcount
+    check newdoc["type"] == newtype
+    check newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
   test &"Drop indexes collection of {namespace}":
     skip()
