@@ -2,7 +2,6 @@ import unittest, os, osproc, strformat, times, sequtils, sugar
 
 import testutils
 import ../src/anonimongo
-import ../src/anonimongo/collections
 
 {.warning[UnusedImport]: off.}
 
@@ -63,6 +62,21 @@ suite "Collections APIs tests":
     check values.len == 1
     check values[0].kind == bkString
 
+  test &"Aggregate documents on {namespace}":
+    require coll != nil
+    let tensOfMinutes = 5
+    let lesstime = currtime + initDuration(minutes = tensOfMinutes * 10)
+    let pipeline = @[
+      bson({ "$match": { addedTime: { "$gte": currtime, "$lt": lesstime }}}),
+      bson({ "$project": {
+        addedTime: { "$dateToString": {
+          date: "$addedTime",
+          format: "%G-%m-%dT-%H:%M:%S%z",
+          timezone: "+07:00", }}}})
+    ]
+    let aggfind = waitfor coll.aggregate(pipeline)
+    check aggfind.len == tensOfMinutes
+
   test &"Find one query on {namespace}":
     let doc = waitfor coll.findOne(bson({ countId: 5 }))
     check doc["countId"] == 5
@@ -96,7 +110,6 @@ suite "Collections APIs tests":
     let newcount = 80
     let olddoc = waitfor coll.findAndModify(query = bson({
       countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
-    dump olddoc
     check olddoc["countId"] == oldcount
     let newdoc = waitFor coll.findOne(bson({ countId: newcount }))
     check newdoc["countId"] == newcount
@@ -131,9 +144,12 @@ suite "Collections APIs tests":
     success.reasonedCheck("dropDatabase", reason)
 
   test "Shutdown mongo":
-    require mongo != nil
-    let (success, _) = waitFor mongo.shutdown(timeout = 10)
-    check success
+    if runlocal:
+      require mongo != nil
+      let (success, _) = waitFor mongo.shutdown(timeout = 10)
+      check success
+    else:
+      skip()
 
   close mongo
   if runlocal:

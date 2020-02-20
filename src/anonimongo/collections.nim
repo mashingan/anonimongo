@@ -1,7 +1,7 @@
 import sequtils
 import sugar
 
-import dbops/[admmgmt, aggregation, crud]
+import dbops/[admmgmt, aggregation, aggregation, crud]
 import core/[bson, types, utils, wire]
 
 {.warning[UnusedImport]: off.}
@@ -198,3 +198,22 @@ proc dropIndex*(c: Collection, indexes: BsonBase):
 proc dropIndexes*(c: Collection, indexes: seq[string]):
   Future[(bool, string)] {.async.} =
   result = await c.db.dropIndexes(c.name, indexes.map toBson)
+
+proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):
+  Future[seq[BsonDocument]]{.async.} =
+  type tempopt = object
+    explain, diskuse: bool
+    cursor: BsonDocument
+    maxTimeMS: int
+    bypass: bool
+    readConcern, collation, hint: BsonBase
+    comment: string
+    wt: BsonBase
+  var optobj = opt.to tempopt
+  if not optobj.explain and optobj.cursor.isNil:
+    optobj.cursor = bson()
+  let reply = await c.db.aggregate(c.name, pipeline,
+    optobj.explain, optobj.diskuse, optobj.cursor, optobj.maxTimeMS,
+    optobj.bypass, optobj.readConcern, optobj.collation, optobj.hint,
+    optobj.comment, optobj.wt)
+  result = reply["cursor"]["firstBatch"].ofArray.map ofEmbedded

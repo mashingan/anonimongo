@@ -681,7 +681,9 @@ proc encode*(doc: BsonDocument): (int, string) =
     of bkArray:
       length += doc.stream.encode(k, v as BsonArray)
     of bkEmbed:
-      let ndoc = (v as BsonEmbed).value as BsonDocument
+      let bdoc = (v as BsonEmbed).value
+      if bdoc.isNil: continue
+      let ndoc = bdoc as BsonDocument
       length += doc.stream.encode(k, ndoc)
     of bkBool:
       length += doc.stream.encode(k, v as BsonBool)

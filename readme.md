@@ -3,8 +3,10 @@
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
 Anonimongo is a driver for Mongodb developed using pure Nim. As library, it's developed to enable
-developers to be able to access and use Mongodb in projects using Nim. Currently the low level APIs is implemented
-however the higher level APIs for easier usage is still in heavy development<sup>TM</sup>.
+developers to be able to access and use Mongodb in projects using Nim. Several implementad as
+APIs for low-level which works directly with [Database][7] and higher level APIs which works with
+[Collection][8]. Any casual user just have to access the [Collection API][9] directly instead of
+working with various [Database operations][10].
 
 The APIs are closely following [Mongo documentation][4] with a bit variant for `explain` API. Each supported
 command for `explain` added optional string value to indicate the verbosity of `explain` command.  
@@ -33,6 +35,8 @@ for i in 0 .. idoc.high:
     datetime: currtime + initDuration(hours = i),
     insertId: i
   })
+
+# insert documents
 let (success, inserted) = waitfor coll.insert(idoc)
 if not success:
   echo "Cannot insert to collection: ", coll.name
@@ -44,13 +48,28 @@ let id5doc = waitfor coll.findOne(bson({
 }))
 doAssert id5doc["datetime"] == currtime + initDuration(hours = 5)
 
+# find one and modify, return the old document by default
 let oldid8doc = waitfor coll.findAndModify(
   bson({ insertId: 8},
   bson({ "$set": { insertId: 80 }}))
 )
+
+# find one document, which newly modified
 let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
 doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
 close mongo
+
+# remove a document
+let (delstatus, ndeleted) = waitfor coll.remove(bson({
+  insertId: 9,
+}), justone = true)
+doAssert delstatus    # must be true if query success
+doAssert ndeleted == 1 # because we only delete one entry in
+                       # case multiple documents selected
+
+# count all documents in current collection
+let currNDoc = waitfor coll.count()
+doAssert currNDoc == (idoc.len - ndeleted)
 ```
 </details>
 <details><summary>Authenticate</summary>
@@ -356,8 +375,7 @@ There are several points the quite questionable and prone to change for later de
 
 * `BsonTime` which acquired from decoded Bson bytestream will not equal with `Time` from
 times module in stdlib. The different caused by Bson only support milliseconds time precision
-while Nim `Time` support to nanoseconds. The automatic conversion would supported by `BsonBase == Time`
-but not `Time == BsonBase` due defined automatic conversion.
+while Nim `Time` support to nanoseconds.
 * `diagnostic.explain` and its corresponding `explain`-ed version of various commands haven't
 been undergone extensive testing.
 * `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
@@ -375,3 +393,7 @@ MIT
 [4]: https://docs.mongodb.com/manual/reference
 [5]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo.html
 [6]: https://mashingan.github.io/anonimongo/src/htmldocs/theindex.html
+[7]: https://mashingan.github.io/anonimongo/src/htmldocs/core/types.html#Database
+[8]: https://mashingan.github.io/anonimongo/src/htmldocs/core/types.html#Collection
+[9]: https://mashingan.github.io/anonimongo/src/htmldocs/collections.html
+[10]: https://github.com/mashingan/anonimongo/src/dbops/
