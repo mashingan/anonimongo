@@ -340,7 +340,8 @@ and [mongo spec][3].
 </details>
 <details><summary>:x: Free monitoring commands 0/1</summary>
 
-- [ ] `setFreeMonitoring`
+- [x] `getFreeMonitoringStatus`
+- [x] `setFreeMonitoring`
 </details>
 <details><summary>:x: Auditing commands 0/1</summary>
 
