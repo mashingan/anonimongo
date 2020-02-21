@@ -37,11 +37,11 @@ for i in 0 .. idoc.high:
   })
 
 # insert documents
-let (success, inserted) = waitfor coll.insert(idoc)
-if not success:
+let writeRes = waitfor coll.insert(idoc)
+if not writeRes.success:
   echo "Cannot insert to collection: ", coll.name
 else:
-  echo "inserted documents: ", inserted
+  echo "inserted documents: ", writeRes.n
 
 let id5doc = waitfor coll.findOne(bson({
   insertId: 5
@@ -57,19 +57,20 @@ let oldid8doc = waitfor coll.findAndModify(
 # find one document, which newly modified
 let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
 doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
-close mongo
 
 # remove a document
-let (delstatus, ndeleted) = waitfor coll.remove(bson({
+let delStat = waitfor coll.remove(bson({
   insertId: 9,
 }), justone = true)
-doAssert delstatus    # must be true if query success
-doAssert ndeleted == 1 # because we only delete one entry in
-                       # case multiple documents selected
+doAssert delStat.success  # must be true if query success
+doAssert delStat.n == 1   # because we only delete one entry in
+                          # case multiple documents selected
 
 # count all documents in current collection
 let currNDoc = waitfor coll.count()
 doAssert currNDoc == (idoc.len - ndeleted)
+
+close mongo
 ```
 </details>
 <details><summary>Authenticate</summary>
@@ -86,7 +87,6 @@ if waitfor not mongo.connect:
   quit &"Cannot connect to {mhostport}"
 if not authenticate[SHA256Digest](mongo, username, password):
   quit &"Cannot login to {mhostport}"
-close mongo
 
 # Another way to connect and login
 mongo = newMongo()
@@ -104,10 +104,6 @@ import strformat, uri
 import anonimongo
 
 let uriserver = "mongo://username:password@localhost:27017/"
-#let sslkey = "/path/to/ssl/key.pem"
-#let sslcert = "/path/to/ssl/cert.pem"
-#let urissl = &"{uriserver}?tlsCertificateKeyFile=certificate:{encodeURL sslcert},key:{encodeURL sslkey}"
-
 var mongo = newMongo(parseURI uriserver)
 close mongo
 ```
@@ -357,12 +353,13 @@ and [mongo spec][3].
 - [x] `validate`
 - [ ] `whatsmyuri` (internal command)
 </details>
-<details><summary>:x: Free monitoring commands 0/1</summary>
+<details><summary>:white_check_mark: Free monitoring commands 2/2</summary>
 
 - [x] `getFreeMonitoringStatus`
 - [x] `setFreeMonitoring`
 </details>
-<details><summary>:x: Auditing commands 0/1</summary>
+<details><summary>:x: <del>Auditing commands 0/1</del>, only available for
+Mongodb Enterprise and AtlasDB </summary>
 
 - [ ] `logApplicationMessage`
 </details>

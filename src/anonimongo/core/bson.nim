@@ -336,13 +336,10 @@ proc contains*(b: BsonBase, key: string): bool =
     except BsonFetchError:
       doAssert true
       ]#
-  if b.kind != bkEmbed:
-    raise newException(BsonFetchError, fmt"Invalid key retrieval, get {b.kind}")
-  key in (b as BsonEmbed).value
+  b.kind == bkEmbed and key in (b as BsonEmbed).value
 
 proc `[]`*(b: BsonDocument, key: sink string): BsonBase =
-  ## BsonDocument accessor for string key. The returned Option is
-  ## artifact of older API design.
+  ## BsonDocument accessor for string key.
   runnableExamples:
     let bso = bson({
       field1: 1,

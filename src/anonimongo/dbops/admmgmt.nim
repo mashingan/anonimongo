@@ -23,7 +23,7 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   validator = bsonNull(), validationLevel = "strict", validationAction = "error",
   indexOptionDefaults = bsonNull(), viewOn = "",
   pipeline = bsonArray(), collation = bsonNull(), writeConcern = bsonNull()):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   var q = bson({
     create: name,
   })
@@ -45,7 +45,7 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   result = await db.proceed(q)
 
 proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
-  writeConcern = bsonNull()): Future[(bool, string)]{.async.} =
+  writeConcern = bsonNull()): Future[WriteResult]{.async.} =
   var q = bson({
     createIndexes: coll,
     indexes: indexes,
@@ -54,19 +54,19 @@ proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
   result = await db.proceed(q)
 
 proc dropCollection*(db: Database, coll: string, wt = bsonNull()):
-  Future[(bool, string)]{.async.} =
+  Future[WriteResult]{.async.} =
   var q = bson({ drop: coll })
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
 proc dropDatabase*(db: Database, wt = bsonNull()):
-  Future[(bool, string)]{.async.} =
+  Future[WriteResult]{.async.} =
   var q = bson({ dropDatabase: 1 })
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
 proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
-  wt = bsonNull()): Future[(bool, string)] {.async.} =
+  wt = bsonNull()): Future[WriteResult] {.async.} =
   var q = bson({
     dropIndexes: coll,
     indexes: indexes,
@@ -129,7 +129,7 @@ proc listIndexes*(db: Database, coll: string):
     result = res["cursor"]["firstBatch"]
 
 proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   let source = &"{db.name}.{`from`}"
   let dest = &"{db.name}.{to}"
   var q = bson({
@@ -141,7 +141,7 @@ proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
   result = await db.proceed(q, "admin")
 
 proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
-    Future[(bool, string)] {.async.} =
+    Future[WriteResult] {.async.} =
   var q = bson({ shutdown: 1, force: force, timeoutSecs: timeout })
   when db is Mongo:
     let mdb = db["admin"]
@@ -150,7 +150,11 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
   try:
     result = await mdb.proceed(q, "admin")
   except IOError:
-    result = (true, getCurrentExceptionMsg())
+    result = WriteResult(
+      success: true,
+      reason: getCurrentExceptionMsg(),
+      kind: wkSingle
+    )
 
 proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
   var q = bson({ currentOp: 1})
@@ -163,7 +167,7 @@ proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
     return
   result = reply.documents[0]
 
-proc killOp*(db: Database, opid: int32): Future[(bool, string)] {.async.} =
+proc killOp*(db: Database, opid: int32): Future[WriteResult] {.async.} =
   let q = bson({ killerOp: 1, op: opid })
   result = await db.proceed(q, "admin")
 

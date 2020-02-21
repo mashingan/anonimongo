@@ -116,7 +116,7 @@ proc findAndModify*(c: Collection, query = bson(), sort = bsonNull(),
   result = doc["value"].ofEmbedded
 
 proc update*(c: Collection, query = bson(), updates = bsonNull(),
-  opt = bson()): Future[(bool, int)] {.async.} =
+  opt = bson()): Future[WriteResult] {.async.} =
   var q = bson({
     q: query,
     u: updates,
@@ -124,36 +124,36 @@ proc update*(c: Collection, query = bson(), updates = bsonNull(),
   for k, v in opt:
    q[k] = v
   let doc = await c.db.update(c.name, @[q])
-  result = (doc.ok, doc["nModified"].ofInt)
+  result = doc.getWResult
 
 proc remove*(c: Collection, query: BsonDocument, justone = false):
-    Future[(bool, int)] {.async.} =
+    Future[WriteResult] {.async.} =
   let limit = if justone: 1 else: 0
   var delq = bson({
     q: query,
     limit: limit
   })
   let doc = await c.db.delete(c.name, @[delq])
-  result = (doc.ok, doc["n"].ofInt)
+  result = doc.getWResult
 
 proc remove*(c: Collection, query, opt: BsonDocument):
-  Future[(bool, int)] {.async.} =
+  Future[WriteResult] {.async.} =
   var delq = bson({ query: query })
   var wt: BsonBase
   for k, v in opt:
     if k == "writeConcern": wt = v
     else: delq[k] = v
   let doc = await c.db.delete(c.name, @[delq], wt = wt)
-  result = (doc.ok, doc["n"].ofInt)
+  result = doc.getWResult
 
 proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
-  Future[(bool, int)] {.async.} =
+  Future[WriteResult] {.async.} =
   let wt = if "writeConcern" in opt: opt["writeConcern"] else: bsonNull()
   let ordered = if "ordered" in opt: opt["ordered"].ofBool else: true
   let doc = await c.db.insert(c.name, docs, ordered, wt)
-  result = (doc.ok, doc["n"].ofInt)
+  result = doc.getWResult
 
-proc drop*(c: Collection, wt = bsonNull()): Future[(bool, string)] {.async.} =
+proc drop*(c: Collection, wt = bsonNull()): Future[WriteResult] {.async.} =
   result = await c.db.dropCollection(c.name, wt)
 
 proc count*(c: Collection, query = bson(), opt = bson()):
@@ -174,7 +174,7 @@ proc count*(c: Collection, query = bson(), opt = bson()):
   result = doc["n"]
 
 proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   let wt = if "writeConcern" in opt: opt["writeConcern"]
            else: bsonNull()
   var q = bson({ key: key })
@@ -192,11 +192,11 @@ proc `distinct`*(c: Collection, field: string, query = bson(),
   result = doc["values"].ofArray
 
 proc dropIndex*(c: Collection, indexes: BsonBase):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   result = await c.db.dropIndexes(c.name, indexes)
 
 proc dropIndexes*(c: Collection, indexes: seq[string]):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   result = await c.db.dropIndexes(c.name, indexes.map toBson)
 
 proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):

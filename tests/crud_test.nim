@@ -27,6 +27,7 @@ suite "CRUD tests":
     foundDocs = newseq[BsonDocument]()
     namespace = ""
     resfind: BsonDocument
+    wr: WriteResult
 
   let currtime = now().toTime
   for i in 0 ..< 10:
@@ -188,8 +189,8 @@ suite "CRUD tests":
 
   test &"Drop database {db.name}":
     require db != nil
-    let (success, reason) = waitFor db.dropDatabase
-    success.reasonedCheck("dropDatabase error", reason)
+    wr = waitFor db.dropDatabase
+    wr.success.reasonedCheck("dropDatabase error", wr.reason)
 
   if runlocal:
     if mongorun.running: kill mongorun
