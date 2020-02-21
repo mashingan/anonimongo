@@ -77,6 +77,23 @@ type
     skip*, limit*, batchSize*: int32
     readConcern*, max*, min*: BsonBase
 
+  WriteKind* = enum
+    wkSingle wkMany
+    
+  WriteResult* = object
+    ## WriteResult is the result representing the write
+    ## operations. The kind of wkSingle means represent
+    ## the affected written/changed documents and wkMany
+    ## the has that.
+    status*: bool
+    reason*: string
+    case kind*: WriteKind
+    of wkMany:
+      n*: int
+      errmsgs*: seq[string] ## For various error message when writing.
+    of wkSingle:
+      discard
+
   MongoError* = object of Exception
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =

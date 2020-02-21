@@ -74,7 +74,7 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
   await all(ops)
 
 proc cuUsers(db: Database, query: BsonDocument):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   let dbname = if db.name != "": db.name else: "admin"
   result = await db.proceed(query, dbname)
 
@@ -114,7 +114,7 @@ proc createUser*(db: Database, user, pwd: string, roles = bsonArray(),
     restrictions = bsonArray(),
     mechanism = bsonArray("SCRAM-SHA-256", "SCRAM-SHA-1"),
     writeConcern = bsonNull(),
-    customData = bsonNull()): Future[(bool, string)] {.async.} =
+    customData = bsonNull()): Future[WriteResult] {.async.} =
   let q = cuPrep(db, "createUser", user, pwd, roles, restrictions,
     mechanism, writeConcern, customData)
   result = await cuUsers(db, q)
@@ -123,7 +123,7 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
     restrictions = bsonArray(),
     mechanism = bsonArray("SCRAM-SHA-256", "SCRAM-SHA-1"),
     writeConcern = bsonNull(),
-    customData = bsonNull()): Future[(bool, string)] {.async.} =
+    customData = bsonNull()): Future[WriteResult] {.async.} =
   let q = cuPrep(db, "updateUser", user, pwd, roles, restrictions,
     mechanism, writeConcern, customData)
   result = await cuUsers(db, q)
@@ -131,25 +131,30 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
 proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
   result = await sendops(query, db)
 
-proc dropAllUsersFromDatabase*(db: Database): Future[(bool, int)] {.async.} =
+proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
   let reply = await sendops(q, db)
   let (success, reason) = check reply
   if not success:
-    echo reason
+    if verbose: echo reason
     return
+  result.status = success
+  result.reason = reason
+  result.kind = wkMany
   let stat = reply.documents[0]
   if not stat.ok:
-    echo stat.errMsg
+    if verbose: echo stat.errMsg
+    result.reason = stat.errMsg
     return
-  result = (true, stat["n"].ofInt)
+  #result = (true, stat["n"].ofInt)
+  result.n = stat["n"]
 
-proc dropUser*(db: Database, user: string): Future[(bool, string)] {.async.} =
+proc dropUser*(db: Database, user: string): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropUser, user)
   result = await db.proceed(q)
 
 proc roleOps(db: Database, user: string, roles = bsonArray(),
-  writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
+  writeConcern = bsonNull()): Future[WriteResult] {.async.} =
   var q = bson({
     grantRolesToUser: user,
     roles: roles,
@@ -158,9 +163,9 @@ proc roleOps(db: Database, user: string, roles = bsonArray(),
   result = await db.proceed(q)
 
 proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
-  writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
+  writeConcern = bsonNull()): Future[WriteResult] {.async.} =
   result = await roleOps(db, user, roles, writeConcern)
 
 proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
-  writeConcern = bsonNull()): Future[(bool, string)] {.async.} =
+  writeConcern = bsonNull()): Future[WriteResult] {.async.} =
   result = await roleOps(db, user, roles, writeConcern)

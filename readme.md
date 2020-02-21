@@ -57,7 +57,6 @@ let oldid8doc = waitfor coll.findAndModify(
 # find one document, which newly modified
 let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
 doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
-close mongo
 
 # remove a document
 let (delstatus, ndeleted) = waitfor coll.remove(bson({
@@ -70,6 +69,8 @@ doAssert ndeleted == 1 # because we only delete one entry in
 # count all documents in current collection
 let currNDoc = waitfor coll.count()
 doAssert currNDoc == (idoc.len - ndeleted)
+
+close mongo
 ```
 </details>
 <details><summary>Authenticate</summary>
@@ -357,12 +358,13 @@ and [mongo spec][3].
 - [x] `validate`
 - [ ] `whatsmyuri` (internal command)
 </details>
-<details><summary>:x: Free monitoring commands 0/1</summary>
+<details><summary>:white_check_mark: Free monitoring commands 2/2</summary>
 
 - [x] `getFreeMonitoringStatus`
 - [x] `setFreeMonitoring`
 </details>
-<details><summary>:x: Auditing commands 0/1</summary>
+<details><summary>:x: <del>Auditing commands 0/1</del>, only available for
+Mongodb Enterprise and AtlasDB </summary>
 
 - [ ] `logApplicationMessage`
 </details>
