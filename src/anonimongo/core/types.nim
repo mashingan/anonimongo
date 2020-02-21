@@ -85,7 +85,7 @@ type
     ## operations. The kind of wkSingle means represent
     ## the affected written/changed documents and wkMany
     ## the has that.
-    status*: bool
+    success*: bool
     reason*: string
     case kind*: WriteKind
     of wkMany:

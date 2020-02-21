@@ -150,7 +150,11 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
   try:
     result = await mdb.proceed(q, "admin")
   except IOError:
-    result = (true, getCurrentExceptionMsg())
+    result = WriteResult(
+      success: true,
+      reason: getCurrentExceptionMsg(),
+      kind: wkSingle
+    )
 
 proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
   var q = bson({ currentOp: 1})

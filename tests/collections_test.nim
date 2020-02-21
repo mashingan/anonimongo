@@ -22,6 +22,7 @@ suite "Collections APIs tests":
   var coll: Collection
   let newdb = "newtemptest"
   var namespace: string
+  var wr: WriteResult
 
   let currtime = now().toTime
   var insertDocs = newseq[BsonDocument](10)
@@ -46,9 +47,9 @@ suite "Collections APIs tests":
 
   test &"Insert documents on {namespace}":
     require coll != nil
-    var (success, count) = waitfor coll.insert(insertDocs)
-    check success
-    check count == insertDocs.len
+    wr = waitfor coll.insert(insertDocs)
+    check wr.success
+    check wr.n == insertDocs.len
 
   test &"Create index on {namespace}":
     skip()
@@ -98,11 +99,11 @@ suite "Collections APIs tests":
 
   test &"Remove countId 1 and 5 on {namespace}":
     let toremove = [1, 5]
-    let (success, removed) = waitfor coll.remove(bson({
+    wr = waitfor coll.remove(bson({
       countId: { "$in": toremove.map toBson },
     }))
-    check success
-    check toremove.len == removed
+    check wr.success
+    check toremove.len == wr.n
 
   test &"FindAndModify countId 8 to be 80 on {namespace}":
     require coll != nil
@@ -119,12 +120,12 @@ suite "Collections APIs tests":
     let oldcount = 9
     let newtype = "異世界召喚"
     let olddoc = waitFor coll.findOne(bson({ countId: oldcount }))
-    let (success, count) = waitfor coll.update(
+    wr = waitfor coll.update(
       bson({ countId: oldcount }),
       bson({ "$set": { "type": newtype }, "$inc": { countId: addcount }}),
       bson({ upsert: false, multi: true}))
-    check success
-    check count == 1
+    check wr.success
+    check wr.n == 1
     let newdoc = waitFor coll.findOne(bson({ countId: oldcount + addcount }))
     check newdoc["countId"] == olddoc["countId"] + addcount
     check newdoc["type"] == newtype
@@ -135,19 +136,19 @@ suite "Collections APIs tests":
 
   test &"Drop collection {coll.db.name}.{targetColl}":
     require coll != nil
-    var (success, reason) = waitFor coll.drop
-    success.reasonedCheck("collections.drop error", reason)
+    wr = waitFor coll.drop
+    wr.success.reasonedCheck("collections.drop error", wr.reason)
 
   test &"Drop database {coll.db.name}":
     require coll != nil
-    let (success, reason) = waitFor coll.db.dropDatabase
-    success.reasonedCheck("dropDatabase", reason)
+    wr = waitFor coll.db.dropDatabase
+    wr.success.reasonedCheck("dropDatabase", wr.reason)
 
   test "Shutdown mongo":
     if runlocal:
       require mongo != nil
-      let (success, _) = waitFor mongo.shutdown(timeout = 10)
-      check success
+      wr = waitFor mongo.shutdown(timeout = 10)
+      check wr.success
     else:
       skip()
 

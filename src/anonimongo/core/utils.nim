@@ -56,8 +56,8 @@ proc proceed*(db: Database, q: BsonDocument, dbname = ""):
   ## Helper utility that basically utilize another two main operations
   ## ``sendops`` and ``epilogueCheck``.
   let reply = await sendops(q, db, dbname)
-  result.kind = wkSingle
-  result.status = epilogueCheck(reply, result.reason)
+  result = WriteResult(kind: wkSingle)
+  result.success = epilogueCheck(reply, result.reason)
 
 #template crudops(db: Database, q: BsonDocument): untyped {.async.} =
 proc crudops*(db: Database, q: BsonDocument, dbname = ""):
@@ -72,8 +72,14 @@ proc crudops*(db: Database, q: BsonDocument, dbname = ""):
 
 proc getWResult*(b: BsonDocument): WriteResult =
   ## Helper to fetch a WriteResult of kind wkMany.
-  result.status = b.ok
-  result.kind = wkMany
+  result = WriteResult(
+    success: b.ok,
+    kind: wkMany
+  )
+  if "nModified" in b:
+    result.n = b["nModified"]
+  elif "n" in b:
+    result.n = b["n"]
   if "writeErrors" in b:
     let errdocs = b["writeErrors"].ofArray
     result.errmsgs = newseq[string](errdocs.len)

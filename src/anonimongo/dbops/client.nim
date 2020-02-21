@@ -138,7 +138,7 @@ proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   if not success:
     if verbose: echo reason
     return
-  result.status = success
+  result.success = success
   result.reason = reason
   result.kind = wkMany
   let stat = reply.documents[0]

@@ -23,6 +23,7 @@ suite "Administration APIs tests":
   var db: Database
   var dbs: seq[string]
   var colls: seq[string]
+  var wr: WriteResult
   test "Connect to localhost and authentication":
     mongo = testsetup()
     require(mongo != nil)
@@ -56,8 +57,8 @@ suite "Administration APIs tests":
 
   test &"Create collection {targetColl} on {db.name}":
     require db != nil
-    let (success, reason) = waitFor db.create(targetColl)
-    success.reasonedCheck("create error", reason)
+    wr = waitFor db.create(targetColl)
+    wr.success.reasonedCheck("create error", wr.reason)
     check targetColl notin colls
     colls.add targetColl
 
@@ -68,28 +69,28 @@ suite "Administration APIs tests":
     skip()
   test &"Rename collection {targetColl} to {newtgcoll}":
     require db != nil
-    var (success, reason) = waitFor db.renameCollection("notexists", newtgcoll)
-    check not success
-    (success, reason) = waitFor db.renameCollection(targetColl, newtgcoll)
-    require success
-    if not success:
-      "rename collection failed: ".tell reason
+    wr = waitFor db.renameCollection("notexists", newtgcoll)
+    check not wr.success
+    wr = waitFor db.renameCollection(targetColl, newtgcoll)
+    require wr.success
+    if not wr.success:
+      "rename collection failed: ".tell wr.reason
     check newtgcoll notin colls
   test &"Drop collection {db.name}.{newtgcoll}":
-    var (success, reason) = waitFor db.dropCollection(targetColl)
-    check not success # already renamed to newgtcoll
-    (success, reason) = waitFor db.dropCollection(newtgcoll)
-    success.reasonedCheck("dropCollection error", reason)
+    wr = waitFor db.dropCollection(targetColl)
+    check not wr.success # already renamed to newgtcoll
+    wr = waitFor db.dropCollection(newtgcoll)
+    wr.success.reasonedCheck("dropCollection error", wr.reason)
 
   test &"Drop database {db.name}":
     require db != nil
-    let (success, reason) = waitFor db.dropDatabase
-    success.reasonedCheck("dropDatabase", reason)
+    wr = waitFor db.dropDatabase
+    wr.success.reasonedCheck("dropDatabase", wr.reason)
 
   test "Shutdown mongo":
     require mongo != nil
-    let (success, _) = waitFor mongo.shutdown(timeout = 10)
-    check success
+    wr = waitFor mongo.shutdown(timeout = 10)
+    check wr.success
 
   close mongo
   if runlocal:
