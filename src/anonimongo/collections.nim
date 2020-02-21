@@ -1,4 +1,4 @@
-import sequtils
+import sequtils, strformat
 import sugar
 
 import dbops/[admmgmt, aggregation, aggregation, crud]
@@ -121,9 +121,11 @@ proc update*(c: Collection, query = bson(), updates = bsonNull(),
     q: query,
     u: updates,
    })
+  var ordered = true
   for k, v in opt:
-   q[k] = v
-  let doc = await c.db.update(c.name, @[q])
+    if k == "ordered": ordered = v.ofBool
+    else: q[k] = v
+  let doc = await c.db.update(c.name, @[q], ordered = ordered)
   result = doc.getWResult
 
 proc remove*(c: Collection, query: BsonDocument, justone = false):
@@ -217,3 +219,82 @@ proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):
     optobj.bypass, optobj.readConcern, optobj.collation, optobj.hint,
     optobj.comment, optobj.wt)
   result = reply["cursor"]["firstBatch"].ofArray.map ofEmbedded
+
+proc preparebulkUpdate(op: BsonDocument, wt: BsonBase, ordered: bool,
+  db: Database): (BsonDocument, BsonBase, BsonDocument) =
+  result[1] = bsonNull()
+  result[2] = bson()
+  for k, v in op:
+    if k == "filter": result[0] = v.ofEmbedded
+    elif k == "update": result[1] = v
+    else: result[2][k] = v
+  if not ordered:
+    result[2]["ordered"] = false
+  result[2].addWriteConcern(db, wt)
+
+proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
+  wt = bsonNull(), ordered = true): Future[BulkResult] {.async.} =
+  var wr: WriteResult
+  let opt = bson({ writeConcern: wt, ordered: ordered })
+  var futbulk = newseq[Future[WriteResult]](operations.len)
+  var opid = newseq[string](operations.len)
+  template checkOrdered(wr: WriteResult, target, fieldName: untyped): untyped =
+    if not wr.success or wr.errmsgs.len != 0:
+      if wr.reason != "":
+        `target`.writeErrors.add wr.reason
+      for s in wr.errmsgs:
+        `target`.writeErrors.add s
+      if ordered: return
+    `target`.`fieldName` += wr.n
+  template opcheck(optype: string, fut: Future[WriteResult], i: int,
+    field: untyped): untyped =
+    if not ordered:
+      futbulk[i] = fut
+      opid[i] = optype
+    else:
+      wr = await fut
+      checkOrdered(wr, result, field)
+  template updateOp(optype: string, op: BsonDocument, i: int): untyped =
+    let (query, update, updopt) = op[optype].ofEmbedded.
+      preparebulkUpdate(wt, ordered, c.db)
+    let futupd = c.update(query, update, updopt)
+    opcheck(optype, futupd, i, nModified)
+  template removeOp(optype: string, op: BsonDocument, i: int, one = false):
+    untyped =
+    let fut = c.remove(op[optype]["filter"].ofEmbedded, justone = one)
+    opcheck(optype, fut, i, nRemoved)
+  for i, op in operations:
+    if "insertOne" in op:
+      let futInsOne = c.insert(@[op["insertOne"]["document"].ofEmbedded], opt)
+      if ordered:
+        wr = await futInsOne
+        checkOrdered(wr, result, nInserted)
+      else:
+        futbulk[i] = futInsOne
+        opid[i] = "insertOne"
+    elif "deleteOne" in op:
+      removeOp("deleteOne", op, i, true)
+    elif "updateOne" in op:
+      updateOp("updateOne", op, i)
+    elif "deleteMany" in op:
+      removeOp("deleteMany", op, i)
+    elif "updateMany" in op:
+      updateOp("updateMany", op, i)
+    elif "replaceOne" in op:
+      var (query, _, updopt) = op["replaceOne"].ofEmbedded.
+        preparebulkUpdate(wt, ordered, c.db)
+      updopt.del "replacement"
+      let update = op["replaceOne"]["replacement"]
+      let futrepOne = c.update(query, update, updopt)
+      opcheck("replaceOne", futrepOne, i, nModified)
+    else:
+      raise newException(MongoError, &"Invalid command given: {op}")
+  if not ordered:
+    let futres = await all(futbulk)
+    for i in 0 .. futres.high:
+      if opid[i] == "insertOne":
+        checkOrdered(futres[i], result, nInserted)
+      elif opid[i] in ["updateOne", "updateMany", "replaceOne"]:
+        checkOrdered(futres[i], result, nModified)
+      elif opid[i] in ["deleteOne", "deleteMany"]:
+        checkOrdered(futres[i], result, nRemoved)

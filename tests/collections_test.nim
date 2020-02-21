@@ -33,6 +33,23 @@ suite "Collections APIs tests":
         addedTime: currtime + initDuration(minutes = i * 10),
         `type`: "insertTest",
     })
+  let newdocs = @[
+    bson({ "_id" : 1, "char" : "Brisbane", "class" : "monk", "lvl" : 4 }),
+    bson({ "_id" : 2, "char" : "Eldon", "class" : "alchemist", "lvl" : 3 }),
+    bson({ "_id" : 3, "char" : "Meldane", "class" : "ranger", "lvl" : 3 })]
+  let ops = @[
+    bson({ insertOne: { "document": { "_id": 4, "char": "Dithras", "class": "barbarian", "lvl": 4 } } }),
+    bson({ insertOne: { "document": { "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 } } }),
+    bson({ updateOne : {
+       "filter" : { "char" : "Eldon" },
+       "update" : { "$set" : { "status" : "Critical Injury" } }
+       }}),
+    bson({ deleteOne : { "filter" : { "char" : "Brisbane"} } }),
+    bson({ replaceOne : {
+       "filter" : { "char" : "Meldane" },
+       "replacement" : { "char" : "Tanys", "class" : "oracle", "lvl": 4 }
+    } })
+  ]
 
   test "Connect to localhost and authentication":
     mongo = testsetup()
@@ -133,6 +150,52 @@ suite "Collections APIs tests":
 
   test &"Drop indexes collection of {namespace}":
     skip()
+
+  test &"Bulk write ordered collection of {namespace}":
+    expect MongoError:
+      discard waitfor coll.bulkWrite(@[
+        bson({ invalidCommandField: bson() })
+      ])
+    wr = waitfor coll.insert(newdocs)
+    wr.success.reasonedCheck("insert newdocs", wr.reason)
+
+    var bulkres = waitfor coll.bulkWrite(ops)
+    check bulkres.nInserted == 2
+    check bulkres.nRemoved == 1
+    check bulkres.nModified == 2
+    check bulkres.writeErrors.len == 0
+
+    # will error and stop in 2nd ops since it's ordered
+    let _ = waitfor coll.remove(bson({ "_id": 4 }))
+    bulkres = waitfor coll.bulkWrite(ops)
+    check bulkres.nInserted == 1
+    check bulkres.writeErrors.len == 1
+
+  test &"Bulk write unordered collection of {namespace}":
+    # clean up from previous input
+    let _ = waitfor coll.remove(bson({
+      "char": { "$ne": bsonNull() }
+    }))
+    check (waitfor coll.count()) == 8
+    let _ = waitfor coll.insert(newdocs)
+    var bulkres = waitfor coll.bulkWrite(ops, ordered = false)
+    check bulkres.nInserted == 2
+    check bulkres.nRemoved == 1
+    check bulkres.nModified == 2
+    check bulkres.writeErrors.len == 0
+
+    # will give error at 2nd op but continue with other ops because ordered false
+    let _ = waitfor coll.remove(bson({
+      "char": { "$ne": bsonNull() }
+    }))
+    check (waitfor coll.count()) == 8
+    let _ = waitfor coll.insert(newdocs)
+    let _ = waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
+    bulkres = waitfor coll.bulkWrite(ops, ordered = false)
+    check bulkres.nInserted == 1
+    check bulkres.nRemoved == 1
+    check bulkres.nModified == 2
+    check bulkres.writeErrors.len == 1
 
   test &"Drop collection {coll.db.name}.{targetColl}":
     require coll != nil

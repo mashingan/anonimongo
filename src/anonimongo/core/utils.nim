@@ -1,5 +1,10 @@
 import wire, bson, types, pool
 
+const verbose {.booldefine.} = false
+
+when verbose:
+  import sugar
+
 func cmd*(name: string): string = name & ".$cmd"
   ## Add suffix ".$cmd" to Database name to avoid any typo.
 
@@ -85,3 +90,7 @@ proc getWResult*(b: BsonDocument): WriteResult =
     result.errmsgs = newseq[string](errdocs.len)
     for i, errb in errdocs:
       result.errmsgs[i] = errb.ofEmbedded.errmsg
+      when verbose:
+        dump result.errmsgs[i]
+  when verbose:
+    dump result

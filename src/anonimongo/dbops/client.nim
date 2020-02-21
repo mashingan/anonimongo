@@ -52,7 +52,7 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
     dump q
   let dbc = m[db]
   when not defined(release) and verbose:
-    look await sendops(q, dbc)eply
+    look await sendops(q, dbc)
   else:
     discard await sendops(q, dbc)
 

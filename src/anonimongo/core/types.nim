@@ -94,6 +94,11 @@ type
     of wkSingle:
       discard
 
+  BulkResult* = object
+    ## A result object for bulk write operations.
+    nInserted*, nModified*, nRemoved*: int
+    writeErrors*: seq[string]
+
   MongoError* = object of Exception
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
