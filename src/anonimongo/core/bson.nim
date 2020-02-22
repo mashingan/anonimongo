@@ -502,6 +502,10 @@ proc len*(b: BsonDocument): int =
     doAssert b.len == 0
   b.table.len
 
+iterator keys*(b: BsonDocument): string =
+  for k in b.table.keys:
+    yield k
+
 proc quote(key: string): string =
   result = '"' & key & '"'
 

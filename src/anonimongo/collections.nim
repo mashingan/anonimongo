@@ -180,10 +180,15 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
   let wt = if "writeConcern" in opt: opt["writeConcern"]
            else: bsonNull()
   var q = bson({ key: key })
+  if "name" notin opt:
+    q["name"] = toSeq(key.keys).join("_")
   for k, v in opt:
     q[k] = v
   let qarr = bsonArray q.toBson
   result = await c.db.createIndexes(c.name, qarr, wt)
+
+proc listIndexes*(c: Collection): Future[seq[BsonDocument]]{.async.} =
+  result = (await c.db.listIndexes(c.name)).map ofEmbedded
 
 proc `distinct`*(c: Collection, field: string, query = bson(),
   opt = bson()): Future[seq[BsonBase]] {.async.} =
