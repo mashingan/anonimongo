@@ -98,6 +98,21 @@ type
     ## A result object for bulk write operations.
     nInserted*, nModified*, nRemoved*: int
     writeErrors*: seq[string]
+  
+  GridFS* = ref object
+    ## GridFS is basically just a object that represents two different
+    ## collections: i.e.
+    ##
+    ## 1. {bucket.name}.files
+    ## 2. {bucket.name}.chunks
+    ##
+    ## Which bucket.files stores the file information itself while
+    ## bucket.chunks stores the actual binary information for the
+    ## related files.
+    name*: string
+    files*: Collection
+    chunks*: Collection
+    chunkSize*: int32
 
   MongoError* = object of Exception
 

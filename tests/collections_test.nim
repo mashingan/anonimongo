@@ -173,11 +173,11 @@ suite "Collections APIs tests":
 
   test &"Bulk write unordered collection of {namespace}":
     # clean up from previous input
-    let _ = waitfor coll.remove(bson({
+    discard waitfor coll.remove(bson({
       "char": { "$ne": bsonNull() }
     }))
     check (waitfor coll.count()) == 8
-    let _ = waitfor coll.insert(newdocs)
+    discard waitfor coll.insert(newdocs)
     var bulkres = waitfor coll.bulkWrite(ops, ordered = false)
     check bulkres.nInserted == 2
     check bulkres.nRemoved == 1
@@ -185,12 +185,12 @@ suite "Collections APIs tests":
     check bulkres.writeErrors.len == 0
 
     # will give error at 2nd op but continue with other ops because ordered false
-    let _ = waitfor coll.remove(bson({
+    discard waitfor coll.remove(bson({
       "char": { "$ne": bsonNull() }
     }))
     check (waitfor coll.count()) == 8
-    let _ = waitfor coll.insert(newdocs)
-    let _ = waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
+    discard waitfor coll.insert(newdocs)
+    discard waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
     bulkres = waitfor coll.bulkWrite(ops, ordered = false)
     check bulkres.nInserted == 1
     check bulkres.nRemoved == 1

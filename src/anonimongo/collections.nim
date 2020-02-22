@@ -266,12 +266,7 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
   for i, op in operations:
     if "insertOne" in op:
       let futInsOne = c.insert(@[op["insertOne"]["document"].ofEmbedded], opt)
-      if ordered:
-        wr = await futInsOne
-        checkOrdered(wr, result, nInserted)
-      else:
-        futbulk[i] = futInsOne
-        opid[i] = "insertOne"
+      opcheck("insertOne", futInsOne, i, nInserted)
     elif "deleteOne" in op:
       removeOp("deleteOne", op, i, true)
     elif "updateOne" in op:
@@ -288,7 +283,11 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
       let futrepOne = c.update(query, update, updopt)
       opcheck("replaceOne", futrepOne, i, nModified)
     else:
-      raise newException(MongoError, &"Invalid command given: {op}")
+      var key: string
+      for k, _ in op:
+        key = k
+        break
+      raise newException(MongoError, &"Invalid command given: {key}")
   if not ordered:
     let futres = await all(futbulk)
     for i in 0 .. futres.high:
