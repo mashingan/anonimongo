@@ -1,4 +1,5 @@
-import strformat, strformat, asyncfile, oids, times, sequtils
+import strformat, strformat, asyncfile, oids, times, sequtils, os
+import mimetypes
 
 import dbops/[admmgmt]
 import core/[bson, types, wire, utils]
@@ -6,19 +7,20 @@ import collections
 
 func files(name: string): string = &"{name}.files"
 func chunks(name: string): string = &"{name}.chunks"
-func kilobytes(n: Positive): int = n * 1024
-func megabytes(n: Positive): int = n * 1024.kilobytes
+func kilobytes*(n: Positive): int = n * 1024
+func megabytes*(n: Positive): int = n * 1024.kilobytes
 
+const verbose = defined(verbose)
 const defaultChunkSize: int32 = 255 * 1024 # 255 KB
 
-proc createBucket*(c: Collection, name = "fs", chunkSize = defaultChunkSize):
+proc createBucket*(db: Database, name = "fs", chunkSize = defaultChunkSize):
   Future[GridFS] {.async.} =
   new result
   result.name = name
   result.chunkSize = chunkSize
   let collOp = [
-    c.db.create(name.files),
-    c.db.create(name.chunks)
+    db.create(name.files),
+    db.create(name.chunks)
   ]
   for wr in await all(collop):
     if not wr.success and wr.reason != "":
@@ -28,18 +30,22 @@ proc createBucket*(c: Collection, name = "fs", chunkSize = defaultChunkSize):
       raise newException(MongoError,
         &"""createBucket error: {wr.errmsgs.join("\n")}""")
   
-  result.files = c.db[name.files]
-  result.chunks = c.db[name.chunks]
+  result.files = db[name.files]
+  result.chunks = db[name.chunks]
   discard await all([
     result.files.createIndex(bson({ filename: 1, uploadDate: 1 })),
     result.chunks.createIndex(bson({ files_id: 1, n: 1 }))
   ])
 
-proc getBucket*(c: Collection, name: string): Future[GridFS]{.async.} =
+proc createBucket*(c: Collection, name = "fs", chunkSize = defaultChunkSize):
+  Future[GridFS] {.async.} =
+  result = await c.db.createBucket(name, chunkSize)
+
+proc getBucket*(db: Database, name = "fs"): Future[GridFS]{.async.} =
   new result
   result.name = name
-  result.files = c.db[name.files]
-  result.chunks = c.db[name.chunks]
+  result.files = db[name.files]
+  result.chunks = db[name.chunks]
   let foundChunk = await result.files.findOne(projection = bson({
     chunkSize: 1
   }))
@@ -48,11 +54,15 @@ proc getBucket*(c: Collection, name: string): Future[GridFS]{.async.} =
   else:
     result.chunkSize = defaultChunkSize
 
+proc getBucket*(c: Collection, name = "fs"): Future[GridFS]{.async.} =
+  result = await c.db.getBucket(name)
+
 proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
-  chunkSize = defaultChunkSize, metadata = bson()):
-  Future[bool]{.async.} =
+  chunk = 0'i32, metadata = bson()):
+  Future[WriteResult]{.async.} =
   let foid = genoid()
   let fsize = getFileSize f
+  let chunkSize = if chunk == 0: g.chunkSize else: chunk
   var fileentry = bson({
     "_id": foid,
     "chunkSize": chunkSize,
@@ -63,10 +73,13 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
   fileentry.addOptional("metadata", metadata)
   let status = await g.files.insert(@[fileentry])
   if not status.success:
-    if status.reason != "":
-      echo &"uploadFile failed: {status.reason}"
-    elif status.kind == wkMany and status.errmsgs.len > 0:
-      echo &"""uploadFile failed: {status.errmsgs.join("\n")}"""
+    if verbose:
+      if status.reason != "":
+        echo &"uploadFile failed: {status.reason}"
+      elif status.kind == wkMany and status.errmsgs.len > 0:
+        echo &"""uploadFile failed: {status.errmsgs.join("\n")}"""
+    result = status
+    return
 
   var chunkn = 0
   # curread is needed because each of inserting documents only
@@ -92,6 +105,8 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
       curread = newcurr
       chunks.add chunk
     inc chunkn
+  # inserting the left-over
+  if chunks.len > 0: insertops.add g.chunks.insert(chunks)
   if anyIt(await all(insertops), not it.success):
     echo "uploadFile failed: some error happened " &
       "when uploading. Cancel it"
@@ -101,4 +116,30 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
       g.chunks.remove(bson({ files_id: foid }))
     ])
   else:
-    result = true
+    result = WriteResult(success: true, kind: wkSingle)
+
+proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32, metadata = bson()):
+  Future[WriteResult] {.async, discardable.} =
+  ## A higher uploadFile which directly open and close file from filename.
+  var f: AsyncFile
+  try:
+    f = openAsync filename
+  except IOError:
+    echo getCurrentExceptionMsg()
+    return
+  defer: close f
+  let chunksize = if chunk == 0: g.chunkSize else: chunk
+  
+  let (_, fname, ext) = splitFile filename
+  let m = newMimeTypes()
+  var filemetadata = metadata
+  if not filemetadata.isNil:
+    filemetadata["mime"] = m.getMimeType(ext).toBson
+    filemetadata["ext"] = ext.toBson
+  else:
+    filemetadata = bson({
+      "mime": m.getMimeType(ext),
+      "exit": ext
+    })
+  result = await g.uploadFile(f, fname & ext,
+    metadata = filemetadata, chunk = chunksize)
