@@ -76,7 +76,6 @@ suite "Collections APIs tests":
 
   test &"List indexes on {namespace}":
     let indexes = waitfor coll.listIndexes
-    dump indexes
     check indexes.len > 1
 
   test &"Count documents on {namespace}":
@@ -157,8 +156,7 @@ suite "Collections APIs tests":
     check newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
   test &"Drop index collection of {namespace}":
-    wr = waitfor coll.dropIndex("countId_addedTime")
-    dump wr
+    wr = waitfor coll.dropIndex("countId_1_addedTime_1_")
     wr.success.reasonedCheck("Drop index name error", wr.reason)
     # this time removing using index specification document
     discard waitfor coll.createIndex(bson({
@@ -167,7 +165,6 @@ suite "Collections APIs tests":
     wr = waitfor coll.dropIndex(bson({
       countId: 1, addedTime: 1
     }))
-    dump wr
     wr.success.reasonedCheck("Drop index keys error", wr.reason)
 
   test &"Bulk write ordered collection of {namespace}":

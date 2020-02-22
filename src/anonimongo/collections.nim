@@ -45,7 +45,11 @@ import core/[bson, types, utils, wire]
 proc one*(q: Query): Future[BsonDocument] {.async.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = 1, singleBatch = true)
-  result = doc["cursor"]["firstBatch"][0]
+  let batch = doc["cursor"]["firstBatch"].ofArray
+  if batch.len > 0:
+    result = batch[0]
+  else:
+    result = bson()
 
 proc all*(q: Query): Future[seq[BsonDocument]] {.async.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
@@ -74,6 +78,7 @@ iterator items*(cur: Cursor): BsonDocument =
     #doc = await cur.db.getMore(cur.id, collname, batchSize)
     doc = waitfor newcur.db.getMore(newcur.id, collname, batchSize)
     newcur = doc["cursor"].ofEmbedded.to Cursor
+    newcur.db = cur.db
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
@@ -181,7 +186,10 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
            else: bsonNull()
   var q = bson({ key: key })
   if "name" notin opt:
-    q["name"] = toSeq(key.keys).join("_")
+    var name = ""
+    for k, v in key:
+      name &= &"{k}_{v}_"
+    q["name"] = name
   for k, v in opt:
     q[k] = v
   let qarr = bsonArray q.toBson

@@ -13,6 +13,9 @@ func megabytes*(n: Positive): int = n * 1024.kilobytes
 const verbose = defined(verbose)
 const defaultChunkSize: int32 = 255 * 1024 # 255 KB
 
+when verbose:
+  import sugar
+
 proc createBucket*(db: Database, name = "fs", chunkSize = defaultChunkSize):
   Future[GridFS] {.async.} =
   new result
@@ -99,6 +102,7 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
     chunk["data"] = bsonBinary data
     let newcurr = curread + data.len
     if newcurr >= capsize:
+      curread = data.len
       insertops.add g.chunks.insert(chunks)
       chunks = @[chunk]
     else:
@@ -115,11 +119,13 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
       g.files.remove(bson({ "_id": foid })),
       g.chunks.remove(bson({ files_id: foid }))
     ])
+    result = WriteResult(kind: wkSingle,
+      reason: "error when writing chunks' file")
   else:
     result = WriteResult(success: true, kind: wkSingle)
 
-proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32, metadata = bson()):
-  Future[WriteResult] {.async, discardable.} =
+proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32,
+  metadata = bson()): Future[WriteResult] {.async, discardable.} =
   ## A higher uploadFile which directly open and close file from filename.
   var f: AsyncFile
   try:
@@ -143,3 +149,53 @@ proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32, metadata = bson()):
     })
   result = await g.uploadFile(f, fname & ext,
     metadata = filemetadata, chunk = chunksize)
+
+proc downloadFile*(g: GridFS, f: AsyncFile, filename = ""):
+  Future[WriteResult] {.async, discardable.} =
+  ## Download given filename and write it to f asyncfile. This only download
+  ## the latest uploaded file in the same name.
+  let q = bson({ "filename": filename })
+  let uploadDesc = bson({ "uploadDate": -1 })
+  let fields = bson({"_id": 1, "length": 1 })
+  let fdata = await g.files.findOne(q, projection = fields, sort = uploadDesc)
+  when verbose: dump fdata
+  if fdata.isNil: # fdata empty
+    let reason = &"cannot find {filename}: {$fdata}."
+    if verbose:
+      echo reason
+    result = WriteResult(kind: wkSingle, reason: reason)
+    return
+
+  let qchunk = bson({ "files_id": fdata["_id"] })
+  let fsize = fdata["length"].ofInt
+  let selector = bson({ "data": 1 })
+  let sort = bson({ "n": 1 })
+  var currsize = 0
+  for chunk in await g.chunks.findIter(qchunk, selector, sort):
+    let data = chunk["data"].ofBinary.stringbytes
+    currsize += data.len
+    await f.write(data)
+
+  if currsize < fsize:
+    result = WriteResult(
+      kind: wkSingle,
+      reason: "Incomplete file download; only at " &
+        &"{currsize.float / fsize.float * 100}%")
+    return
+  result = WriteResult(
+    success: true,
+    kind: wkSingle)
+
+proc downloadFile*(bucket: GridFS, filename: string):
+  Future[WriteResult]{.async, discardable.} =
+  ## Higher version for downloadFile. Ensure the destination file path has
+  ## writing permission
+  var f: AsyncFile
+  try:
+    f = openAsync(filename, fmWrite)
+  except IOError:
+    echo getCurrentExceptionMsg()
+    return
+  defer: close f
+  let (_, fname, ext) = splitFile filename
+  result = await bucket.downloadFile(f,  fname & ext)

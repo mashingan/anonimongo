@@ -1,4 +1,4 @@
-import deques, math, tables, strformat
+import deques, math, tables, strformat, sequtils
 import sugar, options, times
 import bson, wire, auth
 import scram/client
@@ -92,13 +92,20 @@ proc authenticate*(p: Pool, user, pass: string, T: typedesc = Sha256Digest,
   ## Authenticate all connections in a pool with supplied username,
   ## password, type which default to SHA256Digest, and database which
   ## default to "admin". Type receives SHA1Digest as other typedesc.
+  ## Currently this taking too long for large pool connections.
   result = true
+  var authops = newseq[Future[bool]](p.connections.len)
+  when verbose:
+    dump authops.len
+    dump p.connections.len
   for i, c in p.connections:
     when verbose: echo &"conn {i} to auth."
-    if not await c.socket.authenticate(user, pass, T, dbname):
-      result = false
-      return
-    when verbose: echo &"connection {i} authenticated."
+    authops[i-1] = c.socket.authenticate(user, pass, T, dbname)
+  if anyIt(await all(authops), not it):
+    echo "Some connection failed to authenticate. Failed"
+    result = false
+  else:
+    result = true
 
 when isMainModule:
 
