@@ -73,13 +73,21 @@ suite "GridFS implementation tests":
     check dwfile notin newinserts
 
   test "Remove file(s)":
+    # remove all files
     wr = waitfor grid.removeFile()
     check (waitfor grid.availableFiles) == 0
     wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
     check insert5files(grid, filename)
+
+    # removing using regex
     wr = waitfor grid.removeFile(bson({
       filename: { "$regex": """_[23]\.mkv$""" }
     }).toBson)
+    wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
+    check (waitfor grid.availableFiles) == 3
+
+    # removing not available file
+    wr = waitfor grid.removeFile("there's no this file")
     wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
     check (waitfor grid.availableFiles) == 3
 

@@ -248,6 +248,9 @@ template foldWResult(a, b: untyped): untyped =
     reason: &"{a.reason}, {b.reason}",
     errmsgs: concat(a.errmsgs, b.errmsgs))
 
+proc wrNop: Future[WriteResult]{.async.} =
+  result = WriteResult( success: true, kind: wkMany)
+
 proc removeFile*(g: GridFS, matcher = "all".toBson, one = false):
   Future[WriteResult]{.async.} =
   ## Remove available files that match with matcher. By default the matcher
@@ -277,13 +280,19 @@ proc removeFile*(g: GridFS, matcher = "all".toBson, one = false):
   let projection = bson({ filename: 1 })
   var qfiles = bson()
   var cfiles: seq[BsonDocument]
+  var all = true
   if (matcher.kind == bkString and matcher != "all") or matcher.kind == bkEmbed:
+    all = false
     qfiles = prepareMatcher matcher
     cfiles = await g.files.findAll(qfiles, projection)
     cfiles.apply((d: var BsonDocument) => (d = bson({ files_id: d["_id"] })))
   var ops = newseq[Future[WriteResult]](2)
   ops[0] = g.files.remove(qfiles, one)
-  if cfiles.len == 0:
+  if cfiles.len == 0 and all:
+    # literally no operation
+    ops[1] = wrNop()
+  elif cfiles.len == 0:
+    # delete all
     ops[1] = g.chunks.remove(bson())
   else:
     ops[1] = g.chunks.remove(cfiles)
