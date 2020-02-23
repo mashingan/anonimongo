@@ -83,7 +83,11 @@ suite "GridFS implementation tests":
     wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
     check (waitfor grid.availableFiles) == 3
 
-  test "Teardown bucket and db":
+  test "Drop bucket":
+    wr = waitfor grid.drop()
+    wr.success.reasonedCheck("gridfs.drop error", wr.reason)
+
+  test "Teardown db":
     require db != nil
     wr = waitFor db.dropDatabase
     wr.success.reasonedCheck("dropDatabase error", wr.reason)

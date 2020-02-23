@@ -15,6 +15,12 @@ const defaultChunkSize: int32 = 255 * 1024 # 255 KB
 
 proc createBucket*(db: Database, name = "fs", chunkSize = defaultChunkSize):
   Future[GridFS] {.async.} =
+  ## By default it's using string "fs" for bucket name with default chunk
+  ## size for file is 255 KB. The chunk size can be override for each
+  ## uploadFile but by default will using the defined gridfs chunk size.
+  ## As mentioned in Mongo spec, each collection has its own indexes i.e
+  ## <bucketname>.files has index `{ filename: 1, uploadData: 1 }`
+  ## <bucketname>.chunks has index `{ files_id: 1, n: 1 }`.
   new result
   result.name = name
   result.chunkSize = chunkSize
@@ -39,9 +45,14 @@ proc createBucket*(db: Database, name = "fs", chunkSize = defaultChunkSize):
 
 proc createBucket*(c: Collection, name = "fs", chunkSize = defaultChunkSize):
   Future[GridFS] {.async.} =
+  ## Collection version to create bucket. Offload the actual operation to
+  ## gridfs.createBucket(database).
   result = await c.db.createBucket(name, chunkSize)
 
 proc getBucket*(db: Database, name = "fs"): Future[GridFS]{.async.} =
+  ## Get bucket from existing database. If the bucket is not available,
+  ## Mongo will implicitly create the files and chunks collections but
+  ## without the necessary indexes.
   new result
   result.name = name
   result.files = db[name.files]
@@ -57,9 +68,8 @@ proc getBucket*(db: Database, name = "fs"): Future[GridFS]{.async.} =
 proc getBucket*(c: Collection, name = "fs"): Future[GridFS]{.async.} =
   result = await c.db.getBucket(name)
 
-proc uploadFile*(g: GridFS, f: AsyncFile, filename = "",
-  chunk = 0'i32, metadata = bson()):
-  Future[WriteResult]{.async.} =
+proc uploadFile*(g: GridFS, f: AsyncFile, filename = "", chunk = 0'i32,
+  metadata = bson()): Future[WriteResult]{.async.} =
   let foid = genoid()
   let fsize = getFileSize f
   let chunkSize = if chunk == 0: g.chunkSize else: chunk
@@ -215,7 +225,10 @@ proc listFileNames*(g: GridFS, matcher = "all".toBson, sort = bson()):
   ## Retrieve available list filenames given matcher Bson.
   ## By default the matcher is BsonString "all" which return
   ## all available names. Sort to choose the order which
-  ## criteria it's should be first/last.
+  ## criteria it's should be first/last. The matcher is elaborated
+  ## explained `removeFile`_ as it's using the same mechanism.
+  ##
+  ## .. _removeFile: #removeFile,GridFS,BsonBase,bool
   when verbose:
     dump matcher
   var q = matcher.prepareMatcher
@@ -227,33 +240,57 @@ proc listFileNames*(g: GridFS, matcher = "all".toBson, sort = bson()):
   when verbose:
     dump result
 
+template foldWResult(a, b: untyped): untyped =
+  WriteResult(
+    success: a.success and b.success,
+    n: a.n + b.n,
+    kind: wkMany,
+    reason: &"{a.reason}, {b.reason}",
+    errmsgs: concat(a.errmsgs, b.errmsgs))
+
 proc removeFile*(g: GridFS, matcher = "all".toBson, one = false):
   Future[WriteResult]{.async.} =
-  ## Remove available files.
+  ## Remove available files that match with matcher. By default the matcher
+  ## is BsonString "all" which remove all files. If it's not "all" and
+  ## BsonString, it's matched for the filename and for specific finding,
+  ## matcher can use the regex string e.g.
+  ##
+  ## .. code-block:: Nim
+  ##
+  ##    matcher = bson({
+  ##      filename: { "regex": """_\d\.mkv$""" }
+  ##    })
+  ##
+  ## which looking for any filename that match the pattern i.e.
+  ##
+  ## - "any_filename_but_aslong_have_1.mkv"
+  ## - "this is ok too_2.mkv"
+  ## - "also this is ok_3.mkv"
+  ##
+  ## For example removing all mkv files, the matcher would be
+  ##
+  ## .. code-block:: Nim
+  ##
+  ##    matcher = bson({ metadata: { ext: "mkv" }})
+  ##
+  ##
   let projection = bson({ filename: 1 })
+  var qfiles = bson()
+  var cfiles: seq[BsonDocument]
   if (matcher.kind == bkString and matcher != "all") or matcher.kind == bkEmbed:
-    var q = prepareMatcher matcher
-    var found = await g.files.findAll(q, projection)
-    found.apply((d: var BsonDocument) => (d = bson({ files_id: d["_id"] })))
-    let ops = [
-      g.files.remove(q, one),
-      g.chunks.remove(found)
-    ]
-    result = (await all(ops)).foldl(WriteResult(
-      success: a.success and b.success,
-      n: a.n + b.n,
-      kind: wkMany,
-      reason: &"{a.reason}, {b.reason}",
-      errmsgs: concat(a.errmsgs, b.errmsgs)
-    ))
+    qfiles = prepareMatcher matcher
+    cfiles = await g.files.findAll(qfiles, projection)
+    cfiles.apply((d: var BsonDocument) => (d = bson({ files_id: d["_id"] })))
+  var ops = newseq[Future[WriteResult]](2)
+  ops[0] = g.files.remove(qfiles, one)
+  if cfiles.len == 0:
+    ops[1] = g.chunks.remove(bson())
   else:
-    result = foldl(await all([
-      g.files.remove(bson()),
-      g.chunks.remove(bson())
-    ]), WriteResult(
-      success: a.success and b.success,
-      n: a.n + b.n,
-      kind: wkMany,
-      reason: &"{a.reason}, {b.reason}",
-      errmsgs: concat(a.errmsgs, b.errmsgs)
-    ))
+    ops[1] = g.chunks.remove(cfiles)
+  result = (await all(ops)).foldl(foldWResult(a, b))
+
+proc drop*(g: GridFS): Future[WriteResult]{.async.} =
+  ## Drop the current bucket name.
+  result = foldl(await all([
+    g.files.drop(), g.chunks.drop()
+  ]), foldWResult(a, b))
