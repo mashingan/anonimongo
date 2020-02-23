@@ -193,7 +193,7 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} 
   ## Get data from socket and apply the replyParse into the result.
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
-  when not defined(release) and verbose:
+  when verbose:
     dump msghdr
   let bytelen = msghdr.messageLength
 

@@ -72,7 +72,7 @@ proc connect*(p: Pool, address: string, port: int) {.async.} =
   ## Connect all connection to specified address and port.
   for i, c in p.connections:
     await c.socket.connect(address, Port port)
-    when not defined(release) and verbose:
+    when verbose:
       echo "connection: ", i, " is connected"
 
 proc close*(p: Pool) =
@@ -80,7 +80,7 @@ proc close*(p: Pool) =
   for _, c in p.connections:
       if not c.socket.isClosed:
         close c.socket
-        when not defined(release) and verbose:
+        when verbose:
           echo "connection: ", c.id, " is closed"
 
 proc endConn*(p: Pool, i: Positive) =

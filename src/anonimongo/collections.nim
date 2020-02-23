@@ -84,6 +84,12 @@ iterator items*(cur: Cursor): BsonDocument =
     for b in newcur.nextBatch:
       yield b
 
+iterator pairs*(cur: Cursor): (int, BsonDocument) =
+  var count = 0
+  for doc in cur:
+    yield (count, doc)
+    inc count
+
 proc iter*(q: Query): Future[Cursor] {.async.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
@@ -152,6 +158,17 @@ proc remove*(c: Collection, query, opt: BsonDocument):
     else: delq[k] = v
   let doc = await c.db.delete(c.name, @[delq], wt = wt)
   result = doc.getWResult
+
+proc remove*(c: Collection, query: seq[BsonDocument]):
+  Future[WriteResult]{.async.} =
+  var q = newseq[BsonDocument](query.len)
+  for i, que in query:
+    q[i] = bson({
+      q: que,
+      limit: 0,
+    })
+
+  result = (await c.db.delete(c.name, q)).getWResult
 
 proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
   Future[WriteResult] {.async.} =
@@ -285,7 +302,7 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
     elif "updateOne" in op:
       updateOp("updateOne", op, i)
     elif "deleteMany" in op:
-      removeOp("deleteMany", op, i)
+      removeOp("deleteMany", op, i, true)
     elif "updateMany" in op:
       updateOp("updateMany", op, i)
     elif "replaceOne" in op:

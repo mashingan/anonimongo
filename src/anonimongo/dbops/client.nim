@@ -7,7 +7,7 @@ import ../core/[types, wire, bson, pool, utils]
 
 const verbose = defined(verbose)
 
-when not defined(release) and verbose:
+when verbose:
   import sugar
 
 ## Client module and User Management Commands
@@ -49,11 +49,11 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
   if "compressors" in m.query:
     q["compression"] = m.query["compressors"].map toBson
     ]#
-  when not defined(release) and verbose:
+  when verbose:
     echo "Handshake id: ", id
     dump q
   let dbc = m[db]
-  when not defined(release) and verbose:
+  when verbose:
     look await sendops(q, dbc)
   else:
     discard await sendops(q, dbc)

@@ -257,6 +257,8 @@ iterator pairs*(b: BsonDocument): (string, BsonBase) =
     yield (k, v)
 
 
+proc `$`*(v: BsonBase): string
+
 proc ms*(a: Time): int64 =
   ## Unix epoch in milliseconds.
   int64(a.toUnix*1000 + a.nanosecond/1e6)
@@ -267,14 +269,14 @@ proc `==`*(b: BsonBase, t: Time): bool =
   ## is milliseconds while Nim precision is nanoseconds.
   if b.kind != bkTime:
     raise newException(BsonFetchError,
-      fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
+      fmt"Invalid eq comparsion, expect {b} BsonTime, get {b.kind}")
   (b as BsonTime).value.ms == t.ms
 
 proc `==`*(t: Time, b: BsonBase): bool =
   ## To support another eq operator position.
   if b.kind != bkTime:
     raise newException(BsonFetchError,
-      fmt"Invalid eq comparsion, expect BsonTime, get {b.kind}")
+      fmt"Invalid eq comparsion, expect {b} BsonTime, get {b.kind}")
   t.ms == (b as BsonTime).value.ms
 
 #[ will be completed later
@@ -364,7 +366,8 @@ proc `[]`*(b: BsonBase, key: sink string): BsonBase =
     doAssert bso["embed"]["field2"] == "field2"
     doAssert bso["embed"]["dynamic"].ofBool
   if b.kind != bkEmbed:
-    raise newException(BsonFetchError, fmt"Invalid key retrieval, get {b.kind}")
+    raise newException(BsonFetchError,
+      fmt"Invalid key retrieval of {b}, get {b.kind}")
   result = ((b as BsonEmbed).value)[key]
 
 proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
@@ -384,10 +387,11 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
     doAssert bso["embed"]["bsarr"][2] == 3.14
     doAssert bso["embed"]["bsarr"][3].ofBool
   if b.kind != bkArray:
-    raise newException(BsonFetchError, fmt"Invalid indexed retrieval, get {b.kind}")
+    raise newException(BsonFetchError,
+      fmt"Invalid indexed retrieval of {b}, get {b.kind}")
   let value = (b as BsonArray).value
   if idx >= value.len:
-    raise newException(IndexError, fmt"{idx} not in 0..{value.len-1}")
+    raise newException(IndexError, fmt"{b}: {idx} not in 0..{value.len-1}")
   result = value[idx]
 
 proc `[]`*[T: int | string](b: BsonBase, key: sink T): BsonBase =
@@ -462,7 +466,7 @@ proc mget*(b: var BsonBase, key: sink string): var BsonBase =
     doAssert not bbase["embed"]["f2"].ofBool
   if b.kind != bkEmbed:
     raise newException(BsonFetchError,
-      fmt"Invalid key retrieval, get {b.kind}")
+      fmt"Invalid key retrieval of {b}, get {b.kind}")
   result = (b as BsonEmbed).value.table[key]
 
 proc mget*(b: var BsonBase, index: sink int): var BsonBase =
@@ -474,7 +478,7 @@ proc mget*(b: var BsonBase, index: sink int): var BsonBase =
     doAssert bbase[2] == 5
   if b.kind != bkArray:
     raise newException(BsonFetchError,
-      fmt"Invalid index retrieval, get {b.kind}")
+      fmt"Invalid index retrieval {b}, get {b.kind}")
   result = (b as BsonArray).value[index]
 
 proc del*(b: var BsonDocument, key: string) =
@@ -930,8 +934,8 @@ proc newBson*(table: varargs[(string, BsonBase)]): BsonDocument =
 template bsonFetcher(b: BsonBase, targetKind: BsonKind,
     inheritedType: typedesc, targetType: untyped): untyped =
   if b.kind != targetKind:
-    raise newException(BsonFetchError, "Cannot convert $# to $#" %
-      [$b.kind, $targetType])
+    raise newException(BsonFetchError, "Cannot convert $# of $# to $#" %
+      [$b, $b.kind, $targetType])
   else:
     result = (b as inheritedType).value as targetType
 
@@ -960,7 +964,7 @@ converter ofString*(b: BsonBase): string =
     $(b as BsonJs).value
   else:
     raise newException(BsonFetchError,
-      fmt"""Cannot convert {b.kind} to string or JsCode""")
+      fmt"""Cannot convert {b} of {b.kind} to string or JsCode""")
 
 converter ofTime*(b: BsonBase): Time =
   bsonFetcher(b, bkTime, BsonTime, Time)

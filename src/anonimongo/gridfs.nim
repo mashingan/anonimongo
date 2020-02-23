@@ -1,5 +1,5 @@
 import strformat, strformat, asyncfile, oids, times, sequtils, os
-import mimetypes
+import mimetypes, sugar
 
 import dbops/[admmgmt]
 import core/[bson, types, wire, utils]
@@ -12,9 +12,6 @@ func megabytes*(n: Positive): int = n * 1024.kilobytes
 
 const verbose = defined(verbose)
 const defaultChunkSize: int32 = 255 * 1024 # 255 KB
-
-when verbose:
-  import sugar
 
 proc createBucket*(db: Database, name = "fs", chunkSize = defaultChunkSize):
   Future[GridFS] {.async.} =
@@ -199,3 +196,64 @@ proc downloadFile*(bucket: GridFS, filename: string):
   defer: close f
   let (_, fname, ext) = splitFile filename
   result = await bucket.downloadFile(f,  fname & ext)
+
+proc availableFiles*(g: GridFS): Future[int] {.async.} =
+  result = await g.files.count()
+
+template prepareMatcher(m: BsonBase): untyped =
+  var q = bson()
+  if  m.kind == bkString and m != "all":
+    q["filename"] = m
+  elif m.kind == bkEmbed and "filename" in m:
+    q = m
+  elif m.kind == bkEmbed:
+    q["filename"] = m
+  q
+
+proc listFileNames*(g: GridFS, matcher = "all".toBson, sort = bson()):
+  Future[seq[string]]{.async.} =
+  ## Retrieve available list filenames given matcher Bson.
+  ## By default the matcher is BsonString "all" which return
+  ## all available names. Sort to choose the order which
+  ## criteria it's should be first/last.
+  when verbose:
+    dump matcher
+  var q = matcher.prepareMatcher
+  let projection = bson({ filename: 1 })
+  var fileslen = await g.files.count(q)
+  result = newseq[string](fileslen)
+  for i, doc in await g.files.findIter(q, projection, sort):
+    result[i] = doc["filename"]
+  when verbose:
+    dump result
+
+proc removeFile*(g: GridFS, matcher = "all".toBson, one = false):
+  Future[WriteResult]{.async.} =
+  ## Remove available files.
+  let projection = bson({ filename: 1 })
+  if (matcher.kind == bkString and matcher != "all") or matcher.kind == bkEmbed:
+    var q = prepareMatcher matcher
+    var found = await g.files.findAll(q, projection)
+    found.apply((d: var BsonDocument) => (d = bson({ files_id: d["_id"] })))
+    let ops = [
+      g.files.remove(q, one),
+      g.chunks.remove(found)
+    ]
+    result = (await all(ops)).foldl(WriteResult(
+      success: a.success and b.success,
+      n: a.n + b.n,
+      kind: wkMany,
+      reason: &"{a.reason}, {b.reason}",
+      errmsgs: concat(a.errmsgs, b.errmsgs)
+    ))
+  else:
+    result = foldl(await all([
+      g.files.remove(bson()),
+      g.chunks.remove(bson())
+    ]), WriteResult(
+      success: a.success and b.success,
+      n: a.n + b.n,
+      kind: wkMany,
+      reason: &"{a.reason}, {b.reason}",
+      errmsgs: concat(a.errmsgs, b.errmsgs)
+    ))
