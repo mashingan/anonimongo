@@ -37,6 +37,7 @@ suite "GridFS implementation tests":
   let dbname = "newtemptest"
   let (_, fname, ext) = splitFile filename
   let dwfile = fname & ext
+  let saveas = "fmab_opening3.mkv"
 
   test "Connect to localhost and authentication":
     mongo = testsetup()
@@ -55,11 +56,15 @@ suite "GridFS implementation tests":
 
   test "Download file":
     removeFile dwfile
+    removeFile saveas
     wr = waitfor grid.downloadFile("fmab_opening3.mkv")
     check not wr.success # because no such file uploaded
     wr = waitfor grid.downloadFile(dwfile)
     wr.success.reasonedCheck("Grid download file", wr.reason)
     check fileExists(dwfile)
+    wr = waitfor grid.downloadAs(dwfile, saveas)
+    wr.success.reasonedCheck("Grid download as", wr.reason)
+    check fileExists(saveas)
 
   test "List files":
     check insert5files(grid, filename)

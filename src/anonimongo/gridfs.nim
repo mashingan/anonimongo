@@ -12,6 +12,7 @@ func megabytes*(n: Positive): int = n * 1024.kilobytes
 
 const verbose = defined(verbose)
 const defaultChunkSize: int32 = 255 * 1024 # 255 KB
+const gridEnsured = defined(gridEnsured)
 
 proc createBucket*(db: Database, name = "fs", chunkSize = defaultChunkSize):
   Future[GridFS] {.async.} =
@@ -65,8 +66,19 @@ proc getBucket*(db: Database, name = "fs"): Future[GridFS]{.async.} =
   else:
     result.chunkSize = defaultChunkSize
 
+when gridEnsured:
+  proc ensureIndex(g: GridFS) {.async.} =
+    let indexes = await all([g.files.listIndexes(), g.chunks.listIndexes()])
+    var idxops = newseq[Future[WriteResult]](2)
+    if not indexes[0].anyIt( it["name"] == "filename_1_uploadDate_1_" ):
+      idxops[0] = g.files.createIndex(bson({ filename: 1, uploadDate: 1 }))
+    if not indexes[1].anyIt( it["name"] == "files_id_1_n_1_1" ):
+      idxops[1] = g.chunks.createIndex(bson({ files_id: 1, n: 1 }))
+    discard await idxops.all
+
 proc getBucket*(c: Collection, name = "fs"): Future[GridFS]{.async.} =
   result = await c.db.getBucket(name)
+  when gridEnsured: await result.ensureIndex
 
 proc uploadFile*(g: GridFS, f: AsyncFile, filename = "", chunk = 0'i32,
   metadata = bson()): Future[WriteResult]{.async.} =
@@ -131,16 +143,22 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "", chunk = 0'i32,
   else:
     result = WriteResult(success: true, kind: wkSingle)
 
+template prepareFile(target: string): untyped {.dirty.} =
+  var f: AsyncFile
+  try:
+    f = openAsync(target, fmWrite)
+  except IOError:
+    result = WriteResult(
+      reason: getCurrentExceptionMsg(),
+      kind: wkSingle)
+    when verbose: dump result.reason
+    return
+  defer: close f
+
 proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32,
   metadata = bson()): Future[WriteResult] {.async, discardable.} =
   ## A higher uploadFile which directly open and close file from filename.
-  var f: AsyncFile
-  try:
-    f = openAsync filename
-  except IOError:
-    echo getCurrentExceptionMsg()
-    return
-  defer: close f
+  prepareFile(filename)
   let chunksize = if chunk == 0: g.chunkSize else: chunk
   
   let (_, fname, ext) = splitFile filename
@@ -161,6 +179,7 @@ proc downloadFile*(g: GridFS, f: AsyncFile, filename = ""):
   Future[WriteResult] {.async, discardable.} =
   ## Download given filename and write it to f asyncfile. This only download
   ## the latest uploaded file in the same name.
+  when gridEnsured: await g.ensureIndex
   let q = bson({ "filename": filename })
   let uploadDesc = bson({ "uploadDate": -1 })
   let fields = bson({"_id": 1, "length": 1 })
@@ -197,18 +216,18 @@ proc downloadFile*(bucket: GridFS, filename: string):
   Future[WriteResult]{.async, discardable.} =
   ## Higher version for downloadFile. Ensure the destination file path has
   ## writing permission
-  var f: AsyncFile
-  try:
-    f = openAsync(filename, fmWrite)
-  except IOError:
-    echo getCurrentExceptionMsg()
-    return
-  defer: close f
+  prepareFile(filename)
   let (_, fname, ext) = splitFile filename
   result = await bucket.downloadFile(f,  fname & ext)
 
-proc availableFiles*(g: GridFS): Future[int] {.async.} =
-  result = await g.files.count()
+proc downloadAs*(g: GridFS, source, target: string): Future[WriteResult]
+  {.async.} =
+  ## To download file as different file name.
+  prepareFile(target)
+  result = await g.downloadFile(f, source)
+
+proc availableFiles*(g: GridFS, query = bson()): Future[int] {.async.} =
+  result = await g.files.count(query)
 
 template prepareMatcher(m: BsonBase): untyped =
   var q = bson()
