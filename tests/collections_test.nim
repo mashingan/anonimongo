@@ -69,7 +69,14 @@ suite "Collections APIs tests":
     check wr.n == insertDocs.len
 
   test &"Create index on {namespace}":
-    skip()
+    wr = waitfor coll.createIndex(bson({
+      countId: 1, addedTime: 1
+    }))
+    wr.success.reasonedCheck("Create index error", wr.reason)
+
+  test &"List indexes on {namespace}":
+    let indexes = waitfor coll.listIndexes
+    check indexes.len > 1
 
   test &"Count documents on {namespace}":
     check insertDocs.len == waitfor coll.count()
@@ -148,8 +155,17 @@ suite "Collections APIs tests":
     check newdoc["type"] == newtype
     check newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
-  test &"Drop indexes collection of {namespace}":
-    skip()
+  test &"Drop index collection of {namespace}":
+    wr = waitfor coll.dropIndex("countId_1_addedTime_1_")
+    wr.success.reasonedCheck("Drop index name error", wr.reason)
+    # this time removing using index specification document
+    discard waitfor coll.createIndex(bson({
+      countId: 1, addedTime: 1
+    }))
+    wr = waitfor coll.dropIndex(bson({
+      countId: 1, addedTime: 1
+    }))
+    wr.success.reasonedCheck("Drop index keys error", wr.reason)
 
   test &"Bulk write ordered collection of {namespace}":
     expect MongoError:
@@ -173,11 +189,11 @@ suite "Collections APIs tests":
 
   test &"Bulk write unordered collection of {namespace}":
     # clean up from previous input
-    let _ = waitfor coll.remove(bson({
+    discard waitfor coll.remove(bson({
       "char": { "$ne": bsonNull() }
     }))
     check (waitfor coll.count()) == 8
-    let _ = waitfor coll.insert(newdocs)
+    discard waitfor coll.insert(newdocs)
     var bulkres = waitfor coll.bulkWrite(ops, ordered = false)
     check bulkres.nInserted == 2
     check bulkres.nRemoved == 1
@@ -185,12 +201,12 @@ suite "Collections APIs tests":
     check bulkres.writeErrors.len == 0
 
     # will give error at 2nd op but continue with other ops because ordered false
-    let _ = waitfor coll.remove(bson({
+    discard waitfor coll.remove(bson({
       "char": { "$ne": bsonNull() }
     }))
     check (waitfor coll.count()) == 8
-    let _ = waitfor coll.insert(newdocs)
-    let _ = waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
+    discard waitfor coll.insert(newdocs)
+    discard waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
     bulkres = waitfor coll.bulkWrite(ops, ordered = false)
     check bulkres.nInserted == 1
     check bulkres.nRemoved == 1

@@ -45,7 +45,11 @@ import core/[bson, types, utils, wire]
 proc one*(q: Query): Future[BsonDocument] {.async.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = 1, singleBatch = true)
-  result = doc["cursor"]["firstBatch"][0]
+  let batch = doc["cursor"]["firstBatch"].ofArray
+  if batch.len > 0:
+    result = batch[0]
+  else:
+    result = bson()
 
 proc all*(q: Query): Future[seq[BsonDocument]] {.async.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
@@ -74,10 +78,17 @@ iterator items*(cur: Cursor): BsonDocument =
     #doc = await cur.db.getMore(cur.id, collname, batchSize)
     doc = waitfor newcur.db.getMore(newcur.id, collname, batchSize)
     newcur = doc["cursor"].ofEmbedded.to Cursor
+    newcur.db = cur.db
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
       yield b
+
+iterator pairs*(cur: Cursor): (int, BsonDocument) =
+  var count = 0
+  for doc in cur:
+    yield (count, doc)
+    inc count
 
 proc iter*(q: Query): Future[Cursor] {.async.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
@@ -148,6 +159,17 @@ proc remove*(c: Collection, query, opt: BsonDocument):
   let doc = await c.db.delete(c.name, @[delq], wt = wt)
   result = doc.getWResult
 
+proc remove*(c: Collection, query: seq[BsonDocument]):
+  Future[WriteResult]{.async.} =
+  var q = newseq[BsonDocument](query.len)
+  for i, que in query:
+    q[i] = bson({
+      q: que,
+      limit: 0,
+    })
+
+  result = (await c.db.delete(c.name, q)).getWResult
+
 proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
   Future[WriteResult] {.async.} =
   let wt = if "writeConcern" in opt: opt["writeConcern"] else: bsonNull()
@@ -180,10 +202,18 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
   let wt = if "writeConcern" in opt: opt["writeConcern"]
            else: bsonNull()
   var q = bson({ key: key })
+  if "name" notin opt:
+    var name = ""
+    for k, v in key:
+      name &= &"{k}_{v}_"
+    q["name"] = name
   for k, v in opt:
     q[k] = v
   let qarr = bsonArray q.toBson
   result = await c.db.createIndexes(c.name, qarr, wt)
+
+proc listIndexes*(c: Collection): Future[seq[BsonDocument]]{.async.} =
+  result = (await c.db.listIndexes(c.name)).map ofEmbedded
 
 proc `distinct`*(c: Collection, field: string, query = bson(),
   opt = bson()): Future[seq[BsonBase]] {.async.} =
@@ -266,18 +296,13 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
   for i, op in operations:
     if "insertOne" in op:
       let futInsOne = c.insert(@[op["insertOne"]["document"].ofEmbedded], opt)
-      if ordered:
-        wr = await futInsOne
-        checkOrdered(wr, result, nInserted)
-      else:
-        futbulk[i] = futInsOne
-        opid[i] = "insertOne"
+      opcheck("insertOne", futInsOne, i, nInserted)
     elif "deleteOne" in op:
       removeOp("deleteOne", op, i, true)
     elif "updateOne" in op:
       updateOp("updateOne", op, i)
     elif "deleteMany" in op:
-      removeOp("deleteMany", op, i)
+      removeOp("deleteMany", op, i, true)
     elif "updateMany" in op:
       updateOp("updateMany", op, i)
     elif "replaceOne" in op:
@@ -288,7 +313,11 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
       let futrepOne = c.update(query, update, updopt)
       opcheck("replaceOne", futrepOne, i, nModified)
     else:
-      raise newException(MongoError, &"Invalid command given: {op}")
+      var key: string
+      for k, _ in op:
+        key = k
+        break
+      raise newException(MongoError, &"Invalid command given: {key}")
   if not ordered:
     let futres = await all(futbulk)
     for i in 0 .. futres.high:

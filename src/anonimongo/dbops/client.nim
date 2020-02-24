@@ -5,7 +5,9 @@ import ../core/[types, wire, bson, pool, utils]
 
 {.warning[UnusedImport]: off.}
 
-when not defined(release) and verbose:
+const verbose = defined(verbose)
+
+when verbose:
   import sugar
 
 ## Client module and User Management Commands
@@ -47,11 +49,11 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
   if "compressors" in m.query:
     q["compression"] = m.query["compressors"].map toBson
     ]#
-  when not defined(release) and verbose:
+  when verbose:
     echo "Handshake id: ", id
     dump q
   let dbc = m[db]
-  when not defined(release) and verbose:
+  when verbose:
     look await sendops(q, dbc)
   else:
     discard await sendops(q, dbc)
@@ -67,10 +69,10 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
     if "appname" in m.query and m.query["appname"].len > 0:
       m.query["appname"][0]
     else: "Anonimongo client apps"
-  var ops = newSeqOfCap[Future[void]](m.pool.available.len)
+  var ops = newseq[Future[void]](m.pool.available.len)
   let dbname = if m.db != "": m.db else: "admin"
   for id, c in m.pool.connections:
-    ops.add m.handshake(c.socket, dbname, id.int32, appname)
+    ops[id-1] = m.handshake(c.socket, dbname, id.int32, appname)
   await all(ops)
 
 proc cuUsers(db: Database, query: BsonDocument):
@@ -135,15 +137,18 @@ proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
   let reply = await sendops(q, db)
   let (success, reason) = check reply
+  result = WriteResult(
+    success: success,
+    reason: reason,
+    kind: wkMany
+  )
   if not success:
-    if verbose: echo reason
+    when verbose: echo reason
     return
-  result.success = success
-  result.reason = reason
-  result.kind = wkMany
   let stat = reply.documents[0]
   if not stat.ok:
-    if verbose: echo stat.errMsg
+    when verbose: echo stat.errMsg
+    result.success = false
     result.reason = stat.errMsg
     return
   #result = (true, stat["n"].ofInt)

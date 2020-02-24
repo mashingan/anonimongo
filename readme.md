@@ -378,6 +378,10 @@ been undergone extensive testing.
 * `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
 anything regarded that.
 * Cannot provide `readPreference` option because cannot support multihost URI connection.
+* It's taking too long to authenticate the connection pool which default at 64 connections
+even without SSL/TLS connections. It's even longer when the auth mechanism is "SCRAM-SHA-256"
+which is the default. Local connection authentication taking about 1 minutes
+(almost 1 second for each connection, ymmv) to finish all authentication process.
 * Will be added more laters when found out more.
 </details>
 

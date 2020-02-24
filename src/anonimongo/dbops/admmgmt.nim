@@ -69,7 +69,7 @@ proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
   wt = bsonNull()): Future[WriteResult] {.async.} =
   var q = bson({
     dropIndexes: coll,
-    indexes: indexes,
+    index: indexes,
   })
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
