@@ -6,6 +6,12 @@ Database	anonimongo/core/types.html#Database	types: Database
 Collection	anonimongo/core/types.html#Collection	types: Collection	
 Cursor	anonimongo/core/types.html#Cursor	types: Cursor	
 Query	anonimongo/core/types.html#Query	types: Query	
+wkSingle	anonimongo/core/types.html#wkSingle	WriteKind.wkSingle	
+wkMany	anonimongo/core/types.html#wkMany	WriteKind.wkMany	
+WriteKind	anonimongo/core/types.html#WriteKind	types: WriteKind	
+WriteResult	anonimongo/core/types.html#WriteResult	types: WriteResult	
+BulkResult	anonimongo/core/types.html#BulkResult	types: BulkResult	
+GridFS	anonimongo/core/types.html#GridFS	types: GridFS	
 MongoError	anonimongo/core/types.html#MongoError	types: MongoError	
 initSslInfo	anonimongo/core/types.html#initSslInfo,string,string	types: initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo	
 newMongo	anonimongo/core/types.html#newMongo,string,int	types: newMongo(host = &quot;localhost&quot;; port = 27017; master = true; poolconn = poolconn;\n         sslinfo = SslInfo()): Mongo	

@@ -55,24 +55,22 @@ stMd5	anonimongo/core/bson.html#stMd5	BsonSubtype.stMd5
 BsonSubtype	anonimongo/core/bson.html#BsonSubtype	bson: BsonSubtype	
 BsonFetchError	anonimongo/core/bson.html#BsonFetchError	bson: BsonFetchError	
 pairs	anonimongo/core/bson.html#pairs.i,BsonDocument	bson: pairs(b: BsonDocument): (string, BsonBase)	
-get	anonimongo/core/bson.html#get,BsonBase	bson: get(b: BsonBase): BsonBase	
-isSome	anonimongo/core/bson.html#isSome,BsonBase	bson: isSome(b: BsonBase): bool	
-isNone	anonimongo/core/bson.html#isNone,BsonBase	bson: isNone(b: BsonBase): bool	
 ms	anonimongo/core/bson.html#ms,Time	bson: ms(a: Time): int64	
 `==`	anonimongo/core/bson.html#==,BsonBase,Time	bson: `==`(b: BsonBase; t: Time): bool	
 `==`	anonimongo/core/bson.html#==,Time,BsonBase	bson: `==`(t: Time; b: BsonBase): bool	
 contains	anonimongo/core/bson.html#contains,BsonDocument,string	bson: contains(b: BsonDocument; key: string): bool	
 contains	anonimongo/core/bson.html#contains,BsonBase,string	bson: contains(b: BsonBase; key: string): bool	
-`[]`	anonimongo/core/bson.html#[],BsonDocument,	bson: `[]`(b: BsonDocument; key: sink string): Option[BsonBase]	
+`[]`	anonimongo/core/bson.html#[],BsonDocument,	bson: `[]`(b: BsonDocument; key: sink string): BsonBase	
 `[]`	anonimongo/core/bson.html#[],BsonBase,	bson: `[]`(b: BsonBase; key: sink string): BsonBase	
 `[]`	anonimongo/core/bson.html#[],BsonBase,_2	bson: `[]`(b: BsonBase; idx: sink int): BsonBase	
-`[]`	anonimongo/core/bson.html#[],Option[BsonBase],	bson: `[]`[T: int | string](b: Option[BsonBase]; key: sink T): BsonBase	
+`[]`	anonimongo/core/bson.html#[],BsonBase,_3	bson: `[]`[T: int | string](b: BsonBase; key: sink T): BsonBase	
 `[]=`	anonimongo/core/bson.html#[]=,BsonDocument,,BsonBase	bson: `[]=`(b: var BsonDocument; key: sink string; val: BsonBase)	
 mget	anonimongo/core/bson.html#mget,BsonDocument,	bson: mget(b: var BsonDocument; key: sink string): var BsonBase	
 mget	anonimongo/core/bson.html#mget,BsonBase,	bson: mget(b: var BsonBase; key: sink string): var BsonBase	
 mget	anonimongo/core/bson.html#mget,BsonBase,_2	bson: mget(b: var BsonBase; index: sink int): var BsonBase	
 del	anonimongo/core/bson.html#del,BsonDocument,string	bson: del(b: var BsonDocument; key: string)	
 len	anonimongo/core/bson.html#len,BsonDocument	bson: len(b: BsonDocument): int	
+keys	anonimongo/core/bson.html#keys.i,BsonDocument	bson: keys(b: BsonDocument): string	
 `$`	anonimongo/core/bson.html#$,BsonBase	bson: `$`(v: BsonBase): string	
 `$`	anonimongo/core/bson.html#$,BsonDocument	bson: `$`(doc: BsonDocument): string	
 encode	anonimongo/core/bson.html#encode,BsonDocument	bson: encode(doc: BsonDocument): (int, string)	
@@ -91,7 +89,6 @@ toBson	anonimongo/core/bson.html#toBson.c,TimestampInternal	bson: toBson(value: 
 bsonNull	anonimongo/core/bson.html#bsonNull_2	bson: bsonNull(): BsonBase	
 isNil	anonimongo/core/bson.html#isNil,BsonBase	bson: isNil(b: BsonBase): bool	
 isNil	anonimongo/core/bson.html#isNil,BsonDocument	bson: isNil(b: BsonDocument): bool	
-isNil	anonimongo/core/bson.html#isNil,Option[BsonBase]	bson: isNil(b: Option[BsonBase]): bool	
 bsonArray	anonimongo/core/bson.html#bsonArray,varargs[BsonBase,toBson]	bson: bsonArray(args: varargs[BsonBase, toBson]): BsonBase	
 bsonBinary	anonimongo/core/bson.html#bsonBinary,string	bson: bsonBinary(binstr: string; subtype = stGeneric): BsonBase	
 bsonBinary	anonimongo/core/bson.html#bsonBinary,seq[T][byte]	bson: bsonBinary(binseq: seq[byte]; subtype = stGeneric): BsonBase	

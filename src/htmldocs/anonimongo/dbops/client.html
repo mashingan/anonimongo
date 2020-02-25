@@ -10,6 +10,7 @@
 
 <!-- Favicon -->
 <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AAAAAAUAAAAF////AP///wD///8A////AP///wD///8A////AP///wD///8A////AAAAAAIAAABbAAAAlQAAAKIAAACbAAAAmwAAAKIAAACVAAAAWwAAAAL///8A////AP///wD///8A////AAAAABQAAADAAAAAYwAAAA3///8A////AP///wD///8AAAAADQAAAGMAAADAAAAAFP///wD///8A////AP///wAAAACdAAAAOv///wD///8A////AP///wD///8A////AP///wD///8AAAAAOgAAAJ3///8A////AP///wAAAAAnAAAAcP///wAAAAAoAAAASv///wD///8A////AP///wAAAABKAAAAKP///wAAAABwAAAAJ////wD///8AAAAAgQAAABwAAACIAAAAkAAAAJMAAACtAAAAFQAAABUAAACtAAAAkwAAAJAAAACIAAAAHAAAAIH///8A////AAAAAKQAAACrAAAAaP///wD///8AAAAARQAAANIAAADSAAAARf///wD///8AAAAAaAAAAKsAAACk////AAAAADMAAACcAAAAnQAAABj///8A////AP///wAAAAAYAAAAGP///wD///8A////AAAAABgAAACdAAAAnAAAADMAAAB1AAAAwwAAAP8AAADpAAAAsQAAAE4AAAAb////AP///wAAAAAbAAAATgAAALEAAADpAAAA/wAAAMMAAAB1AAAAtwAAAOkAAAD/AAAA/wAAAP8AAADvAAAA3gAAAN4AAADeAAAA3gAAAO8AAAD/AAAA/wAAAP8AAADpAAAAtwAAAGUAAAA/AAAA3wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAADfAAAAPwAAAGX///8A////AAAAAEgAAADtAAAAvwAAAL0AAADGAAAA7wAAAO8AAADGAAAAvQAAAL8AAADtAAAASP///wD///8A////AP///wD///8AAAAAO////wD///8A////AAAAAIcAAACH////AP///wD///8AAAAAO////wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//8AAP//AAD4HwAA7/cAAN/7AAD//wAAoYUAAJ55AACf+QAAh+EAAAAAAADAAwAA4AcAAP5/AAD//wAA//8AAA=="/>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- Google fonts -->
 <link href='https://fonts.googleapis.com/css?family=Lato:400,600,900' rel='stylesheet' type='text/css'/>
@@ -839,24 +840,24 @@ function main() {
     title="createUser(db: Database; user, pwd: string; roles = bsonArray();
            restrictions = bsonArray();
            mechanism = bsonArray(&quot;SCRAM-SHA-256&quot;, &quot;SCRAM-SHA-1&quot;);
-           writeConcern = bsonNull(); customData = bsonNull()): Future[(bool, string)]"><wbr />create<wbr />User<span class="attachedType"></span></a></li>
+           writeConcern = bsonNull(); customData = bsonNull()): Future[WriteResult]"><wbr />create<wbr />User<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#updateUser%2CDatabase%2Cstring%2Cstring"
     title="updateUser(db: Database; user, pwd: string; roles = bsonArray();
            restrictions = bsonArray();
            mechanism = bsonArray(&quot;SCRAM-SHA-256&quot;, &quot;SCRAM-SHA-1&quot;);
-           writeConcern = bsonNull(); customData = bsonNull()): Future[(bool, string)]"><wbr />update<wbr />User<span class="attachedType"></span></a></li>
+           writeConcern = bsonNull(); customData = bsonNull()): Future[WriteResult]"><wbr />update<wbr />User<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#usersInfo%2CDatabase%2CBsonDocument"
     title="usersInfo(db: Database; query: BsonDocument): Future[ReplyFormat]"><wbr />users<wbr />Info<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#dropAllUsersFromDatabase%2CDatabase"
-    title="dropAllUsersFromDatabase(db: Database): Future[(bool, int)]"><wbr />drop<wbr />All<wbr />Users<wbr />From<wbr />Database<span class="attachedType"></span></a></li>
+    title="dropAllUsersFromDatabase(db: Database): Future[WriteResult]"><wbr />drop<wbr />All<wbr />Users<wbr />From<wbr />Database<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#dropUser%2CDatabase%2Cstring"
-    title="dropUser(db: Database; user: string): Future[(bool, string)]"><wbr />drop<wbr />User<span class="attachedType"></span></a></li>
+    title="dropUser(db: Database; user: string): Future[WriteResult]"><wbr />drop<wbr />User<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#grantRolesToUser%2CDatabase%2Cstring"
     title="grantRolesToUser(db: Database; user: string; roles = bsonArray();
-                 writeConcern = bsonNull()): Future[(bool, string)]"><wbr />grant<wbr />Roles<wbr />To<wbr />User<span class="attachedType"></span></a></li>
+                 writeConcern = bsonNull()): Future[WriteResult]"><wbr />grant<wbr />Roles<wbr />To<wbr />User<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#revokeRolesFromUser%2CDatabase%2Cstring"
     title="revokeRolesFromUser(db: Database; user: string; roles = bsonArray();
-                    writeConcern = bsonNull()): Future[(bool, string)]"><wbr />revoke<wbr />Roles<wbr />From<wbr />User<span class="attachedType"></span></a></li>
+                    writeConcern = bsonNull()): Future[WriteResult]"><wbr />revoke<wbr />Roles<wbr />From<wbr />User<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -886,41 +887,41 @@ function main() {
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L59"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L61"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L59" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L61" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createUser,Database,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#createUser%2CDatabase%2Cstring%2Cstring"><span class="Identifier">createUser</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">,</span> <span class="Identifier">pwd</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">roles</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                <span class="Identifier">restrictions</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                <span class="Identifier">mechanism</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="StringLit">&quot;SCRAM-SHA-256&quot;</span><span class="Other">,</span> <span class="StringLit">&quot;SCRAM-SHA-1&quot;</span><span class="Other">)</span><span class="Other">;</span>
-               <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">customData</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <span class="Other">(</span><span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+               <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">customData</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/types.html#WriteResult"><span class="Identifier">WriteResult</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L117"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L119"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L119" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="updateUser,Database,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#updateUser%2CDatabase%2Cstring%2Cstring"><span class="Identifier">updateUser</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">,</span> <span class="Identifier">pwd</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">roles</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                <span class="Identifier">restrictions</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
                <span class="Identifier">mechanism</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="StringLit">&quot;SCRAM-SHA-256&quot;</span><span class="Other">,</span> <span class="StringLit">&quot;SCRAM-SHA-1&quot;</span><span class="Other">)</span><span class="Other">;</span>
-               <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">customData</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <span class="Other">(</span><span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+               <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">customData</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/types.html#WriteResult"><span class="Identifier">WriteResult</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L126"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L128"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L128" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="usersInfo,Database,BsonDocument"></a>
@@ -931,63 +932,63 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L131"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L133"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L131" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L133" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="dropAllUsersFromDatabase,Database"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dropAllUsersFromDatabase%2CDatabase"><span class="Identifier">dropAllUsersFromDatabase</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+<dt><pre><span class="Keyword">proc</span> <a href="#dropAllUsersFromDatabase%2CDatabase"><span class="Identifier">dropAllUsersFromDatabase</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/types.html#WriteResult"><span class="Identifier">WriteResult</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L134"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L136"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L134" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L136" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="dropUser,Database,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dropUser%2CDatabase%2Cstring"><span class="Identifier">dropUser</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+<dt><pre><span class="Keyword">proc</span> <a href="#dropUser%2CDatabase%2Cstring"><span class="Identifier">dropUser</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/types.html#WriteResult"><span class="Identifier">WriteResult</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L147"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L157"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L147" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L157" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="grantRolesToUser,Database,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#grantRolesToUser%2CDatabase%2Cstring"><span class="Identifier">grantRolesToUser</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">roles</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                     <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+                     <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/types.html#WriteResult"><span class="Identifier">WriteResult</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L161"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L171"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L161" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L171" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="revokeRolesFromUser,Database,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#revokeRolesFromUser%2CDatabase%2Cstring"><span class="Identifier">revokeRolesFromUser</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">roles</span> <span class="Other">=</span> <span class="Identifier">bsonArray</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-                        <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Other">(</span><span class="Identifier">bool</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+                        <span class="Identifier">writeConcern</span> <span class="Other">=</span> <span class="Identifier">bsonNull</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/types.html#WriteResult"><span class="Identifier">WriteResult</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">FutureError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L165"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/dbops/client.nim#L175"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/client.nim#L175" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1000,7 +1001,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2020-02-15 11:58:33 UTC</small>
+        <small>Made with Nim. Generated: 2020-02-25 17:02:49 UTC</small>
       </div>
     </div>
   </div>

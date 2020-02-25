@@ -276,8 +276,8 @@ macro to*(b: untyped, t: typed): untyped =
     doAssert flatobj.documents.len == 3
     doAssert flatobj.intfield == 1
     doAssert flatobj.strarr[1] == "elm2"
-    doAssert flatobj.documents[0]["field1"].get == 1
-    doAssert flatobj.documents[1]["dynamic"].get.ofBool
+    doAssert flatobj.documents[0]["field1"] == 1
+    doAssert flatobj.documents[1]["dynamic"].ofBool
 
   result = newStmtList()
   let st = getType t

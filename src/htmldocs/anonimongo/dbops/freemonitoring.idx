@@ -1,0 +1,4 @@
+getFreeMonitoringStatus	anonimongo/dbops/freemonitoring.html#getFreeMonitoringStatus,Database	freemonitoring: getFreeMonitoringStatus(db: Database): Future[BsonDocument]	
+setFreeMonitoring	anonimongo/dbops/freemonitoring.html#setFreeMonitoring,Database,string	freemonitoring: setFreeMonitoring(db: Database; action = &quot;enable&quot;): Future[BsonDocument]	
+enableFreeMonitoring	anonimongo/dbops/freemonitoring.html#enableFreeMonitoring,Database	freemonitoring: enableFreeMonitoring(db: Database): Future[BsonDocument]	
+disableFreeMonitoring	anonimongo/dbops/freemonitoring.html#disableFreeMonitoring,Database	freemonitoring: disableFreeMonitoring(db: Database): Future[BsonDocument]	

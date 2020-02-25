@@ -10,6 +10,7 @@
 
 <!-- Favicon -->
 <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AAAAAAUAAAAF////AP///wD///8A////AP///wD///8A////AP///wD///8A////AAAAAAIAAABbAAAAlQAAAKIAAACbAAAAmwAAAKIAAACVAAAAWwAAAAL///8A////AP///wD///8A////AAAAABQAAADAAAAAYwAAAA3///8A////AP///wD///8AAAAADQAAAGMAAADAAAAAFP///wD///8A////AP///wAAAACdAAAAOv///wD///8A////AP///wD///8A////AP///wD///8AAAAAOgAAAJ3///8A////AP///wAAAAAnAAAAcP///wAAAAAoAAAASv///wD///8A////AP///wAAAABKAAAAKP///wAAAABwAAAAJ////wD///8AAAAAgQAAABwAAACIAAAAkAAAAJMAAACtAAAAFQAAABUAAACtAAAAkwAAAJAAAACIAAAAHAAAAIH///8A////AAAAAKQAAACrAAAAaP///wD///8AAAAARQAAANIAAADSAAAARf///wD///8AAAAAaAAAAKsAAACk////AAAAADMAAACcAAAAnQAAABj///8A////AP///wAAAAAYAAAAGP///wD///8A////AAAAABgAAACdAAAAnAAAADMAAAB1AAAAwwAAAP8AAADpAAAAsQAAAE4AAAAb////AP///wAAAAAbAAAATgAAALEAAADpAAAA/wAAAMMAAAB1AAAAtwAAAOkAAAD/AAAA/wAAAP8AAADvAAAA3gAAAN4AAADeAAAA3gAAAO8AAAD/AAAA/wAAAP8AAADpAAAAtwAAAGUAAAA/AAAA3wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAADfAAAAPwAAAGX///8A////AAAAAEgAAADtAAAAvwAAAL0AAADGAAAA7wAAAO8AAADGAAAAvQAAAL8AAADtAAAASP///wD///8A////AP///wD///8AAAAAO////wD///8A////AAAAAIcAAACH////AP///wD///8AAAAAO////wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//8AAP//AAD4HwAA7/cAAN/7AAD//wAAoYUAAJ55AACf+QAAh+EAAAAAAADAAwAA4AcAAP5/AAD//wAA//8AAA=="/>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4QQQEwksSS9ZWwAAAk1JREFUWMPtll2ITVEUx39nn/O7Y5qR8f05wtCUUr6ZIS++8pEnkZInPImneaCQ5METNdOkeFBKUhMPRIkHKfEuUZSUlGlKPN2TrgfncpvmnntnmlEyq1Z7t89/rf9a6+y99oZxGZf/XeIq61EdtgKXgdXA0xrYAvBjOIF1AI9zvjcC74BSpndrJPkBWDScTF8Aa4E3wDlgHbASaANmVqlcCnwHvgDvgVfAJ+AikAAvgfVZwLnSVZHZaOuKoQi3ZOMi4NkYkpe1p4J7A8BpYAD49hfIy/oqG0+hLomiKP2L5L+1ubn5115S+3OAn4EnwBlgMzCjyt6ZAnQCJ4A7wOs88iRJHvw50HoujuPBoCKwHWiosy8MdfZnAdcHk8dxXFJ3VQbQlCTJvRBCGdRbD4M6uc5glpY3eAihpN5S5w12diSEcCCEcKUO4ljdr15T76ur1FDDLIQQ3qv71EdDOe3Kxj3leRXyk+pxdWnFWod6Wt2bY3de3aSuUHcPBVimHs7mK9WrmeOF6lR1o9qnzskh2ar2qm1qizpfXaPeVGdlmGN5pb09qMxz1Xb1kLqgzn1RyH7JUXW52lr5e/Kqi9qpto7V1atuUzfnARrV7jEib1T76gG2qxdGmXyiekkt1GswPTtek0aBfJp6YySGBfWg2tPQ0FAYgf1stUfdmdcjarbYJEniKIq6gY/Aw+zWHAC+p2labGpqiorFYgGYCEzN7oQdQClN07O1/EfDyGgC0ALMBdYAi4FyK+4H3gLPsxfR1zRNi+NP7nH5J+QntnXe5B5mpfQAAAAASUVORK5CYII=">
 
 <!-- Google fonts -->
 <link href='https://fonts.googleapis.com/css?family=Lato:400,600,900' rel='stylesheet' type='text/css'/>
@@ -877,8 +878,32 @@ function main() {
   collection*: Collection
   skip*, limit*, batchSize*: int32
   readConcern*, max*, min*: BsonBase"><wbr />Query<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#WriteKind"
+    title="WriteKind = enum
+  wkSingle, wkMany"><wbr />Write<wbr />Kind<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#WriteResult"
+    title="WriteResult = object
+  success*: bool
+  reason*: string
+  case kind*: WriteKind
+  of wkMany:
+      n*: int
+      errmsgs*: seq[string]    ## For various error message when writing.
+    
+  of wkSingle:
+      nil"><wbr />Write<wbr />Result<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#BulkResult"
+    title="BulkResult = object
+  nInserted*, nModified*, nRemoved*: int
+  writeErrors*: seq[string]"><wbr />Bulk<wbr />Result<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#GridFS"
+    title="GridFS = ref object
+  name*: string
+  files*: Collection
+  chunks*: Collection
+  chunkSize*: int32"><wbr />Grid<wbr />FS<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#MongoError"
-    title="MongoError = object of Exception"><wbr />Mongo<wbr />Error<span class="attachedType"></span></a></li>
+    title="MongoError = object of Defect"><wbr />Mongo<wbr />Error<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -1068,8 +1093,9 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L63" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="MongoError"></a>
-<dt><pre><a href="types.html#MongoError"><span class="Identifier">MongoError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Exception</span></pre></dt>
+<a id="WriteKind"></a>
+<dt><pre><a href="types.html#WriteKind"><span class="Identifier">WriteKind</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">wkSingle</span><span class="Other">,</span> <span class="Identifier">wkMany</span></pre></dt>
 <dd>
 
 
@@ -1077,6 +1103,73 @@ class="link-seesrc" target="_blank">Source</a>
 href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L80"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="WriteResult"></a>
+<dt><pre><a href="types.html#WriteResult"><span class="Identifier">WriteResult</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+  <span class="Identifier">success</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+  <span class="Identifier">reason</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Keyword">case</span> <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#WriteKind"><span class="Identifier">WriteKind</span></a>
+  <span class="Keyword">of</span> <span class="Identifier">wkMany</span><span class="Other">:</span>
+      <span class="Identifier">n</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+      <span class="Identifier">errmsgs</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>    <span class="Comment">## For various error message when writing.</span>
+    
+  <span class="Keyword">of</span> <span class="Identifier">wkSingle</span><span class="Other">:</span>
+      <span class="Keyword">nil</span>
+
+  </pre></dt>
+<dd>
+
+WriteResult is the result representing the write operations. The kind of wkSingle means represent the affected written/changed documents and wkMany the has that.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L83"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L83" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="BulkResult"></a>
+<dt><pre><a href="types.html#BulkResult"><span class="Identifier">BulkResult</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+  <span class="Identifier">nInserted</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">nModified</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">nRemoved</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
+  <span class="Identifier">writeErrors</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
+</pre></dt>
+<dd>
+
+A result object for bulk write operations.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L97"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L97" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="GridFS"></a>
+<dt><pre><a href="types.html#GridFS"><span class="Identifier">GridFS</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+  <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
+  <span class="Identifier">files</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a>
+  <span class="Identifier">chunks</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a>
+  <span class="Identifier">chunkSize</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int32</span>
+</pre></dt>
+<dd>
+
+GridFS is basically just a object that represents two different collections: i.e.<ol class="simple"><li>{bucket.name}.files</li>
+<li>{bucket.name}.chunks</li>
+</ol>
+<p>Which bucket.files stores the file information itself while bucket.chunks stores the actual binary information for the related files.</p>
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L102"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L102" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="MongoError"></a>
+<dt><pre><a href="types.html#MongoError"><span class="Identifier">MongoError</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">Defect</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L117"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L117" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1118,9 +1211,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Init the SSLinfo which give default value of protocol to protSSLv23. It's preferable used when user want to use SSL/TLS connection.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L99"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L136"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L99" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L136" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newMongo,string,int"></a>
@@ -1131,9 +1224,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Give a new <a class="reference external" href="#Mongo">Mongo</a> instance manually from given parameters.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L121"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L158"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L121" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L158" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newMongo,Uri"></a>
@@ -1144,9 +1237,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Give a new <a class="reference external" href="#Mongo">Mongo</a> instance based on URI string.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L133"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L170"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L133" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="tls,Mongo"></a>
@@ -1155,9 +1248,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L194"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L231"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L194" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L231" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="authenticated,Mongo"></a>
@@ -1166,9 +1259,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L195"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L195" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="host,Mongo"></a>
@@ -1177,9 +1270,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L196"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L233"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L196" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L233" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="port,Mongo"></a>
@@ -1188,9 +1281,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L197"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L234"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L197" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L234" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="query,Mongo"></a>
@@ -1199,9 +1292,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L198"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L235"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L235" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="flags,Mongo"></a>
@@ -1210,9 +1303,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L200"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L237"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L200" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L237" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="authenticate,Mongo,string,string"></a>
@@ -1222,9 +1315,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Authenticate Mongo with given username and password and delegate it to <a class="reference external" href="pool.html#authenticate,Pool,string,string,typedesc,string">pool.authenticate</a>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L203"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L240"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L203" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L240" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="authenticate,Mongo"></a>
@@ -1233,9 +1326,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Authenticate Mongo with available username and password from <a class="reference external" href="#Mongo">Mongo</a> object and delegate it to <a class="reference external" href="pool.html#authenticate,Pool,string,string,typedesc,string">pool.authenticate</a>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L212"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L249"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L212" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L249" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="appname=,Mongo,string"></a>
@@ -1244,9 +1337,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set appname for <a class="reference external" href="#Mongo">Mongo</a> client instance.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L220"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L257"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L257" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="appname,Mongo"></a>
@@ -1255,9 +1348,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get appname from <a class="reference external" href="#Mongo">Mongo</a> client instance.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L224"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L261"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L261" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="tailableCursor,Mongo"></a>
@@ -1266,9 +1359,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to support TailableCursor
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L232"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L269"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L269" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="noTailable,Mongo"></a>
@@ -1277,9 +1370,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to not support TailableCursor
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L236"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L273"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L236" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L273" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="slaveOk,Mongo"></a>
@@ -1288,9 +1381,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to support SlaveOk flag
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L240"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L277"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L240" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L277" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="noSlave,Mongo"></a>
@@ -1299,9 +1392,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to not support SlaveOk flag
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L244"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L281"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L244" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L281" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="[],Mongo,string"></a>
@@ -1310,9 +1403,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Give new Database from <a class="reference external" href="#Mongo">Mongo</a>, expected to long-live object.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L248"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L285"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L248" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L285" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="[],Database,string"></a>
@@ -1321,9 +1414,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Give new <a class="reference external" href="#Collection">Collection</a> from <a class="reference external" href="#Database">Database</a>, expected to long-live object.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L255"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L292"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L255" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L292" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="dbname,Cursor"></a>
@@ -1332,9 +1425,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get <a class="reference external" href="#Database">Database</a>, name from Cursor.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L263"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L300"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L263" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L300" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="collname,Cursor"></a>
@@ -1343,9 +1436,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get <a class="reference external" href="#Collection">Collection</a> name from Cursor.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L265"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L302"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L265" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L302" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="close,Mongo"></a>
@@ -1354,9 +1447,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L268"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L305"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L268" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L305" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="initQuery,Collection,int32,int32,int32"></a>
@@ -1366,9 +1459,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Init <a class="reference external" href="#Query">query</a> to be used for next find. Apparently this should be used for Query Plan Cache however currently the lib still hasn't support that feature yet.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L270"
+href="https://github.com/mashingan/anonimongo/tree/develop/src/anonimongo/core/types.nim#L307"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L270" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L307" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1381,7 +1474,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2020-02-15 11:58:33 UTC</small>
+        <small>Made with Nim. Generated: 2020-02-25 17:02:49 UTC</small>
       </div>
     </div>
   </div>
