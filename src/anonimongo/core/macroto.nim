@@ -25,6 +25,9 @@ proc isArray(n: NimNode): bool {.compiletime.} =
   n.expectKind nnkBracketExpr
   n.len == 3
 
+proc isSeqByte(n: NimNode): bool =
+  n.isSeq and n[1].kind == nnkSym and $n[1] == "byte"
+
 proc isIt(node: NimNode, it: string): bool {.compiletime.} =
   node.kind == nnkSym and $node == it
 
@@ -125,7 +128,9 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   let testif = ifIn jn
   
   var bodyif = newStmtList()
-  if fld[1].isSeq:
+  if fld[1].isSeqByte:
+    bodyif.add newAssignment(thevar, newcall("ofBinary", jn))
+  elif fld[1].isSeq:
     bodyif.add nnkVarSection.newTree(newIdentDefs(resvar, fld[1]))
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(jn, ident"ofArray"))

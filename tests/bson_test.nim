@@ -373,11 +373,15 @@ suite "Macro to object conversion tests":
   type
     BinaryWrap = object
       binary: string # binary string
+      seqbyte: seq[byte]
   var bbwo = bson({
-    binary: bsonBinary qrimg
+    binary: bsonBinary qrimg,
+    seqbyte: bsonBinary qrimg
   })
   var obwo: BinaryWrap
   test "Bson binary conversion bytes string":
     obwo = bbwo.to BinaryWrap
     check obwo.binary.len == qrimg.len
     check obwo.binary == qrimg
+    check obwo.seqbyte.len == qrimg.len
+    check obwo.seqbyte.stringbytes == qrimg
