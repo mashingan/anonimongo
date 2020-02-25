@@ -1,5 +1,10 @@
 import wire, bson, types, pool
 
+const verbose {.booldefine.} = false
+
+when verbose:
+  import sugar
+
 func cmd*(name: string): string = name & ".$cmd"
   ## Add suffix ".$cmd" to Database name to avoid any typo.
 
@@ -52,11 +57,12 @@ proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
   true
 
 proc proceed*(db: Database, q: BsonDocument, dbname = ""):
-  Future[(bool, string)] {.async.} =
+  Future[WriteResult] {.async.} =
   ## Helper utility that basically utilize another two main operations
   ## ``sendops`` and ``epilogueCheck``.
   let reply = await sendops(q, db, dbname)
-  result[0] = epilogueCheck(reply, result[1])
+  result = WriteResult(kind: wkSingle)
+  result.success = epilogueCheck(reply, result.reason)
 
 #template crudops(db: Database, q: BsonDocument): untyped {.async.} =
 proc crudops*(db: Database, q: BsonDocument, dbname = ""):
@@ -68,3 +74,23 @@ proc crudops*(db: Database, q: BsonDocument, dbname = ""):
   if not success:
     raise newException(MongoError, reason)
   result = reply.documents[0]
+
+proc getWResult*(b: BsonDocument): WriteResult =
+  ## Helper to fetch a WriteResult of kind wkMany.
+  result = WriteResult(
+    success: b.ok,
+    kind: wkMany
+  )
+  if "nModified" in b:
+    result.n = b["nModified"]
+  elif "n" in b:
+    result.n = b["n"]
+  if "writeErrors" in b:
+    let errdocs = b["writeErrors"].ofArray
+    result.errmsgs = newseq[string](errdocs.len)
+    for i, errb in errdocs:
+      result.errmsgs[i] = errb.ofEmbedded.errmsg
+      when verbose:
+        dump result.errmsgs[i]
+  when verbose:
+    dump result

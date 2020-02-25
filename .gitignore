@@ -12,6 +12,8 @@ nimcache/
 
 *.exe
 *.bson
+*.bin
+*.txt
 
 # disable for big files
 *.mkv

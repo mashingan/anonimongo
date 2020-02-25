@@ -17,6 +17,7 @@ suite "Client connection and user management tests":
 
   var mongo: Mongo
   var db: Database
+  var wr: WriteResult
 
   let existingDb = "temptest"
   let existingUser = bson({
@@ -48,33 +49,33 @@ suite "Client connection and user management tests":
     success.reasonedCheck("usersInfo error", reason)
 
   test &"Create new user: {newuser}":
-    let (success, reason) = waitFor db.createUser(newuser, newuser,
+    wr = waitFor db.createUser(newuser, newuser,
       roles = bsonArray("read"), customData = bson({ role: "testing"}))
-    success.reasonedCheck("createUser error", reason)
+    wr.success.reasonedCheck("createUser error", wr.reason)
 
   test &"Grant roles to {newuser}":
-    let (success, reason) = waitFor db.grantRolesToUser(newuser,
+    wr = waitFor db.grantRolesToUser(newuser,
       roles = bsonArray("readWrite"))
-    success.reasonedCheck("grantRolesToUser error", reason)
+    wr.success.reasonedCheck("grantRolesToUser error", wr.reason)
 
   test &"Revoke roles to {newuser}":
-    let (success, reason) = waitFor db.revokeRolesFromUser(newuser,
+    wr = waitFor db.revokeRolesFromUser(newuser,
       roles = bsonArray("readWrite"))
-    success.reasonedCheck("revokeRolesFromUser error", reason)
+    wr.success.reasonedCheck("revokeRolesFromUser error", wr.reason)
 
   test &"Update {newuser}":
-    let (success, reason) = waitFor db.updateUser(newuser, newuser,
+    wr = waitFor db.updateUser(newuser, newuser,
       roles = bsonArray("read"))
-    success.reasonedCheck("updateUser error", reason)
+    wr.success.reasonedCheck("updateUser error", wr.reason)
 
   test &"Delete/drop the {newuser}":
-    let (success, reason) = waitFor db.dropUser(newuser)
-    success.reasonedCheck("dropUser error", reason)
+    wr = waitFor db.dropUser(newuser)
+    wr.success.reasonedCheck("dropUser error", wr.reason)
 
   test "Shutdown mongo":
     require mongo != nil
-    let (success, _) = waitFor db.shutdown(timeout = 10)
-    check success
+    wr = waitFor db.shutdown(timeout = 10)
+    check wr.success
 
   if runlocal:
     if mongorun.running: kill mongorun

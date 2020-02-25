@@ -27,6 +27,7 @@ suite "CRUD tests":
     foundDocs = newseq[BsonDocument]()
     namespace = ""
     resfind: BsonDocument
+    wr: WriteResult
 
   let currtime = now().toTime
   for i in 0 ..< 10:
@@ -57,7 +58,7 @@ suite "CRUD tests":
     require db != nil
     resfind = waitfor db.insert(collname, insertDocs)
     resfind.reasonedCheck "Insert documents error"
-    check resfind["n"].get == insertDocs.len
+    check resfind["n"] == insertDocs.len
     resfind = waitfor db.find(collname, singleBatch = true)
     check resfind.ok
     for d in resfind["cursor"]["firstBatch"].ofArray:
@@ -68,7 +69,7 @@ suite "CRUD tests":
     require db != nil
     resfind = waitfor db.count(collname)
     resfind.reasonedCheck("count error")
-    check resfind["n"].get == foundDocs.len
+    check resfind["n"] == foundDocs.len
 
   test &"Aggregate documents on {namespace}":
     require db != nil
@@ -91,7 +92,7 @@ suite "CRUD tests":
     require db != nil
     resfind = waitfor db.`distinct`(collname, "countId")
     resfind.reasonedCheck "db.distinct error"
-    let docs = resfind["values"].get.ofArray
+    let docs = resfind["values"].ofArray
     check docs.len == insertDocs.len
     check docs.allIt( it.kind == bkInt32 )
   
@@ -102,8 +103,8 @@ suite "CRUD tests":
     resfind = waitfor db.findAndModify(collname, query = bson({
       countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
     resfind.reasonedCheck "findAndModify error"
-    check resfind["lastErrorObject"]["n"].get == 1
-    let olddoc = resfind["value"].get.ofEmbedded
+    check resfind["lastErrorObject"]["n"] == 1
+    let olddoc = resfind["value"].ofEmbedded
 
     # let's see we cannot find the old entry
     resfind = waitFor db.find(collname, bson({ countId: oldcount}),
@@ -118,11 +119,11 @@ suite "CRUD tests":
       singleBatch = true)
     resfind.reasonedCheck "find error"
     docs = resfind["cursor"]["firstBatch"].ofArray
-    let foundDoc = docs[0].get.ofEmbedded
-    check foundDoc["countId"].get.ofInt != olddoc["countId"].get
-    check foundDoc["type"].get.ofString == olddoc["type"].get
-    check foundDoc["addedTime"].get == olddoc["addedTime"].get.ofTime
-    check foundDoc["countId"].get == newcount
+    let foundDoc = docs[0].ofEmbedded
+    check foundDoc["countId"].ofInt != olddoc["countId"]
+    check foundDoc["type"].ofString == olddoc["type"]
+    check foundDoc["addedTime"] == olddoc["addedTime"].ofTime
+    check foundDoc["countId"] == newcount
 
   test &"Update document(s) on {namespace}":
     require db != nil
@@ -131,7 +132,7 @@ suite "CRUD tests":
     let newtype = "異世界召喚"
     resfind = waitFor db.find(collname, bson({ countId: oldcount }))
     resfind.reasonedCheck "find error"
-    let olddoc = resfind["cursor"]["firstBatch"][0].get.ofEmbedded
+    let olddoc = resfind["cursor"]["firstBatch"][0].ofEmbedded
     resfind = waitfor db.update(collname, @[
       bson({
         q: { countId: oldcount },
@@ -141,33 +142,33 @@ suite "CRUD tests":
       })
     ])
     resfind.reasonedCheck "update error"
-    check resfind["n"].get == 1
-    check resfind["nModified"].get == 1
+    check resfind["n"] == 1
+    check resfind["nModified"] == 1
     resfind = waitFor db.find(collname, bson({ countId: oldcount + addcount }))
     resfind.reasonedCheck "find error"
     let docs = resfind["cursor"]["firstBatch"].ofArray
     check docs.len == 1
     let newdoc = docs[0].ofEmbedded
-    check newdoc["countId"].get == olddoc["countId"].get + addcount
-    check newdoc["type"].get == newtype
-    check newdoc["addedTime"].get == olddoc["addedTime"].get.ofTime
+    check newdoc["countId"] == olddoc["countId"] + addcount
+    check newdoc["type"] == newtype
+    check newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
   test &"Find with lazyily on {namespace}":
     require db != nil
     resfind = waitFor db.find(collname, batchSize = 1)
     resfind.reasonedCheck "find error"
-    var cursor = (resfind["cursor"].get.ofEmbedded).to Cursor
+    var cursor = (resfind["cursor"].ofEmbedded).to Cursor
     var count = cursor.firstBatch.len
     while true:
       resfind = waitfor db.getMore(cursor.id, collname, 1)
-      cursor = (resfind["cursor"].get.ofEmbedded).to Cursor
+      cursor = (resfind["cursor"].ofEmbedded).to Cursor
       if cursor.nextBatch.len == 0:
         break
       if not (count == 8 or count == 9):
         # it's inserted from 0
-        check cursor.nextBatch[0]["countId"].get == count
+        check cursor.nextBatch[0]["countId"] == count
       else:
-        let curcount = cursor.nextBatch[0]["countId"].get.ofInt
+        let curcount = cursor.nextBatch[0]["countId"].ofInt
         check(curcount == 80 or curcount == 99)
       inc count
     check count == foundDocs.len
@@ -184,12 +185,12 @@ suite "CRUD tests":
       }})
     ])
     resfind.reasonedCheck "find error"
-    check resfind["n"].get == foundDocs.len-1 # because of update
+    check resfind["n"] == foundDocs.len-1 # because of update
 
   test &"Drop database {db.name}":
     require db != nil
-    let (success, reason) = waitFor db.dropDatabase
-    success.reasonedCheck("dropDatabase error", reason)
+    wr = waitFor db.dropDatabase
+    wr.success.reasonedCheck("dropDatabase error", wr.reason)
 
   if runlocal:
     if mongorun.running: kill mongorun

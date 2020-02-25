@@ -37,18 +37,18 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   let res1 = await sock.getReply
   if res1.documents.len > 0 and not res1.documents[0].ok:
     if "errmsg" in res1.documents[0]:
-      echo res1.documents[0]["errmsg"].get
+      echo res1.documents[0]["errmsg"]
     elif "$err" in res1.documents[0]:
-      echo res1.documents[0]["$err"].get
+      echo res1.documents[0]["$err"]
     return false
 
   let
-    strres = res1.documents[0]["payload"].get.ofBinary.stringBytes
+    strres = res1.documents[0]["payload"].ofBinary.stringBytes
     msgf = scram.prepareFinalMessage(msg, strres)
   stream = newStringStream()
   discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
     saslContinue: int32 1,
-    conversationId: res1.documents[0]["conversationId"].get.ofInt32,
+    conversationId: res1.documents[0]["conversationId"].ofInt32,
     payload: bsonBinary msgf
   }))
   await sock.send stream.readAll()
@@ -56,25 +56,25 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   if res2.documents.len >= 1 and not res2.documents[0].ok:
     let d = res2.documents[0]
     if "errmsg" in d:
-      echo d["errmsg"].get
+      echo d["errmsg"]
     elif "$err" in d:
-      echo d["$err"].get
+      echo d["$err"]
     return false
   let doc = res2.documents[0]
-  if doc.ok and doc["done"].get.ofBool:
+  if doc.ok and doc["done"].ofBool:
     echo "success"
     result = true
     return
   stream = newStringStream()
   discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
     saslContinue: int32 1,
-    conversationId: res2.documents[0]["conversationId"].get.ofInt32,
+    conversationId: res2.documents[0]["conversationId"].ofInt32,
     payload: bsonBinary ""
   }))
   await sock.send stream.readAll()
   when verbose:
     let res3 = await sock.getReply
-    if res3.documents.len > 0 and res3.documents[0]["done"].get.ofBool:
+    if res3.documents.len > 0 and res3.documents[0]["done"].ofBool:
       echo "success"
   else:
     discard await sock.getReply

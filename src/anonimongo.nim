@@ -1,10 +1,12 @@
 import anonimongo/core/[auth, bson, pool, types, utils, wire]
-import anonimongo/dbops/[aggregation, admmgmt, client, crud, diagnostic, rolemgmt]
-import anonimongo/collections
+import anonimongo/dbops/[aggregation, admmgmt, client, crud, diagnostic,
+       freemonitoring, rolemgmt]
+import anonimongo/[collections, gridfs]
 
 export auth, bson, pool, types, utils, wire
-export admmgmt, client, crud, rolemgmt, aggregation, diagnostic
-export collections
+export admmgmt, client, crud, rolemgmt, aggregation, diagnostic,
+       freemonitoring
+export collections, gridfs
 
 ## ==========
 ## Anonimongo
@@ -19,7 +21,8 @@ export collections
 ## 1. Low level Mongo operations which in turn consisted of two main APIs:
 ##
 ##    a. Modules `core` functionalities. (`auth`_, `bson`_, `pool`_, `types`_, `utils`_, `wire`_).
-##    b. Modules `dbops` functionalities. (`aggregation`_, `admmgmt`_, `client`_, `crud`_, `diagnostic`_, `rolemgmt`_).
+##    b. Modules `dbops` functionalities. (`aggregation`_, `admmgmt`_, `client`_, `crud`_, `diagnostic`_,
+##       `freemonitoring`_, `rolemgmt`_).
 ##
 ## 2. Higher level which represented as `collections`_ module.
 ##
@@ -60,6 +63,7 @@ export collections
 ## .. _client: anonimongo/dbops/client.html
 ## .. _crud: anonimongo/dbops/crud.html
 ## .. _diagnostic: anonimongo/dbops/diagnostic.html
+## .. _freemonitoring: anonimongo/dbops/freemonitoring.html
 ## .. _rolemgmt: anonimongo/dbops/rolemgmt.html
 ## .. _collections: anonimongo/collections.html
 ## .. _Mongo: anonimongo/core/types.html#Mongo

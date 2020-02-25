@@ -1,10 +1,12 @@
-# Anonimongo - ANOther pure NIM MONGO driver (WIP)
+# Anonimongo - ANOther pure NIM MONGO driver
 [Mongodb][1] is a document-based key-value database which emphasize in high performance read
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
 Anonimongo is a driver for Mongodb developed using pure Nim. As library, it's developed to enable
-developers to be able to access and use Mongodb in projects using Nim. Currently the low level APIs is implemented
-however the higher level APIs for easier usage is still in heavy development<sup>TM</sup>.
+developers to be able to access and use Mongodb in projects using Nim. Several implementad as
+APIs for low-level which works directly with [Database][7] and higher level APIs which works with
+[Collection][8]. Any casual user just have to access the [Collection API][9] directly instead of
+working with various [Database operations][10].
 
 The APIs are closely following [Mongo documentation][4] with a bit variant for `explain` API. Each supported
 command for `explain` added optional string value to indicate the verbosity of `explain` command.  
@@ -33,23 +35,41 @@ for i in 0 .. idoc.high:
     datetime: currtime + initDuration(hours = i),
     insertId: i
   })
-let (success, inserted) = waitfor coll.insert(idoc)
-if not success:
+
+# insert documents
+let writeRes = waitfor coll.insert(idoc)
+if not writeRes.success:
   echo "Cannot insert to collection: ", coll.name
 else:
-  echo "inserted documents: ", inserted
+  echo "inserted documents: ", writeRes.n
 
 let id5doc = waitfor coll.findOne(bson({
   insertId: 5
 }))
-doAssert id5doc["datetime"].get == currtime + initDuration(hours = 5)
+doAssert id5doc["datetime"] == currtime + initDuration(hours = 5)
 
+# find one and modify, return the old document by default
 let oldid8doc = waitfor coll.findAndModify(
   bson({ insertId: 8},
   bson({ "$set": { insertId: 80 }}))
 )
+
+# find one document, which newly modified
 let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
-doAssert oldid8doc["datetime"].get.ofTime == newid8doc["datetime"].get
+doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
+
+# remove a document
+let delStat = waitfor coll.remove(bson({
+  insertId: 9,
+}), justone = true)
+doAssert delStat.success  # must be true if query success
+doAssert delStat.n == 1   # because we only delete one entry in
+                          # case multiple documents selected
+
+# count all documents in current collection
+let currNDoc = waitfor coll.count()
+doAssert currNDoc == (idoc.len - ndeleted)
+
 close mongo
 ```
 </details>
@@ -67,7 +87,6 @@ if waitfor not mongo.connect:
   quit &"Cannot connect to {mhostport}"
 if not authenticate[SHA256Digest](mongo, username, password):
   quit &"Cannot login to {mhostport}"
-close mongo
 
 # Another way to connect and login
 mongo = newMongo()
@@ -85,10 +104,6 @@ import strformat, uri
 import anonimongo
 
 let uriserver = "mongo://username:password@localhost:27017/"
-#let sslkey = "/path/to/ssl/key.pem"
-#let sslcert = "/path/to/ssl/cert.pem"
-#let urissl = &"{uriserver}?tlsCertificateKeyFile=certificate:{encodeURL sslcert},key:{encodeURL sslkey}"
-
 var mongo = newMongo(parseURI uriserver)
 close mongo
 ```
@@ -111,7 +126,7 @@ var mongo = newMongo(parseURI urissl)
 close mongo
 
 # manual ssl connection
-var mongo = newMongo(sslinfo = initSSLInfo(sslkey, sslcert))
+mongo = newMongo(sslinfo = initSSLInfo(sslkey, sslcert))
 close mongo
 ```
 
@@ -338,11 +353,13 @@ and [mongo spec][3].
 - [x] `validate`
 - [ ] `whatsmyuri` (internal command)
 </details>
-<details><summary>:x: Free monitoring commands 0/1</summary>
+<details><summary>:white_check_mark: Free monitoring commands 2/2</summary>
 
-- [ ] `setFreeMonitoring`
+- [x] `getFreeMonitoringStatus`
+- [x] `setFreeMonitoring`
 </details>
-<details><summary>:x: Auditing commands 0/1</summary>
+<details><summary>:x: <del>Auditing commands 0/1</del>, only available for
+Mongodb Enterprise and AtlasDB </summary>
 
 - [ ] `logApplicationMessage`
 </details>
@@ -353,17 +370,18 @@ There are several points the quite questionable and prone to change for later de
 
 <details><summary>Those are:</summary>
 
-* `BsonDocument` will return `Option[BsonBase]` when accessing its field but `BsonBase`
-will immediately return `BsonBase` in case it's embedded Bson.
 * `BsonTime` which acquired from decoded Bson bytestream will not equal with `Time` from
 times module in stdlib. The different caused by Bson only support milliseconds time precision
-while Nim `Time` support to nanoseconds. The automatic conversion would supported by `BsonBase == Time`
-but not `Time == BsonBase` due defined automatic conversion.
+while Nim `Time` support to nanoseconds.
 * `diagnostic.explain` and its corresponding `explain`-ed version of various commands haven't
 been undergone extensive testing.
 * `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
 anything regarded that.
 * Cannot provide `readPreference` option because cannot support multihost URI connection.
+* It's taking too long to authenticate the connection pool which default at 64 connections
+even without SSL/TLS connections. It's even longer when the auth mechanism is "SCRAM-SHA-256"
+which is the default. Local connection authentication taking about 1 minutes
+(almost 1 second for each connection, ymmv) to finish all authentication process.
 * Will be added more laters when found out more.
 </details>
 
@@ -376,3 +394,7 @@ MIT
 [4]: https://docs.mongodb.com/manual/reference
 [5]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo.html
 [6]: https://mashingan.github.io/anonimongo/src/htmldocs/theindex.html
+[7]: https://mashingan.github.io/anonimongo/src/htmldocs/core/types.html#Database
+[8]: https://mashingan.github.io/anonimongo/src/htmldocs/core/types.html#Collection
+[9]: https://mashingan.github.io/anonimongo/src/htmldocs/collections.html
+[10]: https://github.com/mashingan/anonimongo/src/dbops/
