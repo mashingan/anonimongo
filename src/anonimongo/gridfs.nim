@@ -143,10 +143,10 @@ proc uploadFile*(g: GridFS, f: AsyncFile, filename = "", chunk = 0'i32,
   else:
     result = WriteResult(success: true, kind: wkSingle)
 
-template prepareFile(target: string): untyped {.dirty.} =
+template prepareFile(target: string, mode = fmRead): untyped {.dirty.} =
   var f: AsyncFile
   try:
-    f = openAsync(target, fmWrite)
+    f = openAsync(target, mode)
   except IOError:
     result = WriteResult(
       reason: getCurrentExceptionMsg(),
@@ -170,7 +170,7 @@ proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32,
   else:
     filemetadata = bson({
       "mime": m.getMimeType(ext),
-      "exit": ext
+      "ext": ext
     })
   result = await g.uploadFile(f, fname & ext,
     metadata = filemetadata, chunk = chunksize)
@@ -216,14 +216,14 @@ proc downloadFile*(bucket: GridFS, filename: string):
   Future[WriteResult]{.async, discardable.} =
   ## Higher version for downloadFile. Ensure the destination file path has
   ## writing permission
-  prepareFile(filename)
+  prepareFile(filename, fmWrite)
   let (_, fname, ext) = splitFile filename
   result = await bucket.downloadFile(f,  fname & ext)
 
 proc downloadAs*(g: GridFS, source, target: string): Future[WriteResult]
   {.async.} =
   ## To download file as different file name.
-  prepareFile(target)
+  prepareFile(target, fmWrite)
   result = await g.downloadFile(f, source)
 
 proc availableFiles*(g: GridFS, query = bson()): Future[int] {.async.} =
@@ -248,24 +248,28 @@ proc listFileNames*(g: GridFS, matcher = "all".toBson, sort = bson()):
   ## explained `removeFile`_ as it's using the same mechanism.
   ##
   ## .. _removeFile: #removeFile,GridFS,BsonBase,bool
-  when verbose:
-    dump matcher
+  when verbose: dump matcher
   var q = matcher.prepareMatcher
   let projection = bson({ filename: 1 })
   var fileslen = await g.files.count(q)
   result = newseq[string](fileslen)
   for i, doc in await g.files.findIter(q, projection, sort):
     result[i] = doc["filename"]
-  when verbose:
-    dump result
+  when verbose: dump result
 
-template foldWResult(a, b: untyped): untyped =
+template foldWMany(a, b: untyped): untyped =
   WriteResult(
     success: a.success and b.success,
     n: a.n + b.n,
     kind: wkMany,
     reason: &"{a.reason}, {b.reason}",
     errmsgs: concat(a.errmsgs, b.errmsgs))
+
+template foldWSingle(a, b: untyped): untyped =
+  WriteResult(
+    success: a.success and b.success,
+    kind: wkSingle,
+    reason: &"{a.reason}, {b.reason}")
 
 proc wrNop: Future[WriteResult]{.async.} =
   result = WriteResult( success: true, kind: wkMany)
@@ -315,10 +319,121 @@ proc removeFile*(g: GridFS, matcher = "all".toBson, one = false):
     ops[1] = g.chunks.remove(bson())
   else:
     ops[1] = g.chunks.remove(cfiles)
-  result = (await all(ops)).foldl(foldWResult(a, b))
+  result = (await all(ops)).foldl(foldWMany(a, b))
 
 proc drop*(g: GridFS): Future[WriteResult]{.async.} =
   ## Drop the current bucket name.
   result = foldl(await all([
     g.files.drop(), g.chunks.drop()
-  ]), foldWResult(a, b))
+  ]), foldWSingle(a, b))
+
+type
+  FileInfo = object
+    id: Oid
+    chunkSize: int32
+    length: int64
+    uploadDate: Time
+    filename: string
+    metadata: BsonDocument
+
+  DataStream = object
+      files_id: Oid
+      n: int
+      data: string ## bytes
+
+  GridStream* = ref object of RootObj
+    grid: GridFS
+    filename: string
+    buffered: bool
+    buffer: seq[BsonDocument]
+    isClosed: bool
+    info: FileInfo
+    data: DataStream
+    pos: int64
+    point: int
+
+func currchunk(gs: GridStream): int = gs.data.n * gs.info.chunkSize
+func fileSize*(gs: GridStream): int64 = gs.info.length
+
+proc final(gs: GridStream) =
+  gs.isClosed = true
+
+proc close*(gs: GridStream) =
+  gs.isClosed = true
+
+proc fetchData(gs: GridStream, chunkn: int) {.async.} =
+  var data: BsonDocument
+  if gs.buffered and not gs.buffer[chunkn].isNil:
+    data = gs.buffer[chunkn]
+  else:
+    data = await gs.grid.chunks.findOne(bson({
+      files_id: gs.info.id, n: chunkn }))
+  if gs.buffered: gs.buffer[chunkn] = data
+  gs.data = data.to DataStream
+
+func within(targetpos, chunkpos, chunksize: int64): bool =
+  targetpos >= chunkpos and targetpos < (chunkpos + chunksize)
+
+proc setPosition*(gs: GridStream, pos: int64, chunkn = -1) {.async.} =
+  if pos >= gs.info.length:
+    raise newException(IOError,
+      &"Accessing beyond length {gs.info.filename} GridStream")
+  gs.pos = pos
+  gs.point = (pos mod gs.info.chunkSize).int
+  let currchunk: int = gs.currchunk
+  if not pos.within(currchunk, gs.info.chunkSize):
+    let targetchunk = if chunkn == -1: pos div gs.info.chunkSize
+                      else: chunkn
+    await gs.fetchData(targetchunk.int)
+
+func getPosition*(gs: GridStream): int64 = gs.pos
+
+proc read*(gs: GridStream, length = 0'i64): Future[string] {.async.} =
+  if length == 0:
+    return
+  var reslen = length
+  if (gs.pos + reslen) >= gs.info.length:
+    reslen = int(gs.info.length - gs.pos)
+  result = newstring reslen
+
+  if (gs.pos + reslen).within(gs.currchunk, gs.info.chunkSize):
+    for i in 0 ..< reslen: result[i] = gs.data.data[gs.point + i]
+    gs.point += reslen.int
+    gs.pos += reslen
+  else:
+    var curread = 0'i64
+    while curread < reslen:
+      #let databuflen = gs.info.chunkSize - gs.point
+      let databuflen = gs.data.data.len - gs.point
+      let toread = min(databuflen, reslen-curread)
+      for i in 0 ..< toread:
+        result[curread+i] = gs.data.data[gs.point + i]
+      curread += toread
+      await gs.setPosition(gs.pos + toread, gs.data.n + 1)
+
+proc readAll*(gs: GridStream): Future[string] {.async.} =
+  let length = gs.info.length - gs.pos
+  result = await gs.read(length)
+
+proc getStream*(g: GridFS, matcher: BsonBase, sort = bson(),
+  buffered = false): Future[GridStream]{.async.} =
+  new(result, final)
+  result.grid = g
+  result.buffered = buffered
+  let q = prepareMatcher matcher
+  when verbose: dump q
+  let bsinfo = await g.files.findOne(q, sort = sort)
+  if bsinfo.isNil or bsinfo.len == 0:
+    raise newException(MongoError,
+      &"Cannot find any file that match {matcher}")
+  when verbose: dump bsinfo
+  result.info = bsinfo.to FileInfo
+  result.info.id = bsinfo["_id"]
+  var bsondata = await g.chunks.findOne(bson({
+    files_id: result.info.id
+  }))
+  if buffered:
+    result.buffer = newseq[BsonDocument](await g.chunks.count(
+      bson({ files_id: result.info.id })))
+    result.buffer[0] = bsondata
+  result.data = bsondata.to DataStream

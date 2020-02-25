@@ -114,7 +114,7 @@ type
     chunks*: Collection
     chunkSize*: int32
 
-  MongoError* = object of Exception
+  MongoError* = object of Defect
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()

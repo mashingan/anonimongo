@@ -249,7 +249,7 @@ type
     stGeneric = 0x00.byte
     stFunction stBinaryOld stUuidOld stUuid stMd5
 
-  BsonFetchError* = object of Exception
+  BsonFetchError* = object of Defect
     ## Bson error type converting wrong type from BsonBase
 
 iterator pairs*(b: BsonDocument): (string, BsonBase) =
@@ -962,6 +962,8 @@ converter ofString*(b: BsonBase): string =
     $(b as BsonString).value
   elif b.kind == bkJs:
     $(b as BsonJs).value
+  elif b.kind == bkBinary:
+    (b as BsonBinary).value.stringbytes
   else:
     raise newException(BsonFetchError,
       fmt"""Cannot convert {b} of {b.kind} to string or JsCode""")

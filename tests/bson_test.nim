@@ -4,6 +4,8 @@ import sugar
 
 {.warning[UnusedImport]: off.}
 
+const qrimg = readFile "tests/qrcode-me.png"
+
 suite "Bson operations tests":
   let isekai = "hello, 異世界"
   let currtime = now().toTime
@@ -93,7 +95,6 @@ suite "Bson operations tests":
     check dectestbin["dummy_binary"].
       ofBinary.stringbytes == stringbin
 
-    let qrimg = readFile "tests/qrcode-me.png"
     let pngbin = bson({
       "qr-me": bsonBinary qrimg
     })
@@ -368,3 +369,15 @@ suite "Macro to object conversion tests":
     check omo.wrap.outerName == outer1["outerName"]
     check omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
     check omo.ootimewrap.otimewrap.timewrap.time == currtime
+
+  type
+    BinaryWrap = object
+      binary: string # binary string
+  var bbwo = bson({
+    binary: bsonBinary qrimg
+  })
+  var obwo: BinaryWrap
+  test "Bson binary conversion bytes string":
+    obwo = bbwo.to BinaryWrap
+    check obwo.binary.len == qrimg.len
+    check obwo.binary == qrimg

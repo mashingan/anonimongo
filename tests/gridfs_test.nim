@@ -1,6 +1,9 @@
 import unittest, os, osproc, strformat, sequtils, asyncfile
+import sugar
 import ../src/anonimongo
 import testutils
+
+{.warning[UnusedImport]: off.}
 
 const filename {.strdefine.} = "d:/downloads/fmab28_opening3.mkv"
 
@@ -16,6 +19,7 @@ proc insert5files(g: GridFS, fname: string): bool =
   except:
     echo getCurrentExceptionMsg()
     return
+  defer: close f
   let (_, thename, ext) = splitFile fname
   var wrs = newseq[Future[WriteResult]](5)
   for i in 0 .. wrs.high:
@@ -65,6 +69,31 @@ suite "GridFS implementation tests":
     wr = waitfor grid.downloadAs(dwfile, saveas)
     wr.success.reasonedCheck("Grid download as", wr.reason)
     check fileExists(saveas)
+
+  test "GridStream operations":
+    var f = openAsync(saveas)
+    var gf = waitfor grid.getStream(bson({filename: dwfile}), buffered = true)
+    check f.getFileSize == gf.fileSize
+    check f.getFilePos == gf.getPosition
+
+    let threekb = 3.kilobytes
+    var bufread = waitfor f.read(threekb)
+    var binread = waitfor gf.read(threekb)
+    check bufread == binread
+    check f.getFilePos == gf.getPosition
+
+    let fivemb = 5.megabytes
+    bufread = waitfor f.read(fivemb)
+    binread = waitfor gf.read(fivemb)
+    check bufread.len == binread.len
+
+    # disabled at first because of too large string
+    check bufread == binread 
+
+    check f.getFilePos == gf.getPosition
+
+    close f
+    close gf
 
   test "List files":
     check insert5files(grid, filename)
