@@ -429,11 +429,7 @@ proc getStream*(g: GridFS, matcher: BsonBase, sort = bson(),
   when verbose: dump bsinfo
   result.info = bsinfo.to FileInfo
   result.info.id = bsinfo["_id"]
-  var bsondata = await g.chunks.findOne(bson({
-    files_id: result.info.id
-  }))
   if buffered:
     result.buffer = newseq[BsonDocument](await g.chunks.count(
       bson({ files_id: result.info.id })))
-    result.buffer[0] = bsondata
-  result.data = bsondata.to DataStream
+  await result.fetchData(0)
