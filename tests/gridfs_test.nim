@@ -111,6 +111,7 @@ suite "GridFS implementation tests":
     # remove all files
     wr = waitfor grid.removeFile()
     check (waitfor grid.availableFiles) == 0
+    check (waitfor grid.chunks.count()) == 0
     wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
     check insert5files(grid, filename)
 

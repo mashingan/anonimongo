@@ -126,7 +126,7 @@ var mongo = newMongo(parseURI urissl)
 close mongo
 
 # manual ssl connection
-var mongo = newMongo(sslinfo = initSSLInfo(sslkey, sslcert))
+mongo = newMongo(sslinfo = initSSLInfo(sslkey, sslcert))
 close mongo
 ```
 

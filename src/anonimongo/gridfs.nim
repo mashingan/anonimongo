@@ -311,7 +311,7 @@ proc removeFile*(g: GridFS, matcher = "all".toBson, one = false):
     cfiles.apply((d: var BsonDocument) => (d = bson({ files_id: d["_id"] })))
   var ops = newseq[Future[WriteResult]](2)
   ops[0] = g.files.remove(qfiles, one)
-  if cfiles.len == 0 and all:
+  if cfiles.len == 0 and not all:
     # literally no operation
     ops[1] = wrNop()
   elif cfiles.len == 0:
