@@ -1,4 +1,4 @@
-# Anonimongo - ANOther pure NIM MONGO driver
+# Anonimongo - Another pure Nim Mongo driver
 [Mongodb][1] is a document-based key-value database which emphasize in high performance read
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
