@@ -61,7 +61,7 @@ suite "GridFS implementation tests":
   test "Download file":
     removeFile dwfile
     removeFile saveas
-    wr = waitfor grid.downloadFile("fmab_opening3.mkv")
+    wr = waitfor grid.downloadFile(saveas)
     check not wr.success # because no such file uploaded
     wr = waitfor grid.downloadFile(dwfile)
     wr.success.reasonedCheck("Grid download file", wr.reason)
@@ -83,13 +83,14 @@ suite "GridFS implementation tests":
     check f.getFilePos == gf.getPosition
 
     let fivemb = 5.megabytes
+    f.setFilePos fivemb
+    waitfor gf.setPosition fivemb
+    check f.getFilePos == gf.getPosition
+
     bufread = waitfor f.read(fivemb)
     binread = waitfor gf.read(fivemb)
     check bufread.len == binread.len
-
-    # disabled at first because of too large string
     check bufread == binread 
-
     check f.getFilePos == gf.getPosition
 
     close f
