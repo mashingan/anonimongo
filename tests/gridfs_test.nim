@@ -5,8 +5,6 @@ import testutils
 
 {.warning[UnusedImport]: off.}
 
-const filename {.strdefine.} = "d:/downloads/fmab28_opening3.mkv"
-
 var mongorun: Process
 if runlocal:
   mongorun = startmongo()
@@ -41,7 +39,6 @@ suite "GridFS implementation tests":
   let dbname = "newtemptest"
   let (_, fname, ext) = splitFile filename
   let dwfile = fname & ext
-  let saveas = "fmab_opening3.mkv"
 
   test "Connect to localhost and authentication":
     mongo = testsetup()

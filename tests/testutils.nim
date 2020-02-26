@@ -13,6 +13,8 @@ const
   key* {.strdefine.} = "d:/dev/self-signed-cert/key.pem"
   cert* {.strdefine.} = "d:/dev/self-signed-cert/cert.pem"
   dbpath* {.strdefine.} = "d:/dev/mongodata"
+  filename* {.strdefine.} = "d:/downloads/fmab28_opening3.mkv"
+  saveas* {.strdefine.} = "fmab_opening3.mkv"
   user* {.strdefine.} = "rdruffy"
   pass* {.strdefine.} = "rdruffy"
   host* {.strdefine.} = "localhost"

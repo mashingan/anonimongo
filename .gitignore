@@ -17,3 +17,5 @@ nimcache/
 
 # disable for big files
 *.mkv
+
+config.nims

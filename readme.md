@@ -142,13 +142,33 @@ Check [tests](tests/) for more examples of detailed usages.
 ## Install
 
 ```
-nimble install https://github.com/mashingan/anonimongo
+nimble install anonimongo
+```
+
+Or to install it locally
+
+```
+git clone https://github.com/mashingan/anonimongo
+cd anonimongo
+nimble develop
+```
+
+or directly from Github repo
+
+```
+nimble install https://github.com/mashingan/anonimongo 
 ```
 
 ### For dependency
 
 ```
-requires "https://github.com/mashingan/anonimongo#head"
+requires "anonimongo >= 0.2.0"
+```
+
+or directly from Github repo
+
+```
+requires "https://github.com/mashingan/anonimongo"
 ```
 
 ## Implemented APIs

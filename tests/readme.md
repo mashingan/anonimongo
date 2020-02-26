@@ -1,5 +1,5 @@
 # Unittest for anonimongo
-Available test are
+Table of contents
 
 * [Administration management command test](#administration-management-command-test)
 * [Bson test](#bson-test)
@@ -7,6 +7,7 @@ Available test are
 * [Collection methods test](#collection-methods-test)
 * [CRUD command test](#crud-command-test)
 * [GridFS test](#gridfs-test)
+* [How to run](#how-to-run)
 
 ## Administration management command test
 Test file is admmgmt_test.nim. This module tests several APIs defined in [admmgmt][admmgmt.nim] module.
@@ -31,9 +32,55 @@ Test file is crud_test.nim. This tests CRUD operations in low level defined in [
 [Collections][collections.nim] offloads many of its CRUD operations to this [module][crud.nim].
 
 ## GridFS test
-Test file is gridfs_test.nim. This tests [GridFS](gridfs) and [GridStream](gridstream) functionalities.
+Test file is gridfs_test.nim. This tests [GridFS][gridfs] and [GridStream][gridstream] functionalities.
 GridFS commands uploading/downloading and the bucket creation while GridStream acts as file abstraction
-above GridFS functions. For full available APIs can be checked [here](grid-doc).
+above GridFS functions. For full available APIs can be checked [here][grid-doc].
+
+## How to run
+Ideally, this should be added to `nimble test` for running all tests and `nimble test_name` for each
+separate test. However since these tests need an elaborate options to ensure it's configurable, the
+tests aren't added to `nimble` and need to be run manually. The `nimble test` will eventually be added.  
+By default, these tests take the variables defined as compile-arguments constants in file [testutils.nim](testutils.nim)
+, if the user wants to run in other machine/platform, specify the options on `config.nims` in rootdir project.
+
+For example
+
+```
+git clone https://github.com/mashingan/anonimongo
+cd anonimongo
+cat <<EOF > config.nims
+switch("define", "ssl") # if the user wants to connect to SSL/TSL enabled Mongo server
+switch("define", "key=/path/to/my/key-file")    # key file for SSL/TLS connection
+switch("define", "cert=/path/to/my/cert-file")  # cert file for SSL/TLS connection
+switch("define", "nomongod")                    # to disable running new mongod
+                                                # process and connect to current
+                                                # running mongod process
+
+# defining filename is required when the user wants to run `gridfs_test.nim`
+switch("define" "filename=/path/to/big/file/to/upload")
+switch("define" "saveas=save_as_other_name_file.mkv_for_example")
+EOF
+
+# now running the test
+nim c -r tests\admmgmt_test.nim
+nim c -r tests\bson_test.nim
+nim c -r tests\client_test.nim
+nim c -r tests\collections_test.nim
+nim c -r tests\crud_test.nim
+nim c -r tests\gridfs_test.nim
+```
+
+Any others variable can be checked in that [testutils.nim](testutils.nim).  
+In the platform where these tests run, the Mongo server only boot-up when the any of test running
+(except `bson_test.nim`) and then shutdown the Mongo server before the test ends. This only works
+when the Mongo server host in `localhost`. Define `nomongod` option (like example above) to disable
+booting up Mongo server.
+
+Each test (with exception `bson_test.nim`) will create a new Database and its related collections and
+immediately drop the database and the collections to avoid polluting the database.  
+In case user wants to have a different scenario, for example, inserting several bson documents and leave
+it intact without removing it or dropping the collections or database, the user can write his/her own
+test scenario.
 
 [admmgmt.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/admmgmt.nim 
 [dropDatabase]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html#dropDatabase,Database,BsonBase
