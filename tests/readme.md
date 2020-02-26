@@ -6,6 +6,7 @@ Available test are
 * [Client test](#client-test)
 * [Collection methods test](#collection-methods-test)
 * [CRUD command test](#crud-command-test)
+* [GridFS test](#gridfs-test)
 
 ## Administration management command test
 Test file is admmgmt_test.nim. This module tests several APIs defined in [admmgmt][admmgmt.nim] module.
@@ -29,6 +30,11 @@ for any casual lib user. Common operations implemented here such as [insert][col
 Test file is crud_test.nim. This tests CRUD operations in low level defined in [crud.nim][crud.nim] module.
 [Collections][collections.nim] offloads many of its CRUD operations to this [module][crud.nim].
 
+## GridFS test
+Test file is gridfs_test.nim. This tests [GridFS](gridfs) and [GridStream](gridstream) functionalities.
+GridFS commands uploading/downloading and the bucket creation while GridStream acts as file abstraction
+above GridFS functions. For full available APIs can be checked [here](grid-doc).
+
 [admmgmt.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/admmgmt.nim 
 [dropDatabase]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html#dropDatabase,Database,BsonBase
 [dropCollection]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html#dropCollection,Database,string,BsonBase
@@ -41,9 +47,13 @@ Test file is crud_test.nim. This tests CRUD operations in low level defined in [
 [client.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/client.nim
 
 [collections.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/collections.nim
-[collinsert]: https://mashingan.github.io/anonimomgo/src/htmldocs/anonimongo/collections.html#insert,Collection,seq[BsonDocument],BsonBase
-[collremove]: https://mashingan.github.io/anonimomgo/src/htmldocs/anonimongo/collections.html#remove,Collection,BsonDocument,bool
-[collupdate]: https://mashingan.github.io/anonimomgo/src/htmldocs/anonimongo/collections.html#update,Collection,BsonDocument,BsonBase,BsonDocument
-[colldoc]: https://mashingan.github.io/anonimomgo/src/htmldocs/anonimongo/collections.html
+[collinsert]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html#insert,Collection,seq[BsonDocument],BsonBase
+[collremove]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html#remove,Collection,BsonDocument,bool
+[collupdate]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html#update,Collection,BsonDocument,BsonBase,BsonDocument
+[colldoc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html
 
 [crud.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/crud.nim
+
+[gridfs]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/gridfs.html#GridFS
+[gridstream]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/gridfs.html#GridStream
+[grid-doc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/gridfs.html

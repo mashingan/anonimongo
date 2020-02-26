@@ -17,6 +17,9 @@ By default, it's empty string which also indicate the command operations working
 modules and the categories for those modules. [The index][6] also available.
 
 ## Examples
+
+_Click to expand_
+
 <details><summary>Simple operations</summary>
 
 ```nim
@@ -87,6 +90,7 @@ if waitfor not mongo.connect:
   quit &"Cannot connect to {mhostport}"
 if not authenticate[SHA256Digest](mongo, username, password):
   quit &"Cannot login to {mhostport}"
+close mongo
 
 # Another way to connect and login
 mongo = newMongo()
@@ -366,13 +370,10 @@ Mongodb Enterprise and AtlasDB </summary>
 </details>
 
 ## Caveats
-There are several points the quite questionable and prone to change for later development.
+There are several points needed to keep in mind.
 
 <details><summary>Those are:</summary>
 
-* `BsonTime` which acquired from decoded Bson bytestream will not equal with `Time` from
-times module in stdlib. The different caused by Bson only support milliseconds time precision
-while Nim `Time` support to nanoseconds.
 * `diagnostic.explain` and its corresponding `explain`-ed version of various commands haven't
 been undergone extensive testing.
 * `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
@@ -381,8 +382,8 @@ anything regarded that.
 * It's taking too long to authenticate the connection pool which default at 64 connections
 even without SSL/TLS connections. It's even longer when the auth mechanism is "SCRAM-SHA-256"
 which is the default. Local connection authentication taking about 1 minutes
-(almost 1 second for each connection, ymmv) to finish all authentication process.
-* Will be added more laters when found out more.
+(almost 1 second for each connection, ymmv) to finish all authentication process. This happens
+when compiled in debug mode.
 </details>
 
 ### License
