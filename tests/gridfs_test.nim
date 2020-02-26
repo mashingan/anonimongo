@@ -93,6 +93,21 @@ suite "GridFS implementation tests":
     close f
     close gf
 
+  test "Gridstream read chunked size":
+    let chunkfile = "gs_chunks.mkv"
+    var gf = waitfor grid.getStream(bson({filename: dwfile}))
+    var f = openAsync(chunkfile, fmWrite)
+    var curread = 0
+    while curread < gf.fileSize:
+      var data = waitfor gf.read(1500.kilobytes)
+      curread += data.len
+      waitfor f.write(data)
+    check f.getFileSize == gf.fileSize
+    check gf.getPosition == gf.fileSize-1
+    close gf
+    close f
+    removeFile chunkfile
+
   test "List files":
     check insert5files(grid, filename)
     let filenames = waitfor grid.listFileNames()

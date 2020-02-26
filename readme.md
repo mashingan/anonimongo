@@ -13,6 +13,15 @@ command for `explain` added optional string value to indicate the verbosity of `
 By default, it's empty string which also indicate the command operations working without the need to
 `explain` the queries. For others detailed caveats can be found [here](#caveats).
 
+Almost all of the APIs are in asynchronous so the user must `await` or use `waitfor` if the
+scope where it's called not an asynchronous function.  
+Any API that insert/update/delete will return [WriteResult][wr-doc]. So the user can check
+whether the write operation is successful or not with its field boolean `success` and the field
+string `reason` to know what's the error message returned. However it's still throwing any other
+error such as `BsonFetchError`, `KeyError`, `IndexError` and others kind of errors type which
+raised by the underlying process. Those errors are indicating an err in the program flow hence elevated
+on how the user handles them.
+
 [This page][5] (`anonimongo.html`) is the elaborate documentation. It also explains several
 modules and the categories for those modules. [The index][6] also available.
 
@@ -25,7 +34,6 @@ _Click to expand_
 ```nim
 import times, strformat
 import anonimongo
-import anonimongo/collection
 
 var mongo = newMongo(poolconn = 16) # default is 64
 if not waitFor mongo.connect:
@@ -135,8 +143,71 @@ close mongo
 ```
 
 </details>
+<details><summary>Upload file to GridFS</summary>
 
-Check [tests](tests/) for more examples of detailed usages.
+```nim
+# this time the server doesn't need SSL/TLS or authentication
+# gridfs is useful when the file bigger than a document capsize 16 megabytes
+import anonimongo
+
+var mongo = newMongo()
+var grid = mongo["target-db"].createBucket() # by default, the bucket name is "fs"
+let res = waitfor grid.uploadFile("/path/to/our/file")
+if not res.success:
+  echo "some error happened: ", res.reason
+
+var gstream = waitfor grid.getStream("our-available-file")
+let data = waitfor gstream.read(5.megabytes) # reading 5 megabytes of binary data
+doAssert data.len == 5.megabytes
+close gstream
+close mongo
+```
+
+</details>
+<details><summary>Bson examples</summary>
+
+```nim
+import times
+var simple = bson({
+  thisField: "isString",
+  embedDoc: {
+    embedField1: "unicodeこんにちは異世界",
+    "type": "cannot use any literal or Nim keyword except string literal or symbol",
+    `distinct`: true, # this is acceptable make distinct as symbol using `
+
+    # the trailing comma is accepted
+    embedTimes: now().toTime,
+  },
+  "1.2": 1.2,
+  arraybson: [1, "hello", false], # heterogenous elements
+})
+doAssert simple["thisField"] == "isString"
+doAssert simple["embedDoc"]["embedField1"] == "unicodeこんにちは異世界"
+
+# explicit fetch when BsonBase cannot be automatically converted.
+doAssert simple["embedDoc"]["distinct"].ofBool
+doAssert simple["1.2"].ofDouble is float64
+
+# Bson support object conversion too
+type
+  IntString = object
+    field1: int
+    field2: string
+
+var bintstr = bson({
+  field1: 1000,
+  field2: "power-level"
+})
+
+let ourObj = bintstr.to IntString
+doAssert ourObj.field1 == 1000
+doAssert ourObj.field2 == "power-level"
+```
+
+</details>
+
+Check [tests](tests/) for more examples of detailed usages.  
+Elaborate Bson examples and cases are covered in [bson_test.nim](tests/bson.nim)
 
 
 ## Install
@@ -415,7 +486,8 @@ MIT
 [4]: https://docs.mongodb.com/manual/reference
 [5]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo.html
 [6]: https://mashingan.github.io/anonimongo/src/htmldocs/theindex.html
-[7]: https://mashingan.github.io/anonimongo/src/htmldocs/core/types.html#Database
-[8]: https://mashingan.github.io/anonimongo/src/htmldocs/core/types.html#Collection
-[9]: https://mashingan.github.io/anonimongo/src/htmldocs/collections.html
+[7]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/types.html#Database
+[8]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/types.html#Collection
+[9]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html
 [10]: https://github.com/mashingan/anonimongo/src/dbops/
+[wr-doc]: https://mashingan.github.io/anonimonngo/src/htmldocs/anonimongo/core/types.html#WriteResult

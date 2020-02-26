@@ -376,13 +376,13 @@ func within(targetpos, chunkpos, chunksize: int64): bool =
 
 proc setPosition*(gs: GridStream, pos: int64, chunkn = -1) {.async.} =
   if pos >= gs.info.length:
-    raise newException(IOError,
-      &"Accessing beyond length {gs.info.filename} GridStream")
-  gs.pos = pos
-  gs.point = (pos mod gs.info.chunkSize).int
+    gs.pos = pos-1
+  else:
+    gs.pos = pos
+  gs.point = (gs.pos mod gs.info.chunkSize).int
   let currchunk: int = gs.currchunk
   if not pos.within(currchunk, gs.info.chunkSize):
-    let targetchunk = if chunkn == -1: pos div gs.info.chunkSize
+    let targetchunk = if chunkn == -1: gs.pos div gs.info.chunkSize
                       else: chunkn
     await gs.fetchData(targetchunk.int)
 
