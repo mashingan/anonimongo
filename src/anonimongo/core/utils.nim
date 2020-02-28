@@ -86,6 +86,7 @@ proc getWResult*(b: BsonDocument): WriteResult =
   elif "n" in b:
     result.n = b["n"]
   if "writeErrors" in b:
+    result.success = false
     let errdocs = b["writeErrors"].ofArray
     result.errmsgs = newseq[string](errdocs.len)
     for i, errb in errdocs:

@@ -1,4 +1,5 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
+import openssl
 from asyncdispatch import Port
 import sugar
 
@@ -9,6 +10,8 @@ import pool, wire, bson
 const
   poolconn* {.intdefine.} = 64
   verbose* {.booldefine.} = false
+  verifypeer* = defined(verifypeer)
+  cafile* {.strdefine.} = ""
 
 type
   Mongo* = ref object of RootObj
@@ -146,10 +149,18 @@ when defined(ssl) or defined(nimdoc):
 proc setSsl(m: Mongo, sslinfo: SslInfo) =
   if sslinfo.keyfile != "" and sslinfo.certfile != "":
     when defined(ssl):
+      let mode = when verifypeer: CVerifyPeer
+                 else: CVerifyNone
       let ctx = newContext(protVersion = sslinfo.protocol,
         certfile = sslinfo.certfile,
         keyfile = sslinfo.keyfile,
-        verifyMode = CVerifyNone)
+        verifyMode = mode)
+      if verifypeer and cafile == "":
+        discard ctx.context.SSL_CTX_load_verify_locations(
+          cstring sslinfo.certfile, nil)
+      elif verifypeer:
+        discard ctx.context.SSL_CTX_load_verify_locations(
+          cstring cafile, nil)
       for i, c in m.pool.connections:
         when verbose: echo &"wrapping ssl socket {i}"
         ctx.wrapSocket c.socket

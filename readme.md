@@ -489,5 +489,5 @@ MIT
 [7]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/types.html#Database
 [8]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/types.html#Collection
 [9]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html
-[10]: https://github.com/mashingan/anonimongo/src/dbops/
-[wr-doc]: https://mashingan.github.io/anonimonngo/src/htmldocs/anonimongo/core/types.html#WriteResult
+[10]: https://github.com/mashingan/anonimongo/tree/master/src/anonimongo/dbops
+[wr-doc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/types.html#WriteResult
