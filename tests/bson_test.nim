@@ -385,3 +385,43 @@ suite "Macro to object conversion tests":
     check obwo.binary == qrimg
     check obwo.seqbyte.len == qrimg.len
     check obwo.seqbyte.stringbytes == qrimg
+
+  type
+    OVKind = enum
+      ovOne ovMany ovNone
+    ObjectVariant = object
+      case kind: OVKind
+      of ovOne:
+        theOnlyField: string
+      of ovMany:
+        manyField1: string
+        intField: int
+        embed: BsonDocument
+      of ovNone:
+        nil
+  let
+    bovOne = bson({ kind: "ovOne", theOnlyField: "got this" })
+    bovMany = bson({
+      kind: "ovMany",
+      manyField1: "example of ovMany",
+      intField: 42,
+      embed: bson(),
+    })
+    bovNone = bson({ kind: "ovNone" })
+  test "Test object variant conversion":
+    # test for a single field variant
+    let oovOne = bovOne.to ObjectVariant
+    dump oovOne
+    check oovOne.kind == ovOne
+    check oovOne.theOnlyField == bovOne["theOnlyField"]
+    # test for a none object variant
+    let oovNone = bovNone.to ObjectVariant
+    dump oovNone
+    check oovNone.kind == ovNone
+    # test for many fields
+    let oovMany = bovMany.to ObjectVariant
+    dump oovMany
+    check oovMany.kind == ovMany
+    check oovMany.manyField1 == bovMany["manyField1"]
+    check oovMany.intField == 42
+    check oovMany.embed.isNil
