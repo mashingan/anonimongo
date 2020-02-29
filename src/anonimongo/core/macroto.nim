@@ -1,10 +1,3 @@
-from sugar import dump
-# node helper check
-template checknode(n: untyped): untyped {.used.} =
-  dump `n`.kind
-  dump `n`.len
-  dump `n`.repr
-
 const objtyp = {nnkObjectTy, nnkRefTy}
 
 proc ifIn(jn: NimNode): NimNode =

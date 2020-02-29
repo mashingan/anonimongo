@@ -405,23 +405,28 @@ suite "Macro to object conversion tests":
       kind: "ovMany",
       manyField1: "example of ovMany",
       intField: 42,
-      embed: bson(),
+      embed: {},
     })
     bovNone = bson({ kind: "ovNone" })
   test "Test object variant conversion":
     # test for a single field variant
     let oovOne = bovOne.to ObjectVariant
-    dump oovOne
     check oovOne.kind == ovOne
     check oovOne.theOnlyField == bovOne["theOnlyField"]
     # test for a none object variant
     let oovNone = bovNone.to ObjectVariant
-    dump oovNone
     check oovNone.kind == ovNone
     # test for many fields
     let oovMany = bovMany.to ObjectVariant
-    dump oovMany
     check oovMany.kind == ovMany
     check oovMany.manyField1 == bovMany["manyField1"]
     check oovMany.intField == 42
     check oovMany.embed.isNil
+  
+  type
+    TableStringInt = Table[string, int]
+  test "Conversion to Table should yield nothing":
+    let
+      correctbson = bson({ "1": 1, "2": 2, "3": 3, "4": 4 })
+      #incorrectbson = bson({ "1": "one", "2": 2, "3": 3})
+      tsi = correctbson.to TableStringInt
