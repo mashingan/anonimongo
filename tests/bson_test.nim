@@ -250,7 +250,7 @@ suite "Macro to object conversion tests":
     check ssis2.sis.name == outer1["sis"]["name"]
 
   var s2sis: S2IntString
-  test "Multiple aliased field 1 level hierarchial object and" &
+  test "Multiple aliased field 1 level hierarchial object and " &
     "ref object and array and array object":
     s2sis = s2b.to S2IntString
     check s2sis.sis1.name == s2b["sis1"]["name"]
@@ -385,3 +385,82 @@ suite "Macro to object conversion tests":
     check obwo.binary == qrimg
     check obwo.seqbyte.len == qrimg.len
     check obwo.seqbyte.stringbytes == qrimg
+
+  type
+    OVKind = enum
+      ovOne ovMany ovNone
+    ObjectVariant = object
+      baseField: string
+      baseInt: int
+      baseEmbed: BsonDocument
+      case kind: OVKind
+      of ovOne:
+        theOnlyField: string
+      of ovMany:
+        manyField1: string
+        intField: int
+        embed: BsonDocument
+      of ovNone:
+        nil
+  let
+    bovOne = bson({ kind: "ovOne",
+      theOnlyField: "got this",
+      baseField: "check whether not empty",
+      baseInt: 10,
+      baseEmbed: {}
+    })
+    bovMany = bson({
+      kind: "ovMany",
+      manyField1: "example of ovMany",
+      baseField: "check whether not empty",
+      baseInt: 10,
+      baseEmbed: {},
+      intField: 42,
+      embed: {},
+    })
+    bovNone = bson({ 
+      baseField: "check whether not empty",
+      kind: "ovNone",
+      baseInt: 10,
+      baseEmbed: {},
+    })
+  test "Test object variant conversion":
+    # test for a single field variant
+    let oovOne = bovOne.to ObjectVariant
+    check oovOne.kind == ovOne
+    check oovOne.theOnlyField == bovOne["theOnlyField"]
+    check oovOne.baseField == bovOne["baseField"]
+    check oovOne.baseInt == bovOne["baseInt"]
+    check oovOne.baseEmbed.isNil
+
+    # test for a none object variant
+    let oovNone = bovNone.to ObjectVariant
+    check oovNone.baseField == bovNone["baseField"]
+    check oovNone.baseInt == bovNone["baseInt"]
+    check oovNone.baseEmbed.isNil
+    check oovNone.kind == ovNone
+    # test for many fields
+
+    let oovMany = bovMany.to ObjectVariant
+    check oovMany.kind == ovMany
+    check oovMany.manyField1 == bovMany["manyField1"]
+    check oovMany.intField == 42
+    check oovMany.embed.isNil
+    check oovMany.baseField == bovMany["baseField"]
+    check oovMany.baseInt == bovMany["baseInt"]
+    check oovMany.baseEmbed.isNil
+  
+  type
+    TableStringInt = Table[string, int]
+    TableRefStringInt = TableRef[string, int]
+  test "Conversion to Table should yield nothing":
+    let
+      correctbson = bson({ "1": 1, "2": 2, "3": 3, "4": 4 })
+      incorrectbson = bson({ "1": "one", "2": 2, "3": 3})
+      tsi = correctbson.to TableStringInt
+      intsi = incorrectbson.to TableStringInt
+      tsiref = correctbson.to TableRefStringInt
+    
+    check tsi.len == 0
+    check tsiref.len ==  0
+    check intsi.len == 0

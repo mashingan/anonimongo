@@ -1,9 +1,4 @@
-from sugar import dump
-# node helper check
-template checknode(n: untyped): untyped {.used.} =
-  dump `n`.kind
-  dump `n`.len
-  dump `n`.repr
+const objtyp = {nnkObjectTy, nnkRefTy}
 
 proc ifIn(jn: NimNode): NimNode =
   if jn.kind == nnkBracketExpr:
@@ -251,6 +246,74 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     bodyif.add newAssignment(thevar, newCall("unown", resvar))
   result = newIfStmt((testif, bodyif))
 
+template identDefsCheck(result: var NimNode, resvar, field: NimNode,
+  b, t: untyped): untyped =
+  case field.kind
+  of nnkEmpty: continue
+  of nnkRecCase:
+    result.add handleObjectVariant(resvar, field, b, t)
+    continue
+  else: discard
+  let fimpl = field[1].getImpl
+  let resfield = newDotExpr(resvar, field[0])
+  let nodefield = newNimNode(nnkBracketExpr).add(b, newStrLitNode $field[0])
+  if field[1].kind == nnkBracketExpr:
+    let jnfieldstr = newStrLitNode $field[0]
+    let jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
+    if fimpl.kind == nnkDistinctTy:
+      let actimpl = fimpl[0].getImpl
+      result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
+    else:
+      result.add arrAssign(resfield, jnfield, field, fimpl)
+  elif field[1].isTime:
+    result.add timeAssign(resfield, nodefield, field)
+  elif field[1].isBsonDocument:
+    result.add primAssign(resvar, b, field)
+  elif fimpl.isPrimitive:
+    result.add primAssign(resvar, b, field)
+  elif fimpl.kind in objtyp:
+    let resobj = objAssign(resfield, nodefield, field, fimpl)
+    result.add resobj
+  elif fimpl.kind == nnkDistinctTy:
+    let distinctimpl = fimpl[0].getImpl
+    if distinctimpl.isPrimitive:
+      result.add primDistinct(resfield, b, field, distinctimpl)
+    elif distinctimpl.kind in objtyp:
+      if fimpl[0].isTime:
+        result.add timeAssign(resfield, nodefield, field, fimpl)
+      else:
+        result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
+  else:
+    # temporary placeholder
+    checknode field[1]
+
+proc handleObjectVariant(res, field, bobj, t: NimNode): NimNode =
+  field[0].expectKind nnkIdentDefs
+  result = newStmtList()
+  let variantKind = field[0][0]
+  var casenode = nnkCaseStmt.newTree(quote do: `res`.`variantKind`)
+  for casebody in field[1 .. ^1]:
+    casebody.expectKind nnkOfBranch
+    casebody[0].expectKind nnkIntLit
+    casebody[1].expectKind nnkRecList
+    if casebody[1].len == 0:
+      casenode.add nnkOfBranch.newTree(casebody[0],
+        nnkDiscardStmt.newTree(newEmptyNode()))
+      continue
+    var caseof = nnkOfBranch.newTree(casebody[0], newEmptyNode())
+    var casebodystmt = newStmtList()
+    for identdefs in casebody[1]:
+      identDefsCheck(casebodystmt, res, identdefs, bobj, t)
+    caseof[1] = casebodystmt
+    casenode.add caseof
+  result.add casenode
+
+template ignoreTable(st: NimNode) =
+  if st[1].kind == nnkSym and st[1].strval in ["Table", "Deque"]:
+    return quote do: `t`()
+  elif st[1].kind == nnkBracketExpr and st[1][1].strval in ["Table", "Deque"]:
+    return quote do: `t`()
+
 macro to*(b: untyped, t: typed): untyped =
   ## Macro to is automatic conversion from symbol/variable BsonDocument
   ## to specified Type. This doesn't support dynamic values of array, only
@@ -279,12 +342,10 @@ macro to*(b: untyped, t: typed): untyped =
     doAssert flatobj.documents[0]["field1"] == 1
     doAssert flatobj.documents[1]["dynamic"].ofBool
 
-  result = newStmtList()
   let st = getType t
+  st.ignoreTable
+  result = newStmtList()
   let resvar = genSym(nskVar, "res")
-  result.add newNimNode(nnkVarSection).add(
-    newIdentDefs(resvar, st[1])
-  )
   let stimpl = st[1].getTypeImpl
   var isref = false
   var reclist: NimNode
@@ -295,41 +356,26 @@ macro to*(b: untyped, t: typed): untyped =
     isref = true
     let tempimpl = stimpl[0].getTypeImpl
     reclist = tempimpl[2]
-  let objtyp = {nnkObjectTy, nnkRefTy}
+  var isobjectVariant = false
+  var variantKind, targetEnum: NimNode
+  var variantKindStr: string
+  for field in reclist: # check for object variant
+    case field.kind
+    of nnkEmpty: continue
+    of nnkRecCase:
+      isobjectVariant = true
+      variantKind = field[0][0]
+      targetEnum = field[0][1]
+      variantKindstr = $variantkind
+      break
+    else: discard
+  if not isobjectVariant:
+    result.add newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, st[1]))
+  else:
+    result.add(quote do:
+      var `resvar` = `t`(`variantKind`: parseEnum[`targetEnum`](`b`[`variantKindStr`])))
   for field in reclist:
-    if field.kind == nnkEmpty: continue
-    let fimpl = field[1].getImpl
-    let resfield = newDotExpr(resvar, field[0])
-    let nodefield = newNimNode(nnkBracketExpr).add(b, newStrLitNode $field[0])
-    if field[1].kind == nnkBracketExpr:
-      let jnfieldstr = newStrLitNode $field[0]
-      let jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
-      if fimpl.kind == nnkDistinctTy:
-        let actimpl = fimpl[0].getImpl
-        result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
-      else:
-        result.add arrAssign(resfield, jnfield, field, fimpl)
-    elif field[1].isBsonDocument:
-      result.add primAssign(resvar, b, field)
-    elif fimpl.isPrimitive:
-      result.add primAssign(resvar, b, field)
-    elif fimpl.kind in objtyp:
-      if field[1].isTime:
-        result.add timeAssign(resfield, nodefield, field)
-      else:
-        let resobj = objAssign(resfield, nodefield, field, fimpl)
-        result.add resobj
-    elif fimpl.kind == nnkDistinctTy:
-      let distinctimpl = fimpl[0].getImpl
-      if distinctimpl.isPrimitive:
-        result.add primDistinct(resfield, b, field, distinctimpl)
-      elif distinctimpl.kind in objtyp:
-        if fimpl[0].isTime:
-          result.add timeAssign(resfield, nodefield, field, fimpl)
-        else:
-          result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
-    else:
-      # temporary placeholder
-      checknode field[1]
+    identDefsCheck(result, resvar, field, b, t)
   result.add(newCall("unown", resvar))
   #checknode result

@@ -1,28 +1,31 @@
+template bsonifyCheckBody(val: NimNode) {.dirty.} =
+  var objval: NimNode
+  case val.kind
+  of nnkTableConstr:
+    objval = embedBson val
+  of nnkBracket:
+    objval = arrayBson val
+  of nnkCurly:
+    objval = quote do: bson({}).toBson
+  else:
+    objval = quote do: `val`.toBson
+
 proc embedBson(p: NimNode): NimNode {.compiletime.}
 proc arrayBson(p: NimNode): NimNode {.compiletime.} =
-  assert p.kind == nnkBracket
+  p.expectKind nnkBracket
   var rr = newseq[NimNode]()
   for el in p:
-    var objval: NimNode
-    if el.kind == nnkTableConstr:
-      objval = embedBson el
-    elif el.kind == nnkBracket:
-      objval = arrayBson el
-    else:
-      objval = el
-    let theval = objval
-    rr.add theval
+    bsonifyCheckBody el
+    rr.add objval
   result = newcall("bsonArray", rr)
 
 proc embedBson(p: NimNode): NimNode {.compiletime.} =
-  assert p.kind == nnkTableConstr
+  p.expectKind nnkTableConstr
   var rr = newseq[NimNode]()
   for el in p:
     let ident = $el[0]
     let val = el[1]
-    let objval = if val.kind == nnkTableConstr: embedBson val
-                 elif val.kind == nnkBracket: arrayBson val
-                 else: quote do: `val`.toBson
+    bsonifyCheckBody val
     rr.add quote do:
       (`ident`, `objval`)
 
@@ -37,12 +40,6 @@ macro bson*(p: untyped): untyped =
   for el in p:
     let ident = $el[0]
     let val = el[1]
-    var objval: NimNode
-    if val.kind == nnkBracket:
-      objval = arrayBson val
-    elif val.kind == nnkTableConstr:
-      objval = embedBson val
-    else:
-      objval = quote do: `val`.toBson
+    bsonifyCheckBody(val)
     result.add quote do:
       (`ident`, `objval`)
