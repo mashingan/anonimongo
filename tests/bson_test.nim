@@ -390,6 +390,9 @@ suite "Macro to object conversion tests":
     OVKind = enum
       ovOne ovMany ovNone
     ObjectVariant = object
+      baseField: string
+      baseInt: int
+      baseEmbed: BsonDocument
       case kind: OVKind
       of ovOne:
         theOnlyField: string
@@ -400,28 +403,52 @@ suite "Macro to object conversion tests":
       of ovNone:
         nil
   let
-    bovOne = bson({ kind: "ovOne", theOnlyField: "got this" })
+    bovOne = bson({ kind: "ovOne",
+      theOnlyField: "got this",
+      baseField: "check whether not empty",
+      baseInt: 10,
+      baseEmbed: {}
+    })
     bovMany = bson({
       kind: "ovMany",
       manyField1: "example of ovMany",
+      baseField: "check whether not empty",
+      baseInt: 10,
+      baseEmbed: {},
       intField: 42,
       embed: {},
     })
-    bovNone = bson({ kind: "ovNone" })
+    bovNone = bson({ 
+      baseField: "check whether not empty",
+      kind: "ovNone",
+      baseInt: 10,
+      baseEmbed: {},
+    })
   test "Test object variant conversion":
     # test for a single field variant
     let oovOne = bovOne.to ObjectVariant
     check oovOne.kind == ovOne
     check oovOne.theOnlyField == bovOne["theOnlyField"]
+    check oovOne.baseField == bovOne["baseField"]
+    check oovOne.baseInt == bovOne["baseInt"]
+    check oovOne.baseEmbed.isNil
+
     # test for a none object variant
     let oovNone = bovNone.to ObjectVariant
+    check oovNone.baseField == bovNone["baseField"]
+    check oovNone.baseInt == bovNone["baseInt"]
+    check oovNone.baseEmbed.isNil
     check oovNone.kind == ovNone
     # test for many fields
+
     let oovMany = bovMany.to ObjectVariant
     check oovMany.kind == ovMany
     check oovMany.manyField1 == bovMany["manyField1"]
     check oovMany.intField == 42
     check oovMany.embed.isNil
+    check oovMany.baseField == bovMany["baseField"]
+    check oovMany.baseInt == bovMany["baseInt"]
+    check oovMany.baseEmbed.isNil
   
   type
     TableStringInt = Table[string, int]

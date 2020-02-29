@@ -289,14 +289,8 @@ template identDefsCheck(result: var NimNode, resvar, field: NimNode,
 
 proc handleObjectVariant(res, field, bobj, t: NimNode): NimNode =
   field[0].expectKind nnkIdentDefs
-  let variantKind = field[0][0]
-  let variantKindStr = $variantKind
-  let targetEnum = field[0][1]
   result = newStmtList()
-  result.add(quote do:
-    if `variantKindStr` in `bobj`:
-      `res` = `t`(`variantKind`: parseEnum[`targetEnum`](`bobj`[`variantKindStr`])))
-
+  let variantKind = field[0][0]
   var casenode = nnkCaseStmt.newTree(quote do: `res`.`variantKind`)
   for casebody in field[1 .. ^1]:
     casebody.expectKind nnkOfBranch
@@ -352,9 +346,6 @@ macro to*(b: untyped, t: typed): untyped =
   st.ignoreTable
   result = newStmtList()
   let resvar = genSym(nskVar, "res")
-  result.add newNimNode(nnkVarSection).add(
-    newIdentDefs(resvar, st[1])
-  )
   let stimpl = st[1].getTypeImpl
   var isref = false
   var reclist: NimNode
@@ -365,6 +356,25 @@ macro to*(b: untyped, t: typed): untyped =
     isref = true
     let tempimpl = stimpl[0].getTypeImpl
     reclist = tempimpl[2]
+  var isobjectVariant = false
+  var variantKind, targetEnum: NimNode
+  var variantKindStr: string
+  for field in reclist: # check for object variant
+    case field.kind
+    of nnkEmpty: continue
+    of nnkRecCase:
+      isobjectVariant = true
+      variantKind = field[0][0]
+      targetEnum = field[0][1]
+      variantKindstr = $variantkind
+      break
+    else: discard
+  if not isobjectVariant:
+    result.add newNimNode(nnkVarSection).add(
+      newIdentDefs(resvar, st[1]))
+  else:
+    result.add(quote do:
+      var `resvar` = `t`(`variantKind`: parseEnum[`targetEnum`](`b`[`variantKindStr`])))
   for field in reclist:
     identDefsCheck(result, resvar, field, b, t)
   result.add(newCall("unown", resvar))
