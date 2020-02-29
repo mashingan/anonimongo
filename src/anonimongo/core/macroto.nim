@@ -265,16 +265,15 @@ template identDefsCheck(result: var NimNode, resvar, field: NimNode,
       result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
     else:
       result.add arrAssign(resfield, jnfield, field, fimpl)
+  elif field[1].isTime:
+    result.add timeAssign(resfield, nodefield, field)
   elif field[1].isBsonDocument:
     result.add primAssign(resvar, b, field)
   elif fimpl.isPrimitive:
     result.add primAssign(resvar, b, field)
   elif fimpl.kind in objtyp:
-    if field[1].isTime:
-      result.add timeAssign(resfield, nodefield, field)
-    else:
-      let resobj = objAssign(resfield, nodefield, field, fimpl)
-      result.add resobj
+    let resobj = objAssign(resfield, nodefield, field, fimpl)
+    result.add resobj
   elif fimpl.kind == nnkDistinctTy:
     let distinctimpl = fimpl[0].getImpl
     if distinctimpl.isPrimitive:
@@ -315,6 +314,12 @@ proc handleObjectVariant(res, field, bobj, t: NimNode): NimNode =
     casenode.add caseof
   result.add casenode
 
+template ignoreTable(st: NimNode) =
+  if st[1].kind == nnkSym and st[1].strval in ["Table", "Deque"]:
+    return quote do: `t`()
+  elif st[1].kind == nnkBracketExpr and st[1][1].strval in ["Table", "Deque"]:
+    return quote do: `t`()
+
 macro to*(b: untyped, t: typed): untyped =
   ## Macro to is automatic conversion from symbol/variable BsonDocument
   ## to specified Type. This doesn't support dynamic values of array, only
@@ -343,8 +348,9 @@ macro to*(b: untyped, t: typed): untyped =
     doAssert flatobj.documents[0]["field1"] == 1
     doAssert flatobj.documents[1]["dynamic"].ofBool
 
-  result = newStmtList()
   let st = getType t
+  st.ignoreTable
+  result = newStmtList()
   let resvar = genSym(nskVar, "res")
   result.add newNimNode(nnkVarSection).add(
     newIdentDefs(resvar, st[1])

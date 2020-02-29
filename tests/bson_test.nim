@@ -250,7 +250,7 @@ suite "Macro to object conversion tests":
     check ssis2.sis.name == outer1["sis"]["name"]
 
   var s2sis: S2IntString
-  test "Multiple aliased field 1 level hierarchial object and" &
+  test "Multiple aliased field 1 level hierarchial object and " &
     "ref object and array and array object":
     s2sis = s2b.to S2IntString
     check s2sis.sis1.name == s2b["sis1"]["name"]
@@ -425,8 +425,15 @@ suite "Macro to object conversion tests":
   
   type
     TableStringInt = Table[string, int]
+    TableRefStringInt = TableRef[string, int]
   test "Conversion to Table should yield nothing":
     let
       correctbson = bson({ "1": 1, "2": 2, "3": 3, "4": 4 })
-      #incorrectbson = bson({ "1": "one", "2": 2, "3": 3})
+      incorrectbson = bson({ "1": "one", "2": 2, "3": 3})
       tsi = correctbson.to TableStringInt
+      intsi = incorrectbson.to TableStringInt
+      tsiref = correctbson.to TableRefStringInt
+    
+    check tsi.len == 0
+    check tsiref.len ==  0
+    check intsi.len == 0
