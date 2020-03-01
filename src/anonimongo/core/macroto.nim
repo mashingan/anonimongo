@@ -126,24 +126,24 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   if fld[1].isSeqByte:
     bodyif.add newAssignment(thevar, newcall("ofBinary", jn))
   elif fld[1].isSeq:
-    bodyif.add nnkVarSection.newTree(newIdentDefs(resvar, fld[1]))
+    let fieldtype = fld[1]
+    bodyif.add(quote do:
+      var `resvar`: `fieldtype`)
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(jn, ident"ofArray"))
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
       if isDistinct:
         arrObjField(ident"obj", distTy[0])
-        forbody.add newCall("add", resvar, newCall(
-          $fld[1][1], newCall("move", fldvar)
-        ))
+        let distinctType = fld[1][1]
+        forbody.add quote do: add(`resvar`, `distinctType`(move(`fldvar`)))
         seqfor.add forbody
       elif fld[1][1].isBsonDocument:
-        seqfor.add newCall("add", resvar, newDotExpr(ident"obj",
-          ident"ofEmbedded"))
+        seqfor.add quote do: add(`resvar`, obj.ofEmbedded)
       elif fld[1][1].isTime:
-        seqfor.add newCall("add", resvar, ident"obj")
+        seqfor.add quote do: add(`resvar`, obj)
       else:
         arrObjField(ident"obj", fld[1][1])
-        forbody.add newCall("add", resvar, newCall("move", fldvar))
+        forbody.add quote do: add(`resvar`, move(`fldvar`))
         seqfor.add forbody
     elif fielddef.isPrimitive:
       if not isDistinct:
@@ -155,12 +155,12 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
           )))
         seqfor.add arrbody
     bodyif.add seqfor
-    bodyif.add newAssignment(thevar, newCall("unown", resvar))
+    bodyif.add quote do: `thevar` = unown(`resvar`)
   elif fld[1].isArray:
     let arrobj = ident "arrobj"
-    bodyif.add newNimNode(nnkLetSection).add(
-      newIdentDefs(arrobj, newEmptyNode(), newDotExpr(jn, ident"ofArray"))
-    )
+    bodyif.add(quote do:
+      let
+        `arrobj` = `jn`.ofArray)
     var arrfor = newNimNode(nnkForStmt).add(
       ident"i",
       newNimNode(nnkInfix).add(
@@ -171,30 +171,26 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     if fielddef.kind in {nnkObjectTy, nnkRefTy}:
       if isDistinct:
         arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), distTy[0])
-        forbody.add newAssignment(
-          nnkBracketExpr.newTree(thevar, ident"i"),
-          newCall($fld[1][2], fldvar)
-        )
+        let distinctType = fld[1][2]
+        forbody.add quote do: `thevar`[i] = `distinctType`(`fldvar`)
         arrfor.add forbody
       else:
         arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), fld[1][2])
-        forbody.add newAssignment(nnkBracketExpr.newTree(thevar, ident"i"), fldvar)
+        forbody.add quote do: `thevar`[i] = `fldvar`
         arrfor.add forbody
     elif fielddef.isPrimitive:
       if not isDistinct:
-        arrfor.add newAssignment(
-          newNimNode(nnkBracketExpr).add(thevar, ident"i"),
-          newNimNode(nnkBracketExpr).add(arrobj, ident"i"))
+        arrfor.add quote do: `thevar`[i] = `arrobj`[i]
       else:
+        let distinctType = fld[1][2]
         arrPrimDistinct(distTy,
-          nnkBracketExpr.newTree(arrobj, ident"i"),
-          newAssignment(
-            nnkBracketExpr.newTree(thevar, ident"i"),
-            newCall($fld[1][2], newCall("move", ident"tmp")))
+          (quote do: `arrobj`[i]),
+          (quote do: `thevar`[i] = `distinctType`(move(tmp)))
         )
         arrfor.add arrbody
     bodyif.add arrfor
-  result = newIfStmt((testif, bodyif))
+  result = quote do:
+    if `testif`: `bodyif`
 
 proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     NimNode {.compiletime.} =
