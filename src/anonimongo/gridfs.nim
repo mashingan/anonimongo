@@ -417,7 +417,8 @@ proc readAll*(gs: GridStream): Future[string] {.async.} =
 
 proc getStream*(g: GridFS, matcher: BsonBase, sort = bson(),
   buffered = false): Future[GridStream]{.async.} =
-  new(result, final)
+  #new(result, final)
+  new result
   result.grid = g
   result.buffered = buffered
   let q = prepareMatcher matcher

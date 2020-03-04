@@ -192,6 +192,14 @@ suite "CRUD tests":
     wr = waitFor db.dropDatabase
     wr.success.reasonedCheck("dropDatabase error", wr.reason)
 
+  test "Shutdown mongo":
+    if runlocal:
+      require mongo != nil
+      wr = waitFor mongo.shutdown(timeout = 10)
+      check wr.success
+    else:
+      skip()
+
   if runlocal:
     if mongorun.running: kill mongorun
     close mongorun

@@ -73,9 +73,12 @@ suite "Client connection and user management tests":
     wr.success.reasonedCheck("dropUser error", wr.reason)
 
   test "Shutdown mongo":
-    require mongo != nil
-    wr = waitFor db.shutdown(timeout = 10)
-    check wr.success
+    if runlocal:
+      require mongo != nil
+      wr = waitFor mongo.shutdown(timeout = 10)
+      check wr.success
+    else:
+      skip()
 
   if runlocal:
     if mongorun.running: kill mongorun

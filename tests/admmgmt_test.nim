@@ -88,9 +88,12 @@ suite "Administration APIs tests":
     wr.success.reasonedCheck("dropDatabase", wr.reason)
 
   test "Shutdown mongo":
-    require mongo != nil
-    wr = waitFor mongo.shutdown(timeout = 10)
-    check wr.success
+    if runlocal:
+      require mongo != nil
+      wr = waitFor mongo.shutdown(timeout = 10)
+      check wr.success
+    else:
+      skip()
 
   close mongo
   if runlocal:
