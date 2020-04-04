@@ -59,10 +59,10 @@ proc getConn*(p: Pool): Future[(int, Connection)] {.async.} =
   while true:
     if p.available.len > 0:
       let id = p.available.popLast
-      let conn = p.connections[id]
+      var conn = p.connections[id]
       #when not defined(release):
         #dump id
-      result = (id, conn)
+      result = (id, move conn)
       return
     else:
       try: poll(100)

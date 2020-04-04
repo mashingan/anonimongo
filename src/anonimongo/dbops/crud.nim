@@ -126,10 +126,10 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
   let bopts = [("sort", sort), ("update", update), ("fields", fields)]
   let conds = [("remove", remove), ("new", `new`), ("upsert", upsert)]
   for i in 0 .. conds.high:
-    let b = bopts[i]
-    q.addOptional(b[0], b[1])
-    let c = conds[i]
-    q.addConditional(c[0], c[1])
+    var b = bopts[i]
+    q.addOptional(move b[0], b[1])
+    var c = conds[i]
+    q.addConditional(move c[0], c[1])
   q.addConditional("bypassDocumentValidation", bypass)
   q.addWriteConcern(db, wt)
   q.addOptional("collation", collation)

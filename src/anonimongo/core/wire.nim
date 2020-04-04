@@ -197,8 +197,8 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.discardable, async.} 
     dump msghdr
   let bytelen = msghdr.messageLength
 
-  let rest = await socket.recv(size = bytelen-16)
-  var restStream = newStringStream rest
+  var rest = await socket.recv(size = bytelen-16)
+  var restStream = newStringStream move(rest)
   result = replyParse restStream
 
 proc findAll(socket: AsyncSocket, selector = newbson()) {.async, used.} =

@@ -206,7 +206,7 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
     var name = ""
     for k, v in key:
       name &= &"{k}_{v}_"
-    q["name"] = name
+    q["name"] = move name
   for k, v in opt:
     q[k] = v
   let qarr = bsonArray q.toBson
@@ -317,7 +317,8 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
       for k, _ in op:
         key = k
         break
-      raise newException(MongoError, &"Invalid command given: {key}")
+      var msg = &"Invalid command given: {key}"
+      raise newException(MongoError, move msg)
   if not ordered:
     let futres = await all(futbulk)
     for i in 0 .. futres.high:

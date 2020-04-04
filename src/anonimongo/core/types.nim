@@ -1,7 +1,6 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
 import openssl
 from asyncdispatch import Port
-import sugar
 
 import sha1, nimSHA2
 

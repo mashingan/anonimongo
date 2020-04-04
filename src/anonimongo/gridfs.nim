@@ -355,9 +355,6 @@ type
 func currchunk(gs: GridStream): int = gs.data.n * gs.info.chunkSize
 func fileSize*(gs: GridStream): int64 = gs.info.length
 
-proc final(gs: GridStream) =
-  gs.isClosed = true
-
 proc close*(gs: GridStream) =
   gs.isClosed = true
 
@@ -417,7 +414,6 @@ proc readAll*(gs: GridStream): Future[string] {.async.} =
 
 proc getStream*(g: GridFS, matcher: BsonBase, sort = bson(),
   buffered = false): Future[GridStream]{.async.} =
-  #new(result, final)
   new result
   result.grid = g
   result.buffered = buffered
@@ -425,8 +421,8 @@ proc getStream*(g: GridFS, matcher: BsonBase, sort = bson(),
   when verbose: dump q
   let bsinfo = await g.files.findOne(q, sort = sort)
   if bsinfo.isNil or bsinfo.len == 0:
-    raise newException(MongoError,
-      &"Cannot find any file that match {matcher}")
+    var msg = &"Cannot find any file that match {matcher}"
+    raise newException(MongoError, move msg)
   when verbose: dump bsinfo
   result.info = bsinfo.to FileInfo
   result.info.id = bsinfo["_id"]

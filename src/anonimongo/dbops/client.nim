@@ -52,7 +52,8 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
   when verbose:
     echo "Handshake id: ", id
     dump q
-  let dbc = m[db]
+  var db = db
+  let dbc = m[move db]
   when verbose:
     look await sendops(q, dbc)
   else:
@@ -81,11 +82,11 @@ proc cuUsers(db: Database, query: BsonDocument):
   result = await db.proceed(query, dbname)
 
 template dropPrologue(db: Database, qfield, val: untyped): untyped =
-  let dbname = db.name & ".$cmd"
+  var dbname = db.name & ".$cmd"
   var q = bson({`qfield`: `val`})
   if not db.db.writeConcern.isNil:
     q["writeConcern"] = db.db.writeConcern
-  (dbname, q)
+  (move dbname, q)
 
 template cuPrep(db: Database, field, val, pwd: string,
   roles, restrictions, mechanism: BsonBase,

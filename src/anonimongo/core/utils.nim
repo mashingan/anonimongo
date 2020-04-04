@@ -70,9 +70,9 @@ proc crudops*(db: Database, q: BsonDocument, dbname = ""):
   ## About the same as ``proceed`` but this will return a BsonDocument
   ## compared to ``proceed`` that return ``(bool, string)``.
   let reply = await sendops(q, db, dbname)
-  let (success, reason) = check reply
+  var (success, reason) = check reply
   if not success:
-    raise newException(MongoError, reason)
+    raise newException(MongoError, move reason)
   result = reply.documents[0]
 
 proc getWResult*(b: BsonDocument): WriteResult =

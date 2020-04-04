@@ -21,7 +21,8 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
     let
       mechanism = "SCRAM-SHA-256"
       msg = pass
-  let fst = scram.prepareFirstMessage(user)
+  var user = user
+  let fst = scram.prepareFirstMessage(move user)
 
   var q = bson({
     saslStart: int32 1,
@@ -42,9 +43,8 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
       echo res1.documents[0]["$err"]
     return false
 
-  let
-    strres = res1.documents[0]["payload"].ofBinary.stringBytes
-    msgf = scram.prepareFinalMessage(msg, strres)
+  var strres = res1.documents[0]["payload"].ofBinary.stringBytes
+  let msgf = scram.prepareFinalMessage(msg, move strres)
   stream = newStringStream()
   discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
     saslContinue: int32 1,
