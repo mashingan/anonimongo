@@ -263,6 +263,9 @@ iterator pairs*(b: BsonDocument): (string, BsonBase) =
   for k, v in b.table:
     yield (k, v)
 
+iterator mpairs*(b: BsonDocument): (unown string, var BsonBase) =
+  for k, v in b.table.mpairs:
+    yield (k, v)
 
 proc `$`*(v: BsonBase): string
 

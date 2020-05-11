@@ -135,7 +135,9 @@ proc update*(c: Collection, query = bson(), updates = bsonNull(),
   var ordered = true
   for k, v in opt:
     if k == "ordered": ordered = v.ofBool
-    else: q[k] = v
+    else:
+      var kk = k
+      q[move kk] = v
   let doc = await c.db.update(c.name, @[q], ordered = ordered)
   result = doc.getWResult
 
@@ -155,7 +157,9 @@ proc remove*(c: Collection, query, opt: BsonDocument):
   var wt: BsonBase
   for k, v in opt:
     if k == "writeConcern": wt = v
-    else: delq[k] = v
+    else:
+      var kk = k
+      delq[move kk] = v
   let doc = await c.db.delete(c.name, @[delq], wt = wt)
   result = doc.getWResult
 
@@ -163,7 +167,8 @@ proc remove*(c: Collection, query: seq[BsonDocument]):
   Future[WriteResult]{.async.} =
   var q = newseq[BsonDocument](query.len)
   for i, que in query:
-    q[i] = bson({
+    var ii = i
+    q[move ii] = bson({
       q: que,
       limit: 0,
     })
@@ -186,13 +191,13 @@ proc count*(c: Collection, query = bson(), opt = bson()):
     hint, readConcern, collation: BsonBase
     limit = 0
     skip = 0
-  for k, v in opt:
+  for k, v in opt.mpairs:
     case k
-    of "hint": hint = v
-    of "readConcern": readConcern = v
-    of "collation": collation = v
-    of "limit": limit = v
-    of "skip": skip = v
+    of "hint": hint = move v
+    of "readConcern": readConcern = move v
+    of "collation": collation = move v
+    of "limit": limit = move v
+    of "skip": skip = move v
   let doc = await c.db.count(c.name, query, limit, skip, hint,
     readConcern, collation)
   result = doc["n"]
@@ -208,7 +213,8 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
       name &= &"{k}_{v}_"
     q["name"] = move name
   for k, v in opt:
-    q[k] = v
+    var kk = k
+    q[move kk] = v
   let qarr = bsonArray q.toBson
   result = await c.db.createIndexes(c.name, qarr, wt)
 
@@ -271,9 +277,11 @@ proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
   template checkOrdered(wr: WriteResult, target, fieldName: untyped): untyped =
     if not wr.success or wr.errmsgs.len != 0:
       if wr.reason != "":
-        `target`.writeErrors.add wr.reason
+        var s = wr.reason
+        `target`.writeErrors.add move(s)
       for s in wr.errmsgs:
-        `target`.writeErrors.add s
+        var ss = s
+        `target`.writeErrors.add move(ss)
       if ordered: return
     `target`.`fieldName` += wr.n
   template opcheck(optype: string, fut: Future[WriteResult], i: int,

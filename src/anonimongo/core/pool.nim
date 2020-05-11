@@ -33,7 +33,7 @@ proc contains*(p: Pool, i: int): bool =
   ## Check whether the id available in connections.
   i in p.connections
 
-proc `[]`*(p: Pool, i: int): Connection =
+proc `[]`*(p: Pool, i: int): lent Connection =
   ## Retrieve the i-th connection object in a pool.
   p.connections[i]
 
@@ -59,10 +59,9 @@ proc getConn*(p: Pool): Future[(int, Connection)] {.async.} =
   while true:
     if p.available.len > 0:
       let id = p.available.popLast
-      var conn = p.connections[id]
       #when not defined(release):
         #dump id
-      result = (id, move conn)
+      result = (id, p[id])
       return
     else:
       try: poll(100)

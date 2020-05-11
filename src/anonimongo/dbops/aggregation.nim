@@ -23,7 +23,8 @@ proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
     pipeline: pipeline.map toBson,
   })
   for kv in [("explain", explain), ("allowDiskUse", diskuse)]:
-    q.addConditional(kv[0], kv[1])
+    var kv0 = kv[0]
+    q.addConditional(move kv0, kv[1])
   if not explain:
     q["cursor"] = cursor
   q["maxTimeMS"] = maxTimeMS
@@ -33,7 +34,8 @@ proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
     ("collation", collation),
     ("hint", hint)
   ]:
-    q.addOptional(kv[0], kv[1])
+    var kv0 = kv[0]
+    q.addOptional(move kv0, kv[1])
   if comment != "": q["comment"] = comment
   q.addWriteConcern(db, wt)
   if explainVerbosity != "": result = await db.explain(q, explainVerbosity)
@@ -53,7 +55,8 @@ proc count*(db: Database, coll: string, query = bson(),
     ("readConcern", readConcern),
     ("collation", collation)
   ]:
-    q.addOptional(kv[0], kv[1])
+    var kv0 = kv[0]
+    q.addOptional(move kv0, kv[1])
   if explain != "": result = await db.explain(q, explain)
   else: result = await db.crudops(q)
 
@@ -69,7 +72,8 @@ proc `distinct`*(db: Database, coll, key: string, query = bson(),
     ("readConcern", readConcern),
     ("collation", collation)
   ]:
-    q.addOptional(kv[0], kv[1])
+    var kv0 = kv[0]
+    q.addOptional(move kv0, kv[1])
   if explain != "": result = await db.explain(q, explain)
   else: result = await db.crudops(q)
 

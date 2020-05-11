@@ -41,7 +41,8 @@ proc find*(db: Database, coll: string,query = bson(),
     "sort": sort,
     "projection": selector,
     "hint": hint}.toTable:
-    q.addOptional(field, val)
+    var ff = field
+    q.addOptional(move ff, val)
   q["skip"] = skip
   q["limit"] = limit
   q["batchSize"] = batchSize
@@ -51,7 +52,8 @@ proc find*(db: Database, coll: string,query = bson(),
   if maxTimeMS > 0: q["maxTimeMS"] = maxTimeMS
   for k,v in { "readConcern": readConcern,
     "max": max, "min": min }.toTable:
-    q.addOptional(k, v)
+    var kk = k
+    q.addOptional(move kk, v)
   for k,v in {
     "returnKey": returnKey,
     "showRecordId": showRecordId,
@@ -61,7 +63,8 @@ proc find*(db: Database, coll: string,query = bson(),
     "noCursorTimeout": noCursorTimeout,
     "allowPartialResults": partial
   }.toTable:
-    q.addConditional(k, v)
+    var kk = k
+    q.addConditional(move kk, v)
   q.addOptional("collation", collation)
   if explain != "": result = await db.explain(q, explain)
   else: result = await crudops(db, q)
@@ -141,5 +144,6 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
 proc getLastError*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
   var q = bson({ getLastError: 1 })
   for k, v in opt:
-    q[k] = v
+    var kk = k
+    q[move kk] = v
   result = await db.crudops(q)
