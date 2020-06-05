@@ -40,6 +40,7 @@ if not waitFor mongo.connect:
   # default is localhost:27017
   quit &"Cannot connect to {mongo.host}.{int mongo.port}"
 var coll = mongo["temptest"]["colltest"]
+let currtime = now().toTime()
 var idoc = newseq[BsonDocument](10)
 for i in 0 .. idoc.high:
   idoc[i] = bson({
@@ -74,6 +75,11 @@ let delStat = waitfor coll.remove(bson({
   insertId: 9,
 }), justone = true)
 doAssert delStat.success  # must be true if query success
+doAssert delStat.kind == wkMany # remove operation returns
+                                # the WriteObject result variant
+                                # of wkMany which withhold the
+                                # integer n field for n affected
+                                # document in successfull operation
 doAssert delStat.n == 1   # because we only delete one entry in
                           # case multiple documents selected
 
@@ -90,6 +96,7 @@ close mongo
 import strformat
 import nimSHA2
 import anonimongo
+import tables # needed when authenticating
 
 var mongo = newMongo()
 let mhostport = &"{mongo.host}.{$mongo.port.int}"
