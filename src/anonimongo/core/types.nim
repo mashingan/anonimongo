@@ -120,11 +120,12 @@ type
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()
+  if s == "": return
   for kv in s.split('&'):
     let kvsarr = kv.split('=')
-    let key = kvsarr[0].toLower
-    let val = kvsarr[1]
     if kvsarr.len > 1:
+      let key = kvsarr[0].toLower
+      let val = kvsarr[1]
       let kvals = val.split(',')
       for kval in kvals:
         if key in result:
@@ -132,7 +133,7 @@ proc decodeQuery(s: string): TableRef[string, seq[string]] =
         else:
           result[key] = @[kval]
     else:
-      result[key] = @[]
+      result[kv] = @[]
 
 when defined(ssl) or defined(nimdoc):
   proc initSslInfo*(keyfile, certfile: string, prot = protSSLv23): SSLInfo =
