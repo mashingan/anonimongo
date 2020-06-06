@@ -1,5 +1,6 @@
 import asyncdispatch, tables, uri
 import osproc, sugar, unittest
+import strformat
 
 import nimsha2
 
@@ -24,9 +25,7 @@ const
   nomongod* = not defined(nomongod)
   runlocal* = localhost and nomongod
 
-  mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
-    "?tlscertificateKeyfile=certificate:" & encodeUrl(cert) &
-    ",key:" & encodeUrl(key)
+  mongourl {.strdefine, used.} = &"""mongo://rdruffy:rdruffy@localhost:27017/?tlscertificateKeyfile=certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin"""
   verbose = defined(verbose)
 
 when verbose:
@@ -61,6 +60,9 @@ proc testsetup*: Mongo =
     let mongo = newMongo(host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
   else:
     let mongo = newMongo(parseUri mongourl, poolconn = poolconn)
+
+  when defined(uri):
+    doAssert mongo.db == "admin"
 
   mongo.appname = "Test driver"
   if not waitFor mongo.connect:

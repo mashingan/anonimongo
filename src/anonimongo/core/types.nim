@@ -216,6 +216,8 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
   if tlsHostInval.allIt(it.toLower in result.query):
     raise newException(MongoError,
       &"""Can't have {tlsHostInval.join(" and ")}""")
+  if "authSource".toLower in result.query:
+    result.db = result.query["authsource"][0]
 
   proc setCertKey (s: var SslInfo, vals: seq[string]) =
     for kv in vals:
