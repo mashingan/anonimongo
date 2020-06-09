@@ -62,12 +62,12 @@ switch("define" "saveas=save_as_other_name_file.mkv_for_example")
 EOF
 
 # now running the test
-nim c -r tests\admmgmt_test.nim
-nim c -r tests\bson_test.nim
-nim c -r tests\client_test.nim
-nim c -r tests\collections_test.nim
-nim c -r tests\crud_test.nim
-nim c -r tests\gridfs_test.nim
+nim c -r tests\test_admmgmt_test.nim
+nim c -r tests\test_bson_test.nim
+nim c -r tests\test_client_test.nim
+nim c -r tests\test_collections_test.nim
+nim c -r tests\test_crud_test.nim
+nim c -r tests\test_gridfs_test.nim
 ```
 
 Any others variable can be checked in that [testutils.nim](testutils.nim).  
