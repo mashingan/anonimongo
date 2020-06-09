@@ -1,0 +1,63 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  skip:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Skip job"
+
+  before:
+    runs-on: ubuntu-latest
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - run: echo "not contains '[skip ci]'"
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+            #- windows-latest
+            #- macOS-latest
+        nim-version:
+          - '1.0.2'
+          - 'stable'
+    needs: before
+    steps:
+      - uses: actions/checkout@v1
+      - name: Cache nimble
+        id: cache-nimble
+        uses: actions/cache@v1
+        with:
+          path: ~/.nimble
+          key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}
+      - uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ matrix.nim-version }}
+
+      # see. https://github.com/actions/virtual-environments/issues/675
+      - name: Fix apt packages
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt update -yqq
+
+      # https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+      - name: Install mongodb
+        run: |
+          wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+          sudo apt-get update -yqq
+          sudo apt-get install -y mongodb-org
+
+      - name: Start mongodb
+        run: |
+          sudo systemctl start mongod
+          sleep 10
+
+      - run: nimble install -Y
+        #- run: nimble test -Y
