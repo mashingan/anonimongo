@@ -2,7 +2,7 @@ import asyncdispatch, tables, uri
 import osproc, sugar, unittest
 import strformat
 
-import nimsha2
+import nimSHA2
 
 import ../src/anonimongo
 
