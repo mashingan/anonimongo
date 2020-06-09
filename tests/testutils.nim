@@ -10,7 +10,9 @@ import ../src/anonimongo
 
 const
   pem* {.strdefine.} = "d:/dev/self-signed-cert/srv.key.pem"
-  exe* {.strdefine.} = "d:/installer/mongodb/bin/mongod"
+  exe* {.strdefine.} =
+    when defined windows: "d:/installer/mongodb/bin/mongod"
+    else: "mongod"
   key* {.strdefine.} = "d:/dev/self-signed-cert/key.pem"
   cert* {.strdefine.} = "d:/dev/self-signed-cert/cert.pem"
   dbpath* {.strdefine.} = "d:/dev/mongodata"
