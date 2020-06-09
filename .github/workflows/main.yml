@@ -60,4 +60,4 @@ jobs:
           sleep 10
 
       - run: nimble install -Y
-        #- run: nimble test -Y
+      - run: nimble test -Y
