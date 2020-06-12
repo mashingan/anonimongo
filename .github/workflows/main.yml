@@ -60,4 +60,7 @@ jobs:
           sleep 10
 
       - run: nimble install -Y
-      - run: nimble test -Y
+      - name: Nimble test setup and run
+        run: |
+            echo 'switch("define", "nomongod") > config.nims'
+            nimble test -Y

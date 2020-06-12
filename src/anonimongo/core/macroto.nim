@@ -58,19 +58,17 @@ proc primAssign(thevar, jn, identdef: NimNode, direct = false): NimNode {.compil
       quote do: `thevar`.`fieldacc`
     else:
       thevar
-  result = quote do:
+  result = quote do:(
     if `fieldstr` in `jn`:
-      `dotexpr` = `jn`[`fieldstr`]
+      `dotexpr` = `jn`[`fieldstr`])
 
 proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
-  var newident = newIdentDefs(fld[0], impl)
-  var tempres = gensym(nskVar, "primtemp")
-  result = newStmtList(
-    newNimNode(nnkVarSection).add(newIdentDefs(tempres, impl))
-  )
+  let newident = newIdentDefs(fld[0], impl)
+  let tempres = gensym(nskVar, "primtemp")
+  result = quote do:(var `tempres`: `impl`)
   result.add primAssign(tempres, jn, newident, direct = true)
-  result.add newAssignment(thevar, newCall("unown", newCall($fld[1],
-    newCall("move", tempres))))
+  let distinctName = fld[1]
+  result.add quote do: `thevar` = unown(`distinctName`(move(`tempres`)))
 
 proc timeAssign(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
   NimNode {.compiletime.} =
@@ -80,17 +78,21 @@ proc timeAssign(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
     resvar = genSym(nskVar, "timeres")
   var bodyif = newStmtList()
   if not isDistinct:
-    bodyif.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, fld[1], jn)),
-      newAssignment(thevar, newCall("unown", resvar))
+    let timetyp = fld[1]
+    bodyif.add(quote do:
+      var `resvar`: `timetyp` = `jn`
+      `thevar` = unown(`resvar`)
     )
   else:
-    bodyif.add(newNimNode(nnkVarSection).add(
-      newIdentDefs(resvar, distTy[0], jn)),
-      newAssignment(thevar, newCall("unown", newCall($fld[1], resvar)))
+    let implTy = distTy[0]
+    let distinctTy = fld[1]
+    bodyif.add(quote do:
+      var `resvar`: `implTy` = `jn`
+      `thevar` = unown(`distinctTy`(`resvar`))
     )
 
-  result = newIfStmt((testif, bodyif))
+  result = quote do:
+    if `testif`: `bodyif`
 
 template arrObjField(acc, fldready: untyped): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
@@ -110,8 +112,7 @@ template arrPrimDistinct(dty, idn, finalizer: untyped): untyped =
   let arrbody {.inject.} = newStmtList(
     newNimNode(nnkVarSection).add(
       newIdentDefs(ident"tmp", dty[0], idn)),
-    finalizer
-    )
+    finalizer)
 
 proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     NimNode {.compiletime.}
@@ -131,7 +132,7 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       var `resvar`: `fieldtype`)
     var seqfor = newNimNode(nnkForStmt).add(
       ident"obj", newDotExpr(jn, ident"ofArray"))
-    if fielddef.kind in {nnkObjectTy, nnkRefTy}:
+    if fielddef.kind in objtyp:
       if isDistinct:
         arrObjField(ident"obj", distTy[0])
         let distinctType = fld[1][1]
@@ -168,7 +169,7 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
         newIntLitNode(0),
         newCall("min", newCall("len", arrobj), newCall("len", thevar))
     ))
-    if fielddef.kind in {nnkObjectTy, nnkRefTy}:
+    if fielddef.kind in objtyp:
       if isDistinct:
         arrObjField(nnkBracketExpr.newTree(arrobj, ident"i"), distTy[0])
         let distinctType = fld[1][2]
@@ -225,22 +226,23 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
         bodyif.add newEmptyNode()
         continue
       let jnfieldstr = field[0].strval.newStrLitNode
-      let jnfield = newNimNode(nnkBracketExpr).add(thevar, jnfieldstr)
+      let jnfield = quote do: `thevar`[`jnfieldstr`]
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
     elif fimpl.isPrimitive or field[1].isTime or field[1].isBsonDocument:
       bodyif.add primAssign(resvar, jnobj, field)
-    elif fimpl.kind in {nnkObjectTy, nnkRefTy}:
+    elif fimpl.kind in objtyp:
       let jnfieldstr = field[0].strval.newStrLitNode
-      let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
+      let jnfield = quote do: `jnobj`[`jnfieldstr`]
       bodyif.add objAssign(resfield, jnfield, field, fimpl)
   if isDistinct:
-    bodyif.add newAssignment(thevar, newcall("unown",
-      newCall($fld[1], resvar)
-    ))
+    let fldist = fld[1]
+    bodyif.add(quote do:
+      `thevar` = unown(`fldist`(`resvar`)))
   else:
-    bodyif.add newAssignment(thevar, newCall("unown", resvar))
-  result = newIfStmt((testif, bodyif))
+    bodyif.add(quote do: `thevar` = unown(`resvar`))
+  result = quote do:
+    if `testif`: `bodyif`
 
 template identDefsCheck(result: var NimNode, resvar, field: NimNode,
   b, t: untyped): untyped =
