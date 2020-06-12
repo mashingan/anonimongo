@@ -45,7 +45,8 @@ if filename != "" or saveas != "":
     test "Connect to localhost and authentication":
       mongo = testsetup()
       require(mongo != nil)
-      require(mongo.authenticated)
+      if mongo.withAuth:
+        require(mongo.authenticated)
       db = mongo[dbname]
 
     test "Create default bucket":

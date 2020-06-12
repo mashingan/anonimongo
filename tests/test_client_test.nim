@@ -27,7 +27,8 @@ suite "Client connection and user management tests":
 
   test "Connected mongo and authenticated":
     mongo = testsetup()
-    require mongo.authenticated
+    if mongo.withAuth:
+      require mongo.authenticated
 
   test "Look users info":
     require mongo != nil

@@ -27,7 +27,8 @@ suite "Administration APIs tests":
   test "Connect to localhost and authentication":
     mongo = testsetup()
     require(mongo != nil)
-    require(mongo.authenticated)
+    if mongo.withAuth:
+      require(mongo.authenticated)
   test "Get admin database":
     require mongo != nil
     db = mongo["admin"]

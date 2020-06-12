@@ -39,7 +39,8 @@ suite "CRUD tests":
   
   test "Mongo connected and authenticated":
     mongo = testsetup()
-    require mongo.authenticated
+    if mongo.withAuth:
+      require mongo.authenticated
     db = mongo[testdb]
     namespace = &"{db.name}.{collname}"
 

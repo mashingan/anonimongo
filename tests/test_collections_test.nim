@@ -54,7 +54,8 @@ suite "Collections APIs tests":
   test "Connect to localhost and authentication":
     mongo = testsetup()
     require(mongo != nil)
-    require(mongo.authenticated)
+    if mongo.withAuth:
+      require(mongo.authenticated)
   
   test &"Implicitly create a db {newdb} and collection {targetColl}":
     # we implicitly create a new db and collection

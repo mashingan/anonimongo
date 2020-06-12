@@ -249,6 +249,9 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
+proc hasUserAuth*(m: Mongo): bool =
+  m.username != "" and m.password != ""
+
 proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   Future[bool] {.async.} =
   ## Authenticate Mongo with given username and password and delegate it to

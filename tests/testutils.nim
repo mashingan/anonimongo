@@ -53,6 +53,9 @@ proc startmongo*: Process =
     let opt = {poUsePath, poStdErrToStdOut}
   result = unown startProcess(exe, args = args, options = opt)
 
+proc withAuth*(m: Mongo): bool =
+  (user != "" and pass != "") or m.hasUserAuth
+
 proc testsetup*: Mongo =
   when defined(ssl):
     let sslinfo = initSSLInfo(key, cert)
@@ -72,7 +75,7 @@ proc testsetup*: Mongo =
   #echo &"current available conns: {mongo.pool.available.len}"
   when verbose:
     let start = cpuTime()
-  if not waitFor(authenticate[Sha256Digest](mongo, user, pass)):
+  if mongo.withAuth and not waitFor(authenticate[Sha256Digest](mongo, user, pass)):
     echo "cannot authenticate the connection"
   #echo &"is mongo authenticated: {mongo.authenticated}"
   when verbose:
