@@ -60,7 +60,11 @@ jobs:
           sleep 10
 
       - run: nimble install -Y
+      # Disabling running mongod since mongod is already running with systemctl
+      # Disabling test gridfs because no big file available, by setting filename and saveas to blank
       - name: Nimble test setup and run
         run: |
-            echo 'switch("define", "nomongod") > config.nims'
+            echo 'switch("define", "nomongod")' > config.nims
+            echo 'switch("define", "filename=")' >> config.nims
+            echo 'switch("define", "saveas=")' >> config.nims
             nimble test -Y
