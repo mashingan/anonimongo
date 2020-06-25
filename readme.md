@@ -213,6 +213,44 @@ doAssert ourObj.field2 == "power-level"
 
 </details>
 
+<summary>Convert object to BsonDocument</sumary>
+
+```
+type
+  Obj1 = object
+    str: string
+    `int`: int
+    `float`: float
+
+proc toBson(obj: Obj1): BsonDocument =
+  result = bson()
+  for k, v in obj.fieldPairs:
+    result[k] = v
+
+let obj1 = Obj1(
+  str: "test",
+  `int`: 42,
+  `float`: 42.0
+)
+let obj1doc = obj1.toBson
+doAssert obj1doc["str"] == obj1.str
+doAssert obj1doc["int"] == obj1.`int`
+doAssert obj1doc["float"] == obj1.`float`
+```
+
+The converting example above can be made generic like:
+
+```
+proc toBson[T: tuple | object](o: T): BsonDocument =
+  result = bson()
+  for k, v in o.fieldPairs:
+    result[k] = v
+```
+
+But according to the `fieldPairs` documentation, it can only support
+tuple and object so if the user is working with ref object, they can
+only convert it manually.
+
 Check [tests](tests/) for more examples of detailed usages.  
 Elaborate Bson examples and cases are covered in [bson_test.nim](tests/bson.nim)
 
@@ -235,6 +273,12 @@ or directly from Github repo
 
 ```
 nimble install https://github.com/mashingan/anonimongo 
+```
+
+to install the `#head` branch
+
+```
+nimble install https://github.com/mashingan/anonimongo@#head
 ```
 
 ### For dependency
