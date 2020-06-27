@@ -215,7 +215,7 @@ doAssert ourObj.field2 == "power-level"
 
 <summary>Convert object to BsonDocument</sumary>
 
-```
+```nim
 type
   Obj1 = object
     str: string
@@ -240,7 +240,7 @@ doAssert obj1doc["float"] == obj1.`float`
 
 The converting example above can be made generic like:
 
-```
+```nim
 proc toBson[T: tuple | object](o: T): BsonDocument =
   result = bson()
   for k, v in o.fieldPairs:
