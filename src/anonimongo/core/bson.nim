@@ -587,34 +587,31 @@ proc `$`*(doc: BsonDocument): string =
     result &= '}'
 
 
-proc writeKey(s: Stream, key: string, kind: BsonKind) =
+proc writeKey(s: Stream, key: string, kind: BsonKind): int32 =
   s.write kind.byte
   s.write key
   s.write 0x00.byte
+  result = int32(1 + key.len + 1)
 
 proc encode*(doc: BsonDocument): (int, string)
 
 proc encode(s: Stream, key: string, doc: BsonInt32): int =
-  result = 1 + key.len + 1 + 4
-  s.writeKey key, bkInt32
+  result = s.writeKey(key, bkInt32) + doc.value.sizeof
   s.writeLE doc.value
 
 proc encode(s: Stream, key: string, doc: BsonInt64): int =
-  result = 1 + key.len + 1 + 8
-  s.writeKey key, bkInt64
+  result = s.writeKey(key, bkInt64) + doc.value.sizeof
   s.writeLE doc.value
 
 proc encode(s: Stream, key: string, doc: BsonString | BsonJs): int =
   let sbytes = ($doc.value).bytes
-  result = 1 + key.len + 1 + 4 + sbytes.len + 1
-  s.writeKey key, doc.kind
+  result = s.writeKey(key, doc.kind) + int32.sizeof + sbytes.len + 1
   s.writeLE (sbytes.len + 1).int32
   for c in sbytes: s.write c
   s.write 0x00.byte
 
 proc encode(s: Stream, key: string, doc: BsonDouble): int =
-  result = 1 + key.len + 1 + 8
-  s.writeKey key, bkDouble
+  result = s.writeKey(key, bkDouble) + doc.value.sizeof
   s.writeLE doc.value
 
 proc encode(s: Stream, key: string, doc: BsonArray): int =
@@ -625,51 +622,43 @@ proc encode(s: Stream, key: string, doc: BsonArray): int =
   for i, b in doc.value:
     embedArray[$i] = b
 
-  s.writeKey key, bkArray
   let (hlength, currbuff) = encode embedArray
-  result = 1 + key.len + 1 + hlength
+  result = s.writeKey(key, bkArray) + hlength
   s.write currbuff
 
 proc encode(s: Stream, key: string, doc: BsonBool): int =
-  result = 1 + key.len + 1 + 1
-  s.writeKey key, bkBool
+  result = s.writeKey(key, bkBool) + byte.sizeof
   if doc.value: s.write 0x01.byte
   else: s.write 0x00.byte
 
 proc encode(s: Stream, key: string, doc: BsonTime): int =
-  result = 1 + key.len + 1 + 8
-  s.writeKey key, bkTime
+  result = s.writeKey(key, bkTime) + int64.sizeof
   let timeval = doc.value.ms
   s.writeLE timeval
 
 proc encode(s: Stream, key: string, doc: BsonDocument): int =
-  result = 1 + key.len + 1
-  s.writeKey key, bkEmbed
+  result = s.writeKey(key, bkEmbed)
   let (embedlen, embedstr) = encode doc
   result += embedlen
   s.write embedstr
 
 proc encode(s: Stream, key: string, doc: BsonNull): int =
-  result = 1 + key.len + 1
-  s.writeKey key, bkNull
+  result = s.writeKey(key, bkNull)
 
 proc encode(s: Stream, key: string, doc: BsonObjectId): int =
-  result = 1 + key.len + 1 + 12
-  s.writeKey key, bkObjectId
+  result = s.writeKey(key, bkObjectId) + doc.value.bytes.len
   for b in doc.value.bytes:
     s.write b
 
 proc encode(s: Stream, key: string, doc: BsonBinary): int =
-  result = 1 + key.len + 1 + 4 + 1 + doc.value.len
-  s.writeKey key, bkBinary
+  result = s.writeKey(key, bkBinary) + int32.sizeof + byte.sizeof + doc.value.len
   s.writeLE doc.value.len.int32
   s.write doc.subtype.byte
   for b in doc.value:
     s.writeLE b
 
 proc encode(s: Stream, key: string, doc: BsonTimestamp): int =
-  result = 1 + key.len + 1 + 8
-  s.writeKey key, bkTimestamp
+  result = s.writeKey(key, bkTimestamp) + uint64.sizeof
   s.writeLE doc.value[0]
   s.writeLE doc.value[1]
 
