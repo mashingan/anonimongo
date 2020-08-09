@@ -74,7 +74,7 @@ when gridEnsured:
       idxops[0] = g.files.createIndex(bson({ filename: 1, uploadDate: 1 }))
     if not indexes[1].anyIt( it["name"] == "files_id_1_n_1_1" ):
       idxops[1] = g.chunks.createIndex(bson({ files_id: 1, n: 1 }))
-    discard await idxops.all
+    asyncCheck await idxops.all
 
 proc getBucket*(c: Collection, name = "fs"): Future[GridFS]{.async.} =
   result = await c.db.getBucket(name)
@@ -156,7 +156,7 @@ template prepareFile(target: string, mode = fmRead): untyped {.dirty.} =
   defer: close f
 
 proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32,
-  metadata = bson()): Future[WriteResult] {.async, discardable.} =
+  metadata = bson()): Future[WriteResult] {.async.} =
   ## A higher uploadFile which directly open and close file from filename.
   prepareFile(filename)
   let chunksize = if chunk == 0: g.chunkSize else: chunk
@@ -176,7 +176,7 @@ proc uploadFile*(g: GridFS, filename: string, chunk = 0'i32,
     metadata = filemetadata, chunk = chunksize)
 
 proc downloadFile*(g: GridFS, f: AsyncFile, filename = ""):
-  Future[WriteResult] {.async, discardable.} =
+  Future[WriteResult] {.async.} =
   ## Download given filename and write it to f asyncfile. This only download
   ## the latest uploaded file in the same name.
   when gridEnsured: await g.ensureIndex
@@ -213,7 +213,7 @@ proc downloadFile*(g: GridFS, f: AsyncFile, filename = ""):
     kind: wkSingle)
 
 proc downloadFile*(bucket: GridFS, filename: string):
-  Future[WriteResult]{.async, discardable.} =
+  Future[WriteResult]{.async.} =
   ## Higher version for downloadFile. Ensure the destination file path has
   ## writing permission
   prepareFile(filename, fmWrite)

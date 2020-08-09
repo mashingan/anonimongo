@@ -252,7 +252,7 @@ tuple and object so if the user is working with ref object, they can
 only convert it manually.
 
 Check [tests](tests/) for more examples of detailed usages.  
-Elaborate Bson examples and cases are covered in [bson_test.nim](tests/bson.nim)
+Elaborate Bson examples and cases are covered in [bson_test.nim](tests/test_bson_test.nim)
 
 
 ## Install
