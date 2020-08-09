@@ -147,24 +147,78 @@ when defined(ssl) or defined(nimdoc):
     )
 
 proc setSsl(m: Mongo, sslinfo: SslInfo) =
-  if sslinfo.keyfile != "" and sslinfo.certfile != "":
-    when defined(ssl):
-      let mode = when verifypeer: CVerifyPeer
-                 else: CVerifyNone
-      let ctx = newContext(protVersion = sslinfo.protocol,
-        certfile = sslinfo.certfile,
-        keyfile = sslinfo.keyfile,
-        verifyMode = mode)
-      if verifypeer and cafile == "":
-        discard ctx.context.SSL_CTX_load_verify_locations(
-          cstring sslinfo.certfile, nil)
-      elif verifypeer:
-        discard ctx.context.SSL_CTX_load_verify_locations(
-          cstring cafile, nil)
-      for i, c in m.pool.connections:
-        when verbose: echo &"wrapping ssl socket {i}"
-        ctx.wrapSocket c.socket
-      m.tls = true
+  when defined(ssl):
+    let mode = when verifypeer: CVerifyPeer
+               else: CVerifyNone
+    let ctx = newContext(protVersion = sslinfo.protocol,
+      certfile = sslinfo.certfile,
+      keyfile = sslinfo.keyfile,
+      verifyMode = mode)
+    if verifypeer and cafile == "":
+      discard ctx.context.SSL_CTX_load_verify_locations(
+        cstring sslinfo.certfile, nil)
+    elif verifypeer:
+      discard ctx.context.SSL_CTX_load_verify_locations(
+        cstring cafile, nil)
+    for i, c in m.pool.connections:
+      when verbose: echo &"wrapping ssl socket {i}"
+      ctx.wrapSocket c.socket
+    m.tls = true
+
+proc handleSsl(m: Mongo) =
+  when defined(ssl):
+    var newsslinfo = SSLInfo(protocol: protSSLv23)
+    var tbl = m.query
+    proc setCertKey (s: var SslInfo, vals: seq[string]) =
+      for kv in vals:
+        let kvs = kv.split ':'
+        if kvs[0].toLower == "certificate":
+          s.certfile = decodeUrl kvs[1]
+        elif kvs[0].toLower == "key":
+          s.keyfile = decodeUrl kvs[1]
+    var isSsl = if "ssl" in tbl: "ssl"
+              elif "tls" in tbl: "tls"
+              else: ""
+    var connectSSL = if isSsl == "": false
+                    else:
+                      try: parseBool tbl[isSsl][0]
+                      except: false
+
+    if connectSSL:
+      # do nothing with empty key and certificate file if there's no
+      # `tlsCertificateKeyFile` provided
+      if "tlsCertificateKeyFile".toLower in tbl:
+        newsslinfo.setCertKey tbl["tlsCertificateKeyFile".toLower]
+      m.setSsl newsslinfo
+    elif "tlsCertificateKeyFile".toLower in tbl:
+      # implicitly connecting with SSL/TLS
+      newsslinfo.setCertKey tbl["tlsCertificatekeyFile".toLower]
+      m.setSsl newsslinfo
+
+proc handleWriteConcern(m: Mongo) =
+  var w = bson()
+  if "w" in m.query and m.query["w"].len > 0:
+    # "w" here can be a number or a string.
+    let val = m.query["w"][0]
+    if val.all isDigit:
+      w["w"] = try: (parseInt val).toBson
+                          except: 1.toBson
+    else:
+      w["w"] = val
+  if "j" in m.query and m.query["j"].len > 0:
+    w["j"] = m.query["j"][0]
+  if w != nil:
+    m.writeConcern = w
+
+proc checkTlsValidity(m: Mongo) =
+  let tlsCertInval = ["tlsInsecure", "tlsAllowInvalidCertificates"]
+  let tlsHostInval = ["tlsInsecure", "tlsAllowInvalidHostnames"]
+  if tlsCertInval.allIt(it.toLower in m.query):
+    raise newException(MongoError,
+      &"""Can't have {tlsCertInval.join(" and ")}""")
+  if tlsHostInval.allIt(it.toLower in m.query):
+    raise newException(MongoError,
+      &"""Can't have {tlsHostInval.join(" and ")}""")
 
 proc newMongo*(host = "localhost", port = 27017, master = true,
   poolconn = poolconn, sslinfo = SslInfo()): Mongo =
@@ -194,52 +248,18 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
   if result.host == "": result.host = "localhost"
   # need elaborate handling for URI connect
   # ref:https://github.com/mongodb/specifications/blob/master/source/uri-options/uri-options.rst 
-  var writeConcern = bson()
-  if "w" in result.query and result.query["w"].len > 0:
-    # "w" here can be a number or a string.
-    let val = result.query["w"][0]
-    if val.all isDigit:
-      writeConcern["w"] = try: (parseInt val).toBson
-                          except: 1.toBson
-    else:
-      writeConcern["w"] = val
-  if "j" in result.query and result.query["j"].len > 0:
-    writeConcern["j"] = result.query["j"][0]
+
+  result.handleWriteConcern
 
   if "appname" notin result.query:
     result.query["appname"] = @["Anonimongo driver client apps"]
-  let tlsCertInval = ["tlsInsecure", "tlsAllowInvalidCertificates"]
-  let tlsHostInval = ["tlsInsecure", "tlsAllowInvalidHostnames"]
-  if tlsCertInval.allIt(it.toLower in result.query):
-    raise newException(MongoError,
-      &"""Can't have {tlsCertInval.join(" and ")}""")
-  if tlsHostInval.allIt(it.toLower in result.query):
-    raise newException(MongoError,
-      &"""Can't have {tlsHostInval.join(" and ")}""")
+
+  result.checkTlsValidity
+
   if "authSource".toLower in result.query:
     result.db = result.query["authsource"][0]
 
-  proc setCertKey (s: var SslInfo, vals: seq[string]) =
-    for kv in vals:
-      let kvs = kv.split ':'
-      if kvs[0].toLower == "certificate":
-        s.certfile = decodeUrl kvs[1]
-      elif kvs[0].toLower == "key":
-        s.keyfile = decodeUrl kvs[1]
-  var newsslinfo = SSlInfo()
-  if ["ssl", "tls"].anyIt( it.toLower in result.query):
-    if "tlsCertificateKeyFile".toLower notin result.query:
-      raise newException(MongoError, "option tlsCertificateKeyFile not provided")
-    newsslinfo.setCertKey result.query["tlsCertificateKeyFile".toLower]
-  elif "tlsCertificateKeyFile".toLower in result.query:
-    echo "got tls certificate key"
-    newsslinfo.setCertKey result.query["tlsCertificatekeyFile".toLower]
-
-  when defined(ssl):
-    newsslinfo.protocol = protSSLv23
-  result.setSsl newsslinfo
-  if not writeConcern.isNil:
-    result.writeConcern = writeConcern
+  result.handleSsl
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated
