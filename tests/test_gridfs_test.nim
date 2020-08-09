@@ -25,7 +25,7 @@ proc insert5files(g: GridFS, fname: string): bool =
     wrs[i] = g.uploadFile(f, newname)
   (waitfor all(wrs)).allIt( it.success )
 
-if filename != "" or saveas != "":
+if filename != "" and saveas != "":
   suite "GridFS implementation tests":
     
     test "Mongo server is running":
@@ -116,8 +116,9 @@ if filename != "" or saveas != "":
       let filenames = waitfor grid.listFileNames()
       check filenames.len == 6
       check dwfile in filenames
+      let (_, _, fileext) = splitFile filename
       let newinserts = waitfor grid.listFileNames(matcher = bson({
-        filename: { "$regex": """_\d\.mkv$""" }
+        filename: { "$regex": fmt"""_\d\{fileext}$""" }
       }).toBson)
       check newinserts.len == 5
       check dwfile notin newinserts
@@ -131,8 +132,9 @@ if filename != "" or saveas != "":
       check insert5files(grid, filename)
 
       # removing using regex
+      let (_, _, ext) = splitFile filename
       wr = waitfor grid.removeFile(bson({
-        filename: { "$regex": """_[23]\.mkv$""" }
+        filename: { "$regex": fmt"""_[23]\{ext}$""" }
       }).toBson)
       wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
       check (waitfor grid.availableFiles) == 3
