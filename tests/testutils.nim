@@ -44,8 +44,9 @@ proc startmongo*: Process =
     args.add "requireSSL"
     args.add "--sslPEMKeyFile"
     args.add pem
-    args.add "--sslCAFile"
-    args.add cert
+    if cert != "":
+      args.add "--sslCAFile"
+      args.add cert
   when defined(windows):
     # the process cannot continue unless the stdout flushed
     let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
