@@ -5,8 +5,9 @@ proc isMaster*(db: Database, cmd = bson()): Future[BsonDocument]{.async.} =
   var q = bson({
     isMaster: 1,
   })
-  if "saslSupportedMechs" in cmd:
-    q["saslSupportedMechs"] = cmd["salsSupportedMechs"]
+  let sasl = "saslSupportedMechs"
+  if sasl in cmd:
+    q[sasl] = cmd[sasl]
   if "any" in cmd:
     q["any"] = cmd["any"]
   result = await db.crudops(q)
@@ -70,7 +71,7 @@ proc replSetStepDown*(db: Database, stepDown: int, catchup = 10, force  = false)
   if force: catchup = 0
   if stepDown < catchup:
     raise newException(MongoError,
-      fmt"stepDown {stepDown}s cannot less than catchup {catchup}s")
+      &"stepDown ({stepDown}s) cannot less than catchup ({catchup}s)")
   q["secondaryCatchUpPeriodSecs"] = catchup
   q["force"] = force
   result = await db.crudops(q, "admin")
