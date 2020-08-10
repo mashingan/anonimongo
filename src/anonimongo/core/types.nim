@@ -1,7 +1,9 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
-import openssl
 from asyncdispatch import Port
 from math import nextPowerOfTwo
+
+when defined(ssl):
+  import openssl
 
 import sha1, nimSHA2
 import dnsclient
@@ -258,6 +260,9 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
     port: Port port,
     pool: initPool(poolconn)
   )
+  var sslinfo = sslinfo
+  when defined(ssl):
+    sslinfo.protocol = protSSLv23
   result.setSsl sslInfo
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo
