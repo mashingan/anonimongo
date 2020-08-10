@@ -3,6 +3,8 @@ import sugar, options, times
 import bson, wire, auth
 import scram/client
 
+export tables.pairs
+
 {.warning[UnusedImport]: off.}
 
 const verbose {.booldefine.} = false
