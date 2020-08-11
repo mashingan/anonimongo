@@ -358,6 +358,12 @@ proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn],
   user, pass, dbname: string): Future[bool]{.async.} =
   if bulk.len == 0: return true
   for conn in bulk:
+    var user = user
+    var pass = pass
+    if (user == "" or pass == "") and (conn.user != "" and conn.pass != ""):
+      user = conn.user
+      pass = conn.pass
+
     if await conn.pool.authenticate(user, pass, T, dbname):
       result = true
       conn.authenticated = true
@@ -370,13 +376,6 @@ proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   ## Authenticate Mongo with given username and password and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
-  #[
-  if await m.main.pool.authenticate(user, pass, T, adm):
-    m.main.authenticated = true
-    result = true
-  #result = await m.replicas.bulkAuthenticate[:T](user, pass, adm)
-  #result = await m.arbiters.bulkAuthenticate[:T](user, pass, adm)
-  ]#
   result = await toSeq(m.servers.values).bulkAuthenticate[:T](user, pass, adm)
   m.authenticated = result
 
