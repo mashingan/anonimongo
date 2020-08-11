@@ -186,9 +186,10 @@ proc setSsl(m: Mongo, sslinfo: SslInfo) =
     elif verifypeer:
       discard ctx.context.SSL_CTX_load_verify_locations(
         cstring cafile, nil)
-    for i, c in m.pool.connections:
-      when verbose: echo &"wrapping ssl socket {i}"
-      ctx.wrapSocket c.socket
+    for host, server in m.servers:
+      for i, c in server.pool.connections:
+        when verbose: echo &"wrapping ssl socket {i} for {host}"
+        ctx.wrapSocket c.socket
     m.tls = true
 
 proc handleSsl(m: Mongo) =
