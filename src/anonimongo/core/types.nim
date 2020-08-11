@@ -385,9 +385,9 @@ proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn],
   for conn in bulk:
     var user = user
     var pass = pass
-    if (user == "" or pass == "") and (conn.user != "" and conn.pass != ""):
-      user = conn.user
-      pass = conn.pass
+    if (user == "" or pass == "") and (conn.username != "" and conn.password != ""):
+      user = conn.username
+      pass = conn.password
 
     if await conn.pool.authenticate(user, pass, T, dbname):
       result = true
