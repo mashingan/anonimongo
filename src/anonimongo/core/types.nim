@@ -373,6 +373,8 @@ proc main*(m: Mongo): MongoConn =
     for serv in m.servers.values:
       result = serv
       break
+  else:
+    result = m.servers[m.primary]
 
 proc hasUserAuth*(m: Mongo): bool =
   m.main.username != "" and m.main.password != ""

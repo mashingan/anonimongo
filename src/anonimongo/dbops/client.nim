@@ -60,14 +60,6 @@ proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
 
 proc connect*(m: Mongo): Future[bool] {.async.} =
   try:
-    #await all[(m.pool.connect(m.host, m.port.int))
-    #[
-    await m.main.pool.connect(m.main.host, m.main.port.int)
-    for r in m.replicas:
-      await r.pool.connect(r.host, r.port.int)
-    for a in m.arbiters:
-      await a.pool.connect(a.host, a.port.int)
-      ]#
     var connectops = newseq[Future[void]]()
     for _, server in m.servers:
       connectops.add server.pool.connect(server.host, server.port.int)
@@ -86,7 +78,16 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
   for id, c in m.main.pool.connections:
     ops[id-1] = m.handshake(m.main.isMaster, c.socket, dbname, id.int32, appname)
 
-  discard await all(ops)
+  let replies = await all(ops)
+  type HandshakeTemp = object
+    hosts: seq[string]
+    primary: string
+  if replies.len > 0 and replies[0].numberReturned > 0:
+    let b = replies[0].documents[0]
+    if b.ok:
+      let hktemp = replies[0].documents[0].to HandshakeTemp
+      m.hosts = hktemp.hosts
+      m.primary = hktemp.primary
 
 proc cuUsers(db: Database, query: BsonDocument):
   Future[WriteResult] {.async.} =
