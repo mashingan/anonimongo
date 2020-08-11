@@ -27,10 +27,10 @@ const
   description = "nim mongo driver"
   version = "0.2.0"
 
-proc handshake(m: Mongo, mc: MongoConn, s: AsyncSocket, db: string, id: int32,
-  appname = "Anonimongo client apps") {.async.} =
+proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
+  appname = "Anonimongo client apps"):Future[ReplyFormat] {.async.} =
   let appname = appname
-  let master = if mc.isMaster: 1 else: 0
+  let master = if isMaster: 1 else: 0
   var q = bson({
     isMaster: master,
     client: {
@@ -54,19 +54,24 @@ proc handshake(m: Mongo, mc: MongoConn, s: AsyncSocket, db: string, id: int32,
     dump q
   var db = db
   let dbc = m[move db]
+  result = await sendops(q, dbc, cmd = ckRead)
   when verbose:
-    look await sendops(q, dbc, cmd = ckRead)
-  else:
-    discard await sendops(q, dbc, cmd = ckRead)
+    look result
 
 proc connect*(m: Mongo): Future[bool] {.async.} =
   try:
     #await all[(m.pool.connect(m.host, m.port.int))
+    #[
     await m.main.pool.connect(m.main.host, m.main.port.int)
     for r in m.replicas:
       await r.pool.connect(r.host, r.port.int)
     for a in m.arbiters:
       await a.pool.connect(a.host, a.port.int)
+      ]#
+    var connectops = newseq[Future[void]]()
+    for _, server in m.servers:
+      connectops.add server.pool.connect(server.host, server.port.int)
+    await all(connectops)
   except:
     echo getCurrentExceptionMsg()
     return
@@ -76,25 +81,12 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
       m.query["appname"][0]
     else: "Anonimongo client apps"
   var opslen = m.main.pool.available.len
-  for replica in m.replicas:
-    opslen += replica.pool.available.len
-  for arbiter in m.arbiters:
-    opslen += arbiter.pool.available.len
-  var ops = newseq[Future[void]](opslen)
+  var ops = newseq[Future[ReplyFormat]](opslen)
   let dbname = if m.db != "": m.db else: "admin"
-  var count = 0
   for id, c in m.main.pool.connections:
-    ops[id-1] = m.handshake(m.main, c.socket, dbname, id.int32, appname)
-    inc count
-  for replica in m.replicas:
-    for id, c in replica.pool.connections:
-      ops[count+id-1] = m.handshake(replica, c.socket, dbname, int32 count+id, appname)
-      inc count
-  for arbiter in m.arbiters:
-    for id, c in arbiter.pool.connections:
-      ops[count+id-1] = m.handshake(arbiter, c.socket, dbname, int32 count+id, appname)
+    ops[id-1] = m.handshake(m.main.isMaster, c.socket, dbname, id.int32, appname)
 
-  await all(ops)
+  discard await all(ops)
 
 proc cuUsers(db: Database, query: BsonDocument):
   Future[WriteResult] {.async.} =

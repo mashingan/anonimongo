@@ -19,7 +19,7 @@ proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
   ## helper proc. Cmd argument is needed to recognize what kind
   ## of command operation to be sent.
   var dbconn: MongoConn
-  if db.db.readPreferences == ReadPreferences.primary or db.db.replicas.len == 0:
+  if db.db.readPreferences == ReadPreferences.primary:
     dbconn = db.db.main
   else:
     let rfmsg = &"ReadPreferences except primary ({db.db.readPreferences}) " &

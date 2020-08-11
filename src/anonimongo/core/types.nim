@@ -1,6 +1,7 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
 import openssl
 from asyncdispatch import Port
+from math import nextPowerOfTwo
 
 import sha1, nimSHA2
 
@@ -30,9 +31,9 @@ type
     ## throughout the program, however any lib user can spawn any
     ## instance of Mongo as like, but this should be avoided because
     ## of costly invocation of Mongo.
-    main*: MongoConn
-    replicas*: seq[MongoConn]
-    arbiters*: seq[MongoConn]
+    hosts*: seq[string]
+    primary*: string
+    servers*: TableRef[string, MongoConn]
     tls: bool
     authenticated: bool
     db*: string
@@ -192,10 +193,11 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   poolconn = poolconn, sslinfo = SslInfo()): Mongo =
   ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
   result = Mongo(
+    servers: newTable[string, MongoConn](1),
     query: newTable[string, seq[string]](),
     readPreferences: ReadPreferences.primary
   )
-  result.main = MongoConn(
+  result.servers[&"{host}:{port}"] = MongoConn(
     isMaster: master,
     host: host,
     port: Port port,
@@ -203,22 +205,82 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   )
   result.setSsl sslInfo
 
+proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo
+proc newMongo*(uri: string, poolconn = poolconn): Mongo =
+  ## Overload the newMongo for accepting raw uri string.
+  # This is actually needed because Mongodb specify custom
+  # definition by supporting multiple user:pass@host:port
+  # format in domain host uri.
+
+  template raiseInvalidSep: untyped =
+    raise newException(MongoError,
+      &"Whether invalid URI {uri} or missing trailing '/'")
+    
+  if uri.count('/') < 3:
+    raiseInvalidSep()
+  let uriobj = parseUri uri
+  let schemepos = uri.find("://")
+  if schemepos == -1:
+    raise newException(MongoError, &"No scheme protocol provided at {uri} uri")
+  let scheme = uri[0..schemepos-1].toLowerAscii
+  if scheme notin ["mongodb", "mongodb+srv"]:
+    raise newException(MongoError,
+      &"Only supports mongodb:// or mongodb+srv://, provided: {scheme}")
+  elif scheme == "mongodb+srv":
+    raise newException(MongoError, "mongodb+srv not implemented yet")
+  let trailingsep = uri.find('/', start = schemepos+3)
+  if trailingsep == -1:
+    raiseInvalidSep()
+  let hosts = uri[schemepos+3 .. trailingsep-1].split(',')
+  var uris = newseq[URI](hosts.len)
+  for i, host in hosts:
+    var uname, pwd, hostname, port: string
+    let splitdomain = host.split('@')
+    var hostdompos = 0
+    if splitdomain.len > 1:
+      hostdompos = 1
+      let upw = splitdomain[0].split(':')
+      uname = upw[0]
+      if upw.len > 1:
+        pwd = upw[1]
+    let hdom = splitdomain[hostdompos].split(':')
+    if hdom.len > 1:
+      port = hdom[1]
+    hostname = hdom[0]
+    uris[i] = Uri(
+      scheme: scheme,
+      hostname: hostname,
+      port: port,
+      username: uname,
+      password: pwd,
+      query: uriobj.query,
+      path: uriobj.path
+    )
+  result = newMongo(uris, poolconn)
+
 proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
-  ## Give a new `Mongo<#Mongo>`_ instance based on URI string.
-  let port = try: parseInt(uri.port)
-             except ValueError: 27017
+  ## Give a new `Mongo<#Mongo>`_ instance based on URI.
+  result = newMongo(@[uri], poolconn)
+
+proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo =
   result = Mongo(
-    query: decodeQuery(uri.query),
+    servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
+    query: decodeQuery(uri[0].query),
     readPreferences: ReadPreferences.primary
   )
-  result.main = MongoConn(
-    host: uri.hostname,
-    username: uri.username,
-    password: uri.password,
-    port: Port port,
-    pool: initPool(poolconn)
-  )
-  if result.main.host == "": result.main.host = "localhost"
+  for u in uri:
+    let port = try: parseInt(u.port)
+              except ValueError: 27017
+    var hostport = &"{u.hostname}:{u.port}"
+    result.servers[hostport] = MongoConn(
+      host: u.hostname,
+      port: Port port,
+      username: u.username,
+      password: u.password,
+      pool: initPool(poolconn)
+    )
+  #if result.main.host == "": result.main.host = "localhost"
+
   # need elaborate handling for URI connect
   # ref:https://github.com/mongodb/specifications/blob/master/source/uri-options/uri-options.rst 
   var writeConcern = bson()
@@ -283,6 +345,12 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
+proc main*(m: Mongo): MongoConn =
+  if m.primary == "" and m.servers.len > 0:
+    for serv in m.servers.values:
+      result = serv
+      break
+
 proc hasUserAuth*(m: Mongo): bool =
   m.main.username != "" and m.main.password != ""
 
@@ -302,11 +370,14 @@ proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   ## Authenticate Mongo with given username and password and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
+  #[
   if await m.main.pool.authenticate(user, pass, T, adm):
     m.main.authenticated = true
     result = true
-  result = await m.replicas.bulkAuthenticate[:T](user, pass, adm)
-  result = await m.arbiters.bulkAuthenticate[:T](user, pass, adm)
+  #result = await m.replicas.bulkAuthenticate[:T](user, pass, adm)
+  #result = await m.arbiters.bulkAuthenticate[:T](user, pass, adm)
+  ]#
+  result = await toSeq(m.servers.values).bulkAuthenticate[:T](user, pass, adm)
   m.authenticated = result
 
 proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo):
@@ -367,9 +438,8 @@ proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
   ## Get `Collection<#Collection>`_ name from Cursor.
 
 proc close*(m: Mongo) =
-  close m.main.pool
-  for replica in m.replicas:
-    close replica.pool
+  for _, serv in m.servers:
+    close serv.pool
 
 proc initQuery*(query = bson(), collection: Collection = nil,
   skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query =
