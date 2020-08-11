@@ -227,7 +227,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
         continue
       let fieldname = field[0]
       let jnfieldstr = fieldname.strval.newStrLitNode
-      let jnfield = quote do: `jnobj`[`jnfieldstr`]
+      let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
     elif fimpl.isPrimitive or field[1].isTime or field[1].isBsonDocument:
