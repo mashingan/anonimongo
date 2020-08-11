@@ -13,6 +13,16 @@ const
   cafile* {.strdefine.} = ""
 
 type
+  MongoConn* = ref object of RootObj
+    ## Actual ref object that handles the connection to the intended server
+    isMaster*: bool
+    host: string
+    port: Port
+    username: string
+    password: string
+    pool*: Pool
+    authenticated: bool
+
   Mongo* = ref object of RootObj
     ## An ref object that will handle any necessary information
     ## as Mongo client. Since Mongo expected to live as long as
@@ -20,18 +30,23 @@ type
     ## throughout the program, however any lib user can spawn any
     ## instance of Mongo as like, but this should be avoided because
     ## of costly invocation of Mongo.
-    isMaster*: bool
+    main*: MongoConn
+    replicas*: seq[MongoConn]
+    arbiters*: seq[MongoConn]
     tls: bool
     authenticated: bool
-    host: string
-    port: Port
-    username: string
-    password: string
     db*: string
-    query: TableRef[string, seq[string]]
-    pool*: Pool
     writeConcern*: BsonDocument
     flags: QueryFlags
+    readPreferences*: ReadPreferences
+    query: TableRef[string, seq[string]]
+
+  ReadPreferences* {.pure.} = enum
+    primary = "primary"
+    primaryPreferred = "primaryPreferred"
+    secondary = "secondary"
+    secondaryPreferred = "secondaryPreferred"
+    nearest = "nearest"
 
   SslInfo* = object
     ## SslInfo will handle information for connecting with SSL/TLS
@@ -116,6 +131,13 @@ type
     chunks*: Collection
     chunkSize*: int32
 
+  CommandKind* = enum
+    ## CommandKind is used to recognize whether the command is write
+    ## or read. This is used significantly in case of server selection
+    ## for multihost connections.
+    ckWrite
+    ckRead
+
   MongoError* = object of Defect
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
@@ -170,28 +192,33 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   poolconn = poolconn, sslinfo = SslInfo()): Mongo =
   ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
   result = Mongo(
+    query: newTable[string, seq[string]](),
+    readPreferences: ReadPreferences.primary
+  )
+  result.main = MongoConn(
     isMaster: master,
     host: host,
     port: Port port,
-    query: newTable[string, seq[string]](),
     pool: initPool(poolconn)
   )
   result.setSsl sslInfo
 
-proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
+proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
   ## Give a new `Mongo<#Mongo>`_ instance based on URI string.
   let port = try: parseInt(uri.port)
              except ValueError: 27017
   result = Mongo(
-    isMaster: master,
+    query: decodeQuery(uri.query),
+    readPreferences: ReadPreferences.primary
+  )
+  result.main = MongoConn(
     host: uri.hostname,
     username: uri.username,
     password: uri.password,
     port: Port port,
-    query: decodeQuery(uri.query),
     pool: initPool(poolconn)
   )
-  if result.host == "": result.host = "localhost"
+  if result.main.host == "": result.main.host = "localhost"
   # need elaborate handling for URI connect
   # ref:https://github.com/mongodb/specifications/blob/master/source/uri-options/uri-options.rst 
   var writeConcern = bson()
@@ -241,34 +268,55 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
   if not writeConcern.isNil:
     result.writeConcern = writeConcern
 
+  if "readPreferences" in result.query:
+    let rps = result.query["readPreferences"]
+    if rps.len > 0:
+      result.readPreferences = parseEnum[ReadPreferences](rps[0])
+
+
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated
-proc host*(m: Mongo): string = m.host
-proc port*(m: Mongo): Port = m.port
+proc authenticated*(m: MongoConn): bool = m.authenticated
+proc host*(m: MongoConn): string = m.host
+proc port*(m: MongoConn): Port = m.port
 proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
 proc hasUserAuth*(m: Mongo): bool =
-  m.username != "" and m.password != ""
+  m.main.username != "" and m.main.password != ""
+
+proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn],
+  user, pass, dbname: string): Future[bool]{.async.} =
+  if bulk.len == 0: return true
+  for conn in bulk:
+    if await conn.pool.authenticate(user, pass, T, dbname):
+      result = true
+      conn.authenticated = true
+    else:
+      echo &"Connection on {conn.host}:{conn.port.int} cannot authenticate"
+      result = false
 
 proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   Future[bool] {.async.} =
   ## Authenticate Mongo with given username and password and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
-  if await m.pool.authenticate(user, pass, T, adm):
-    m.authenticated = true
+  if await m.main.pool.authenticate(user, pass, T, adm):
+    m.main.authenticated = true
     result = true
+  result = await m.replicas.bulkAuthenticate[:T](user, pass, adm)
+  result = await m.arbiters.bulkAuthenticate[:T](user, pass, adm)
+  m.authenticated = result
 
 proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo):
   Future[bool] {.async.} =
   ## Authenticate Mongo with available username and password from
   ## `Mongo<#Mongo>`_ object and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
-  if m.username == "" or m.password == "":
+  if m.main.username == "" or m.main.password == "":
     raise newException(MongoError, "username or password not available")
-  result = await authenticate[T](m, m.username, m.password)
+  result = await authenticate[T](m, m.main.username, m.main.password)
 
 proc `appname=`*(m: Mongo, name: string) =
   ## Set appname for `Mongo<#Mongo>`_ client instance.
@@ -318,7 +366,10 @@ proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
 proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
   ## Get `Collection<#Collection>`_ name from Cursor.
 
-proc close*(m: Mongo) = close m.pool
+proc close*(m: Mongo) =
+  close m.main.pool
+  for replica in m.replicas:
+    close replica.pool
 
 proc initQuery*(query = bson(), collection: Collection = nil,
   skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query =

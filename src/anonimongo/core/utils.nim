@@ -1,3 +1,4 @@
+import strformat
 import wire, bson, types, pool
 
 const verbose {.booldefine.} = false
@@ -11,14 +12,22 @@ func cmd*(name: string): string = name & ".$cmd"
 func flags*(d: Database): int32 = d.db.flags as int32
   ## Get Mongo available ``wire.QueryFlags`` as int32 bitfield
 
-proc sendOps*(q: BsonDocument, db: Database, name = ""):
+proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
   Future[ReplyFormat]{.async.} =
   ## A helper utility which greatly simplify actual Database command
   ## queries. Any new command implementation usually use this
-  ## helper proc.
+  ## helper proc. Cmd argument is needed to recognize what kind
+  ## of command operation to be sent.
+  var dbconn: MongoConn
+  if db.db.readPreferences == ReadPreferences.primary or db.db.replicas.len == 0:
+    dbconn = db.db.main
+  else:
+    let rfmsg = &"ReadPreferences except primary ({db.db.readPreferences}) " &
+      "or multihost replica not implemented yet"
+    raise newException(MongoError, rfmsg)
   let dbname = if name == "": db.name.cmd else: name.cmd
-  let (id, conn) = await db.db.pool.getConn()
-  defer: db.db.pool.endConn(id)
+  let (id, conn) = await dbconn.pool.getConn()
+  defer: dbconn.pool.endConn(id)
   var s = prepare(q, db.flags, dbname, id.int32)
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
@@ -56,20 +65,20 @@ proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
     return false
   true
 
-proc proceed*(db: Database, q: BsonDocument, dbname = ""):
+proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
   Future[WriteResult] {.async.} =
   ## Helper utility that basically utilize another two main operations
   ## ``sendops`` and ``epilogueCheck``.
-  let reply = await sendops(q, db, dbname)
+  let reply = await sendops(q, db, dbname, cmd)
   result = WriteResult(kind: wkSingle)
   result.success = epilogueCheck(reply, result.reason)
 
 #template crudops(db: Database, q: BsonDocument): untyped {.async.} =
-proc crudops*(db: Database, q: BsonDocument, dbname = ""):
+proc crudops*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
   Future[BsonDocument]{.async.} =
   ## About the same as ``proceed`` but this will return a BsonDocument
   ## compared to ``proceed`` that return ``(bool, string)``.
-  let reply = await sendops(q, db, dbname)
+  let reply = await sendops(q, db, dbname, cmd)
   var (success, reason) = check reply
   if not success:
     raise newException(MongoError, move reason)

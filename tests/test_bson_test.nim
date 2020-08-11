@@ -161,6 +161,9 @@ suite "Macro to object conversion tests":
       outerName: string
       sis: ref SimpleIntString
 
+    EmptyRef = ref object
+      ssisref: seq[RSintString]
+
     S2IntString = object
       sis1: SimpleIntString
       sisref: ref SimpleIntString
@@ -190,6 +193,7 @@ suite "Macro to object conversion tests":
       aint: int
       abar: Bar
       adsis: DSIntString
+      emptyRef: EmptyRef # no bson data
 
   var theb = bson({
     name: 10,
