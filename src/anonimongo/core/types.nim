@@ -4,6 +4,7 @@ from asyncdispatch import Port
 from math import nextPowerOfTwo
 
 import sha1, nimSHA2
+import dnsclient
 
 import pool, wire, bson
 
@@ -206,7 +207,7 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   result.setSsl sslInfo
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo
-proc newMongo*(uri: string, poolconn = poolconn): Mongo =
+proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
   ## Overload the newMongo for accepting raw uri string.
   # This is actually needed because Mongodb specify custom
   # definition by supporting multiple user:pass@host:port
@@ -219,20 +220,42 @@ proc newMongo*(uri: string, poolconn = poolconn): Mongo =
   if uri.count('/') < 3:
     raiseInvalidSep()
   let uriobj = parseUri uri
-  let schemepos = uri.find("://")
-  if schemepos == -1:
-    raise newException(MongoError, &"No scheme protocol provided at {uri} uri")
-  let scheme = uri[0..schemepos-1].toLowerAscii
-  if scheme notin ["mongodb", "mongodb+srv"]:
+  type URLUri = Uri
+  var uris: seq[URLUri]
+  if uriobj.scheme == "":
+    raise newException(MongoError, &"No scheme protocol provided at \"{uri}\" uri")
+  if uriobj.scheme notin ["mongodb", "mongodb+srv"]:
     raise newException(MongoError,
-      &"Only supports mongodb:// or mongodb+srv://, provided: {scheme}")
-  elif scheme == "mongodb+srv":
-    raise newException(MongoError, "mongodb+srv not implemented yet")
+      &"Only supports mongodb:// or mongodb+srv://, provided: \"{uriobj.scheme}\"")
+  elif uriobj.scheme == "mongodb+srv":
+    let client = newDNSClient(server = dnsserver)
+    try:
+      let resp = client.sendQuery(&"_mongodb._tcp.{uriobj.hostname}", SRV)
+      uris = newseq[URLUri](resp.answers.len)
+      for i, ans in resp.answers:
+        let srvrec = ans as SRVRecord
+        uris[i] = Uri(
+          scheme: "mongodb",
+          hostname: srvrec.target,
+          port: $srvrec.port,
+          username: uriobj.username,
+          password: uriobj.password,
+          query: uriobj.query,
+          path: uriobj.path
+        )
+      result = newMongo(uris, poolconn)
+      return
+    except TimeoutError:
+      raise newException(MongoError, &"Dns timeout when sending query to {uriobj.hostname}, with dns server: {dnsserver}")
+    except:
+      raise newException(MongoError, &"Other error when sending query: {getCurrentExceptionMsg()}")
+  let schemepos = uri.find("://")
+  let scheme = uri[0..schemepos-1].toLowerAscii
   let trailingsep = uri.find('/', start = schemepos+3)
   if trailingsep == -1:
     raiseInvalidSep()
   let hosts = uri[schemepos+3 .. trailingsep-1].split(',')
-  var uris = newseq[URI](hosts.len)
+  uris = newseq[URLUri](hosts.len)
   for i, host in hosts:
     var uname, pwd, hostname, port: string
     let splitdomain = host.split('@')
