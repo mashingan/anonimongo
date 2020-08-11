@@ -5,6 +5,9 @@ from math import nextPowerOfTwo
 when defined(ssl):
   import openssl
 
+when defined(ssl):
+  import openssl
+
 import sha1, nimSHA2
 import dnsclient
 
