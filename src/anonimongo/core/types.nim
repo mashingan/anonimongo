@@ -19,6 +19,7 @@ const
   verbose* {.booldefine.} = false
   verifypeer* = defined(verifypeer)
   cafile* {.strdefine.} = ""
+  withSsl = defined(ssl)
 
 type
   MongoConn* = ref object of RootObj
@@ -196,35 +197,42 @@ proc setSsl(m: Mongo, sslinfo: SslInfo) =
         ctx.wrapSocket c.socket
     m.tls = true
 
+template raiseEnableSsl: untyped =
+  raise newException(MongoError,
+    "Need to enable SSL/TLS ('-d:ssl')")
+
 proc handleSsl(m: Mongo) =
+  var tbl = m.query
+  proc setCertKey (s: var SslInfo, vals: seq[string]) =
+    for kv in vals:
+      let kvs = kv.split ':'
+      if kvs[0].toLower == "certificate":
+        s.certfile = decodeUrl kvs[1]
+      elif kvs[0].toLower == "key":
+        s.keyfile = decodeUrl kvs[1]
+  var isSsl = if "ssl" in tbl: "ssl"
+            elif "tls" in tbl: "tls"
+            else: ""
+  var connectSSL = if isSsl == "": false
+                  else:
+                    try: parseBool tbl[isSsl][0]
+                    except: false
+
+  if connectSsl and not withSsl: raiseEnableSsl()
   when defined(ssl):
     var newsslinfo = SSLInfo(protocol: protSSLv23)
-    var tbl = m.query
-    proc setCertKey (s: var SslInfo, vals: seq[string]) =
-      for kv in vals:
-        let kvs = kv.split ':'
-        if kvs[0].toLower == "certificate":
-          s.certfile = decodeUrl kvs[1]
-        elif kvs[0].toLower == "key":
-          s.keyfile = decodeUrl kvs[1]
-    var isSsl = if "ssl" in tbl: "ssl"
-              elif "tls" in tbl: "tls"
-              else: ""
-    var connectSSL = if isSsl == "": false
-                    else:
-                      try: parseBool tbl[isSsl][0]
-                      except: false
-
-    if connectSSL:
-      # do nothing with empty key and certificate file if there's no
-      # `tlsCertificateKeyFile` provided
-      if "tlsCertificateKeyFile".toLower in tbl:
-        newsslinfo.setCertKey tbl["tlsCertificateKeyFile".toLower]
-      m.setSsl newsslinfo
-    elif "tlsCertificateKeyFile".toLower in tbl:
-      # implicitly connecting with SSL/TLS
-      newsslinfo.setCertKey tbl["tlsCertificatekeyFile".toLower]
-      m.setSsl newsslinfo
+  else:
+    var newsslinfo = SSLInfo()
+  if connectSSL:
+    # do nothing with empty key and certificate file if there's no
+    # `tlsCertificateKeyFile` provided
+    if "tlsCertificateKeyFile".toLower in tbl:
+      newsslinfo.setCertKey tbl["tlsCertificateKeyFile".toLower]
+    m.setSsl newsslinfo
+  elif "tlsCertificateKeyFile".toLower in tbl:
+    # implicitly connecting with SSL/TLS
+    newsslinfo.setCertKey tbl["tlsCertificatekeyFile".toLower]
+    m.setSsl newsslinfo
 
 proc handleWriteConcern(m: Mongo) =
   var w = bson()
@@ -292,6 +300,7 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
     raise newException(MongoError,
       &"Only supports mongodb:// or mongodb+srv://, provided: \"{uriobj.scheme}\"")
   elif uriobj.scheme == "mongodb+srv":
+    if not withSsl: raiseEnableSsl()
     let client = newDNSClient(server = dnsserver)
     try:
       let resp = client.sendQuery(&"_mongodb._tcp.{uriobj.hostname}", SRV)
@@ -314,7 +323,9 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
       result = newMongo(uris, poolconn)
       return
     except TimeoutError:
-      raise newException(MongoError, &"Dns timeout when sending query to {uriobj.hostname}, with dns server: {dnsserver}")
+      let msg = &"Dns timeout when sending query to {uriobj.hostname} " &
+                &", with dns server: {dnsserver}"
+      raise newException(MongoError, msg)
     # reraise the uncaught exception
   let schemepos = uri.find("://")
   let scheme = uri[0..schemepos-1].toLowerAscii
@@ -323,6 +334,8 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
     raiseInvalidSep()
   let hosts = uri[schemepos+3 .. trailingsep-1].split(',')
   uris = newseq[URLUri](hosts.len)
+  if hosts.len == 0:
+    raise newException(MongoError, &"Unable to parse multihost URI '{uri}'")
   for i, host in hosts:
     var uname, pwd, hostname, port: string
     let splitdomain = host.split('@')
@@ -353,8 +366,6 @@ proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
   result = newMongo(@[uri], poolconn)
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo =
-  if uri.len == 0:
-    raise newException(MongoError, "Empty URI provided")
   result = Mongo(
     servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
     query: decodeQuery(uri[0].query),
