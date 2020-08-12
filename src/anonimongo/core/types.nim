@@ -388,8 +388,8 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo =
 
   result.handleSsl
 
-  if "readPreferences" in result.query:
-    let rps = result.query["readPreferences"]
+  if "readPreferences".toLowerAscii in result.query:
+    let rps = result.query["readPreferences".toLowerAscii]
     if rps.len > 0:
       result.readPreferences = parseEnum[ReadPreferences](rps[0])
 

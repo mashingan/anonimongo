@@ -13,10 +13,10 @@ proc isMaster*(db: Database, cmd = bson()): Future[BsonDocument]{.async.} =
   result = await db.crudops(q)
 
 proc replSetAbortPrimaryCatchUp*(db: Database): Future[BsonDocument]{.async.} =
-  result = await db.crudops(bson({replSetAbortPrimaryCatchUp: 1}))
+  result = await db.crudops(bson({replSetAbortPrimaryCatchUp: 1}), cmd = ckWrite)
 
 proc replSetFreeze*(db: Database, seconds: int): Future[BsonDocument]{.async.} =
-  result = await db.crudops(bson({replSetFreeze: seconds}))
+  result = await db.crudops(bson({replSetFreeze: seconds}), cmd = ckWrite)
 
 proc replSetGetConfig*(db: Database, commitmentStatus: bool, comment = bsonNull()):
   Future[BsonDocument]{.async.} =
@@ -42,7 +42,7 @@ proc replSetInitiate*(db: Database, config: BsonDocument):
 
 proc replSetMaintenance*(db: Database, enable: bool):
   Future[BsonDocument]{.async.} =
-  result = await db.crudops(bson({ replSetMaintenance: enable}), "admin")
+  result = await db.crudops(bson({ replSetMaintenance: enable}), "admin", cmd = ckWrite)
 
 proc replSetReconfig*(db: Database, newconfig: BsonDocument, force: bool,
   maxTimeMS: int): Future[BsonDocument]{.async.} =
@@ -51,7 +51,7 @@ proc replSetReconfig*(db: Database, newconfig: BsonDocument, force: bool,
     force: force,
     maxTimeMS: maxTimeMS
   })
-  result = await db.crudops(q, "admin")
+  result = await db.crudops(q, "admin", cmd = ckWrite)
 
 proc replSetResizeOplog*(db: Database; size: float; minRetentionHours = 0.0):
   Future[BsonDocument]{.async.} =
@@ -60,7 +60,7 @@ proc replSetResizeOplog*(db: Database; size: float; minRetentionHours = 0.0):
     size: size,
     minRetentionHours: minRetentionHours
   })
-  result = await db.crudops(q, "admin")
+  result = await db.crudops(q, "admin", cmd = ckWrite)
 
 proc replSetStepDown*(db: Database, stepDown: int, catchup = 10, force  = false):
   Future[BsonDocument]{.async.} =
@@ -74,7 +74,7 @@ proc replSetStepDown*(db: Database, stepDown: int, catchup = 10, force  = false)
       &"stepDown ({stepDown}s) cannot less than catchup ({catchup}s)")
   q["secondaryCatchUpPeriodSecs"] = catchup
   q["force"] = force
-  result = await db.crudops(q, "admin")
+  result = await db.crudops(q, "admin", cmd = ckWrite)
 
 proc replSetSyncFrom*(db: Database, hostport: string): Future[BsonDocument]{.async.} =
-  result = await db.crudops(bson({replSetSyncFrom: hostport}))
+  result = await db.crudops(bson({replSetSyncFrom: hostport}), cmd = ckWrite)
