@@ -426,6 +426,13 @@ proc mainPreferred*(m: Mongo): MongoConn =
     result = m.pickAnyServer:
       host != m.primary
 
+proc secondary*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  else:
+    result = m.pickAnyServer:
+      host != m.primary
+
 proc hasUserAuth*(m: Mongo): bool =
   m.main.username != "" and m.main.password != ""
 
