@@ -405,7 +405,7 @@ proc flags*(m: Mongo): QueryFlags = m.flags
 
 template pickAnyServer(m: Mongo, test: untyped): MongoConn =
   var res: MongoConn
-  for host{.inject.}, server in m.servers:
+  for host{.inject.}, server{.inject.} in m.servers:
     if `test`:
       res = server
       break
@@ -432,6 +432,15 @@ proc secondary*(m: Mongo): MongoConn =
   else:
     result = m.pickAnyServer:
       host != m.primary
+
+proc secondaryPreferred*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  else:
+    result = m.pickAnyServer:
+      host != m.primary and server.pool.available.len > 0
+    if result == nil:
+      result = m.servers[m.primary]
 
 proc hasUserAuth*(m: Mongo): bool =
   m.main.username != "" and m.main.password != ""

@@ -19,16 +19,21 @@ proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
   ## helper proc. Cmd argument is needed to recognize what kind
   ## of command operation to be sent.
   var dbconn: MongoConn
-  case db.db.readPreferences:
-  of ReadPreferences.primary:
+  if cmd == ckWrite:
     dbconn = db.db.main
-  of ReadPreferences.primaryPreferred:
-    dbconn = db.db.mainPreferred
-  of ReadPreferences.secondary:
-    dbconn = db.db.secondary
   else:
-    let rfmsg = &"ReadPreferences.{db.db.readPreferences} not supported yet"
-    raise newException(MongoError, rfmsg)
+    case db.db.readPreferences:
+    of ReadPreferences.primary:
+      dbconn = db.db.main
+    of ReadPreferences.primaryPreferred:
+      dbconn = db.db.mainPreferred
+    of ReadPreferences.secondary:
+      dbconn = db.db.secondary
+    of ReadPreferences.secondaryPreferred:
+      dbconn = db.db.secondaryPreferred
+    else:
+      let rfmsg = &"ReadPreferences.{db.db.readPreferences} not supported yet"
+      raise newException(MongoError, rfmsg)
   let dbname = if name == "": db.name.cmd else: name.cmd
   let (id, conn) = await dbconn.pool.getConn()
   defer: dbconn.pool.endConn(id)
