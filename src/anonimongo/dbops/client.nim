@@ -54,7 +54,7 @@ proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
     dump q
   var db = db
   let dbc = m[move db]
-  result = await sendops(q, dbc, cmd = ckRead)
+  result = await sendops(q, dbc, cmd = ckWrite)
   when verbose:
     look result
 
@@ -145,11 +145,11 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
   result = await cuUsers(db, q)
 
 proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
-  result = await sendops(query, db)
+  result = await sendops(query, db, cmd = ckRead)
 
 proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
-  let reply = await sendops(q, db)
+  let reply = await sendops(q, db, cmd = ckWrite)
   let (success, reason) = check reply
   result = WriteResult(
     success: success,

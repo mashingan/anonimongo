@@ -79,7 +79,7 @@ proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
   var q = bson({ listCollections: 1})
   if not filter.isNil:
     q["filter"] = filter
-  let reply = await sendops(q, db, dbname)
+  let reply = await sendops(q, db, dbname, cmd = ckRead)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -99,7 +99,7 @@ proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
     let dbm = db["admin"]
   else:
     let dbm = db
-  let reply = await sendops(q, dbm, "admin")
+  let reply = await sendops(q, dbm, "admin", cmd = ckRead)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -119,7 +119,7 @@ proc listDatabaseNames*(db: Mongo | Database): Future[seq[string]] {.async.} =
 proc listIndexes*(db: Database, coll: string):
   Future[seq[BsonBase]]{.async.} =
   let q = bson({ listIndexes: coll })
-  let reply = await sendops(q, db)
+  let reply = await sendops(q, db, cmd = ckRead)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -160,7 +160,7 @@ proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
   var q = bson({ currentOp: 1})
   for k, v in opt:
     q[k] = v
-  let reply = await sendops(q, db, "admin")
+  let reply = await sendops(q, db, "admin", cmd = ckRead)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -174,7 +174,7 @@ proc killOp*(db: Database, opid: int32): Future[WriteResult] {.async.} =
 proc killCursor*(db: Database, collname: string, cursorIds: seq[int]):
   Future[BsonDocument] {.async.} =
   let q = bson({ killCursors: collname, cursors: cursorIds.map toBson })
-  let reply = await sendops(q, db)
+  let reply = await sendops(q, db, cmd = ckWrite)
   let (success, reason) = check reply
   if not success:
     echo reason

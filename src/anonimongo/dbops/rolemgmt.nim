@@ -99,4 +99,4 @@ proc rolesInfo*(db: Database, info: BsonBase, showPriv = false,
     showPrivileges: showPriv,
     showBuiltinRoles: showBuiltin,
   })
-  result = await sendops(q, db)
+  result = await sendops(q, db, cmd = ckRead)
