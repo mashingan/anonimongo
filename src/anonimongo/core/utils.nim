@@ -21,9 +21,10 @@ proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
   var dbconn: MongoConn
   if db.db.readPreferences == ReadPreferences.primary:
     dbconn = db.db.main
+  elif db.db.readPreferences == ReadPreferences.primaryPreferred:
+    dbconn = db.db.mainPreferred
   else:
-    let rfmsg = &"ReadPreferences except primary ({db.db.readPreferences}) " &
-      "or multihost replica not implemented yet"
+    let rfmsg = &"ReadPreferences.{db.db.readPreferences} not supported yet"
     raise newException(MongoError, rfmsg)
   let dbname = if name == "": db.name.cmd else: name.cmd
   let (id, conn) = await dbconn.pool.getConn()

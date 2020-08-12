@@ -1,4 +1,5 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
+import deques
 from asyncdispatch import Port
 from math import nextPowerOfTwo
 
@@ -402,13 +403,28 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
-proc main*(m: Mongo): MongoConn =
-  if m.primary == "" and m.servers.len > 0:
-    for serv in m.servers.values:
-      result = serv
+template pickAnyServer(m: Mongo, test: untyped): MongoConn =
+  var res: MongoConn
+  for host{.inject.}, server in m.servers:
+    if `test`:
+      res = server
       break
+  res
+
+proc main*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
   else:
     result = m.servers[m.primary]
+
+proc mainPreferred*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  elif m.servers[m.primary].pool.available.len > 0:
+    result = m.servers[m.primary]
+  else:
+    result = m.pickAnyServer:
+      host != m.primary
 
 proc hasUserAuth*(m: Mongo): bool =
   m.main.username != "" and m.main.password != ""
