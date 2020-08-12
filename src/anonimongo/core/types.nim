@@ -295,6 +295,10 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
     try:
       let resp = client.sendQuery(&"_mongodb._tcp.{uriobj.hostname}", SRV)
       uris = newseq[URLUri](resp.answers.len)
+      if uris.len == 0:
+        var errmsg = &"Dns cannot resolve the {uriobj.hostname}, " &
+                     "check your internet connection"
+        raise newException(MongoError, errmsg)
       for i, ans in resp.answers:
         let srvrec = ans as SRVRecord
         uris[i] = Uri(
@@ -310,8 +314,7 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
       return
     except TimeoutError:
       raise newException(MongoError, &"Dns timeout when sending query to {uriobj.hostname}, with dns server: {dnsserver}")
-    except:
-      raise newException(MongoError, &"Other error when sending query: {getCurrentExceptionMsg()}")
+    # reraise the uncaught exception
   let schemepos = uri.find("://")
   let scheme = uri[0..schemepos-1].toLowerAscii
   let trailingsep = uri.find('/', start = schemepos+3)
@@ -349,6 +352,8 @@ proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
   result = newMongo(@[uri], poolconn)
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo =
+  if uri.len == 0:
+    raise newException(MongoError, "Empty URI provided")
   result = Mongo(
     servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
     query: decodeQuery(uri[0].query),
