@@ -149,6 +149,10 @@ type
 
   MongoError* = object of Defect
 
+  MultiUri* = distinct string
+    ## A special distinct uri string to support multihost uri connections.
+    ## A single uri connection can rely using this too.
+
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()
   if s == "": return
@@ -218,12 +222,12 @@ proc handleSsl(m: Mongo) =
                     try: parseBool tbl[isSsl][0]
                     except: false
 
-  if connectSsl and not withSsl: raiseEnableSsl()
+  if (m.tls or connectSsl) and not withSsl: raiseEnableSsl()
   when defined(ssl):
     var newsslinfo = SSLInfo(protocol: protSSLv23)
   else:
     var newsslinfo = SSLInfo()
-  if connectSSL:
+  if m.tls or connectSSL:
     # do nothing with empty key and certificate file if there's no
     # `tlsCertificateKeyFile` provided
     if "tlsCertificateKeyFile".toLower in tbl:
@@ -278,9 +282,9 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
     sslinfo.protocol = protSSLv23
   result.setSsl sslInfo
 
-proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo
-proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
-  ## Overload the newMongo for accepting raw uri string.
+proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
+proc newMongo*(muri: MultiUri, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
+  ## Overload the newMongo for accepting raw uri string as MultiUri.
   # This is actually needed because Mongodb specify custom
   # definition by supporting multiple user:pass@host:port
   # format in domain host uri.
@@ -289,6 +293,7 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
     raise newException(MongoError,
       &"Whether invalid URI {uri} or missing trailing '/'")
     
+  let uri = muri.string
   if uri.count('/') < 3:
     raiseInvalidSep()
   let uriobj = parseUri uri
@@ -320,7 +325,7 @@ proc newMongo*(uri: string, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
           query: uriobj.query,
           path: uriobj.path
         )
-      result = newMongo(uris, poolconn)
+      result = newMongo(uris, poolconn, isTls = true)
       return
     except TimeoutError:
       let msg = &"Dns timeout when sending query to {uriobj.hostname} " &
@@ -365,8 +370,9 @@ proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
   ## Give a new `Mongo<#Mongo>`_ instance based on URI.
   result = newMongo(@[uri], poolconn)
 
-proc newMongo(uri: seq[Uri], poolconn = poolconn): Mongo =
+proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
   result = Mongo(
+    tls: isTls,
     servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
     query: decodeQuery(uri[0].query),
     readPreferences: ReadPreferences.primary
