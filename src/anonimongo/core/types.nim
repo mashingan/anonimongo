@@ -20,6 +20,7 @@ const
   verifypeer* = defined(verifypeer)
   cafile* {.strdefine.} = ""
   withSsl = defined(ssl)
+  sslProtVersion {.strdefine, used.} = ""
 
 type
   MongoConn* = ref object of RootObj
@@ -224,7 +225,9 @@ proc handleSsl(m: Mongo) =
 
   if (m.tls or connectSsl) and not withSsl: raiseEnableSsl()
   when defined(ssl):
-    var newsslinfo = SSLInfo(protocol: protSSLv23)
+    let prot = if sslProtVersion == "": protSSLv23
+               else: parseEnum[sslProtVersion](sslProtVersion)
+    var newsslinfo = SSLInfo(protocol: prot)
   else:
     var newsslinfo = SSLInfo()
   if m.tls or connectSSL:
