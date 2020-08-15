@@ -223,7 +223,7 @@ proc handleSsl(m: Mongo) =
   if (m.tls or connectSsl) and not withSsl: raiseEnableSsl()
   when defined(ssl):
     let prot = if sslProtVersion == "": protSSLv23
-               else: parseEnum[sslProtVersion](sslProtVersion)
+               else: parseEnum[SslProtVersion](sslProtVersion)
     var newsslinfo = SSLInfo(protocol: prot)
   else:
     var newsslinfo = SSLInfo()
