@@ -381,21 +381,21 @@ and [mongo spec][3].
 - [x] `updateRole`
 </details>
 
-<details><summary>:x: Replication commands 0/13</summary>
+<details><summary>:white_check_mark: Replication commands 12/12(<del>13</del>)</summary>
 
 - [ ] `applyOps` (internal command)
-- [ ] `isMaster`
-- [ ] `replSetAbortPrimaryCatchUp`
-- [ ] `replSetFreeze`
-- [ ] `replSetGetConfig`
-- [ ] `replSetGetStatus`
-- [ ] `replSetGetStatus`
-- [ ] `replSetInitiate`
-- [ ] `replSetMaintenance`
-- [ ] `replSetReconfig`
-- [ ] `replSetResizeOplog`
-- [ ] `replSetStepDown`
-- [ ] `replSetSyncFrom`
+- [x] `isMaster`
+- [x] `replSetAbortPrimaryCatchUp`
+- [x] `replSetFreeze`
+- [x] `replSetGetConfig`
+- [x] `replSetGetStatus`
+- [x] `replSetGetStatus`
+- [x] `replSetInitiate`
+- [x] `replSetMaintenance`
+- [x] `replSetReconfig`
+- [x] `replSetResizeOplog`
+- [x] `replSetStepDown`
+- [x] `replSetSyncFrom`
 </details>
 <details><summary>:x: Sharding commands 0/27</summary>
 

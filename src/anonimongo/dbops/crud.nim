@@ -89,8 +89,8 @@ proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
   })
   q.addWriteConcern(db, wt)
   q.addConditional("bypassDocumentValidation", bypass)
-  if explain != "": result = await db.explain(q, explain)
-  else: result = await db.crudops(q)
+  if explain != "": result = await db.explain(q, explain, command = ckWrite)
+  else: result = await db.crudops(q, cmd = ckWrite)
 
 proc delete*(db: Database, coll: string, deletes: seq[BsonDocument],
   ordered = true, wt = bsonNull(), explain = ""):
@@ -101,8 +101,8 @@ proc delete*(db: Database, coll: string, deletes: seq[BsonDocument],
     ordered: ordered,
   })
   q.addWriteConcern(db, wt)
-  if explain != "": result = await db.explain(q, explain)
-  else: result = await db.crudops(q)
+  if explain != "": result = await db.explain(q, explain, command = ckWrite)
+  else: result = await db.crudops(q, cmd = ckWrite)
 
 proc update*(db: Database, coll: string, updates: seq[BsonDocument],
   ordered = true, wt = bsonNull(), bypass = false, explain = ""):
@@ -114,8 +114,8 @@ proc update*(db: Database, coll: string, updates: seq[BsonDocument],
   })
   q.addWriteConcern(db, wt)
   q.addConditional("bypassDocumentValidation", bypass)
-  if explain != "": result = await db.explain(q, explain)
-  else: result = await db.crudops(q)
+  if explain != "": result = await db.explain(q, explain, command = ckWrite)
+  else: result = await db.crudops(q, cmd = ckWrite)
 
 proc findAndModify*(db: Database, coll: string, query = bson(),
   sort = bsonNull(), remove = false, update = bsonNull(),
@@ -138,8 +138,8 @@ proc findAndModify*(db: Database, coll: string, query = bson(),
   q.addOptional("collation", collation)
   if arrayFilters.len > 0:
     q["arrayFilters"] = arrayFilters.map toBson
-  if explain != "": result = await db.explain(q, explain)
-  else: result = await db.crudops(q)
+  if explain != "": result = await db.explain(q, explain, command = ckWrite)
+  else: result = await db.crudops(q, cmd = ckWrite)
 
 proc getLastError*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
   var q = bson({ getLastError: 1 })

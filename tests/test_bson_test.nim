@@ -161,6 +161,9 @@ suite "Macro to object conversion tests":
       outerName: string
       sis: ref SimpleIntString
 
+    EmptyRef = ref object
+      ssisref: seq[RSintString]
+
     S2IntString = object
       sis1: SimpleIntString
       sisref: ref SimpleIntString
@@ -190,6 +193,8 @@ suite "Macro to object conversion tests":
       aint: int
       abar: Bar
       adsis: DSIntString
+      emptyRef: EmptyRef # no bson data
+      pseudoEmptyRef: EmptyRef # no bson data
 
   var theb = bson({
     name: 10,
@@ -241,6 +246,7 @@ suite "Macro to object conversion tests":
     timenow: currtime,
     dtimenow: currtime,
     "not-exists-field": true,
+    pseudoEmptyRef: {}
   })
 
   var ssis2: SSIntString
@@ -279,6 +285,8 @@ suite "Macro to object conversion tests":
     check s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"][0]["name"]
     check s2sis.timenow == currtime
     check s2sis.dtimenow.Time == currtime
+    check s2sis.emptyRef == nil
+    check s2sis.pseudoEmptyRef.ssisref.len == 0
 
   type
     NotHomogenousSeq = object

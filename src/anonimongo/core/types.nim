@@ -1,8 +1,13 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
-import openssl
+import deques
 from asyncdispatch import Port
+from math import nextPowerOfTwo
+
+when defined(ssl):
+  import openssl
 
 import sha1, nimSHA2
+import dnsclient
 
 import pool, wire, bson
 
@@ -11,8 +16,20 @@ const
   verbose* {.booldefine.} = false
   verifypeer* = defined(verifypeer)
   cafile* {.strdefine.} = ""
+  withSsl = defined(ssl)
+  sslProtVersion {.strdefine, used.} = ""
 
 type
+  MongoConn* = ref object of RootObj
+    ## Actual ref object that handles the connection to the intended server
+    isMaster*: bool
+    host: string
+    port: Port
+    username: string
+    password: string
+    pool*: Pool
+    authenticated: bool
+
   Mongo* = ref object of RootObj
     ## An ref object that will handle any necessary information
     ## as Mongo client. Since Mongo expected to live as long as
@@ -20,18 +37,23 @@ type
     ## throughout the program, however any lib user can spawn any
     ## instance of Mongo as like, but this should be avoided because
     ## of costly invocation of Mongo.
-    isMaster*: bool
+    hosts*: seq[string]
+    primary*: string
+    servers*: TableRef[string, MongoConn]
     tls: bool
     authenticated: bool
-    host: string
-    port: Port
-    username: string
-    password: string
     db*: string
-    query: TableRef[string, seq[string]]
-    pool*: Pool
     writeConcern*: BsonDocument
     flags: QueryFlags
+    readPreferences*: ReadPreferences
+    query: TableRef[string, seq[string]]
+
+  ReadPreferences* {.pure.} = enum
+    primary = "primary"
+    primaryPreferred = "primaryPreferred"
+    secondary = "secondary"
+    secondaryPreferred = "secondaryPreferred"
+    nearest = "nearest"
 
   SslInfo* = object
     ## SslInfo will handle information for connecting with SSL/TLS
@@ -116,7 +138,18 @@ type
     chunks*: Collection
     chunkSize*: int32
 
+  CommandKind* = enum
+    ## CommandKind is used to recognize whether the command is write
+    ## or read. This is used significantly in case of server selection
+    ## for multihost connections.
+    ckWrite
+    ckRead
+
   MongoError* = object of Defect
+
+  MultiUri* = distinct string
+    ## A special distinct uri string to support multihost uri connections.
+    ## A single uri connection can rely using this too.
 
 proc decodeQuery(s: string): TableRef[string, seq[string]] =
   result = newTable[string, seq[string]]()
@@ -147,78 +180,31 @@ when defined(ssl) or defined(nimdoc):
     )
 
 proc setSsl(m: Mongo, sslinfo: SslInfo) =
-  if sslinfo.keyfile != "" and sslinfo.certfile != "":
-    when defined(ssl):
-      let mode = when verifypeer: CVerifyPeer
-                 else: CVerifyNone
-      let ctx = newContext(protVersion = sslinfo.protocol,
-        certfile = sslinfo.certfile,
-        keyfile = sslinfo.keyfile,
-        verifyMode = mode)
-      if verifypeer and cafile == "":
-        discard ctx.context.SSL_CTX_load_verify_locations(
-          cstring sslinfo.certfile, nil)
-      elif verifypeer:
-        discard ctx.context.SSL_CTX_load_verify_locations(
-          cstring cafile, nil)
-      for i, c in m.pool.connections:
-        when verbose: echo &"wrapping ssl socket {i}"
+  when defined(ssl):
+    let mode = when verifypeer: CVerifyPeer
+               else: CVerifyNone
+    let ctx = newContext(protVersion = sslinfo.protocol,
+      certfile = sslinfo.certfile,
+      keyfile = sslinfo.keyfile,
+      verifyMode = mode)
+    if verifypeer and cafile == "":
+      discard ctx.context.SSL_CTX_load_verify_locations(
+        cstring sslinfo.certfile, nil)
+    elif verifypeer:
+      discard ctx.context.SSL_CTX_load_verify_locations(
+        cstring cafile, nil)
+    for host, server in m.servers:
+      for i, c in server.pool.connections:
+        when verbose: echo &"wrapping ssl socket {i} for {host}"
         ctx.wrapSocket c.socket
-      m.tls = true
+    m.tls = true
 
-proc newMongo*(host = "localhost", port = 27017, master = true,
-  poolconn = poolconn, sslinfo = SslInfo()): Mongo =
-  ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
-  result = Mongo(
-    isMaster: master,
-    host: host,
-    port: Port port,
-    query: newTable[string, seq[string]](),
-    pool: initPool(poolconn)
-  )
-  result.setSsl sslInfo
+template raiseEnableSsl: untyped =
+  raise newException(MongoError,
+    "Need to enable SSL/TLS ('-d:ssl')")
 
-proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
-  ## Give a new `Mongo<#Mongo>`_ instance based on URI string.
-  let port = try: parseInt(uri.port)
-             except ValueError: 27017
-  result = Mongo(
-    isMaster: master,
-    host: uri.hostname,
-    username: uri.username,
-    password: uri.password,
-    port: Port port,
-    query: decodeQuery(uri.query),
-    pool: initPool(poolconn)
-  )
-  if result.host == "": result.host = "localhost"
-  # need elaborate handling for URI connect
-  # ref:https://github.com/mongodb/specifications/blob/master/source/uri-options/uri-options.rst 
-  var writeConcern = bson()
-  if "w" in result.query and result.query["w"].len > 0:
-    # "w" here can be a number or a string.
-    let val = result.query["w"][0]
-    if val.all isDigit:
-      writeConcern["w"] = try: (parseInt val).toBson
-                          except: 1.toBson
-    else:
-      writeConcern["w"] = val
-  if "j" in result.query and result.query["j"].len > 0:
-    writeConcern["j"] = result.query["j"][0]
-
-  if "appname" notin result.query:
-    result.query["appname"] = @["Anonimongo driver client apps"]
-  let tlsCertInval = ["tlsInsecure", "tlsAllowInvalidCertificates"]
-  let tlsHostInval = ["tlsInsecure", "tlsAllowInvalidHostnames"]
-  if tlsCertInval.allIt(it.toLower in result.query):
-    raise newException(MongoError,
-      &"""Can't have {tlsCertInval.join(" and ")}""")
-  if tlsHostInval.allIt(it.toLower in result.query):
-    raise newException(MongoError,
-      &"""Can't have {tlsHostInval.join(" and ")}""")
-  if "authSource".toLower in result.query:
-    result.db = result.query["authsource"][0]
-
+proc handleSsl(m: Mongo) =
+  var tbl = m.query
   proc setCertKey (s: var SslInfo, vals: seq[string]) =
     for kv in vals:
       let kvs = kv.split ':'
@@ -226,49 +212,289 @@ proc newMongo*(uri: Uri, master = true, poolconn = poolconn): Mongo =
         s.certfile = decodeUrl kvs[1]
       elif kvs[0].toLower == "key":
         s.keyfile = decodeUrl kvs[1]
-  var newsslinfo = SSlInfo()
-  if ["ssl", "tls"].anyIt( it.toLower in result.query):
-    if "tlsCertificateKeyFile".toLower notin result.query:
-      raise newException(MongoError, "option tlsCertificateKeyFile not provided")
-    newsslinfo.setCertKey result.query["tlsCertificateKeyFile".toLower]
-  elif "tlsCertificateKeyFile".toLower in result.query:
-    echo "got tls certificate key"
-    newsslinfo.setCertKey result.query["tlsCertificatekeyFile".toLower]
+  var isSsl = if "ssl" in tbl: "ssl"
+            elif "tls" in tbl: "tls"
+            else: ""
+  var connectSSL = if isSsl == "": false
+                  else:
+                    try: parseBool tbl[isSsl][0]
+                    except: false
 
+  if (m.tls or connectSsl) and not withSsl: raiseEnableSsl()
   when defined(ssl):
-    newsslinfo.protocol = protSSLv23
-  result.setSsl newsslinfo
-  if not writeConcern.isNil:
-    result.writeConcern = writeConcern
+    let prot = if sslProtVersion == "": protSSLv23
+               else: parseEnum[SslProtVersion](sslProtVersion)
+    var newsslinfo = SSLInfo(protocol: prot)
+  else:
+    var newsslinfo = SSLInfo()
+  if m.tls or connectSSL:
+    # do nothing with empty key and certificate file if there's no
+    # `tlsCertificateKeyFile` provided
+    if "tlsCertificateKeyFile".toLower in tbl:
+      newsslinfo.setCertKey tbl["tlsCertificateKeyFile".toLower]
+    m.setSsl newsslinfo
+  elif "tlsCertificateKeyFile".toLower in tbl:
+    # implicitly connecting with SSL/TLS
+    newsslinfo.setCertKey tbl["tlsCertificatekeyFile".toLower]
+    m.setSsl newsslinfo
+
+proc handleWriteConcern(m: Mongo) =
+  var w = bson()
+  if "w" in m.query and m.query["w"].len > 0:
+    # "w" here can be a number or a string.
+    let val = m.query["w"][0]
+    if val.all isDigit:
+      w["w"] = try: (parseInt val).toBson
+                          except: 1.toBson
+    else:
+      w["w"] = val
+  if "j" in m.query and m.query["j"].len > 0:
+    w["j"] = m.query["j"][0]
+  if w != nil:
+    m.writeConcern = w
+
+proc checkTlsValidity(m: Mongo) =
+  let tlsCertInval = ["tlsInsecure", "tlsAllowInvalidCertificates"]
+  let tlsHostInval = ["tlsInsecure", "tlsAllowInvalidHostnames"]
+  if tlsCertInval.allIt(it.toLower in m.query):
+    raise newException(MongoError,
+      &"""Can't have {tlsCertInval.join(" and ")}""")
+  if tlsHostInval.allIt(it.toLower in m.query):
+    raise newException(MongoError,
+      &"""Can't have {tlsHostInval.join(" and ")}""")
+
+proc newMongo*(host = "localhost", port = 27017, master = true,
+  poolconn = poolconn, sslinfo = SslInfo()): Mongo =
+  ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
+  result = Mongo(
+    servers: newTable[string, MongoConn](1),
+    query: newTable[string, seq[string]](),
+    readPreferences: ReadPreferences.primary
+  )
+  result.servers[&"{host}:{port}"] = MongoConn(
+    isMaster: master,
+    host: host,
+    port: Port port,
+    pool: initPool(poolconn)
+  )
+  var sslinfo = sslinfo
+  when defined(ssl):
+    sslinfo.protocol = protSSLv23
+  result.setSsl sslInfo
+
+proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
+proc newMongo*(muri: MultiUri, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
+  ## Overload the newMongo for accepting raw uri string as MultiUri.
+  # This is actually needed because Mongodb specify custom
+  # definition by supporting multiple user:pass@host:port
+  # format in domain host uri.
+
+  template raiseInvalidSep: untyped =
+    raise newException(MongoError,
+      &"Whether invalid URI {uri} or missing trailing '/'")
+    
+  let uri = muri.string
+  if uri.count('/') < 3:
+    raiseInvalidSep()
+  let uriobj = parseUri uri
+  type URLUri = Uri
+  var uris: seq[URLUri]
+  if uriobj.scheme == "":
+    raise newException(MongoError, &"No scheme protocol provided at \"{uri}\" uri")
+  if uriobj.scheme notin ["mongodb", "mongodb+srv"]:
+    raise newException(MongoError,
+      &"Only supports mongodb:// or mongodb+srv://, provided: \"{uriobj.scheme}\"")
+  elif uriobj.scheme == "mongodb+srv":
+    if not withSsl: raiseEnableSsl()
+    let client = newDNSClient(server = dnsserver)
+    try:
+      let resp = client.sendQuery(&"_mongodb._tcp.{uriobj.hostname}", SRV)
+      uris = newseq[URLUri](resp.answers.len)
+      if uris.len == 0:
+        var errmsg = &"Dns cannot resolve the {uriobj.hostname}, " &
+                     "check your internet connection"
+        raise newException(MongoError, errmsg)
+      for i, ans in resp.answers:
+        let srvrec = ans as SRVRecord
+        uris[i] = Uri(
+          scheme: "mongodb",
+          hostname: srvrec.target,
+          port: $srvrec.port,
+          username: uriobj.username,
+          password: uriobj.password,
+          query: uriobj.query,
+          path: uriobj.path
+        )
+      result = newMongo(uris, poolconn, isTls = true)
+      return
+    except TimeoutError:
+      let msg = &"Dns timeout when sending query to {uriobj.hostname} " &
+                &", with dns server: {dnsserver}"
+      raise newException(MongoError, msg)
+    # reraise the uncaught exception
+  let schemepos = uri.find("://")
+  let scheme = uri[0..schemepos-1].toLowerAscii
+  let trailingsep = uri.find('/', start = schemepos+3)
+  if trailingsep == -1:
+    raiseInvalidSep()
+  let hosts = uri[schemepos+3 .. trailingsep-1].split(',')
+  uris = newseq[URLUri](hosts.len)
+  if hosts.len == 0:
+    raise newException(MongoError, &"Unable to parse multihost URI '{uri}'")
+  for i, host in hosts:
+    var uname, pwd, hostname, port: string
+    let splitdomain = host.split('@')
+    var hostdompos = 0
+    if splitdomain.len > 1:
+      hostdompos = 1
+      let upw = splitdomain[0].split(':')
+      uname = upw[0]
+      if upw.len > 1:
+        pwd = upw[1]
+    let hdom = splitdomain[hostdompos].split(':')
+    if hdom.len > 1:
+      port = hdom[1]
+    hostname = hdom[0]
+    uris[i] = Uri(
+      scheme: scheme,
+      hostname: hostname,
+      port: port,
+      username: uname,
+      password: pwd,
+      query: uriobj.query,
+      path: uriobj.path
+    )
+  result = newMongo(uris, poolconn)
+
+proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
+  ## Give a new `Mongo<#Mongo>`_ instance based on URI.
+  result = newMongo(@[uri], poolconn)
+
+proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
+  result = Mongo(
+    tls: isTls,
+    servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
+    query: decodeQuery(uri[0].query),
+    readPreferences: ReadPreferences.primary
+  )
+  for u in uri:
+    let port = try: parseInt(u.port)
+              except ValueError: 27017
+    var hostport = &"{u.hostname}:{u.port}"
+    result.servers[hostport] = MongoConn(
+      host: u.hostname,
+      port: Port port,
+      username: u.username,
+      password: u.password,
+      pool: initPool(poolconn)
+    )
+  #if result.main.host == "": result.main.host = "localhost"
+
+  # need elaborate handling for URI connect
+  # ref:https://github.com/mongodb/specifications/blob/master/source/uri-options/uri-options.rst 
+
+  result.handleWriteConcern
+
+  if "appname" notin result.query:
+    result.query["appname"] = @["Anonimongo driver client apps"]
+
+  result.checkTlsValidity
+
+  if "authSource".toLower in result.query:
+    result.db = result.query["authsource"][0]
+
+  result.handleSsl
+
+  if "readPreferences".toLowerAscii in result.query:
+    let rps = result.query["readPreferences".toLowerAscii]
+    if rps.len > 0:
+      result.readPreferences = parseEnum[ReadPreferences](rps[0])
+
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated
-proc host*(m: Mongo): string = m.host
-proc port*(m: Mongo): Port = m.port
+proc authenticated*(m: MongoConn): bool = m.authenticated
+proc host*(m: MongoConn): string = m.host
+proc port*(m: MongoConn): Port = m.port
 proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
+template pickAnyServer(m: Mongo, test: untyped): MongoConn =
+  var res: MongoConn
+  for host{.inject.}, server{.inject.} in m.servers:
+    if `test`:
+      res = server
+      break
+  res
+
+proc main*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  else:
+    result = m.servers[m.primary]
+
+proc mainPreferred*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  elif m.servers[m.primary].pool.available.len > 0:
+    result = m.servers[m.primary]
+  else:
+    result = m.pickAnyServer:
+      host != m.primary
+
+proc secondary*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  else:
+    result = m.pickAnyServer:
+      host != m.primary
+
+proc secondaryPreferred*(m: Mongo): MongoConn =
+  if m.primary == "":
+    result = m.pickAnyServer true
+  else:
+    result = m.pickAnyServer:
+      host != m.primary and server.pool.available.len > 0
+    if result == nil:
+      result = m.servers[m.primary]
+
 proc hasUserAuth*(m: Mongo): bool =
-  m.username != "" and m.password != ""
+  m.main.username != "" and m.main.password != ""
+
+proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn],
+  user, pass, dbname: string): Future[bool]{.async.} =
+  if bulk.len == 0: return true
+  for conn in bulk:
+    var user = user
+    var pass = pass
+    if (user == "" or pass == "") and (conn.username != "" and conn.password != ""):
+      user = conn.username
+      pass = conn.password
+
+    if await conn.pool.authenticate(user, pass, T, dbname):
+      result = true
+      conn.authenticated = true
+    else:
+      echo &"Connection on {conn.host}:{conn.port.int} cannot authenticate"
+      result = false
 
 proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
   Future[bool] {.async.} =
   ## Authenticate Mongo with given username and password and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
-  if await m.pool.authenticate(user, pass, T, adm):
-    m.authenticated = true
-    result = true
+  result = await toSeq(m.servers.values).bulkAuthenticate[:T](user, pass, adm)
+  m.authenticated = result
 
 proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo):
   Future[bool] {.async.} =
   ## Authenticate Mongo with available username and password from
   ## `Mongo<#Mongo>`_ object and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
-  if m.username == "" or m.password == "":
+  if m.main.username == "" or m.main.password == "":
     raise newException(MongoError, "username or password not available")
-  result = await authenticate[T](m, m.username, m.password)
+  result = await authenticate[T](m, m.main.username, m.main.password)
 
 proc `appname=`*(m: Mongo, name: string) =
   ## Set appname for `Mongo<#Mongo>`_ client instance.
@@ -318,7 +544,9 @@ proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
 proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
   ## Get `Collection<#Collection>`_ name from Cursor.
 
-proc close*(m: Mongo) = close m.pool
+proc close*(m: Mongo) =
+  for _, serv in m.servers:
+    close serv.pool
 
 proc initQuery*(query = bson(), collection: Collection = nil,
   skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query =

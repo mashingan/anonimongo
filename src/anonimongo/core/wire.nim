@@ -113,7 +113,13 @@ template prepare*(q: BsonDocument, flags: int32, dbname: string,
 
 proc ok*(b: BsonDocument): bool =
   ## Check whether BsonDocument is ``ok``.
-  "ok" in b and b["ok"].ofDouble.int == 1
+  result = false
+  if "ok" in b:
+    # Need this due to inconsistencies returned from Atlas Mongo
+    if b["ok"].kind == bkInt32:
+      result = b["ok"].ofInt32 == 1
+    elif b["ok"].kind == bkDouble:
+      result = b["ok"].ofDouble.int == 1
 
 proc errmsg*(b: BsonDocument): string =
   ## Helper to fetch error message from BsonDocument.

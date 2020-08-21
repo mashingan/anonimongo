@@ -1,11 +1,11 @@
 import anonimongo/core/[auth, bson, pool, types, utils, wire]
 import anonimongo/dbops/[aggregation, admmgmt, client, crud, diagnostic,
-       freemonitoring, rolemgmt]
+       freemonitoring, rolemgmt, replication]
 import anonimongo/[collections, gridfs]
 
 export auth, bson, pool, types, utils, wire
 export admmgmt, client, crud, rolemgmt, aggregation, diagnostic,
-       freemonitoring
+       freemonitoring, replication
 export collections, gridfs
 
 ## ==========
