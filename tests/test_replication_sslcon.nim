@@ -6,7 +6,9 @@ const
   testReplication {.booldefine.} = false
 
 when testReplication and defined(ssl):
-  import endians, net, streams, os, osproc
+  import endians, net, streams, os, osproc, strutils, threadpool, unittest
+  from sequtils import allIt, all
+
   import dnsclient
   # reuse private dnsclient implementation
   from private/protocol as dnsprot import parseResponse, toStream
@@ -14,8 +16,11 @@ when testReplication and defined(ssl):
 
   const
     dnsport {.intdefine.} = 27016
+    replicaPortStart {.intdefine.} = 27018
     keyname {.strdefine.} = "key.pem"
     certname {.strdefine.} = "cert.pem"
+    pem {.strdefine.} = "key.priv.pem"
+    mongoServer {.strdefine.} = "localhost"
 
   proc writeName(s: StringStream, srv: SRVRecord, server: string) =
     for sdot in server.split('.'):
@@ -61,15 +66,15 @@ when testReplication and defined(ssl):
     var srvs = newseq[SRVRecord](3)
     for i in 0 .. 2:
       srvs[i] = SRVRecord(
-        name: "localhost",
+        name: mongoServer,
         class: IN,
         ttl: 60,
         kind: SRV,
         priority: 0,
-        port: uint16(27018+i),
-        target: "localhost",
+        port: uint16(replicaPortStart+i),
+        target: mongoServer,
         weight: 0)
-    result.serialize(srvs, "localhost")
+    result.serialize(srvs, mongoServer)
 
   proc fakeDnsServer* =
     var server = newSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
@@ -90,50 +95,86 @@ when testReplication and defined(ssl):
   proc getMongoTemp: string =
     getTempDir()  / "mongotemp"
   
-  proc createMongoTemp = 
-    createDir getMongoTemp()
+  proc createMongoTemp: bool = 
+    result = true
+    try:
+      createDir getMongoTemp()
+    except OSError:
+      echo "createMongoTemp.OSError: ", getCurrentExceptionMsg()
+      result = false
 
   proc createSSLCert: bool =
     var process = startProcess("openssl", args = @[
-      #"req", "-new", "-newkey", "rsa:4096", "-nodes", "-x509", "-days", "365",
       "req", "-newkey", "rsa:4096", "-nodes", "-x509", "-days", "365",
       "--outform", "PEM",
       "-keyout", keyname, "-out", certname,
       "-subj", "/C=US/ST=Denial/L=Springfield/O=Dis/CN=temp.com"],
       options = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams})
     result = process.waitForExit == 0
-    try:
-      keyname.moveFile(getMongoTemp() / keyname)
-    except OSError:
-      echo "createSSLcert.moveFile: ", getCurrentExceptionMsg()
+    if result:
+      pem.writeFile(readFile(keyname) & readFile(certname))
+      try:
+        pem.moveFile(getMongoTemp() / pem)
+      except OSError:
+        echo "createSSLcert.moveFile: ", getCurrentExceptionMsg()
+        result = false
+    else:
       result = false
 
   proc setupMongoReplication: seq[Process] =
     result = newseq[Process](3)
-    var arguments = newseq[seq[string]](3)
     let mongotemp = getMongoTemp()
     createDir mongotemp
     for i in 0 .. 2:
       let repldb = mongotemp / $i
       createDir repldb
-      arguments[i] = @[
-        "--port", $(dnsport+i),
+      let args = @[
+        "--port", $(replicaPortStart+i),
         "--dbpath", repldb,
         "--bind_ip_all",
         "--sslMode", "requireSSL",
-        "--sslPEMKeyFile", keyname
-        # TODO: add PEM key self-signed
+        "--sslPEMKeyFile", mongotemp / pem,
+        "--replSet", "rs0"
         ]
       when defined(windows):
         let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
       else:
         let opt = {poUsePath, poStdErrToStdOut}
       result[i] = unown startProcess(exe, args = args, options = opt)
+      sleep 3000
 
   proc cleanup(processes: seq[Process]) =
     for i, process in processes:
       kill process
+  
+  proc cleanMongoTemp =
     try:
       removeDir getMongoTemp()
     except OSError:
-      echo getCurrentExceptionMsg()
+      echo "cleanMongoTemp.OSError: ", getCurrentExceptionMsg()
+  
+  proc cleanupSSL =
+    let mongotemp = getMongoTemp()
+    try:
+      removeFile(mongotemp / pem)
+      removeFile(certname)
+      removeFile(keyname)
+    except OSError:
+      echo "cleanupSSL OSError: ", getCurrentExceptionMsg()
+
+  suite "Replication, SSL, and SRV DNS seedlist lookup (mongodb+srv) tests":
+    test "Initial test setup":
+      require createMongoTemp()
+    test "Create self-signing SSL key certificate":
+      require createSSLCert()
+    var processes: seq[Process]
+    test "Run the local replication set db":
+      processes = setupMongoReplication()
+      require processes.allIt( it != nil )
+      require processes.all running
+
+    #spawn fakeDnsServer()
+    processes.cleanup
+    sleep 3000
+    cleanupSSL()
+    cleanMongoTemp()
