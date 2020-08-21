@@ -283,7 +283,8 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   result.setSsl sslInfo
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
-proc newMongo*(muri: MultiUri, poolconn = poolconn, dnsserver = "8.8.8.8"): Mongo =
+proc newMongo*(muri: MultiUri, poolconn = poolconn, dnsserver = "8.8.8.8",
+  dnsport = 53): Mongo =
   ## Overload the newMongo for accepting raw uri string as MultiUri.
   # This is actually needed because Mongodb specify custom
   # definition by supporting multiple user:pass@host:port
@@ -306,7 +307,7 @@ proc newMongo*(muri: MultiUri, poolconn = poolconn, dnsserver = "8.8.8.8"): Mong
       &"Only supports mongodb:// or mongodb+srv://, provided: \"{uriobj.scheme}\"")
   elif uriobj.scheme == "mongodb+srv":
     if not withSsl: raiseEnableSsl()
-    let client = newDNSClient(server = dnsserver)
+    let client = newDNSClient(server = dnsserver, port = dnsport)
     try:
       let resp = client.sendQuery(&"_mongodb._tcp.{uriobj.hostname}", SRV)
       uris = newseq[URLUri](resp.answers.len)
