@@ -56,7 +56,6 @@ when testReplication and defined(ssl):
     s.writeShort srv.weight
     s.writeShort srv.port
     s.writeName srv, server
-    s.setPosition(0)
 
   proc serialize(s: StringStream, srvs: seq[SRVRecord], server: string) =
     for srv in srvs:
@@ -83,6 +82,7 @@ when testReplication and defined(ssl):
         target: mongoServer,
         weight: 0)
     result.serialize(srvs, mongoServer)
+    result.setPosition(0)
 
   proc fakeDnsServer* =
     var server = newSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
@@ -248,7 +248,6 @@ when testReplication and defined(ssl):
       check waitfor mongo.connect
       mongo.close
 
-#[
     spawn fakeDnsServer()
     test "Check newMongo mongodb+srv scheme connection":
       try:
@@ -281,10 +280,9 @@ when testReplication and defined(ssl):
           },
         })
         discard waitfor tempcoll.insert(@[b])
-      ]#
 
-    #discard waitfor mongo.shutdown(timeout = 10)
-    #mongo.close
+    discard waitfor mongo.shutdown(timeout = 10)
+    mongo.close
     processes.cleanup
     sleep 3000
     cleanupSSL()
