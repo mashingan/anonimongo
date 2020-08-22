@@ -266,20 +266,44 @@ when testReplication and defined(ssl):
       require db != nil
 
     var tempcoll = db["test"]
+    let
+      currtime = now().toTime
+      msg = "こんにちは、isekai"
+      truthy = true
+      embedobj = bson({
+        "type": "kawaii",
+        name: "Est",
+        form: "Sword",
+      })
     test "Catch exception when doing write operation without enabling " &
       " slaveOk for readPreferences other than primary":
       expect(MongoError):
         let b = bson({
-          entry: now().toTime,
-          msg: "hello, 異世界",
-          truthness: true,
-          embedded: {
-            "type": "kawaii",
-            name: "Est",
-            form: "Sword"
-          },
+          entry: currtime,
+          msg: msg,
+          truthness: truthy,
+          embedded: embedobj,
         })
         discard waitfor tempcoll.insert(@[b])
+
+    mongo.slaveOk
+    test "Retry to inserting to database":
+      let b = bson({
+        entry: currtime,
+        msg: msg,
+        truthness: truthy,
+        embedded: embedobj,
+      })
+      try:
+        var wr = waitfor tempcoll.insert(@[b])
+        wr.success.reasonedCheck("Retry tempcoll.insert", wr.reason)
+      except MongoError:
+        checkpoint(getCurrentExceptionMsg())
+        fail()
+
+    test "Read our entry":
+      check (waitfor tempcoll.count) == 1
+
 
     discard waitfor mongo.shutdown(timeout = 10)
     mongo.close
