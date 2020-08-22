@@ -7,7 +7,7 @@ const
 
 when testReplication and defined(ssl):
   import endians, net, streams, os, osproc, strutils, threadpool,
-         unittest, strformat
+         unittest, strformat, times
   from sequtils import allIt, all
 
   import dnsclient
@@ -25,7 +25,10 @@ when testReplication and defined(ssl):
     pem {.strdefine.} = "key.priv.pem"
     mongoServer {.strdefine.} = "localhost"
     uriSettingRepl = &"mongodb://{mongoServer}:{replicaPortStart}/admin?ssl=true"
-    #urlSrv {.used.} = &"mongodb+srv://{mongoServer}/admin?readPreferences=secondary"
+    uriSrv = &"mongodb+srv://{mongoServer}/admin?readPreferences=secondary"
+    uriMultiManual = &"mongodb://{mongoServer}:{replicaPortStart}," &
+      &"{mongoServer}:{replicaPortStart+1},{mongoServer}:{replicaPortStart+2}" &
+      "/admin?ssl=true"
 
   proc writeName(s: StringStream, srv: SRVRecord, server: string) =
     for sdot in server.split('.'):
@@ -102,8 +105,11 @@ when testReplication and defined(ssl):
   
   proc createMongoTemp: bool = 
     result = true
+    let mongotemp = getMongoTemp()
     try:
-      createDir getMongoTemp()
+      if mongotemp.dirExists:
+        removeDir mongotemp
+      createDir mongotemp
     except OSError:
       echo "createMongoTemp.OSError: ", getCurrentExceptionMsg()
       result = false
@@ -220,6 +226,8 @@ when testReplication and defined(ssl):
         checkpoint(getCurrentExceptionMsg())
         fail()
       reply.reasonedCheck("replSetGetStatus")
+      check reply["set"] == "rs0"
+      check reply["members"].ofArray.len == 3
 
     test "Restart the replication set":
       let connStatus = waitfor mongo.shutdown(timeout = 10)
@@ -231,7 +239,52 @@ when testReplication and defined(ssl):
       processes = setupMongoReplication()
       require processes.all running
 
-    #spawn fakeDnsServer()
+    test "Connect with manual multi uri connections":
+      mongo = newMongo(
+        MultiUri uriMultiManual,
+        poolconn = testutils.poolconn
+      )
+      require mongo != nil
+      check waitfor mongo.connect
+      mongo.close
+
+#[
+    spawn fakeDnsServer()
+    test "Check newMongo mongodb+srv scheme connection":
+      try:
+        mongo = newMongo(
+          MultiUri uriSrv,
+          poolconn = testutils.poolconn,
+          dnsserver = mongoServer,
+          dnsport = dnsport
+        )
+      except RangeError:
+        checkpoint(getCurrentExceptionMsg())
+        fail()
+      require mongo != nil
+      require waitfor mongo.connect
+      db = mongo["temptest"]
+      require db != nil
+
+    var tempcoll = db["test"]
+    test "Catch exception when doing write operation without enabling " &
+      " slaveOk for readPreferences other than primary":
+      expect(MongoError):
+        let b = bson({
+          entry: now().toTime,
+          msg: "hello, 異世界",
+          truthness: true,
+          embedded: {
+            "type": "kawaii",
+            name: "Est",
+            form: "Sword"
+          },
+        })
+        discard waitfor tempcoll.insert(@[b])
+      ]#
+
+    #discard waitfor mongo.shutdown(timeout = 10)
+    #mongo.close
     processes.cleanup
     sleep 3000
     cleanupSSL()
