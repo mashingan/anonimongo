@@ -86,7 +86,7 @@ proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
 proc crudops*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
   Future[BsonDocument]{.async.} =
   ## About the same as ``proceed`` but this will return a BsonDocument
-  ## compared to ``proceed`` that return ``(bool, string)``.
+  ## compared to ``proceed`` that return ``WriteResult``.
   let reply = await sendops(q, db, dbname, cmd)
   var (success, reason) = check reply
   if not success:

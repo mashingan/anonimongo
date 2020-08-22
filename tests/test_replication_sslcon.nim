@@ -6,13 +6,16 @@ const
   testReplication {.booldefine.} = false
 
 when testReplication and defined(ssl):
-  import endians, net, streams, os, osproc, strutils, threadpool, unittest
+  import endians, net, streams, os, osproc, strutils, threadpool,
+         unittest, strformat
   from sequtils import allIt, all
 
   import dnsclient
   # reuse private dnsclient implementation
   from private/protocol as dnsprot import parseResponse, toStream
   from private/utils as dnsutils import writeShort
+
+  import anonimongo
 
   const
     dnsport {.intdefine.} = 27016
@@ -21,6 +24,8 @@ when testReplication and defined(ssl):
     certname {.strdefine.} = "cert.pem"
     pem {.strdefine.} = "key.priv.pem"
     mongoServer {.strdefine.} = "localhost"
+    uriSettingRepl = &"mongodb://{mongoServer}:{replicaPortStart}/admin?ssl=true"
+    #urlSrv {.used.} = &"mongodb+srv://{mongoServer}/admin?readPreferences=secondary"
 
   proc writeName(s: StringStream, srv: SRVRecord, server: string) =
     for sdot in server.split('.'):
@@ -171,6 +176,59 @@ when testReplication and defined(ssl):
     test "Run the local replication set db":
       processes = setupMongoReplication()
       require processes.allIt( it != nil )
+      require processes.all running
+
+    var mongo: Mongo
+    var db: Database
+    test "Catch error without SSL for SSL/TLS required connection":
+      expect(IOError):
+        var m = newMongo(
+          MultiUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
+          poolconn = testutils.poolconn)
+        defer: m.close()
+        check waitfor m.connect()
+
+    test "Connect single uri":
+      mongo = newMongo(MultiUri uriSettingRepl,
+        poolconn = testutils.poolconn,
+        dnsserver = mongoServer,
+        dnsport = dnsport)
+      require mongo != nil
+      require waitfor mongo.connect()
+      db = mongo["admin"]
+      require db != nil
+
+    test "Setting up replication set":
+      var config = bson({
+        "_id": "rs0",
+        members: [
+          { "_id": 0, host: &"{mongoServer}:{replicaPortStart}" },
+          { "_id": 1, host: &"{mongoServer}:{replicaPortStart+1}" },
+          { "_id": 2, host: &"{mongoServer}:{replicaPortStart+2}" },
+        ]
+      })
+      var reply: BsonDocument
+      try:
+        reply = waitfor db.replSetInitiate(config)
+      except MongoError:
+        checkpoint(getCurrentExceptionMsg())
+        fail()
+      reply.reasonedCheck("replSetInitiate")
+      try:
+        reply = waitfor db.replSetGetStatus
+      except MongoError:
+        checkpoint(getCurrentExceptionMsg())
+        fail()
+      reply.reasonedCheck("replSetGetStatus")
+
+    test "Restart the replication set":
+      let connStatus = waitfor mongo.shutdown(timeout = 10)
+      check connStatus.success
+      mongo.close
+      processes.cleanup
+      sleep 3000
+      check processes.allIt( not it.running )
+      processes = setupMongoReplication()
       require processes.all running
 
     #spawn fakeDnsServer()
