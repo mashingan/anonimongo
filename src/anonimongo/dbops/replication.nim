@@ -45,12 +45,13 @@ proc replSetMaintenance*(db: Database, enable: bool):
   result = await db.crudops(bson({ replSetMaintenance: enable}), "admin", cmd = ckWrite)
 
 proc replSetReconfig*(db: Database, newconfig: BsonDocument, force: bool,
-  maxTimeMS: int): Future[BsonDocument]{.async.} =
+  maxTimeMS: int = -1): Future[BsonDocument]{.async.} =
   var q = bson({
     replSetReconfig: newconfig,
     force: force,
-    maxTimeMS: maxTimeMS
   })
+  if maxTimeMS != -1:
+    q["maxTimeMS"] = maxTimeMS
   result = await db.crudops(q, "admin", cmd = ckWrite)
 
 proc replSetResizeOplog*(db: Database; size: float; minRetentionHours = 0.0):
