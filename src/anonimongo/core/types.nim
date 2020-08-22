@@ -13,11 +13,14 @@ import pool, wire, bson
 
 const
   poolconn* {.intdefine.} = 64
-  verbose* {.booldefine.} = false
+  verbose* = defined(verbose)
   verifypeer* = defined(verifypeer)
   cafile* {.strdefine.} = ""
   withSsl = defined(ssl)
   sslProtVersion {.strdefine, used.} = ""
+
+when verbose:
+  import sugar
 
 type
   MongoConn* = ref object of RootObj
@@ -381,6 +384,8 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
   for u in uri:
     let port = try: parseInt(u.port)
               except ValueError: 27017
+    when verbose:
+      dump port
     var hostport = &"{u.hostname}:{u.port}"
     result.servers[hostport] = MongoConn(
       host: u.hostname,
