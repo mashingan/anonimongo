@@ -42,7 +42,7 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
     q["pipeline"] = pipeline
   q.addOptional("collation", collation)
   q.addWriteConcern(db, writeConcern)
-  result = await db.proceed(q)
+  result = await db.proceed(q, cmd = ckWrite)
 
 proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
   writeConcern = bsonNull()): Future[WriteResult]{.async.} =
@@ -51,19 +51,19 @@ proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
     indexes: indexes,
   })
   q.addWriteConcern(db, writeConcern)
-  result = await db.proceed(q)
+  result = await db.proceed(q, cmd = ckWrite)
 
 proc dropCollection*(db: Database, coll: string, wt = bsonNull()):
   Future[WriteResult]{.async.} =
   var q = bson({ drop: coll })
   q.addWriteConcern(db, wt)
-  result = await db.proceed(q)
+  result = await db.proceed(q, cmd = ckWrite)
 
 proc dropDatabase*(db: Database, wt = bsonNull()):
   Future[WriteResult]{.async.} =
   var q = bson({ dropDatabase: 1 })
   q.addWriteConcern(db, wt)
-  result = await db.proceed(q)
+  result = await db.proceed(q, cmd = ckWrite)
 
 proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
   wt = bsonNull()): Future[WriteResult] {.async.} =
@@ -72,7 +72,7 @@ proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
     index: indexes,
   })
   q.addWriteConcern(db, wt)
-  result = await db.proceed(q)
+  result = await db.proceed(q, cmd = ckWrite)
 
 proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
   Future[seq[BsonBase]] {.async.} =
@@ -138,7 +138,7 @@ proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
     dropTarget: false,
   })
   q.addWriteConcern(db, wt)
-  result = await db.proceed(q, "admin")
+  result = await db.proceed(q, "admin", cmd = ckWrite)
 
 proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
     Future[WriteResult] {.async.} =
@@ -148,7 +148,7 @@ proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
   else:
     let mdb = db
   try:
-    result = await mdb.proceed(q, "admin")
+    result = await mdb.proceed(q, "admin", cmd = ckWrite)
   except IOError:
     result = WriteResult(
       success: true,
@@ -169,7 +169,7 @@ proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
 
 proc killOp*(db: Database, opid: int32): Future[WriteResult] {.async.} =
   let q = bson({ killerOp: 1, op: opid })
-  result = await db.proceed(q, "admin")
+  result = await db.proceed(q, "admin", cmd = ckWrite)
 
 proc killCursor*(db: Database, collname: string, cursorIds: seq[int]):
   Future[BsonDocument] {.async.} =
