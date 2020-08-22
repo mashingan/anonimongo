@@ -8,7 +8,8 @@ const
 when testReplication and defined(ssl):
   import endians, net, streams, os, osproc, strutils, threadpool,
          unittest, strformat, times
-  from sequtils import allIt, all
+  from sequtils import allIt, all, map, anyIt
+  from sugar import dump
 
   import dnsclient
   # reuse private dnsclient implementation
@@ -29,6 +30,10 @@ when testReplication and defined(ssl):
     uriMultiManual = &"mongodb://{mongoServer}:{replicaPortStart}," &
       &"{mongoServer}:{replicaPortStart+1},{mongoServer}:{replicaPortStart+2}" &
       "/admin?ssl=true"
+    rsetName = "temptestSet"
+  
+  dump uriSrv
+  dump uriMultiManual
 
   proc writeName(s: StringStream, srv: SRVRecord, server: string) =
     for sdot in server.split('.'):
@@ -87,6 +92,7 @@ when testReplication and defined(ssl):
   proc fakeDnsServer* =
     var server = newSocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
     server.bindAddr(Port dnsport)
+    defer: close server
     var
       data = ""
       address = ""
@@ -135,18 +141,20 @@ when testReplication and defined(ssl):
   proc setupMongoReplication: seq[Process] =
     result = newseq[Process](3)
     let mongotemp = getMongoTemp()
-    createDir mongotemp
     for i in 0 .. 2:
       let repldb = mongotemp / $i
       createDir repldb
       let args = @[
+        "--replSet", rsetName,
         "--port", $(replicaPortStart+i),
         "--dbpath", repldb,
         "--bind_ip_all",
         "--sslMode", "requireSSL",
         "--sslPEMKeyFile", mongotemp / pem,
-        "--replSet", "rs0"
+        "--oplogSize", "128"
         ]
+      when verbose:
+        dump args
       when defined(windows):
         let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
       else:
@@ -156,7 +164,8 @@ when testReplication and defined(ssl):
 
   proc cleanup(processes: seq[Process]) =
     for i, process in processes:
-      kill process
+      terminate process
+      close process
   
   proc cleanMongoTemp =
     try:
@@ -191,8 +200,8 @@ when testReplication and defined(ssl):
         var m = newMongo(
           MultiUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
           poolconn = testutils.poolconn)
-        defer: m.close()
         check waitfor m.connect()
+        m.close()
 
     test "Connect single uri":
       mongo = newMongo(MultiUri uriSettingRepl,
@@ -206,9 +215,9 @@ when testReplication and defined(ssl):
 
     test "Setting up replication set":
       var config = bson({
-        "_id": "rs0",
+        "_id": rsetName,
         members: [
-          { "_id": 0, host: &"{mongoServer}:{replicaPortStart}" },
+          { "_id": 0, host: &"{mongoServer}:{replicaPortStart}", priority: 2 },
           { "_id": 1, host: &"{mongoServer}:{replicaPortStart+1}" },
           { "_id": 2, host: &"{mongoServer}:{replicaPortStart+2}" },
         ]
@@ -226,11 +235,12 @@ when testReplication and defined(ssl):
         checkpoint(getCurrentExceptionMsg())
         fail()
       reply.reasonedCheck("replSetGetStatus")
-      check reply["set"] == "rs0"
-      check reply["members"].ofArray.len == 3
+      check reply["set"] == rsetName
+      let members = reply["members"].ofArray
+      check members.len == 3
 
     test "Restart the replication set":
-      let connStatus = waitfor mongo.shutdown(timeout = 10)
+      let connStatus = waitfor mongo.shutdown(timeout = 1000)
       check connStatus.success
       mongo.close
       processes.cleanup
@@ -238,6 +248,9 @@ when testReplication and defined(ssl):
       check processes.allIt( not it.running )
       processes = setupMongoReplication()
       require processes.all running
+      sleep 3000
+      #mongo.close
+      #skip()
 
     test "Connect with manual multi uri connections":
       mongo = newMongo(
@@ -246,8 +259,14 @@ when testReplication and defined(ssl):
       )
       require mongo != nil
       check waitfor mongo.connect
+      db = mongo["admin"]
+      let cfg = waitfor db.replSetGetStatus
+      let members = cfg["members"].ofArray
+      check members.len == 3
+      check members.anyIt( it["stateStr"] == "PRIMARY" )
       mongo.close
 
+#[
     spawn fakeDnsServer()
     test "Check newMongo mongodb+srv scheme connection":
       try:
@@ -264,6 +283,7 @@ when testReplication and defined(ssl):
       require waitfor mongo.connect
       db = mongo["temptest"]
       require db != nil
+    sync()
 
     var tempcoll = db["test"]
     let
@@ -286,8 +306,53 @@ when testReplication and defined(ssl):
         })
         discard waitfor tempcoll.insert(@[b])
 
-    mongo.slaveOk
-    test "Retry to inserting to database":
+    test "Reconnect to enabling replication set writing":
+      spawn fakeDnsServer()
+      mongo.close
+      #mongo = nil
+      mongo = newMongo(
+        MultiUri uriSrv,
+        poolconn = testutils.poolconn,
+        dnsserver = mongoServer,
+        dnsport = dnsport
+      )
+      require mongo != nil
+      mongo.slaveOk
+      require waitfor mongo.connect
+      db = mongo["temptest"]
+      require db != nil
+      sync()
+      tempcoll = db["test"]
+
+    test "Test isMaster and fix the server":
+      #dump waitfor db.replSetGetStatus()
+      let masterStatus = waitfor db.isMaster
+      #dump masterStatus
+      if "primary" notin masterStatus:
+        var reconfig = bson({
+          "_id": masterStatus["setName"],
+          version: int32 2,
+          protocolVersion: 1,
+        })
+        let hosts = masterStatus["hosts"].ofArray
+        let me = masterStatus["me"].ofString
+        var members = newseq[BsonDocument](hosts.len)
+        for i, host in hosts:
+          let priority = if host == me: 1.0
+                         else: 0.5
+
+          members[i] = bson({
+            "_id": i,
+            host: host,
+            priority: priority,
+          })
+        reconfig["members"] = members.map toBson
+        var rcfgStatus = waitfor db.replSetReconfig(reconfig, true)
+        dump rcfgStatus
+        dump waitfor db.isMaster
+      skip()
+
+    test "Retry inserting to database":
       let b = bson({
         entry: currtime,
         msg: msg,
@@ -303,10 +368,10 @@ when testReplication and defined(ssl):
 
     test "Read our entry":
       check (waitfor tempcoll.count) == 1
+]#
 
-
-    discard waitfor mongo.shutdown(timeout = 10)
-    mongo.close
+    #discard waitfor mongo.shutdown(timeout = 10)
+    #mongo.close
     processes.cleanup
     sleep 3000
     cleanupSSL()
