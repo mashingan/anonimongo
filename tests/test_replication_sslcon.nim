@@ -247,7 +247,7 @@ when testReplication and defined(ssl):
       except MongoError:
         checkpoint(getCurrentExceptionMsg())
         fail()
-      dump reply
+      when verbose: dump reply
       reply.reasonedCheck("replSetGetStatus")
       check reply["set"] == rsetName
       let members = reply["members"].ofArray
