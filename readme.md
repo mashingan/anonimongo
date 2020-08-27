@@ -104,7 +104,7 @@ doAssert delStat.n == 1   # because we only delete one entry in
 
 # count all documents in current collection
 let currNDoc = waitfor coll.count()
-doAssert currNDoc == (idoc.len - ndeleted)
+doAssert currNDoc == (idoc.len - delStat.n)
 
 close mongo
 ```

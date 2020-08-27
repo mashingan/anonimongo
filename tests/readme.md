@@ -40,9 +40,8 @@ above GridFS functions. For full available APIs can be checked [here][grid-doc].
 ## Replication set test
 Test file is test_replication_sslcon.nim. This test any replication operations maintenance starting from
 seting it up, connecting through the `mongodb+srv` scheme, emulating fake DNS server for testing the
-`mongodb+srv` scheme. The APIs are following the Mongodb Page for [Replication commands]
-(https://docs.mongodb.com/manual/reference/replication/#replication-database-commands) which implemented
-in [replication.nim](replication.nim).
+`mongodb+srv` scheme. The APIs are following the Mongodb Page for [Replication commands](https://docs.mongodb.com/manual/reference/replication/#replication-database-commands) which implemented
+in [Replication module](replication.nim).
 
 ## How to run
 Ideally, this should be added to `nimble test` for running all tests and `nimble test_name` for each
@@ -73,12 +72,12 @@ switch("define", "testReplication=yes")
 EOF
 
 # now running the test
-nim c -r tests\test_admmgmt_test.nim
-nim c -r tests\test_bson_test.nim
-nim c -r tests\test_client_test.nim
-nim c -r tests\test_collections_test.nim
-nim c -r tests\test_crud_test.nim
-nim c -r tests\test_gridfs_test.nim
+nim c -r tests/test_admmgmt_test.nim
+nim c -r tests/test_bson_test.nim
+nim c -r tests/test_client_test.nim
+nim c -r tests/test_collections_test.nim
+nim c -r tests/test_crud_test.nim
+nim c -r tests/test_gridfs_test.nim
 
 # or simply
 nimble test
