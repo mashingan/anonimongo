@@ -297,22 +297,6 @@ when testReplication and defined(ssl):
         form: "Sword",
       })
 
-    test "Catch exception when doing write operation without enabling " &
-      " slaveOk for readPreferences other than primary":
-      skip()
-      #[
-      let b = bson({
-        entry: currtime,
-        msg: msg,
-        truthness: truthy,
-        embedded: embedobj,
-      })
-      mongo.noSlave
-      tempcoll = mongo["temptest"]["test"]
-      expect(MongoError):
-        discard waitfor tempcoll.insert(@[b])
-        ]#
-
     test "Reconnect to enable replication set writing":
       skip()
       mongo.slaveOk
