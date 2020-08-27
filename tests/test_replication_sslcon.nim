@@ -196,7 +196,6 @@ when testReplication and defined(ssl):
       echo "cleanupSSL OSError: ", getCurrentExceptionMsg()
 
   suite "Replication, SSL, and SRV DNS seedlist lookup (mongodb+srv) tests":
-    #[
     test "Initial test setup":
       require createMongoTemp()
     test "Create self-signing SSL key certificate":
@@ -206,7 +205,6 @@ when testReplication and defined(ssl):
       processes = setupMongoReplication()
       require processes.allIt( it != nil )
       require processes.all running
-]#
 
     var mongo: Mongo
     var db: Database
@@ -228,7 +226,6 @@ when testReplication and defined(ssl):
       db = mongo["admin"]
       require db != nil
 
-#[
     test "Setting up replication set":
       var config = bson({
         "_id": rsetName,
@@ -255,8 +252,11 @@ when testReplication and defined(ssl):
       check reply["set"] == rsetName
       let members = reply["members"].ofArray
       check members.len == 3
+    sleep 15_000 # waiting the replica set to elect primary
 
     test "Restart the replication set":
+      skip()
+#[
       let connStatus = waitfor mongo.shutdown(timeout = 1000)
       check connStatus.success
       mongo.close
@@ -313,47 +313,34 @@ when testReplication and defined(ssl):
         form: "Sword",
       })
 
-#[
     test "Catch exception when doing write operation without enabling " &
       " slaveOk for readPreferences other than primary":
+      skip()
+      #[
+      let b = bson({
+        entry: currtime,
+        msg: msg,
+        truthness: truthy,
+        embedded: embedobj,
+      })
+      mongo.noSlave
+      tempcoll = mongo["temptest"]["test"]
       expect(MongoError):
-        let b = bson({
-          entry: currtime,
-          msg: msg,
-          truthness: truthy,
-          embedded: embedobj,
-        })
         discard waitfor tempcoll.insert(@[b])
-]#
+        ]#
 
     test "Reconnect to enable replication set writing":
-#[
-      spawn fakeDnsServer()
-      mongo.close
-      #mongo = nil
-      mongo = newMongo(
-        MultiUri uriSrv,
-        poolconn = testutils.poolconn,
-        dnsserver = mongoServer,
-        dnsport = dnsport
-      )
-      require mongo != nil
-]#
+      skip()
       mongo.slaveOk
       #require waitfor mongo.connect
       db = mongo["temptest"]
       require db != nil
       #sync()
-      mongo.slaveOk
+      #mongo.slaveOk
       tempcoll = db["test"]
       check true
 
     test "Retry inserting to database":
-      # drop the collection first
-      var wr = waitfor tempcoll.drop()
-      wr.success.reasonedCheck("retry inserting: drop collection", wr.reason)
-      wr = waitfor db.create("test")
-      wr.success.reasonedCheck("retry inserting: recreate collection", wr.reason)
       tempcoll = db["test"]
       let b = bson({
         entry: currtime,
@@ -361,12 +348,12 @@ when testReplication and defined(ssl):
         truthness: truthy,
         embedded: embedobj,
       })
-      wr = waitfor tempcoll.insert(@[b])
+      let wr = waitfor tempcoll.insert(@[b])
       wr.success.reasonedCheck("Retry tempcoll.insert", wr.reason)
 
-    #discard waitfor mongo.shutdown(timeout = 10)
+    discard waitfor mongo.shutdown(timeout = 10)
     mongo.close
-    #processes.cleanup
+    processes.cleanup
     sleep 3000
     cleanupSSL()
     cleanMongoTemp()
