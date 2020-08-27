@@ -11,6 +11,8 @@ import dnsclient
 
 import pool, wire, bson
 
+export SHA1Digest, SHA256Digest
+
 const
   poolconn* {.intdefine.} = 64
   verbose* = defined(verbose)

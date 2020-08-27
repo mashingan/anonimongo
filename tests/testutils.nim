@@ -2,8 +2,6 @@ import asyncdispatch, tables, uri
 import osproc, sugar, unittest
 import strformat
 
-import nimSHA2
-
 import ../src/anonimongo
 
 {.warning[UnusedImport]: off.}
@@ -76,7 +74,7 @@ proc testsetup*: Mongo =
   #echo &"current available conns: {mongo.pool.available.len}"
   when verbose:
     let start = cpuTime()
-  if mongo.withAuth and not waitFor(authenticate[Sha256Digest](mongo, user, pass)):
+  if mongo.withAuth and not waitFor mongo.authenticate[:SHA256Digest](user, pass):
     echo "cannot authenticate the connection"
   #echo &"is mongo authenticated: {mongo.authenticated}"
   when verbose:
