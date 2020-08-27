@@ -70,4 +70,5 @@ jobs:
             echo 'switch("define", "filename=")' >> config.nims
             echo 'switch("define", "saveas=")' >> config.nims
             echo 'switch("define", "user=")' >> config.nims
+            echo 'switch("define", "testReplication=yes")' >> config.nims
             nimble test -Y
