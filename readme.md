@@ -1,4 +1,24 @@
 # Anonimongo - Another pure Nim Mongo driver
+
+## Table of content
+
+1. [Background](#background)
+2. [Examples](#examples) 
+
+    - [Simple operations](#simple-operations)
+    - [Authenticate](#authenticate)
+    - [SSL URI connect](#ssl-uri-connect)
+    - [Upload file to GridFS](#upload-file-to-gridfs)
+    - [Bson examples](#bson-examples)
+    - [Convert object to BsonDocument](#convert-object-to-bsondocument)
+
+3. [Install](#install)
+4. [Implemented APIs](#implemented-apis)
+5. [Caveats](#caveats)
+6. [License](#license)
+
+
+## Background
 [Mongodb][1] is a document-based key-value database which emphasize in high performance read
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
@@ -25,11 +45,10 @@ on how the user handles them.
 [This page][5] (`anonimongo.html`) is the elaborate documentation. It also explains several
 modules and the categories for those modules. [The index][6] also available.
 
+[TOC](#table-of-content)
 ## Examples
 
-_Click to expand_
-
-<details><summary>Simple operations</summary>
+### Simple operations
 
 ```nim
 import times, strformat
@@ -89,68 +108,72 @@ doAssert currNDoc == (idoc.len - ndeleted)
 
 close mongo
 ```
-</details>
-<details><summary>Authenticate</summary>
+
+### Authenticate
 
 ```nim
 import strformat
-import nimSHA2
 import anonimongo
-import tables # needed when authenticating
 
 var mongo = newMongo()
-let mhostport = &"{mongo.host}.{$mongo.port.int}"
-if waitfor not mongo.connect:
-  # default is localhost:27017
-  quit &"Cannot connect to {mhostport}"
-if not authenticate[SHA256Digest](mongo, username, password):
-  quit &"Cannot login to {mhostport}"
+if not waitfor mongo.connect:
+  quit "Cannot connect to localhost:27017"
+
+# change to :SHA1Digest for SCRAM-SHA-1 mechanism
+if not mongo.authenticate[:SHA256Digest](username, password):
+  quit "Cannot login to localhost:27017"
 close mongo
 
-# Another way to connect and login
-mongo = newMongo()
-mongo.username = username
-mongo.password = password
-if waitfor not mongo.connect and not waitfor authenticate[SHA256Digest](mongo):
-  quit &"Whether cannot connect or cannot login to {mhostport}"
-close mongo
-```
-</details>
-<details><summary>URI connect</summary>
-
-```nim
-import strformat, uri
-import anonimongo
-
-let uriserver = "mongo://username:password@localhost:27017/"
-var mongo = newMongo(parseURI uriserver)
+# Authenticating using URI
+mongo = newMongo(MongoUri("mongodb://username:password@domain-host/admin"))
+if not waitfor mongo.connect:
+  quit "Cannot connect to domain-host"
+if not waitfor mongo.authenticate[:SHA256Digest]():
+  quit "Cannot login to domain-host"
 close mongo
 ```
 
-</details>
-<details><summary>Manual/URI SSL connect</summary>
+### SSL URI connect
 
 ```nim
 # need to compile with -d:ssl option to enable ssl
-import strformat, uri
+import strformat
 import anonimongo
 
 let uriserver = "mongo://username:password@localhost:27017/"
 let sslkey = "/path/to/ssl/key.pem"
 let sslcert = "/path/to/ssl/cert.pem"
 let urissl = &"{uriserver}?tlsCertificateKeyFile=certificate:{encodeURL sslcert},key:{encodeURL sslkey}"
+let connectToAtlast = "mongo+srv://username:password@atlas-domain/admin"
+let multipleHostUri = "mongo://uname:passwd@domain-1,uname:passwd@domain-2,uname:passwd@domain-3/admin"
 
 # uri ssl connection
-var mongo = newMongo(parseURI urissl)
+var mongo = newMongo(MongoUri urissl)
 close mongo
 
-# manual ssl connection
-mongo = newMongo(sslinfo = initSSLInfo(sslkey, sslcert))
+# or for `mongo+srv` connection scheme
+mongo = newMongo(MongoUri connectToAtlas)
+close mongo
+
+# for multipleHostUri
+mongo = newMongo(MongoUri multipleHostUri)
+close mongo
+
+# custom DNS server and its port
+# by default it's: `dnsserver = "8.8.8.8"` and `dnsport = 53`
+mongo = newMongo(
+  MongoUri connectToAtlas,
+  dnsserver = "1.1.1.1",
+  dnssport = 5000)
 close mongo
 ```
 
-</details>
-<details><summary>Upload file to GridFS</summary>
+In the [test_replication_sslcon.nim](tests/test_replication_sslcon.nim), there's example of emulated
+[DNS server custom for `SRV`](tests/test_replication_sslcon.nim#L105-L120)
+of DNS seedlist lookup. So the URI to connect is `localhost:3000` which in return replying with
+`localhost:27018`, `localhost:27019` and `localhost:27020` as domain of replication set.
+
+### Upload file to GridFS
 
 ```nim
 # this time the server doesn't need SSL/TLS or authentication
@@ -158,6 +181,7 @@ close mongo
 import anonimongo
 
 var mongo = newMongo()
+doAssert waitfor mongo.connect
 var grid = mongo["target-db"].createBucket() # by default, the bucket name is "fs"
 let res = waitfor grid.uploadFile("/path/to/our/file")
 if not res.success:
@@ -170,8 +194,7 @@ close gstream
 close mongo
 ```
 
-</details>
-<details><summary>Bson examples</summary>
+### Bson examples
 
 ```nim
 import times
@@ -211,9 +234,7 @@ doAssert ourObj.field1 == 1000
 doAssert ourObj.field2 == "power-level"
 ```
 
-</details>
-
-<summary>Convert object to BsonDocument</sumary>
+### Convert object to BsonDocument
 
 ```nim
 type
@@ -255,6 +276,8 @@ Check [tests](tests/) for more examples of detailed usages.
 Elaborate Bson examples and cases are covered in [bson_test.nim](tests/test_bson_test.nim)
 
 
+[TOC](#table-of-content)
+
 ## Install
 
 ```
@@ -293,16 +316,16 @@ or directly from Github repo
 requires "https://github.com/mashingan/anonimongo"
 ```
 
+[TOC](#table-of-content)
 ## Implemented APIs
 This implemented APIs for Mongo from [Mongo reference manual][2]
 and [mongo spec][3].
 
-<details>
-<summary>Features connection</summary>
+### Features connection
 
 - [x] URI connect
 - [x] Multiquery on URI connect
-- [ ] Multihost on URI connect
+- [x] Multihost on URI connect
 - [ ] Multihost on simple connect
 - [x] SSL/TLS connection
 - [x] SCRAM-SHA-1 authentication
@@ -311,25 +334,23 @@ and [mongo spec][3].
 - [x] `TailableCursor` connection
 - [x] `SlaveOk` operations
 - [ ] Compression connection
-</details>
 
-<details>
-<summary>Features commands</summary>
+### Features commands
 
-<details><summary>:white_check_mark: Aggregation commands 4/4</summary>
+#### :white_check_mark: Aggregation commands 4/4
 
 - [x] `aggregate`
 - [x] `count`
 - [x] `distinct`
 - [x] `mapReduce`
-</details>
 
-<details><summary>:white_check_mark: Geospatial command 1/1</summary>
+
+#### :white_check_mark: Geospatial command 1/1
 
 - [x] `geoSearch`
-</details>
 
-<details><summary>:white_check_mark: Query and write operations commands 7/7 (<del>8</del>)</summary>
+
+#### :white_check_mark: Query and write operations commands 7/7 (<del>8</del>)
 
 - [x] `delete`
 - [x] `find`
@@ -339,9 +360,9 @@ and [mongo spec][3].
 - [x] `update`
 - [x] `getLastError`
 - [ ] `resetError` (deprecated)
-</details>
 
-<details><summary>:x: Query plan cache commands 0/6</summary>
+
+#### :x: Query plan cache commands 0/6
 
 - [ ] `planCacheClear`
 - [ ] `planCacheClearFilters`
@@ -349,15 +370,15 @@ and [mongo spec][3].
 - [ ] `planCacheListPlans`
 - [ ] `planCacheListQueryShapes`
 - [ ] `planCacheSetFilter`
-</details>
 
-<details><summary>:ballot_box_with_check: Database operations commands 1/3</summary>
+
+#### :ballot_box_with_check: Database operations commands 1/3
 
 - [x] `authenticate`, implemented as Mongo proc.
 - [ ] `getnonce`
 - [ ] `logout`
-</details>
-<details><summary>:white_check_mark: User management commands 7/7</summary>
+
+#### :white_check_mark: User management commands 7/7
 
 - [x] `createUser`
 - [x] `dropAllUsersFromDatabase`
@@ -366,8 +387,8 @@ and [mongo spec][3].
 - [x] `revokeRolesFromUser`
 - [x] `updateUser`
 - [x] `usersInfo`
-</details>
-<details><summary>:white_check_mark: Role management commands 10/10</summary>
+
+#### :white_check_mark: Role management commands 10/10
 
 - [x] `createRole`
 - [x] `dropRole`
@@ -379,9 +400,9 @@ and [mongo spec][3].
 - [x] `rovokeRolesFromRole`
 - [x] `rolesInfo`
 - [x] `updateRole`
-</details>
 
-<details><summary>:white_check_mark: Replication commands 12/12(<del>13</del>)</summary>
+
+#### :white_check_mark: Replication commands 12/12(<del>13</del>)
 
 - [ ] `applyOps` (internal command)
 - [x] `isMaster`
@@ -396,8 +417,8 @@ and [mongo spec][3].
 - [x] `replSetResizeOplog`
 - [x] `replSetStepDown`
 - [x] `replSetSyncFrom`
-</details>
-<details><summary>:x: Sharding commands 0/27</summary>
+
+#### :x: Sharding commands 0/27
 
 - [ ] `addShard`
 - [ ] `addShardToZone`
@@ -426,8 +447,8 @@ and [mongo spec][3].
 - [ ] `splitVector`
 - [ ] `unsetSharding`
 - [ ] `updateZoneKeyRange`
-</details>
-<details><summary>:x: Session commands 0/8</summary>
+
+#### :x: Session commands 0/8
 
 - [ ] `abortTransaction`
 - [ ] `commitTransaction`
@@ -437,8 +458,8 @@ and [mongo spec][3].
 - [ ] `killSessions`
 - [ ] `refreshSessions`
 - [ ] `startSession`
-</details>
-<details><summary>:ballot_box_with_check: Administration commands 13/28 (<del>29</del>)</summary>
+
+#### :ballot_box_with_check: Administration commands 13/28 (<del>29</del>)
 
 - [ ] `clean` (internal namespace command)
 - [ ] `cloneCollection`
@@ -469,8 +490,8 @@ and [mongo spec][3].
 - [ ] `setFeatureCompabilityVersion`
 - [ ] `setParameter`
 - [x] `shutdown`
-</details>
-<details><summary>:white_check_mark: Diagnostic commands 17/17 (<del>26</del>)</summary>
+
+#### :white_check_mark: Diagnostic commands 17/17 (<del>26</del>)
 
 - [ ] `availableQueryOptions` (internal command)
 - [x] `buildInfo`
@@ -498,37 +519,33 @@ and [mongo spec][3].
 - [x] `top`
 - [x] `validate`
 - [ ] `whatsmyuri` (internal command)
-</details>
-<details><summary>:white_check_mark: Free monitoring commands 2/2</summary>
+
+#### :white_check_mark: Free monitoring commands 2/2
 
 - [x] `getFreeMonitoringStatus`
 - [x] `setFreeMonitoring`
-</details>
-<details><summary>:x: <del>Auditing commands 0/1</del>, only available for
-Mongodb Enterprise and AtlasDB </summary>
+
+#### :x: <del>Auditing commands 0/1</del>, only available for Mongodb Enterprise and AtlasDB 
 
 - [ ] `logApplicationMessage`
-</details>
-</details>
+
+
 
 ## Caveats
-There are several points needed to keep in mind.
-
-<details><summary>Those are:</summary>
+There are several points needed to keep in mind. Those are:
 
 * `diagnostic.explain` and its corresponding `explain`-ed version of various commands haven't
 been undergone extensive testing.
 * `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
 anything regarded that.
-* Cannot provide `readPreference` option because cannot support multihost URI connection.
-* It's taking too long to authenticate the connection pool which default at 64 connections
-even without SSL/TLS connections. It's even longer when the auth mechanism is "SCRAM-SHA-256"
-which is the default. Local connection authentication taking about 1 minutes
-(almost 1 second for each connection, ymmv) to finish all authentication process. This happens
-when compiled in debug mode.
-</details>
+* All `readPreferences` options are supported except `nearest`.
+* Some third-party library which targeting OpenSSL <= 1.0 results in unstable behaviour. See
+[issue #7 comment](https://github.com/mashingan/anonimongo/issues/7#issuecomment-674516511)
+* All internal connection implementations are Asynchronous IO. No support for multi-threading.
 
-### License
+
+[TOC](#table-of-content)
+## License
 MIT
 
 [1]: https://www.mongodb.com
