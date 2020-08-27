@@ -254,22 +254,6 @@ when testReplication and defined(ssl):
       check members.len == 3
     sleep 15_000 # waiting the replica set to elect primary
 
-    test "Restart the replication set":
-      skip()
-#[
-      let connStatus = waitfor mongo.shutdown(timeout = 1000)
-      check connStatus.success
-      mongo.close
-      processes.cleanup
-      sleep 3000
-      check processes.allIt( not it.running )
-      processes = setupMongoReplication()
-      require processes.all running
-      sleep 3000
-      #mongo.close
-      #skip()
-      ]#
-
     test "Connect with manual multi uri connections":
       mongo = newMongo(
         MultiUri uriMultiManual,
