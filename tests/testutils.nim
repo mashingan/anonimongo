@@ -65,7 +65,7 @@ proc testsetup*: Mongo =
   when not defined(uri):
     let mongo = newMongo(host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
   else:
-    let mongo = newMongo(parseUri mongourl, poolconn = poolconn)
+    let mongo = newMongo(MongoUri mongourl, poolconn = poolconn)
 
   when defined(uri):
     doAssert mongo.db == "admin"

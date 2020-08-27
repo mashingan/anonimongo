@@ -211,13 +211,13 @@ when testReplication and defined(ssl):
     test "Catch error without SSL for SSL/TLS required connection":
       expect(IOError):
         var m = newMongo(
-          MultiUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
+          MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
           poolconn = testutils.poolconn)
         check waitfor m.connect()
         m.close()
 
     test "Connect single uri":
-      mongo = newMongo(MultiUri uriSettingRepl,
+      mongo = newMongo(MongoUri uriSettingRepl,
         poolconn = testutils.poolconn,
         dnsserver = mongoServer,
         dnsport = dnsport)
@@ -256,7 +256,7 @@ when testReplication and defined(ssl):
 
     test "Connect with manual multi uri connections":
       mongo = newMongo(
-        MultiUri uriMultiManual,
+        MongoUri uriMultiManual,
         poolconn = testutils.poolconn
       )
       require mongo != nil
@@ -272,7 +272,7 @@ when testReplication and defined(ssl):
     test "Check newMongo mongodb+srv scheme connection":
       try:
         mongo = newMongo(
-          MultiUri uriSrv,
+          MongoUri uriSrv,
           poolconn = testutils.poolconn,
           dnsserver = mongoServer,
           dnsport = dnsport

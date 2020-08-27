@@ -150,7 +150,9 @@ type
 
   MongoError* = object of Defect
 
-  MultiUri* = distinct string
+  MultiUri* {.deprecated: "Use MongoUri instead".} = MongoUri
+
+  MongoUri* = distinct string
     ## A special distinct uri string to support multihost uri connections.
     ## A single uri connection can rely using this too.
 
@@ -286,9 +288,9 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   result.setSsl sslInfo
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
-proc newMongo*(muri: MultiUri, poolconn = poolconn, dnsserver = "8.8.8.8",
+proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
   dnsport = 53): Mongo =
-  ## Overload the newMongo for accepting raw uri string as MultiUri.
+  ## Overload the newMongo for accepting raw uri string as MongoUri.
   # This is actually needed because Mongodb specify custom
   # definition by supporting multiple user:pass@host:port
   # format in domain host uri.
