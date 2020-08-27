@@ -225,8 +225,9 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       if $field[1][0] in ["TableRef", "Deque"]:
         bodyif.add newEmptyNode()
         continue
-      let jnfieldstr = field[0].strval.newStrLitNode
-      let jnfield = quote do: `thevar`[`jnfieldstr`]
+      let fieldname = field[0]
+      let jnfieldstr = fieldname.strval.newStrLitNode
+      let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
     elif fimpl.isPrimitive or field[1].isTime or field[1].isBsonDocument:

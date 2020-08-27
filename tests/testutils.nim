@@ -2,8 +2,6 @@ import asyncdispatch, tables, uri
 import osproc, sugar, unittest
 import strformat
 
-import nimSHA2
-
 import ../src/anonimongo
 
 {.warning[UnusedImport]: off.}
@@ -44,8 +42,9 @@ proc startmongo*: Process =
     args.add "requireSSL"
     args.add "--sslPEMKeyFile"
     args.add pem
-    args.add "--sslCAFile"
-    args.add cert
+    if cert != "":
+      args.add "--sslCAFile"
+      args.add cert
   when defined(windows):
     # the process cannot continue unless the stdout flushed
     let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
@@ -64,7 +63,7 @@ proc testsetup*: Mongo =
   when not defined(uri):
     let mongo = newMongo(host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
   else:
-    let mongo = newMongo(parseUri mongourl, poolconn = poolconn)
+    let mongo = newMongo(MongoUri mongourl, poolconn = poolconn)
 
   when defined(uri):
     doAssert mongo.db == "admin"
@@ -75,7 +74,7 @@ proc testsetup*: Mongo =
   #echo &"current available conns: {mongo.pool.available.len}"
   when verbose:
     let start = cpuTime()
-  if mongo.withAuth and not waitFor(authenticate[Sha256Digest](mongo, user, pass)):
+  if mongo.withAuth and not waitFor mongo.authenticate[:SHA256Digest](user, pass):
     echo "cannot authenticate the connection"
   #echo &"is mongo authenticated: {mongo.authenticated}"
   when verbose:
@@ -93,7 +92,3 @@ template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
   else:
     check b
     if not b: (label & ": ").tell reason
-
-when isMainModule:
-  let mongo = newMongo(parseUri mongourl, poolconn = 1)
-  dump mongo.query

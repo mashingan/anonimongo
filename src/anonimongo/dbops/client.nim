@@ -25,12 +25,12 @@ when verbose:
 const
   drivername = "anonimongo"
   description = "nim mongo driver"
-  version = "0.2.0"
+  version = "0.3.0"
 
-proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
-  appname = "Anonimongo client apps") {.async.} =
+proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
+  appname = "Anonimongo client apps"):Future[ReplyFormat] {.async.} =
   let appname = appname
-  let master = if m.isMaster: 1 else: 0
+  let master = if isMaster: 1 else: 0
   var q = bson({
     isMaster: master,
     client: {
@@ -54,14 +54,16 @@ proc handshake(m: Mongo, s: AsyncSocket, db: string, id: int32,
     dump q
   var db = db
   let dbc = m[move db]
+  result = await sendops(q, dbc, cmd = ckWrite)
   when verbose:
-    look await sendops(q, dbc)
-  else:
-    discard await sendops(q, dbc)
+    look result
 
 proc connect*(m: Mongo): Future[bool] {.async.} =
   try:
-    await(m.pool.connect(m.host, m.port.int))
+    var connectops = newseq[Future[void]]()
+    for _, server in m.servers:
+      connectops.add server.pool.connect(server.host, server.port.int)
+    await all(connectops)
   except:
     echo getCurrentExceptionMsg()
     return
@@ -70,11 +72,22 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
     if "appname" in m.query and m.query["appname"].len > 0:
       m.query["appname"][0]
     else: "Anonimongo client apps"
-  var ops = newseq[Future[void]](m.pool.available.len)
+  var opslen = m.main.pool.available.len
+  var ops = newseq[Future[ReplyFormat]](opslen)
   let dbname = if m.db != "": m.db else: "admin"
-  for id, c in m.pool.connections:
-    ops[id-1] = m.handshake(c.socket, dbname, id.int32, appname)
-  await all(ops)
+  for id, c in m.main.pool.connections:
+    ops[id-1] = m.handshake(m.main.isMaster, c.socket, dbname, id.int32, appname)
+
+  let replies = await all(ops)
+  type HandshakeTemp = object
+    hosts: seq[string]
+    primary: string
+  if replies.len > 0 and replies[0].numberReturned > 0:
+    let b = replies[0].documents[0]
+    if b.ok:
+      let hktemp = replies[0].documents[0].to HandshakeTemp
+      m.hosts = hktemp.hosts
+      m.primary = hktemp.primary
 
 proc cuUsers(db: Database, query: BsonDocument):
   Future[WriteResult] {.async.} =
@@ -132,11 +145,11 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
   result = await cuUsers(db, q)
 
 proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
-  result = await sendops(query, db)
+  result = await sendops(query, db, cmd = ckRead)
 
 proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
-  let reply = await sendops(q, db)
+  let reply = await sendops(q, db, cmd = ckWrite)
   let (success, reason) = check reply
   result = WriteResult(
     success: success,

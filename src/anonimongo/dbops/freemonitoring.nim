@@ -11,7 +11,7 @@ proc setFreeMonitoring*(db: Database, action = "enable"):
     setFreeMonitoring: 1,
     action: action,
   })
-  result = await db.crudops(q, "admin")
+  result = await db.crudops(q, "admin", cmd = ckWrite)
 
 proc enableFreeMonitoring*(db: Database): Future[BsonDocument] {.async.} =
   result = await db.setFreeMonitoring("enable")
