@@ -1,9 +1,9 @@
 # WIP replication test
 # TODO:
 # 1. [Done] Run local mongod processes for replication setup
-# 2. [Done?] Manage the replication setup by initializing it first
+# 2. [Done] Manage the replication setup by initializing it first
 #    ref: https://docs.mongodb.com/manual/tutorial/deploy-replica-set-for-testing/
-# 3. Fix all nodes status to be able to elect the PRIMARY, current problem
+# 3. [Done] Fix all nodes status to be able to elect the PRIMARY, current problem
 #    all nodes are SECONDARY and this disability to elect the PRIMARY cannot
 #    to do any write operation
 # 4. Fix weird `auto` enabling slave during the test and it should be throwing
