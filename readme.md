@@ -11,6 +11,7 @@
     - [Upload file to GridFS](#upload-file-to-gridfs)
     - [Bson examples](#bson-examples)
     - [Convert object to BsonDocument](#convert-object-to-bsondocument)
+    - [Convert from Bson to object variant](#convert-from-bson-to-object-variant)
 
 3. [Install](#install)
 4. [Implemented APIs](#implemented-apis)
@@ -51,13 +52,13 @@ modules and the categories for those modules. [The index][6] also available.
 ### Simple operations
 
 ```nim
-import times, strformat
+import times
 import anonimongo
 
 var mongo = newMongo(poolconn = 16) # default is 64
 if not waitFor mongo.connect:
   # default is localhost:27017
-  quit &"Cannot connect to {mongo.host}.{int mongo.port}"
+  quit "Cannot connect to localhost:27017"
 var coll = mongo["temptest"]["colltest"]
 let currtime = now().toTime()
 var idoc = newseq[BsonDocument](10)
@@ -93,14 +94,16 @@ doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
 let delStat = waitfor coll.remove(bson({
   insertId: 9,
 }), justone = true)
+
 doAssert delStat.success  # must be true if query success
+
 doAssert delStat.kind == wkMany # remove operation returns
                                 # the WriteObject result variant
                                 # of wkMany which withhold the
                                 # integer n field for n affected
                                 # document in successfull operation
-doAssert delStat.n == 1   # because we only delete one entry in
-                          # case multiple documents selected
+
+doAssert delStat.n == 1   # number of affected documents
 
 # count all documents in current collection
 let currNDoc = waitfor coll.count()
@@ -112,7 +115,6 @@ close mongo
 ### Authenticate
 
 ```nim
-import strformat
 import anonimongo
 
 var mongo = newMongo()
@@ -198,6 +200,8 @@ close mongo
 
 ```nim
 import times
+import anonimongo/core/bson # if we only need to work with Bson
+
 var simple = bson({
   thisField: "isString",
   embedDoc: {
@@ -237,6 +241,8 @@ doAssert ourObj.field2 == "power-level"
 ### Convert object to BsonDocument
 
 ```nim
+import anonimongo/core/bson
+
 type
   Obj1 = object
     str: string
@@ -275,6 +281,69 @@ only convert it manually.
 Check [tests](tests/) for more examples of detailed usages.  
 Elaborate Bson examples and cases are covered in [bson_test.nim](tests/test_bson_test.nim)
 
+### Convert from Bson to object variant
+
+```nim
+# Below example is almost the same with test code from
+# `test_bson_test.nim` file in tests
+type
+  OVKind = enum
+    ovOne ovMany ovNone
+  EmbedObjectVariant = object
+    field1: int
+    field2: string
+    truthy: bool
+  RefEmbedObjVariant = ref EmbedObjectVariant
+  ObjectVariant = object
+    baseField: string
+    baseInt: int
+    baseEmbed: BsonDocument
+    case kind: OVKind
+    of ovOne:
+      theOnlyField: string
+    of ovMany:
+      manyField1: string
+      intField: int
+      embed: EmbedObjectVariant
+      refembed: RefEmbedObjVariant
+    of ovNone:
+      nil
+
+# our Bson data
+var bov = bson({
+  kind: "ovMany",
+  manyField1: "example of ovMany",
+  intField: 42,
+  embed: {
+    truthy: true,
+  },
+  refembed: {
+    truthy: true,
+  },
+})
+
+# let's see if it's converted to OVKind ovMany
+let objmany = bov.to ObjectVariant
+doAssert objmany.kind == ovMany
+doAssert objmany.baseField == ""
+doAssert objmany.embed.truthy
+doAssert objmany.refembed.truthy
+doAssert objmany.manyField1 == bov["manyField1"]
+doAssert objmany.intField == bov["intField"]
+
+# let's change the kind to "ovOne"
+bov["kind"] = "ovOne"
+bov["theOnlyField"] = "this is dynamically added"
+let objone = bov.to ObjectVariant
+doAssert objone.kind == ovOne
+doAssert objone.baseField == ""
+doAssert objone.theOnlyField == "this is dynamically added"
+
+# lastly, convert to "ovNone"
+bov["kind"] = "ovNone"
+let objnone = bov.to ObjectVariant
+doAssert objnone.kind == ovNone
+```
 
 [TOC](#table-of-content)
 
