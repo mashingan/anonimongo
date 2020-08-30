@@ -2,7 +2,7 @@
 
 ## Table of content
 
-1. [Background](#background)
+1. [Introduction](#Introduction)
 2. [Examples](#examples) 
 
     - [Simple operations](#simple-operations)
@@ -13,13 +13,14 @@
     - [Convert object to BsonDocument](#convert-object-to-bsondocument)
     - [Convert from Bson to object variant](#convert-from-bson-to-object-variant)
 
-3. [Install](#install)
-4. [Implemented APIs](#implemented-apis)
-5. [Caveats](#caveats)
-6. [License](#license)
+3. [Specific Mentions for Working with Bson](#working-with-bson)
+4. [Install](#install)
+5. [Implemented APIs](#implemented-apis)
+6. [Caveats](#caveats)
+7. [License](#license)
 
 
-## Background
+## Introduction
 [Mongodb][1] is a document-based key-value database which emphasize in high performance read
 and write capabilities together with many strategies for clustering, consistency, and availability.
 
@@ -225,8 +226,8 @@ doAssert simple["1.2"].ofDouble is float64
 # Bson support object conversion too
 type
   IntString = object
-    field1: int
-    field2: string
+    field1*: int
+    field2*: string
 
 var bintstr = bson({
   field1: 1000,
@@ -290,22 +291,22 @@ type
   OVKind = enum
     ovOne ovMany ovNone
   EmbedObjectVariant = object
-    field1: int
-    field2: string
-    truthy: bool
+    field1*: int
+    field2*: string
+    truthy {.bsonExport.}: bool
   RefEmbedObjVariant = ref EmbedObjectVariant
   ObjectVariant = object
-    baseField: string
-    baseInt: int
-    baseEmbed: BsonDocument
-    case kind: OVKind
+    baseField*: string
+    baseInt*: int
+    baseEmbed:* BsonDocument
+    case kind*: OVKind
     of ovOne:
-      theOnlyField: string
+      theOnlyField*: string
     of ovMany:
-      manyField1: string
-      intField: int
-      embed: EmbedObjectVariant
-      refembed: RefEmbedObjVariant
+      manyField1*: string
+      intField*: int
+      embed*: EmbedObjectVariant
+      refembed*: RefEmbedObjVariant
     of ovNone:
       nil
 
