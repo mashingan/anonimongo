@@ -675,7 +675,7 @@ There are several points needed to keep in mind. Those are:
 been undergone extensive testing.
 * `Query` only provided for `db.find` commands. It's still not supporting Query Plan Cache or
 anything regarded that.
-* All `readPreferences` options are supported except `nearest`.
+* All `readPreference` options are supported except `nearest`.
 * Some third-party library which targeting OpenSSL <= 1.0 results in unstable behaviour. See
 [issue #7 comment](https://github.com/mashingan/anonimongo/issues/7#issuecomment-674516511)
 * All internal connection implementations are Asynchronous IO. No support for multi-threading.

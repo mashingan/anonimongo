@@ -10,8 +10,8 @@
 #    MongoError with reason `not enabled slave`.
 # 5. [Done] Cleanup all produced artifacts such as temporary dbpath directories and
 #    created self-signing key, certificate, and pem file.
-# 6. [Done w ReadPreferences.primary?] Since the test purposely choose
-#    the ReadPreferences.secondary, testing to read the database entry
+# 6. [Done w ReadPreference.primary?] Since the test purposely choose
+#    the ReadPreference.secondary, testing to read the database entry
 #    could result in disaster because of eventual synchronization.
 
 import utils_test
@@ -42,7 +42,7 @@ when testReplication and defined(ssl):
     pem {.strdefine.} = "key.priv.pem"
     mongoServer {.strdefine.} = "localhost"
     uriSettingRepl = &"mongodb://{mongoServer}:{replicaPortStart}/admin?ssl=true"
-    uriSrv = &"mongodb+srv://{mongoServer}/admin?readPreferences=secondary"
+    uriSrv = &"mongodb+srv://{mongoServer}/admin?readPreference=secondary"
     uriMultiManual = &"mongodb://{mongoServer}:{replicaPortStart}," &
       &"{mongoServer}:{replicaPortStart+1},{mongoServer}:{replicaPortStart+2}" &
       "/admin?ssl=true"

@@ -22,17 +22,17 @@ proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
   if cmd == ckWrite:
     dbconn = db.db.main
   else:
-    case db.db.readPreferences:
-    of ReadPreferences.primary:
+    case db.db.readPreference:
+    of ReadPreference.primary:
       dbconn = db.db.main
-    of ReadPreferences.primaryPreferred:
+    of ReadPreference.primaryPreferred:
       dbconn = db.db.mainPreferred
-    of ReadPreferences.secondary:
+    of ReadPreference.secondary:
       dbconn = db.db.secondary
-    of ReadPreferences.secondaryPreferred:
+    of ReadPreference.secondaryPreferred:
       dbconn = db.db.secondaryPreferred
     else:
-      let rfmsg = &"ReadPreferences.{db.db.readPreferences} not supported yet"
+      let rfmsg = &"ReadPreference.{db.db.readPreference} not supported yet"
       raise newException(MongoError, rfmsg)
   let dbname = if name == "": db.name.cmd else: name.cmd
   let (id, conn) = await dbconn.pool.getConn()

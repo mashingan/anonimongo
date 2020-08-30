@@ -50,10 +50,10 @@ type
     db*: string
     writeConcern*: BsonDocument
     flags: QueryFlags
-    readPreferences*: ReadPreferences
+    readPreference*: ReadPreference
     query: TableRef[string, seq[string]]
 
-  ReadPreferences* {.pure.} = enum
+  ReadPreference* {.pure.} = enum
     primary = "primary"
     primaryPreferred = "primaryPreferred"
     secondary = "secondary"
@@ -276,7 +276,7 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   result = Mongo(
     servers: newTable[string, MongoConn](1),
     query: newTable[string, seq[string]](),
-    readPreferences: ReadPreferences.primary
+    readPreference: ReadPreference.primary
   )
   result.servers[&"{host}:{port}"] = MongoConn(
     isMaster: master,
@@ -383,7 +383,7 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     tls: isTls,
     servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
     query: decodeQuery(uri[0].query),
-    readPreferences: ReadPreferences.primary
+    readPreference: ReadPreference.primary
   )
   for u in uri:
     let port = try: parseInt(u.port)
@@ -415,10 +415,10 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
 
   result.handleSsl
 
-  if "readPreferences".toLowerAscii in result.query:
-    let rps = result.query["readPreferences".toLowerAscii]
+  if "readPreference".toLowerAscii in result.query:
+    let rps = result.query["readPreference".toLowerAscii]
     if rps.len > 0:
-      result.readPreferences = parseEnum[ReadPreferences](rps[0])
+      result.readPreference = parseEnum[ReadPreference](rps[0])
 
 
 proc tls*(m: Mongo): bool = m.tls
