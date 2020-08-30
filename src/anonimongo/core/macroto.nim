@@ -1,5 +1,9 @@
 const objtyp = {nnkObjectTy, nnkRefTy}
 
+template bsonExport* {.pragma.}
+  ## Custom pragma to enable bson conversion
+  ## without exporting it to other modules.
+
 proc ifIn(jn: NimNode): NimNode =
   if jn.kind == nnkBracketExpr:
     let obj = jn[0]
@@ -28,6 +32,10 @@ proc isIt(node: NimNode, it: string): bool {.compiletime.} =
 
 proc isBsonDocument(node: NimNode): bool {.compiletime.} =
   node.isIt "BsonDocument"
+
+proc isItExported(node: NimNode): bool =
+  node.expectKind nnkSym
+  result = node.isExported or not node.hasCustomPragma(bsonExport)
 
 proc getImpl(n: NimNode): NimNode {.compiletime.} =
   if n.kind == nnkSym:
@@ -204,7 +212,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode,
       reclist = tmp[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
-    elif field[0].kind == nnkSym and not field[0].isExported: continue
+    elif not field[0].isItExported: continue
     let fimpl = field[1].getImpl
     let resfield = newDotExpr(resvar, field[0])
     if field[1].kind == nnkBracketExpr:
@@ -234,7 +242,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode,
 
 template identDefsCheck(result: var NimNode, resvar, field: NimNode,
   bsonObject, targetType: untyped): untyped =
-  if field.kind == nnkIdentDefs and not field[0].isExported:
+  if field.kind == nnkIdentDefs and not field[0].isItExported:
     continue
   case field.kind
   of nnkEmpty: continue
@@ -305,14 +313,57 @@ template ignoreTable(st: NimNode) =
 macro to*(b: untyped, t: typed): untyped =
   ## Macro to is automatic conversion from symbol/variable BsonDocument
   ## to specified Type. This doesn't support dynamic values of array, only
-  ## support homogeneous value-type array.
+  ## support homogeneous value-type array. It can convert only when the field
+  ## is exported or using special pragma ``bsonExport`` to enable its conversion
+  ## without exporting the field itself to other modules.
+  ## 
+  ## For custom type conversion, user can provide the ``proc``, ``func`` or ``converter``
+  ## named with pattern of ``"of" & Type.name``. For example, the ``Type`` is ``SimpleObj``
+  ## so the proc name is ``ofSimpleObj``. The complete example is shown below:
+  ## 
+  ## .. code-block:: Nim
+  ##    import anonimongo/core/bson
+  ##    type
+  ##      Embedtion = object
+  ##        embedfield*: int
+  ##        embedstat*: string
+  ##        wasProcInvoked: bool
+  ##      SimpleEmbedObject = object
+  ##        intfield*: int
+  ##        strfield*: string
+  ##        embed*: Embedtion
+  ## 
+  ##    proc ofEmbedtion(b: BsonBase): Embedtion =
+  ##      let embed = b.ofEmbed
+  ##      result.embedfield = embed["embedfield"]
+  ##      result.embedstat = embed["embedstat"]
+  ##      result.wasProcInvoked = true
+  ## 
+  ##    let bsimple = bson({
+  ##      intfield: 42,
+  ##      strfield: "that's 42",
+  ##      embed: {
+  ##        embedfield: 42,
+  ##        embedstat: "42",
+  ##      },
+  ##    })
+  ##    let simple = bsimple.to SimpleEmbedObject
+  ##    doAssert simple.intfield == 42
+  ##    doAssert simple.strfield == "that's 42"
+  ##    doAssert simple.embed.embedfield == 42
+  ##    doAssert simple.embed.embedstat == "42"
+  ##    doAssert simple.embed.wasProcInvoked
+  ## 
+  ## Note that the ``ofType`` isn't checked for the outer most of Type because
+  ## if user wants implement the specifics conversion, the user just can simply
+  ## call it immediately without resorting to macro ``to``.
   ##
   runnableExamples:
     type MyFlatObject = object
-      intfield: int
-      strfield: string
-      strarr: seq[string]
-      documents: seq[BsonDocument]
+      intfield*: int
+      strfield {.bsonExport.}: string
+      strarr*: seq[string]
+      documents {.bsonExport.}: seq[BsonDocument]
     let bobj = bson({
        intfield: 1,
        strfield: "str",
