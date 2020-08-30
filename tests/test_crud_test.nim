@@ -1,7 +1,7 @@
 import unittest, os, osproc, times, strformat, sequtils
 import sugar
 
-import testutils
+import utils_test
 import anonimongo
 
 {.warning[UnusedImport]: off.}

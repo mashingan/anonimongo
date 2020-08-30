@@ -1,7 +1,7 @@
 import unittest, asyncdispatch, strformat
 import osproc, os
 
-import testutils
+import utils_test
 import anonimongo
 
 var mongorun: Process

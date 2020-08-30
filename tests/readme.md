@@ -47,7 +47,7 @@ in [Replication module](replication.nim).
 Ideally, this should be added to `nimble test` for running all tests and `nimble test_name` for each
 separate test. However since these tests need an elaborate options to ensure it's configurable, the
 tests aren't added to `nimble` and need to be run manually. The `nimble test` will eventually be added.  
-By default, these tests take the variables defined as compile-arguments constants in file [testutils.nim](testutils.nim)
+By default, these tests take the variables defined as compile-arguments constants in file [utils_test.nim](utils_test.nim)
 , if the user wants to run in other machine/platform, specify the options on `config.nims` in rootdir project.
 
 For example
@@ -83,7 +83,7 @@ nim c -r tests/test_gridfs_test.nim
 nimble test
 ```
 
-Any others variable can be checked in that [testutils.nim](testutils.nim).  
+Any others variable can be checked in that [utils_test.nim](utils_test.nim).  
 In the platform where these tests run, the Mongo server only boot-up when the any of test running
 (except `test_bson_test.nim`) and then shutdown the Mongo server before the test ends. This only works
 when the Mongo server host in `localhost`. Define `nomongod` option (like example above) to disable

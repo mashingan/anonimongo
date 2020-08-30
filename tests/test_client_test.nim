@@ -1,6 +1,6 @@
 import unittest, osproc, os, strformat
 
-import testutils
+import utils_test
 import anonimongo
 
 var mongorun: Process

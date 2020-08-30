@@ -14,7 +14,7 @@
 #    the ReadPreferences.secondary, testing to read the database entry
 #    could result in disaster because of eventual synchronization.
 
-import testutils
+import utils_test
 
 {.warning[UnusedImport]: off.}
 
@@ -212,13 +212,13 @@ when testReplication and defined(ssl):
       expect(IOError):
         var m = newMongo(
           MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
-          poolconn = testutils.poolconn)
+          poolconn = utils_test.poolconn)
         check waitfor m.connect()
         m.close()
 
     test "Connect single uri":
       mongo = newMongo(MongoUri uriSettingRepl,
-        poolconn = testutils.poolconn,
+        poolconn = utils_test.poolconn,
         dnsserver = mongoServer,
         dnsport = dnsport)
       require mongo != nil
@@ -257,7 +257,7 @@ when testReplication and defined(ssl):
     test "Connect with manual multi uri connections":
       mongo = newMongo(
         MongoUri uriMultiManual,
-        poolconn = testutils.poolconn
+        poolconn = utils_test.poolconn
       )
       require mongo != nil
       check waitfor mongo.connect
@@ -273,7 +273,7 @@ when testReplication and defined(ssl):
       try:
         mongo = newMongo(
           MongoUri uriSrv,
-          poolconn = testutils.poolconn,
+          poolconn = utils_test.poolconn,
           dnsserver = mongoServer,
           dnsport = dnsport
         )
