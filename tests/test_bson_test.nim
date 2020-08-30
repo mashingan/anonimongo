@@ -477,22 +477,29 @@ suite "Macro to object conversion tests":
     type
       TimeRef = ref DTime
       DistinctTimeRef = distinct TimeRef
+      DDTime = distinct DTime
       SimpleObject = object
-        zawarudo: Time
-        timeOfReference: TimeRef
-        distinctTimeRef: DistinctTimeRef
+        zawarudo*: Time
+        timeOfReference*: TimeRef
+        distinctTimeRef*: DistinctTimeRef
+        ddTime*: DDTime
     proc ofTimeRef(b: BsonBase): TimeRef =
       let t = b.ofTime
       new result
       result[] = DTime t
+
+    proc ofDDTime(b: BsonBase): DDTime =
+      result = b.ofTime.DDTime
 
     let nao = now().toTime
     let bsonObj = bson({
       zawarudo: nao,
       timeOfReference: nao,
       distinctTimeRef: nao,
+      ddTime: nao
     })
     let simpobj = bsonObj.to SimpleObject
     check simpobj.zawarudo == nao
     check simpobj.timeOfReference[].Time == nao
     check simpobj.distinctTimeRef.TimeRef[].Time == nao
+    check simpobj.ddTime.Time == nao

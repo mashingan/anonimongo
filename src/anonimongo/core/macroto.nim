@@ -87,7 +87,9 @@ template arrPrimDistinct(dty, idn, finalizer: untyped): untyped =
       newIdentDefs(ident"tmp", dty[0], idn)),
     finalizer)
 
-proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+proc objAssign(thevar, jn, fld, fielddef: NimNode,
+    distTy = newEmptyNode(),
+    distNames: seq[NimNode] = @[]):
     NimNode {.compiletime.}
 proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     NimNode {.compiletime.} =
@@ -164,10 +166,12 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   result = quote do:
     if `testif`: `bodyif`
 
-proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
+proc objAssign(thevar, jn, fld, fielddef: NimNode,
+    distTy = newEmptyNode(),
+    distNames: seq[NimNode] = @[]):
     NimNode {.compiletime.} =
   let
-    isDistinct = distTy.kind != nnkEmpty
+    isDistinct = distTy.kind != nnkEmpty or distNames.len != 0
     testif = ifIn jn
     jnobj = gensym(nskVar, "jnobj")
     resvar = genSym(nskVar, "objres")
@@ -183,11 +187,12 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       (isDistinct and distTy[0].kind == nnkRefTy):
     bodyif.add(newCall("new", resvar))
   let ofname = if identresvar[1].kind == nnkRefTy: "of" & $identresvar[1][0]
+               elif distNames.len != 0: "of" & $fld[1]
                else: "of" & $identresvar[1]
   let jnOfType = if not isDistinct:newCall(ofname, jn)
                  else: newCall(fld[1], newCall(ofname, jn))
   let ofTypeHandled = newAssignment(thevar, jnOfType)
-  let whenhead = nnkWhenStmt.newTree(
+  var whenhead = nnkWhenStmt.newTree(
     nnkElifBranch.newTree(newCall("compiles", jnOfType), ofTypeHandled),
   )
   var reclist: NimNode
@@ -253,11 +258,16 @@ template identDefsCheck(result: var NimNode, resvar, field: NimNode,
     let resobj = objAssign(resfield, nodefield, field, fimpl)
     result.add resobj
   elif fimpl.kind == nnkDistinctTy:
-    let distinctimpl = fimpl[0].getImpl
+    var distinctimpl = fimpl[0].getImpl
+    var distinctNames = newseq[NimNode]()
+    while distinctimpl.kind == nnkDistinctTy:
+      distinctNames.add distinctimpl[0]
+      distinctimpl = distinctimpl[0].getImpl
     if distinctimpl.isPrimitive:
       result.add primDistinct(resfield, bsonObject, field, distinctimpl)
     elif distinctimpl.kind in objtyp:
-      result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
+      result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl,
+        distinctNames)
   else:
     # temporary placeholder
     checknode field[1]
