@@ -471,6 +471,9 @@ and [mongo spec][3].
 - [x] `TailableCursor` connection
 - [x] `SlaveOk` operations
 - [ ] Compression connection
+- [ ] Retryable writes
+- [ ] Retryable reads
+- [ ] Sessions
 
 ### Features commands
 
