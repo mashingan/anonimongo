@@ -472,3 +472,27 @@ suite "Macro to object conversion tests":
     check tsi.len == 0
     check tsiref.len ==  0
     check intsi.len == 0
+
+  test "Implement a specific value extract with pattern of `of` & Typename":
+    type
+      TimeRef = ref DTime
+      DistinctTimeRef = distinct TimeRef
+      SimpleObject = object
+        zawarudo: Time
+        timeOfReference: TimeRef
+        distinctTimeRef: DistinctTimeRef
+    proc ofTimeRef(b: BsonBase): TimeRef =
+      let t = b.ofTime
+      new result
+      result[] = DTime t
+
+    let nao = now().toTime
+    let bsonObj = bson({
+      zawarudo: nao,
+      timeOfReference: nao,
+      distinctTimeRef: nao,
+    })
+    let simpobj = bsonObj.to SimpleObject
+    check simpobj.zawarudo == nao
+    check simpobj.timeOfReference[].Time == nao
+    check simpobj.distinctTimeRef.TimeRef[].Time == nao

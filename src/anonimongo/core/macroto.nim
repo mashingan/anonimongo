@@ -26,9 +26,6 @@ proc isSeqByte(n: NimNode): bool =
 proc isIt(node: NimNode, it: string): bool {.compiletime.} =
   node.kind == nnkSym and $node == it
 
-proc isTime(node: NimNode): bool {.compiletime.} =
-  node.isIt "Time"
-
 proc isBsonDocument(node: NimNode): bool {.compiletime.} =
   node.isIt "BsonDocument"
 
@@ -69,30 +66,6 @@ proc primDistinct(thevar, jn, fld, impl: NimNode): NimNode {.compiletime.} =
   result.add primAssign(tempres, jn, newident, direct = true)
   let distinctName = fld[1]
   result.add quote do: `thevar` = unown(`distinctName`(move(`tempres`)))
-
-proc timeAssign(thevar, jn, fld: NimNode, distTy = newEmptyNode()):
-  NimNode {.compiletime.} =
-  let
-    isDistinct = distTy.kind != nnkEmpty
-    testif = ifIn jn
-    resvar = genSym(nskVar, "timeres")
-  var bodyif = newStmtList()
-  if not isDistinct:
-    let timetyp = fld[1]
-    bodyif.add(quote do:
-      var `resvar`: `timetyp` = `jn`
-      `thevar` = unown(`resvar`)
-    )
-  else:
-    let implTy = distTy[0]
-    let distinctTy = fld[1]
-    bodyif.add(quote do:
-      var `resvar`: `implTy` = `jn`
-      `thevar` = unown(`distinctTy`(`resvar`))
-    )
-
-  result = quote do:
-    if `testif`: `bodyif`
 
 template arrObjField(acc, fldready: untyped): untyped =
   let fldvar {.inject.} = gensym(nskVar, "field")
@@ -140,8 +113,6 @@ proc arrAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
         seqfor.add forbody
       elif fld[1][1].isBsonDocument:
         seqfor.add quote do: add(`resvar`, obj.ofEmbedded)
-      elif fld[1][1].isTime:
-        seqfor.add quote do: add(`resvar`, obj)
       else:
         arrObjField(ident"obj", fld[1][1])
         forbody.add quote do: add(`resvar`, move(`fldvar`))
@@ -200,8 +171,9 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
     testif = ifIn jn
     jnobj = gensym(nskVar, "jnobj")
     resvar = genSym(nskVar, "objres")
-    identresvar = if isDistinct: newIdentDefs(resvar, distTy[0])
-                  else: newIdentDefs(resvar, fld[1])
+    identresvar =
+      if isDistinct: newIdentDefs(resvar, distTy[0])
+      else: newIdentDefs(resvar, fld[1])
   var bodyif = newStmtList()
   bodyif.add(newNimNode(nnkVarSection).add(
     identresvar,
@@ -210,13 +182,21 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
   if fielddef.kind == nnkRefTy or fld[1].kind == nnkRefTy or
       (isDistinct and distTy[0].kind == nnkRefTy):
     bodyif.add(newCall("new", resvar))
+  let ofname = if identresvar[1].kind == nnkRefTy: "of" & $identresvar[1][0]
+               else: "of" & $identresvar[1]
+  let jnOfType = if not isDistinct:newCall(ofname, jn)
+                 else: newCall(fld[1], newCall(ofname, jn))
+  let ofTypeHandled = newAssignment(thevar, jnOfType)
+  let whenhead = nnkWhenStmt.newTree(
+    nnkElifBranch.newTree(newCall("compiles", jnOfType), ofTypeHandled),
+  )
   var reclist: NimNode
   if fielddef.kind == nnkObjectTy:
     reclist = fielddef[2]
   elif fielddef.kind == nnkRefTy:
     let tmp = fielddef[0].getImpl
-    tmp.expectKind nnkObjectTy
-    reclist = tmp[2]
+    if tmp.kind == nnkObjectTy:
+      reclist = tmp[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
     let fimpl = field[1].getImpl
@@ -230,7 +210,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       let jnfield = newNimNode(nnkBracketExpr).add(jnobj, jnfieldstr)
       let arr = arrAssign(resfield, jnfield, field, fimpl)
       bodyif.add arr
-    elif fimpl.isPrimitive or field[1].isTime or field[1].isBsonDocument:
+    elif fimpl.isPrimitive or field[1].isBsonDocument:
       bodyif.add primAssign(resvar, jnobj, field)
     elif fimpl.kind in objtyp:
       let jnfieldstr = field[0].strval.newStrLitNode
@@ -242,46 +222,42 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode, distTy = newEmptyNode()):
       `thevar` = unown(`fldist`(`resvar`)))
   else:
     bodyif.add(quote do: `thevar` = unown(`resvar`))
-  result = quote do:
-    if `testif`: `bodyif`
+  whenhead.add nnkElse.newTree(quote do:
+    if `testif`: `bodyif`)
+  result = whenhead
 
 template identDefsCheck(result: var NimNode, resvar, field: NimNode,
-  b, t: untyped): untyped =
+  bsonObject, targetType: untyped): untyped =
   case field.kind
   of nnkEmpty: continue
   of nnkRecCase:
-    result.add handleObjectVariant(resvar, field, b, t)
+    result.add handleObjectVariant(resvar, field, bsonObject, targetType)
     continue
   else: discard
   let fimpl = field[1].getImpl
   let resfield = newDotExpr(resvar, field[0])
-  let nodefield = newNimNode(nnkBracketExpr).add(b, newStrLitNode $field[0])
+  let nodefield = newNimNode(nnkBracketExpr).add(bsonObject, newStrLitNode $field[0])
   if field[1].kind == nnkBracketExpr:
     let jnfieldstr = newStrLitNode $field[0]
-    let jnfield = newNimNode(nnkBracketExpr).add(b, jnfieldstr)
+    let jnfield = newNimNode(nnkBracketExpr).add(bsonObject, jnfieldstr)
     if fimpl.kind == nnkDistinctTy:
       let actimpl = fimpl[0].getImpl
       result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
     else:
       result.add arrAssign(resfield, jnfield, field, fimpl)
-  elif field[1].isTime:
-    result.add timeAssign(resfield, nodefield, field)
   elif field[1].isBsonDocument:
-    result.add primAssign(resvar, b, field)
+    result.add primAssign(resvar, bsonObject, field)
   elif fimpl.isPrimitive:
-    result.add primAssign(resvar, b, field)
+    result.add primAssign(resvar, bsonObject, field)
   elif fimpl.kind in objtyp:
     let resobj = objAssign(resfield, nodefield, field, fimpl)
     result.add resobj
   elif fimpl.kind == nnkDistinctTy:
     let distinctimpl = fimpl[0].getImpl
     if distinctimpl.isPrimitive:
-      result.add primDistinct(resfield, b, field, distinctimpl)
+      result.add primDistinct(resfield, bsonObject, field, distinctimpl)
     elif distinctimpl.kind in objtyp:
-      if fimpl[0].isTime:
-        result.add timeAssign(resfield, nodefield, field, fimpl)
-      else:
-        result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
+      result.add objAssign(resfield, nodefield, field, distinctimpl, fimpl)
   else:
     # temporary placeholder
     checknode field[1]
