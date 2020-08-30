@@ -287,6 +287,9 @@ Elaborate Bson examples and cases are covered in [bson_test.nim](tests/test_bson
 ```nim
 # Below example is almost the same with test code from
 # `test_bson_test.nim` file in tests
+
+import anonimongo/core/bson
+
 type
   OVKind = enum
     ovOne ovMany ovNone
@@ -298,7 +301,7 @@ type
   ObjectVariant = object
     baseField*: string
     baseInt*: int
-    baseEmbed:* BsonDocument
+    baseEmbed*: BsonDocument
     case kind*: OVKind
     of ovOne:
       theOnlyField*: string
@@ -471,7 +474,7 @@ and [mongo spec][3].
 
 ### Features commands
 
-#### :white_check_mark: Aggregation commands 4/4 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-aggregation/) [Anonimongo module](tree/master/src/anonimongo/dbops/aggregation.nim)
+#### :white_check_mark: Aggregation commands 4/4 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-aggregation/) [Anonimongo module](src/anonimongo/dbops/aggregation.nim)
 
 - [x] `aggregate`
 - [x] `count`
@@ -479,12 +482,12 @@ and [mongo spec][3].
 - [x] `mapReduce`
 
 
-#### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](tree/master/src/anonimongo/dbops/geospatial.nim)
+#### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim)
 
 - [x] `geoSearch`
 
 
-#### :white_check_mark: Query and write operations commands 7/7 (<del>8</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-crud/) [Anonimongo module](tree/master/src/anonimongo/dbops/crud.nim)
+#### :white_check_mark: Query and write operations commands 7/7 (<del>8</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-crud/) [Anonimongo module](src/anonimongo/dbops/crud.nim)
 
 - [x] `delete`
 - [x] `find`
@@ -506,13 +509,13 @@ and [mongo spec][3].
 - [ ] `planCacheSetFilter`
 
 
-#### :ballot_box_with_check: Database operations commands 1/3 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-authentication/) [Anonimongo module](tree/master/src/anonimongo/core/types.nim#L500)
+#### :ballot_box_with_check: Database operations commands 1/3 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-authentication/) [Anonimongo module](src/anonimongo/core/types.nim#L500)
 
 - [x] `authenticate`, implemented as Mongo proc.
 - [ ] `getnonce`
 - [ ] `logout`
 
-#### :white_check_mark: User management commands 7/7 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-user-management/) [Anonimongo module](tree/master/src/anonimongo/dbops/client.nim)
+#### :white_check_mark: User management commands 7/7 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-user-management/) [Anonimongo module](src/anonimongo/dbops/client.nim)
 
 - [x] `createUser`
 - [x] `dropAllUsersFromDatabase`
@@ -522,7 +525,7 @@ and [mongo spec][3].
 - [x] `updateUser`
 - [x] `usersInfo`
 
-#### :white_check_mark: Role management commands 10/10 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-role-management/) [Anonimongo module](tree/master/src/anonimongo/dbops/rolemgmt.nim)
+#### :white_check_mark: Role management commands 10/10 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-role-management/) [Anonimongo module](src/anonimongo/dbops/rolemgmt.nim)
 
 - [x] `createRole`
 - [x] `dropRole`
@@ -536,7 +539,7 @@ and [mongo spec][3].
 - [x] `updateRole`
 
 
-#### :white_check_mark: Replication commands 12/12(<del>13</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-replication/) [Anonimongo module](tree/master/src/anonimongo/dbops/replication.nim)
+#### :white_check_mark: Replication commands 12/12(<del>13</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-replication/) [Anonimongo module](src/anonimongo/dbops/replication.nim)
 
 - [ ] `applyOps` (internal command)
 - [x] `isMaster`
@@ -582,7 +585,7 @@ and [mongo spec][3].
 - [ ] `unsetSharding`
 - [ ] `updateZoneKeyRange`
 
-#### :x: Session commands 0/8 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-session/) <del>Anonimongo module</del>
+#### :x: Session commands 0/8 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-sessions/) <del>Anonimongo module</del>
 
 - [ ] `abortTransaction`
 - [ ] `commitTransaction`
@@ -593,7 +596,7 @@ and [mongo spec][3].
 - [ ] `refreshSessions`
 - [ ] `startSession`
 
-#### :ballot_box_with_check: Administration commands 13/28 (<del>29</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-administration/) [Anonimongo module](tree/master/src/anonimongo/dbops/admmgmt.nim)
+#### :ballot_box_with_check: Administration commands 13/28 (<del>29</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-administration/) [Anonimongo module](src/anonimongo/dbops/admmgmt.nim)
 
 - [ ] `clean` (internal namespace command)
 - [ ] `cloneCollection`
@@ -625,7 +628,7 @@ and [mongo spec][3].
 - [ ] `setParameter`
 - [x] `shutdown`
 
-#### :white_check_mark: Diagnostic commands 17/17 (<del>26</del>) [Mongo module](https://docs.mongodb.com/manual/reference/command/nav-diagnostic/) [Anonimongo module](tree/master/src/anonimongo/dbops/diagnostic.nim)
+#### :white_check_mark: Diagnostic commands 17/17 (<del>26</del>) [Mongo module](https://docs.mongodb.com/manual/reference/command/nav-diagnostic/) [Anonimongo module](src/anonimongo/dbops/diagnostic.nim)
 
 - [ ] `availableQueryOptions` (internal command)
 - [x] `buildInfo`
@@ -654,7 +657,7 @@ and [mongo spec][3].
 - [x] `validate`
 - [ ] `whatsmyuri` (internal command)
 
-#### :white_check_mark: Free monitoring commands 2/2 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-free-monitoring/) [Anonimongo module](tree/master/src/anonimongo/dbops/freemonitoring.nim)
+#### :white_check_mark: Free monitoring commands 2/2 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-free-monitoring/) [Anonimongo module](src/anonimongo/dbops/freemonitoring.nim)
 
 - [x] `getFreeMonitoringStatus`
 - [x] `setFreeMonitoring`
