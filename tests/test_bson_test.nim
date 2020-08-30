@@ -473,16 +473,17 @@ suite "Macro to object conversion tests":
     check tsiref.len ==  0
     check intsi.len == 0
 
-  test "Implement a specific value extract with pattern of `of` & Typename":
+  test "Implement a specific value extract with pattern of `of` & Typename " &
+    "and custom pragma `bsonExport` to enable the conversion":
     type
       TimeRef = ref DTime
       DistinctTimeRef = distinct TimeRef
       DDTime = distinct DTime
       SimpleObject = object
         zawarudo*: Time
-        timeOfReference*: TimeRef
+        timeOfReference {.bsonExport.}: TimeRef
         distinctTimeRef*: DistinctTimeRef
-        ddTime*: DDTime
+        ddTime {.bsonExport.}: DDTime
     proc ofTimeRef(b: BsonBase): TimeRef =
       let t = b.ofTime
       new result
