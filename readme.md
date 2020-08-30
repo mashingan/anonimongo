@@ -348,6 +348,70 @@ doAssert objnone.kind == ovNone
 
 [TOC](#table-of-content)
 
+## Working with Bson
+
+Bson module has some functionalities to convert to and from the Object. However there are
+some points to be aware:
+
+1. User can provide the custom proc, func, or converter with pattern of `of{Typename}` which
+accepting a `BsonBase` and return `Typename`. For example:
+
+```nim
+import macros
+import anonimongo/core/bson
+
+type
+  Embedtion = object
+    embedfield*: int
+    embedstat*: string
+    wasProcInvoked: bool
+  SimpleEmbedObject = object
+    intfield*: int
+    strfield*: string
+    embed*: Embedtion
+
+proc ofEmbedtion(b: BsonBase): Embedtion =
+  let embed = b.ofEmbedded
+  result.embedfield = embed["embedfield"]
+  result.embedstat = embed["embedstat"]
+  result.wasProcInvoked = true
+
+let bsimple = bson({
+  intfield: 42,
+  strfield: "that's 42",
+  embed: {
+    embedfield: 42,
+    embedstat: "42",
+  },
+})
+var simple: SimpleEmbedObject
+expandMacros:
+  simple = bsimple.to SimpleEmbedObject
+doAssert simple.intfield == 42
+doAssert simple.strfield == "that's 42"
+doAssert simple.embed.embedfield == 42
+doAssert simple.embed.embedstat == "42"
+doAssert simple.embed.wasProcInvoked
+```
+
+Note that the conversion `to` `SimpleEmbedObject` with `ofSimpleEmbedObject` custom proc,
+func, or converter isn't checked as it becomes meaningless to use `to` macro
+when the user can simply calling it directly. So any most outer type won't check whether
+the user provides `of{MostOuterTypename}` implementation or not.
+
+2. Auto Bson to Type conversion can only be done to the fields that are exported or
+has custom pragma `bsonExport` as shown in this [example](#convert-from-bson-to-object-variant).
+
+3. It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
+any deep of `distinct` types (that's distinct of distinct of distinct of .... of Type), but this
+should be indication of some broken type definition and better be remedied from
+the type design itself. If user thinks otherwise, please report this issue with the example code.
+
+4. In case the user wants to persist with the current definition of any custom deep of `distinct` type,
+user should define the custom mechanism mentioned in point #1 above.
+
+[TOC](#table-of-content)
+
 ## Install
 
 ```
