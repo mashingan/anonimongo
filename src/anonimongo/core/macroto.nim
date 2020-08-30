@@ -204,6 +204,7 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode,
       reclist = tmp[2]
   for field in reclist:
     if field.kind == nnkEmpty: continue
+    elif field[0].kind == nnkSym and not field[0].isExported: continue
     let fimpl = field[1].getImpl
     let resfield = newDotExpr(resvar, field[0])
     if field[1].kind == nnkBracketExpr:
@@ -233,6 +234,8 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode,
 
 template identDefsCheck(result: var NimNode, resvar, field: NimNode,
   bsonObject, targetType: untyped): untyped =
+  if field.kind == nnkIdentDefs and not field[0].isExported:
+    continue
   case field.kind
   of nnkEmpty: continue
   of nnkRecCase:

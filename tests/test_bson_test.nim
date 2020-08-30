@@ -154,47 +154,47 @@ suite "Macro to object conversion tests":
     DTime = distinct Time
 
     SimpleIntString = object
-      name: int
-      str: string
+      name*: int
+      str*: string
     
     SSIntString = object
-      outerName: string
-      sis: ref SimpleIntString
+      outerName*: string
+      sis*: ref SimpleIntString
 
     EmptyRef = ref object
-      ssisref: seq[RSintString]
+      ssisref*: seq[RSintString]
 
     S2IntString = object
-      sis1: SimpleIntString
-      sisref: ref SimpleIntString
-      seqs: seq[string]
-      siss: seq[SimpleIntString]
-      sissref: seq[ref SimpleIntString]
-      sissref2: seq[RSintString]
-      sissdist: seq[DSIntString]
-      sissdistref: seq[DSisRef]
-      bar: Bar
-      seqbar: seq[Bar]
-      district: BarDistrict
-      dsis: DSIntString
-      dsisref: DSisRef
-      dbar: DBar
-      sqdbar: seq[DBar]
-      arrbar: array[2, Bar]
-      arrdbar: array[2, DBar]
-      arrsis: array[1, SimpleIntString]
-      arrsisref: array[1, ref SimpleIntString]
-      arrsisrefalias: array[1, RSintString]
-      arrsisrefdist: array[1, DSIntString]
-      arrsisdistref: array[1, DSisRef]
-      timenow: Time
-      dtimenow: DTime
-      anosis: SimpleIntString # no bson data
-      aint: int
-      abar: Bar
-      adsis: DSIntString
-      emptyRef: EmptyRef # no bson data
-      pseudoEmptyRef: EmptyRef # no bson data
+      sis1*: SimpleIntString
+      sisref*: ref SimpleIntString
+      seqs*: seq[string]
+      siss*: seq[SimpleIntString]
+      sissref*: seq[ref SimpleIntString]
+      sissref2*: seq[RSintString]
+      sissdist*: seq[DSIntString]
+      sissdistref*: seq[DSisRef]
+      bar*: Bar
+      seqbar*: seq[Bar]
+      district*: BarDistrict
+      dsis*: DSIntString
+      dsisref*: DSisRef
+      dbar*: DBar
+      sqdbar*: seq[DBar]
+      arrbar*: array[2, Bar]
+      arrdbar*: array[2, DBar]
+      arrsis*: array[1, SimpleIntString]
+      arrsisref*: array[1, ref SimpleIntString]
+      arrsisrefalias*: array[1, RSintString]
+      arrsisrefdist*: array[1, DSIntString]
+      arrsisdistref*: array[1, DSisRef]
+      timenow*: Time
+      dtimenow*: DTime
+      anosis*: SimpleIntString # no bson data
+      aint*: int
+      abar*: Bar
+      adsis*: DSIntString
+      emptyRef*: EmptyRef # no bson data
+      pseudoEmptyRef*: EmptyRef # no bson data
 
   var theb = bson({
     name: 10,
@@ -290,7 +290,7 @@ suite "Macro to object conversion tests":
 
   type
     NotHomogenousSeq = object
-      theseq: seq[string]
+      theseq*: seq[string]
   test "Handle error when convert non homogenous seq/array":
     expect BsonFetchError:
       discard bson({
@@ -299,8 +299,8 @@ suite "Macro to object conversion tests":
 
   type
     SeqOfBson = object
-      label: string
-      documents: seq[BsonDocument]
+      label*: string
+      documents*: seq[BsonDocument]
 
   let bsob = bson({
     label: "fix-macro-to",
@@ -326,7 +326,7 @@ suite "Macro to object conversion tests":
     check osob.documents[1]["fieldfield"] == bsob["documents"][1]["fieldfield"].ofString
 
   type ManyTimes = object
-    times: seq[Time]
+    times*: seq[Time]
 
   var btimes = bson({
     times: [currtime, currtime, currtime]
@@ -338,9 +338,9 @@ suite "Macro to object conversion tests":
 
   type
     TimeWrap = object
-      time: Time
+      time*: Time
     OTimeWrap = object
-      timewrap: TimeWrap
+      timewrap*: TimeWrap
 
   let botw = bson({
     timewrap: { time: currtime },
@@ -353,10 +353,10 @@ suite "Macro to object conversion tests":
   # many object wraps
   type
     OOOSSIntString = object
-      ootimewrap: OOTimewrap
-      oosis: SSIntString
+      ootimewrap*: OOTimewrap
+      oosis*: SSIntString
     OOTimeWrap = object
-      otimewrap: OTimeWrap
+      otimewrap*: OTimeWrap
     ManyObjects = object
       wrap*: SSIntString
       ootimewrap*: OOTimewrap
@@ -380,8 +380,8 @@ suite "Macro to object conversion tests":
 
   type
     BinaryWrap = object
-      binary: string # binary string
-      seqbyte: seq[byte]
+      binary*: string # binary string
+      seqbyte*: seq[byte]
   var bbwo = bson({
     binary: bsonBinary qrimg,
     seqbyte: bsonBinary qrimg
@@ -398,16 +398,16 @@ suite "Macro to object conversion tests":
     OVKind = enum
       ovOne ovMany ovNone
     ObjectVariant = object
-      baseField: string
-      baseInt: int
-      baseEmbed: BsonDocument
-      case kind: OVKind
+      baseField*: string
+      baseInt*: int
+      baseEmbed*: BsonDocument
+      case kind*: OVKind
       of ovOne:
-        theOnlyField: string
+        theOnlyField*: string
       of ovMany:
-        manyField1: string
-        intField: int
-        embed: BsonDocument
+        manyField1*: string
+        intField*: int
+        embed*: BsonDocument
       of ovNone:
         nil
   let

@@ -80,8 +80,8 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
 
   let replies = await all(ops)
   type HandshakeTemp = object
-    hosts: seq[string]
-    primary: string
+    hosts*: seq[string]
+    primary*: string
   if replies.len > 0 and replies[0].numberReturned > 0:
     let b = replies[0].documents[0]
     if b.ok:
