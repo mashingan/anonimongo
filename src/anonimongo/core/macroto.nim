@@ -203,6 +203,15 @@ proc objAssign(thevar, jn, fld, fielddef: NimNode,
   var whenhead = nnkWhenStmt.newTree(
     nnkElifBranch.newTree(newCall("compiles", jnOfType), ofTypeHandled),
   )
+  for dn in distNames:
+    let ofname =
+      if dn.kind == nnkDistinctTy: "of" & $dn[0]
+      elif dn.kind == nnkSym: "of" & $dn
+      else: ""
+    if ofname == "": continue
+    let jnOfType = newCall(fld[1], newCall(ofname, jn))
+    let ofTypeHandled = newAssignment(thevar, jnOfType)
+    whenhead.add nnkElifBranch.newTree(newCall("compiles", jnOfType), ofTypeHandled)
   var reclist: NimNode
   if fielddef.kind == nnkObjectTy:
     reclist = fielddef[2]
@@ -417,4 +426,4 @@ macro to*(b: untyped, t: typed): untyped =
   for field in reclist:
     identDefsCheck(result, resvar, field, b, t)
   result.add(newCall("unown", resvar))
-  #checknode result
+  checknode result
