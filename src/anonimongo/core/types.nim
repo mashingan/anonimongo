@@ -51,6 +51,7 @@ type
     writeConcern*: BsonDocument
     flags: QueryFlags
     readPreference*: ReadPreference
+    retryableWrites*: bool
     query: TableRef[string, seq[string]]
 
   ReadPreference* {.pure.} = enum
@@ -419,6 +420,10 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     let rps = result.query["readPreference".toLowerAscii]
     if rps.len > 0:
       result.readPreference = parseEnum[ReadPreference](rps[0])
+
+  if "retryablewrites" in result.query and result.query["retryablewrites"].len > 0:
+    result.retryableWrites = try: parseBool result.query["retryablewrites"][0]
+                             except: false
 
 
 proc tls*(m: Mongo): bool = m.tls

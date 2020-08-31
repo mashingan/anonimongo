@@ -126,6 +126,19 @@ proc findAndModify*(c: Collection, query = bson(), sort = bsonNull(),
     fields, upsert, bypass, wt, collation, arrayFilters)
   result = doc["value"].ofEmbedded
 
+template operationFor(doIt: bool, label: string, op: untyped): untyped =
+  # for retryableWrites
+  if doIt:
+    try:
+      `op`
+      if not result.success:
+        raise newException(Exception, result.reason)
+    except:
+      echo "first attempt retryable", label, " failed: ", getCurrentExceptionMsg()
+      `op`
+  else:
+    `op`
+
 proc update*(c: Collection, query = bson(), updates = bsonNull(),
   opt = bson()): Future[WriteResult] {.async.} =
   var q = bson({
@@ -133,14 +146,23 @@ proc update*(c: Collection, query = bson(), updates = bsonNull(),
     u: updates,
    })
   var ordered = true
+  var retryable = true
   for k, v in opt:
     if k == "ordered": ordered = v.ofBool
+    elif k == "multi":
+      retryable = false
+      q[k] = v
+    elif k == "writeConcern" and v.kind == bkInt32 and v == 0:
+      retryable = false
+      q[k] = v
     else:
       var kk = k
       q[move kk] = v
-  let doc = await c.db.update(c.name, @[q], ordered = ordered)
-  result = doc.getWResult
-
+  retryable = retryable and c.db.db.retryableWrites
+  retryable.operationFor("update"):
+    let doc = await c.db.update(c.name, @[q], ordered = ordered)
+    result = doc.getWResult
+      
 proc remove*(c: Collection, query: BsonDocument, justone = false):
     Future[WriteResult] {.async.} =
   let limit = if justone: 1 else: 0
@@ -148,20 +170,30 @@ proc remove*(c: Collection, query: BsonDocument, justone = false):
     q: query,
     limit: limit
   })
-  let doc = await c.db.delete(c.name, @[delq])
-  result = doc.getWResult
+  var retryable = justone and c.db.db.retryableWrites
+  retryable.operationFor("remove"):
+    let doc = await c.db.delete(c.name, @[delq])
+    result = doc.getWResult
 
 proc remove*(c: Collection, query, opt: BsonDocument):
   Future[WriteResult] {.async.} =
   var delq = bson({ query: query })
   var wt: BsonBase
+  var retryable = true
   for k, v in opt:
-    if k == "writeConcern": wt = v
+    if k == "writeConcern":
+      wt = v
+      if wt.kind == bkInt32 and wt == 0: retryable = false
+    elif k == "justOnce":
+      retryable = retryable and v.ofBool
+      delq[k] = v
     else:
       var kk = k
       delq[move kk] = v
-  let doc = await c.db.delete(c.name, @[delq], wt = wt)
-  result = doc.getWResult
+  retryable = retryable and c.db.db.retryableWrites
+  retryable.operationFor("remove"):
+    let doc = await c.db.delete(c.name, @[delq], wt = wt)
+    result = doc.getWResult
 
 proc remove*(c: Collection, query: seq[BsonDocument]):
   Future[WriteResult]{.async.} =
@@ -177,10 +209,20 @@ proc remove*(c: Collection, query: seq[BsonDocument]):
 
 proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
   Future[WriteResult] {.async.} =
-  let wt = if "writeConcern" in opt: opt["writeConcern"] else: bsonNull()
+  var retryable = false
+  let wt =
+    if "writeConcern" in opt:
+      let w = opt["writeConcern"]
+      if not w.isNil and w.kind == bkInt32 and w.ofInt32 == 0: retryable = false
+      else: retryable = true
+      w
+    else: bsonNull()
   let ordered = if "ordered" in opt: opt["ordered"].ofBool else: true
-  let doc = await c.db.insert(c.name, docs, ordered, wt)
-  result = doc.getWResult
+  retryable = retryable and c.db.db.retryableWrites
+
+  retryable.operationFor("insert"):
+    let doc = await c.db.insert(c.name, docs, ordered, wt)
+    result = doc.getWResult
 
 proc drop*(c: Collection, wt = bsonNull()): Future[WriteResult] {.async.} =
   result = await c.db.dropCollection(c.name, wt)

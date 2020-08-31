@@ -88,6 +88,7 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
       let hktemp = replies[0].documents[0].to HandshakeTemp
       m.hosts = hktemp.hosts
       m.primary = hktemp.primary
+      if m.hosts.len <= 1: m.retryableWrites = false
 
 proc cuUsers(db: Database, query: BsonDocument):
   Future[WriteResult] {.async.} =

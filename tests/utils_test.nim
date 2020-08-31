@@ -65,6 +65,7 @@ proc testsetup*: Mongo =
   else:
     let mongo = newMongo(MongoUri mongourl, poolconn = poolconn)
 
+  mongo.retryableWrites = true
   when defined(uri):
     doAssert mongo.db == "admin"
 

@@ -471,7 +471,7 @@ and [mongo spec][3].
 - [x] `TailableCursor` connection
 - [x] `SlaveOk` operations
 - [ ] Compression connection
-- [ ] Retryable writes
+- [x] Retryable writes
 - [ ] Retryable reads
 - [ ] Sessions
 
@@ -682,6 +682,11 @@ anything regarded that.
 * Some third-party library which targeting OpenSSL <= 1.0 results in unstable behaviour. See
 [issue #7 comment](https://github.com/mashingan/anonimongo/issues/7#issuecomment-674516511)
 * All internal connection implementations are Asynchronous IO. No support for multi-threading.
+* `retryableWrites` is doing operation twice in case the first attempt is failed. The mongo
+reference of it can be found [here](retry-wr). It's hard to test intentionally fail hence
+it hasn't been undergone extensive testing. As it's almost no different with normal operation,
+user can retry by themselves to increase of the retrying. Bulk write is reusing the previous
+mentioned operations so it's supported too.
 
 
 [TOC](#table-of-content)
@@ -699,3 +704,4 @@ MIT
 [9]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html
 [10]: https://github.com/mashingan/anonimongo/tree/master/src/anonimongo/dbops
 [wr-doc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/types.html#WriteResult
+[retry-wr]: https://docs.mongodb.com/manual/core/retryable-writes/#retryable-writes
