@@ -134,7 +134,7 @@ template operationFor(doIt: bool, label: string, op: untyped): untyped =
       if not result.success:
         raise newException(Exception, result.reason)
     except:
-      echo "first attempt retryable", label, " failed: ", getCurrentExceptionMsg()
+      echo "first attempt retryable ", label, " failed: ", getCurrentExceptionMsg()
       `op`
   else:
     `op`
