@@ -25,7 +25,7 @@ when verbose:
 const
   drivername = "anonimongo"
   description = "nim mongo driver"
-  version = "0.4.1"
+  version = "0.4.2"
 
 proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
   appname = "Anonimongo client apps"):Future[ReplyFormat] {.async.} =
