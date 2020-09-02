@@ -1,3 +1,12 @@
+import macros
+
+from sugar import dump
+# node helper check, used in bsonify and macroto
+template checknode(n: untyped): untyped {.used.} =
+  dump `n`.kind
+  dump `n`.len
+  dump `n`.repr
+
 const objtyp = {nnkObjectTy, nnkRefTy}
 
 template bsonExport* {.pragma.}
@@ -263,13 +272,11 @@ template identDefsCheck(result: var NimNode, resvar, field: NimNode,
   let resfield = newDotExpr(resvar, field[0])
   let nodefield = newNimNode(nnkBracketExpr).add(bsonObject, newStrLitNode $field[0])
   if field[1].kind == nnkBracketExpr:
-    let jnfieldstr = newStrLitNode $field[0]
-    let jnfield = newNimNode(nnkBracketExpr).add(bsonObject, jnfieldstr)
     if fimpl.kind == nnkDistinctTy:
       let actimpl = fimpl[0].getImpl
-      result.add arrAssign(resfield, jnfield, field, actimpl, fimpl)
+      result.add arrAssign(resfield, nodefield, field, actimpl, fimpl)
     else:
-      result.add arrAssign(resfield, jnfield, field, fimpl)
+      result.add arrAssign(resfield, nodefield, field, fimpl)
   elif field[1].isBsonDocument:
     result.add primAssign(resvar, bsonObject, field)
   elif fimpl.isPrimitive:
@@ -426,4 +433,4 @@ macro to*(b: untyped, t: typed): untyped =
   for field in reclist:
     identDefsCheck(result, resvar, field, b, t)
   result.add(newCall("unown", resvar))
-  checknode result
+  #checknode result
