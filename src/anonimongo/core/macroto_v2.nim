@@ -7,6 +7,14 @@ template checknode(n: untyped): untyped {.used.} =
   dump `n`.len
   dump `n`.repr
 
+type
+  NodeInfo = object
+    origin: NimNode
+    target: NimNode
+    resvar: NimNode
+    fieldImpl: NimNode
+
+
 template bsonExport*() {.pragma.}
 
 template extractBracketFrom(n: NimNode): untyped =
@@ -24,39 +32,77 @@ proc isPrimitive(node: NimNode): bool =
 
 proc isSymExported(node: NimNode): bool =
   #node.expectKind nnkSym
-  node.isExported# or node.hasCustomPragma(bsonExport)
+  #node.isExported or node.hasCustomPragma(bsonExport)
+  case node.kind
+  of nnkPostFix:
+    result = $node[0] == "*"
+  of nnkPragmaExpr:
+    for prg in node[1]:
+      prg.expectKind nnkSym
+      if $prg == "bsonExport":
+        result = true
+        break
+  else:
+    result = false
 
-template identDefsCheck(nodeBuilder: var NimNode, bsonObj, resvar, fielddef: NimNode) =
-  #fielddef.expectKind nnkIdentDefs
-  if fielddef.kind != nnkIdentDefs:
+proc extractFieldName(node: NimNode): NimNode =
+  if node.kind == nnkPostFix: result = node[1]
+  elif node.kind == nnkPragmaExpr: result = node[0]
+  else: result = newEmptyNode()
+
+template passIfIdentDefs(n: NimNode) =
+  if n.kind != nnkIdentDefs:
     echo "fielddef is not ident defs"
-    checknode fielddef
-  let fieldname = fielddef[0]
-  if fieldname.kind != nnkSym or not fieldname.isSymExported:
-    if fieldname.kind == nnkSym: echo $fieldname, " is not exported"
-    checknode fieldname
+    checknode n
     continue
+
+template passIfFieldExported(n: NimNode) =
+  if not n.isSymExported:
+    echo n.repr, " not exported"
+    continue
+
+template retrieveSym(n: var NimNode) =
+  n = extractFieldName n
+  if n.kind == nnkEmpty: continue
+
+template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
+  fielddef: NimNode) =
+  fielddef.passIfIdentDefs
+  var fieldname = fielddef[0]
+  fieldname.passIfFieldExported
+  fieldname.retrieveSym
   let fieldtype = fielddef[1]
   let fieldTypeImpl = getTypeImpl fieldtype
   if fieldTypeImpl.isPrimitive:
     echo $fieldType, " is primitive"
-    nodeBuilder.add assignPrim(resvar, bsonObj, fieldname)
+    checknode fieldtype
+    echo fieldTypeImpl.repr, " is primitive"
+    checknode fieldTypeImpl
+    nodeBuilder.add assignPrim(nodeInfo.resvar, nodeInfo.origin, fieldname)
   else:
-    #echo $fieldType, " is not primitive"
+    echo fieldType.repr, " is not primitive"
+    checknode fieldTypeImpl
+    checknode fieldType
     discard
 
 macro to*(b: untyped, t: typed): untyped =
-  let st = getType t
-  let targetTypeSym = extractBracketFrom st
-  let targetImpl = getTypeImpl targetTypeSym
-  let reclist = targetImpl[2]
-  let resvar = genSym(nskVar, "res")
-  checknode targetTypeSym
+  let
+    st = getType t
+    stTyDef = st[1].getImpl
+    targetTypeSym = extractBracketFrom st
+    targetImpl = stTyDef[2]
+    reclist = targetImpl[2]
+    resvar = genSym(nskVar, "res")
   result = newStmtList(
     quote do:(var `resvar` = `targetTypeSym`())
   )
+  var nodeInfo = NodeInfo(
+    origin: b,
+    target: t,
+    resvar: resvar,
+  )
   for fielddef in reclist:
-    identDefsCheck(result, b, resvar, fielddef)
+    identDefsCheck(result, nodeInfo, fielddef)
 
   result.add(quote do: unown(`resvar`))
   checknode result
