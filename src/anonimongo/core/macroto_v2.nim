@@ -12,6 +12,7 @@ type
     origin: NimNode
     target: NimNode
     resvar: NimNode
+    fieldDef: NimNode
     fieldImpl: NimNode
 
 
@@ -31,8 +32,6 @@ proc isPrimitive(node: NimNode): bool =
   node.kind == nnkSym and node.len == 0
 
 proc isSymExported(node: NimNode): bool =
-  #node.expectKind nnkSym
-  #node.isExported or node.hasCustomPragma(bsonExport)
   case node.kind
   of nnkPostFix:
     result = $node[0] == "*"
@@ -74,16 +73,41 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   let fieldtype = fielddef[1]
   let fieldTypeImpl = getTypeImpl fieldtype
   if fieldTypeImpl.isPrimitive:
-    echo $fieldType, " is primitive"
-    checknode fieldtype
-    echo fieldTypeImpl.repr, " is primitive"
-    checknode fieldTypeImpl
     nodeBuilder.add assignPrim(nodeInfo.resvar, nodeInfo.origin, fieldname)
+  elif fieldTypeImpl.kind == nnkObjectTy:
+    var info = nodeInfo
+    info.fieldImpl = fieldType.getImpl
+    info.fieldDef = nnkIdentDefs.newTree(fieldname, fieldtype, newEmptyNode())
+    info.resvar = nnkDotExpr.newTree(nodeInfo.resvar, fieldname)
+    nodeBuilder.add assignObj(info)
+    discard
   else:
     echo fieldType.repr, " is not primitive"
     checknode fieldTypeImpl
     checknode fieldType
     discard
+
+proc assignObj(info: NodeInfo): NimNode =
+  let
+    resvar = genSym(nskVar, "objres")
+    objty = info.fieldImpl[2]
+    targetSym = info.fieldImpl[0]
+    bsonVar = genSym(nskVar, "bsonVar")
+    inforig = info.origin
+    fieldstr = $info.fieldDef[0]
+  result = newStmtList(
+    quote do:( var `resvar` = `targetSym`() ),
+    quote do:( var `bsonVar` =`inforig`[`fieldstr`].ofEmbedded )
+  )
+  var newinfo = info
+  newinfo.resvar = resvar
+  newinfo.origin = bsonVar
+  let reclist = objty[2]
+  for fielddef in reclist:
+    identDefsCheck(result, newinfo, fielddef)
+  let res = info.resvar
+  result.add quote do:
+    `res` = unown(`resvar`)
 
 macro to*(b: untyped, t: typed): untyped =
   let
