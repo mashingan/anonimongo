@@ -121,7 +121,7 @@ proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
 
 template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
   info: NodeInfo) =
-  if info.refnode.kind == nnkEmpty:
+  if fieldtype.kind != nnkRefTy:
     let typeStr = "of" & ($fieldtype).capitalizeAscii
     let fieldstrNode = newLit $fieldname
     let bsonVar = nnkBracketExpr.newTree(info.origin, fieldstrNode)
@@ -190,12 +190,18 @@ proc assignObj(info: NodeInfo): NimNode =
       `fieldstr` in `inforig`
   var bodyif = newStmtList(
     quote do:
-      var `resvar` = `targetSym`()
+      var `resvar`:`targetSym`
       var `bsonVar` =`inforig`[`fieldstr`].ofEmbedded
   )
+  if info.refnode.kind != nnkEmpty:
+    bodyif.add quote do:
+      new(`resvar`)
   var newinfo = info
   newinfo.resvar = resvar
   newinfo.origin = bsonVar
+  if objty.kind != nnkObjectTy:
+    return quote do:
+      if `headif`:`bodyif`
   let reclist = objty[2]
   for fielddef in reclist:
     identDefsCheck(bodyif, newinfo, fielddef)
@@ -226,6 +232,6 @@ macro to*(b: untyped, t: typed): untyped =
     identDefsCheck(result, nodeInfo, fielddef)
 
   result.add(quote do: unown(`resvar`))
-  #checknode result
+  checknode result
 
 template bsonExport*() {.pragma.}
