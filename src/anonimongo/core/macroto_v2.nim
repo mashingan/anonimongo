@@ -14,60 +14,91 @@ type
     resvar: NimNode
     fieldDef: NimNode
     fieldImpl: NimNode
-    distinctSyms: seq[NimNode]
-    refnode: NimNode
+    parentSyms: seq[NimNode]
 
 
 template extractBracketFrom(n: NimNode): untyped =
   n.expectKind nnkBracketExpr
   n[1]
 
+template retrieveLastIdent(n: NimNode): NimNode =
+  var r: NimNode
+  if n.kind == nnkStmtList:
+    r = n[^1][1]
+  elif n.kind == nnkVarSection:
+    r = n[0][0]
+  r
+
+proc buildBodyIf(parents: seq[NimNode], bsonVar: NimNode): NimNode =
+  var bodyif = newStmtList()
+  var isPrevNodeDistinct = false
+  for i in countdown(parents.len-1, 0):
+    let parent = parents[i]
+    let tempvar = genSym(nskVar, "tempvar")
+    if parent.kind == nnkRefTy and bodyif.len > 0:
+      let lastIdent = retrieveLastIdent bodyif[^1]
+      let tempval =
+        if bodyif[^1].kind == nnkVarSection:
+          let parentSym = parent[0]
+          quote do:
+            move(`parentSym`(`lastIdent`))
+        else:
+          quote do:
+            move(`lastIdent`)
+      bodyif.add quote do:
+        var `tempvar`: `parent`
+        new(`tempvar`)
+        `tempvar`[] = `tempval`
+    elif parent.kind == nnkRefTy:
+      bodyif.add quote do:
+        var `tempvar`: `parent`
+        new(`tempvar`)
+        `tempvar`[] = `bsonVar`
+    elif parent.kind == nnkDistinctTy and bodyif.len > 0:
+      let lastIdent = bodyif[^1].retrieveLastIdent
+      let parentSym = parent[0]
+      bodyif.add quote do:
+        var `tempvar` = move(`parentSym`(`lastIdent`))
+      isPrevNodeDistinct = true
+    elif parent.kind == nnkDistinctTy:
+      let parentSym = parent[0]
+      bodyif.add quote do:
+        var `tempvar` = `parentSym`(`bsonVar`)
+    elif parent.kind == nnkSym and bodyif.len > 0:
+      let lastIdent = bodyif[^1].retrieveLastIdent
+      bodyif.add quote do:
+        var `tempvar` = move(`parent`(`lastIdent`))
+      isPrevNodeDistinct = true
+    elif parent.kind == nnkSym:
+      bodyif.add quote do:
+        var `tempvar` = `parent`(`bsonVar`)
+  result = bodyif
+
 proc assignPrim(info: NodeInfo): NimNode =
   let
     fieldDef = info.fieldDef
     fieldname = fieldDef[0]
     fieldNameStr = newStrLitNode $fieldname
-    typeIdent = ident("of" & ($info.fieldDef[1]).capitalizeAscii)
     resvar = info.resvar
     bsonObject = info.origin
-    isref = info.refnode.kind != nnkEmpty
     headif = quote do:
       `fieldNameStr` in `bsonObject`
-  let
-    assignedNode =
-      if isref:
-        quote do:
-          `resvar`.`fieldname`[]
-      else:
-        quote do:
-          `resvar`.`fieldname`
-    bsonVal =
-      if isref:
-        quote do:
-          `bsonObject`[`fieldNameStr`].`typeIdent`
-      else:
-        quote do:
-          `bsonObject`[`fieldNameStr`]
-  var bodyif = newStmtList()
-  if info.distinctSyms.len == 0:
-    if isref:
-      bodyif.add quote do:
-        new(`resvar`.`fieldname`)
+    bsonVar = quote do:
+      `bsonObject`[`fieldNameStr`]
+
+  var
+    bodyif = info.parentSyms.buildBodyIf bsonVar
+    asgnTgt  = quote do:
+      `resvar`.`fieldname`
+
+  if bodyif.len == 0:
+    bodyif.add nnkDiscardStmt.newTree(newEmptyNode())
+  elif bodyif.len > 0:
+    let lastIdent = bodyif[^1].retrieveLastIdent
     bodyif.add quote do:
-      `assignedNode` = `bsonVal`
-  else:
-    let primRes = genSym(nskLet, "primRes")
-    let primType = fieldDef[1]
-    let distinctSym = info.distinctSyms[0]
-    bodyif.add quote do:
-      let `primRes`:`primType` = `bsonVal`
-    if isref:
-      bodyif.add quote do:
-        new(`resvar`.`fieldname`)
-    bodyif.add quote do:
-      `assignedNode` = `distinctSym`(`primRes`)
+      `asgnTgt` = `lastIdent`
   result = quote do:
-    if `headif`: `bodyif`
+    if `headif`:`bodyif`
 
 proc isPrimitive(node: NimNode): bool =
   node.kind == nnkSym and node.len == 0
@@ -75,7 +106,7 @@ proc isPrimitive(node: NimNode): bool =
 proc isSymExported(node: NimNode): bool =
   case node.kind
   of nnkPostFix:
-    result = $node[0] == "*"
+    result = true
   of nnkPragmaExpr:
     for prg in node[1]:
       prg.expectKind nnkSym
@@ -106,16 +137,13 @@ template retrieveSym(n: var NimNode) =
   if n.kind == nnkEmpty: continue
 
 proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
-  (NimNode, seq[NimNode]) =
-  result[0] = newEmptyNode()
-  if n.kind == nnkDistinctTy:
-    result[1].add fieldType
-  while n.kind in {nnkRefTy, nnkDistinctTy}:
-    if n.kind == nnkRefTy:
-      result[0] = n[0]
-      result[1].add n[0]
-    else:
-      result[1].add n[0]
+  seq[NimNode] =
+  const drefty = {nnkRefTy, nnkDistinctTy}
+  if fieldtype.kind in drefty or fieldtype.kind == nnkSym:
+    result.add fieldtype
+  while n.kind in drefty:
+    if n notin result:
+      result.add n
     n = n[0].getTypeImpl
 
 
@@ -147,11 +175,10 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   let fieldtype = fielddef[1]
   var fieldTypeImpl = getTypeImpl fieldtype
 
-  let (isref, distinctSyms) = fieldTypeImpl.processDistinctAndRef fieldType
+  let parentSyms = fieldTypeImpl.processDistinctAndRef fieldType
 
   var newinfo = nodeInfo
-  newinfo.distinctSyms = distinctSyms
-  newinfo.refnode = isref
+  newinfo.parentSyms = parentSyms
 
   var whenhead = nnkWhenStmt.newTree()
   whenhead.prepareWhenStmt(fieldType, fieldname, newinfo)
@@ -193,7 +220,7 @@ proc assignObj(info: NodeInfo): NimNode =
       var `resvar`:`targetSym`
       var `bsonVar` =`inforig`[`fieldstr`].ofEmbedded
   )
-  if info.refnode.kind != nnkEmpty:
+  if info.parentSyms.len > 0 and info.parentSyms[0].kind == nnkRefTy:
     bodyif.add quote do:
       new(`resvar`)
   var newinfo = info
