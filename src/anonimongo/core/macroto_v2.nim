@@ -3,6 +3,7 @@ import macros, sugar, strformat, strutils
 {.warning[UnusedImport]: off.}
 
 template checknode(n: untyped): untyped {.used.} =
+  echo "==node=="
   dump `n`.kind
   dump `n`.len
   dump `n`.repr
@@ -18,6 +19,7 @@ type
 
 
 template checkinfo (n: NodeInfo) {.used.} =
+  echo "==info=="
   for k, v in n.fieldPairs:
     dump k
     dump v.repr
@@ -154,7 +156,7 @@ proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
 
 template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
   info: NodeInfo) =
-  if fieldtype.kind != nnkRefTy:
+  if fieldtype.kind notin {nnkRefTy, nnkBracketExpr}:
     let typeStr = "of" & ($fieldtype).capitalizeAscii
     let fieldstrNode = newLit $fieldname
     let bsonVar = nnkBracketExpr.newTree(info.origin, fieldstrNode)
