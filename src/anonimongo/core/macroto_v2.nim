@@ -48,11 +48,9 @@ proc buildBodyIf(parents: seq[NimNode], bsonVar: NimNode,
       let tempval =
         if bodyif[^1].kind == nnkVarSection:
           let parentSym = parent[0]
-          quote do:
-            move(`parentSym`(`lastIdent`))
+          (quote do: move(`parentSym`(`lastIdent`)))
         else:
-          quote do:
-            move(`lastIdent`)
+          (quote do: move(`lastIdent`))
       bodyif.add quote do:
         var `tempvar`: `parent`
         new(`tempvar`)
@@ -89,22 +87,18 @@ proc assignPrim(info: NodeInfo): NimNode =
     fieldNameStr = newStrLitNode $fieldname
     resvar = info.resvar
     bsonObject = info.origin
-    headif = quote do:
-      `fieldNameStr` in `bsonObject`
-    bsonVar = quote do:
-      `bsonObject`[`fieldNameStr`]
+    headif = quote do: `fieldNameStr` in `bsonObject`
+    bsonVar = quote do: `bsonObject`[`fieldNameStr`]
 
   var
     bodyif = info.parentSyms.buildBodyIf bsonVar
-    asgnTgt  = quote do:
-      `resvar`.`fieldname`
+    asgnTgt  = quote do: `resvar`.`fieldname`
 
   if bodyif.len == 0:
     bodyif.add nnkDiscardStmt.newTree(newEmptyNode())
   elif bodyif.len > 0:
     let lastIdent = bodyif[^1].retrieveLastIdent
-    bodyif.add quote do:
-      `asgnTgt` = `lastIdent`
+    bodyif.add quote do: `asgnTgt` = `lastIdent`
   result = quote do:
     if `headif`:`bodyif`
 
@@ -259,8 +253,7 @@ proc assignArr(info: NodeInfo): NimNode =
     seqvar = genSym(nskVar, "seqvar")
     fieldstr = $fieldname
     origin = info.origin
-    headif = quote do:
-      `fieldstr` in `origin`
+    headif = quote do: `fieldstr` in `origin`
     #(lastTypedef, seqty) = fieldtype.extractLastImpl
   var bodyif = newStmtList()
   #if fieldtype.kind in {nnkBracketExpr, nnkSym}:
@@ -270,13 +263,11 @@ proc assignArr(info: NodeInfo): NimNode =
   var forstmt = newNimNode nnkForStmt
   forstmt.add ident"bsonObj"
   forstmt.add bsonArr
-  forstmt.add quote do:
-    `seqvar`.add bsonObj
+  forstmt.add(quote do: `seqvar`.add bsonObj)
   bodyif.add forstmt
 
   let target = info.resvar
-  bodyif.add quote do:
-    `target` = unown(`seqvar`)
+  bodyif.add(quote do: `target` = unown(`seqvar`))
 
   result = quote do:
     if `headif`: `bodyif`
@@ -289,8 +280,7 @@ proc assignObj(info: NodeInfo): NimNode =
     inforig = info.origin
     fieldstr = $info.fieldDef[0]
     fieldType = info.fieldDef[1]
-    headif = quote do:
-      `fieldstr` in `inforig`
+    headif = quote do: `fieldstr` in `inforig`
     (lastTypedef, objty) = fieldType.extractLastImpl
   var
     bodyif = newStmtList()
@@ -342,8 +332,7 @@ proc assignObj(info: NodeInfo): NimNode =
       else: resvar
   bodyif.add addBody
   let res = info.resvar
-  bodyif.add quote do:
-    `res` = unown(`lastIdent`)
+  bodyif.add(quote do: `res` = unown(`lastIdent`))
   result = quote do:
     if `headif`: `bodyif`
 
