@@ -17,6 +17,11 @@ type
     parentSyms: seq[NimNode]
 
 
+template checkinfo (n: NodeInfo) {.used.} =
+  for k, v in n.fieldPairs:
+    dump k
+    dump v.repr
+
 template extractBracketFrom(n: NimNode): untyped =
   n.expectKind nnkBracketExpr
   n[1]
@@ -29,7 +34,8 @@ template retrieveLastIdent(n: NimNode): NimNode =
     r = n[0][0]
   r
 
-proc buildBodyIf(parents: seq[NimNode], bsonVar: NimNode): NimNode =
+proc buildBodyIf(parents: seq[NimNode], bsonVar: NimNode,
+  isObject = false): NimNode =
   var bodyif = newStmtList()
   var isPrevNodeDistinct = false
   for i in countdown(parents.len-1, 0):
@@ -69,7 +75,7 @@ proc buildBodyIf(parents: seq[NimNode], bsonVar: NimNode): NimNode =
       bodyif.add quote do:
         var `tempvar` = move(`parent`(`lastIdent`))
       isPrevNodeDistinct = true
-    elif parent.kind == nnkSym:
+    elif parent.kind == nnkSym and not isObject:
       bodyif.add quote do:
         var `tempvar` = `parent`(`bsonVar`)
   result = bodyif
@@ -146,7 +152,6 @@ proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
       result.add n
     n = n[0].getTypeImpl
 
-
 template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
   info: NodeInfo) =
   if fieldtype.kind != nnkRefTy:
@@ -157,7 +162,7 @@ template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
     let asgnVar = newDotExpr(info.resvar, fieldname)
     let ifthere = nnkIfStmt.newTree(
       nnkElifBranch.newTree(
-        newCall("contains", info.origin, fieldstrNode ),
+        newCall("contains", info.origin, fieldstrNode),
         newAssignment(asgnVar, callBsonVar)))
     w.add nnkElifBranch.newTree(
         newCall("compiles", callBsonVar),
@@ -190,7 +195,10 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
       newEmptyNode())
     elseStmt.add assignPrim(newinfo)
   elif fieldTypeImpl.kind == nnkObjectTy:
-    newinfo.fieldImpl = fieldType.getImpl
+    var fieldobj = fieldType
+    if fieldobj.kind == nnkRefTy:
+      fieldobj = fieldobj[0]
+    newinfo.fieldImpl = fieldobj.getImpl
     newinfo.fieldDef = nnkIdentDefs.newTree(fieldname, fieldtype, newEmptyNode())
     newinfo.resvar = newDotExpr(nodeInfo.resvar, fieldname)
     elseStmt.add assignObj(newinfo)
@@ -205,36 +213,96 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   else:
     nodeBuilder.add elseStmt
 
+template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
+  var
+    lastImpl: NimNode
+    lastTypeDef: NimNode
+    placeholder = if fieldType.kind in {nnkRefTy, nnkDistinctTy}:
+                    fieldType[0].getImpl
+                  else: fieldType.getImpl
+  placeholder.expectKind nnkTypeDef
+  while placeholder.kind == nnkTypeDef:
+    let definition = placeholder[^1]
+    lastTypeDef = placeholder
+    if definition.kind in {nnkRefTy, nnkDistinctTy}:
+      placeholder = definition[0].getImpl
+    elif definition.kind == nnkObjectTy:
+      lastImpl = definition
+      break
+  (lastTypedef, lastImpl)
+
+proc isRefOrSymRef(parents: seq[NimNode]): bool =
+  if parents.len > 1:
+    let parent = parents[^1]
+    if parent.kind == nnkRefTy:
+      result = true
+    elif parent.kind == nnkSym and
+      parent.getTypeImpl.kind == nnkRefTy:
+        result = true
+
 proc assignObj(info: NodeInfo): NimNode =
   let
     resvar = genSym(nskVar, "objres")
-    objty = info.fieldImpl[2]
     targetSym = info.fieldImpl[0]
     bsonVar = genSym(nskVar, "bsonVar")
     inforig = info.origin
     fieldstr = $info.fieldDef[0]
+    fieldType = info.fieldDef[1]
     headif = quote do:
       `fieldstr` in `inforig`
-  var bodyif = newStmtList(
-    quote do:
-      var `resvar`:`targetSym`
-      var `bsonVar` =`inforig`[`fieldstr`].ofEmbedded
-  )
-  if info.parentSyms.len > 0 and info.parentSyms[0].kind == nnkRefTy:
+    (lastTypedef, objty) = fieldType.extractLastImpl
+  var
+    bodyif = newStmtList()
+    fieldImpl = getTypeImpl fieldType
+    isTime = false
+  if $lastTypedef[0] == "Time":
+    isTime = true
+    bodyif = newStmtList(
+      quote do:
+        var `bsonVar` =`inforig`[`fieldstr`].ofTime
+    )
+  else:
+    bodyif = newStmtList(
+      quote do:
+        var `bsonVar` =`inforig`[`fieldstr`].ofEmbedded
+    )
+  if info.parentSyms.isRefOrSymRef or fieldType.kind == nnkRefTy:
+    let firstParent = info.parentSyms[^1]
     bodyif.add quote do:
+      var `resvar`:`firstParent`
       new(`resvar`)
-  var newinfo = info
-  newinfo.resvar = resvar
-  newinfo.origin = bsonVar
-  if objty.kind != nnkObjectTy:
-    return quote do:
-      if `headif`:`bodyif`
+  elif info.parentSyms.len > 1:
+    let immediateParent = info.parentSyms[^1]
+    let parentSym =
+      if immediateParent.kind == nnkDistinctTy:
+        immediateParent[0]
+      else: immediateParent
+    bodyif.add quote do:
+      var `resvar`: `parentSym`
+  else:
+    bodyif.add quote do:
+      var `resvar`: `targetSym`
+  var newinfo = NodeInfo(
+    resvar: resvar,
+    origin: bsonVar,
+    parentSyms: fieldImpl.processDistinctAndRef fieldType,
+    fieldImpl: lastTypedef
+  )
+
   let reclist = objty[2]
   for fielddef in reclist:
     identDefsCheck(bodyif, newinfo, fielddef)
+  let
+    addBody =
+      if isTime: info.parentSyms.buildBodyIf(bsonVar, isObject = true)
+      else: info.parentSyms[0..^2].buildBodyIf(resvar, isObject = true)
+    lastIdent =
+      if addBody.len > 1: addBody[^1].retrieveLastIdent
+      else: resvar
+  bodyif.add addBody
   let res = info.resvar
   bodyif.add quote do:
-    `res` = unown(`resvar`)
+    `res` = unown(`lastIdent`)
   result = quote do:
     if `headif`: `bodyif`
 
@@ -259,6 +327,6 @@ macro to*(b: untyped, t: typed): untyped =
     identDefsCheck(result, nodeInfo, fielddef)
 
   result.add(quote do: unown(`resvar`))
-  checknode result
+  #checknode result
 
 template bsonExport*() {.pragma.}
