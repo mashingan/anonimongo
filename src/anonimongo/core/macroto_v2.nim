@@ -190,6 +190,9 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   var whenhead = nnkWhenStmt.newTree()
   whenhead.prepareWhenStmt(fieldType, fieldname, newinfo)
 
+  newinfo.fieldDef = newIdentDefs(fieldname, fieldtype, newEmptyNode())
+  newinfo.resvar = newDotExpr(nodeInfo.resvar, fieldname)
+
   # checking the implementation
   var elseStmt = newStmtList()
   if fieldTypeImpl.isPrimitive:
@@ -201,9 +204,13 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     if fieldobj.kind == nnkRefTy:
       fieldobj = fieldobj[0]
     newinfo.fieldImpl = fieldobj.getImpl
-    newinfo.fieldDef = nnkIdentDefs.newTree(fieldname, fieldtype, newEmptyNode())
-    newinfo.resvar = newDotExpr(nodeInfo.resvar, fieldname)
     elseStmt.add assignObj(newinfo)
+  elif fieldTypeImpl.kind == nnkBracketExpr:
+    var fieldseq = fieldtype
+    while fieldseq.kind in {nnkRefTy, nnkDistinctTy}:
+      fieldseq = fieldseq[0].getImpl
+    newinfo.fieldImpl = fieldseq
+    elseStmt.add assignArr(newinfo)
   else:
     echo fieldType.repr, " conversion is not available"
     checknode fieldTypeImpl
@@ -241,6 +248,38 @@ proc isRefOrSymRef(parents: seq[NimNode]): bool =
     elif parent.kind == nnkSym and
       parent.getTypeImpl.kind == nnkRefTy:
         result = true
+
+proc assignObj(info: NodeInfo): NimNode
+
+proc assignArr(info: NodeInfo): NimNode =
+  let
+    fieldname = info.fieldDef[0]
+    fieldtype = info.fieldDef[1]
+    bsonArr = genSym(nskVar, "bsonArr")
+    seqvar = genSym(nskVar, "seqvar")
+    fieldstr = $fieldname
+    origin = info.origin
+    headif = quote do:
+      `fieldstr` in `origin`
+    #(lastTypedef, seqty) = fieldtype.extractLastImpl
+  var bodyif = newStmtList()
+  #if fieldtype.kind in {nnkBracketExpr, nnkSym}:
+  bodyif.add quote do:
+    var `seqvar`: `fieldtype`
+    var `bsonArr` = `origin`[`fieldstr`].ofArray
+  var forstmt = newNimNode nnkForStmt
+  forstmt.add ident"bsonObj"
+  forstmt.add bsonArr
+  forstmt.add quote do:
+    `seqvar`.add bsonObj
+  bodyif.add forstmt
+
+  let target = info.resvar
+  bodyif.add quote do:
+    `target` = unown(`seqvar`)
+
+  result = quote do:
+    if `headif`: `bodyif`
 
 proc assignObj(info: NodeInfo): NimNode =
   let
