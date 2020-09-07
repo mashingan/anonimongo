@@ -36,6 +36,14 @@ template retrieveLastIdent(n: NimNode): NimNode =
     r = n[0][0]
   r
 
+proc isSeq(n: NimNode): bool =
+  n.expectKind nnkBracketExpr
+  n.len == 2 and $n[0] == "seq"
+
+proc isArray(n: NimNode): bool =
+  n.expectKind nnkBracketExpr
+  n.len == 3 and $n[0] == "array"
+
 proc buildBodyIf(parents: seq[NimNode], bsonVar: NimNode,
   isObject = false): NimNode =
   var bodyif = newStmtList()
@@ -200,7 +208,7 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     newinfo.fieldImpl = fieldobj.getImpl
     elseStmt.add assignObj(newinfo)
   elif fieldTypeImpl.kind == nnkBracketExpr:
-    var fieldseq = fieldtype
+    var fieldseq = fieldtype.getImpl
     while fieldseq.kind in {nnkRefTy, nnkDistinctTy}:
       fieldseq = fieldseq[0].getImpl
     newinfo.fieldImpl = fieldseq
@@ -232,6 +240,9 @@ template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
     elif definition.kind == nnkObjectTy:
       lastImpl = definition
       break
+    elif definition.kind == nnkBracketExpr:
+      lastImpl = definition
+      break
   (lastTypedef, lastImpl)
 
 proc isRefOrSymRef(parents: seq[NimNode]): bool =
@@ -254,27 +265,29 @@ proc assignArr(info: NodeInfo): NimNode =
     fieldstr = $fieldname
     origin = info.origin
     headif = quote do: `fieldstr` in `origin`
-    #(lastTypedef, seqty) = fieldtype.extractLastImpl
+    (_, seqty) = fieldtype.extractLastImpl
   var bodyif = newStmtList()
-  #if fieldtype.kind in {nnkBracketExpr, nnkSym}:
   bodyif.add quote do:
-    var `seqvar`: `fieldtype`
+    var `seqvar`: `seqty`
     var `bsonArr` = `origin`[`fieldstr`].ofArray
   var forstmt = newNimNode nnkForStmt
-  if fieldtype.len == 3:
+  if fieldtype.len == 3 or seqty.isArray:
     forstmt.add ident"i"
     forstmt.add quote do:
       0 .. min(`seqvar`.len, `bsonArr`.len) - 1
     forstmt.add quote do:
       `seqvar`[i] = `bsonArr`[i]
-  elif fieldtype.len == 2:
+  elif fieldtype.len == 2 or seqty.isSeq:
     forstmt.add ident"bsonObj"
     forstmt.add bsonArr
     forstmt.add(quote do: `seqvar`.add bsonObj)
   bodyif.add forstmt
+  let addbody = info.parentSyms.buildBodyIf(seqvar)
+  bodyif.add addbody
 
   let target = info.resvar
-  bodyif.add(quote do: `target` = unown(`seqvar`))
+  let lastIdent = addbody[^1].retrieveLastIdent
+  bodyif.add(quote do: `target` = unown(`lastIdent`))
 
   result = quote do:
     if `headif`: `bodyif`
