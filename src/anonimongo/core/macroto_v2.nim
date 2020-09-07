@@ -16,6 +16,8 @@ type
     fieldDef: NimNode
     fieldImpl: NimNode
     parentSyms: seq[NimNode]
+    isResDirect: bool
+    isDirectOriginVar: bool
 
 
 template checkinfo (n: NodeInfo) {.used.} =
@@ -95,12 +97,20 @@ proc assignPrim(info: NodeInfo): NimNode =
     fieldNameStr = newStrLitNode $fieldname
     resvar = info.resvar
     bsonObject = info.origin
-    headif = quote do: `fieldNameStr` in `bsonObject`
-    bsonVar = quote do: `bsonObject`[`fieldNameStr`]
+    headif = if not info.isDirectOriginVar:
+               quote do: `fieldNameStr` in `bsonObject`
+             else:
+               newLit true
+    bsonVar = if not info.isDirectOriginVar:
+                quote do: `bsonObject`[`fieldNameStr`]
+              else: `bsonObject`
 
   var
     bodyif = info.parentSyms.buildBodyIf bsonVar
-    asgnTgt  = quote do: `resvar`.`fieldname`
+    asgnTgt  = if info.isResDirect:
+                 quote do: `resvar`
+               else:
+                 quote do: `resvar`.`fieldname`
 
   if bodyif.len == 0:
     bodyif.add nnkDiscardStmt.newTree(newEmptyNode())
@@ -159,14 +169,24 @@ proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
 template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
   info: NodeInfo) =
   if fieldtype.kind notin {nnkRefTy, nnkBracketExpr}:
-    let typeStr = "of" & ($fieldtype).capitalizeAscii
+    var typeStr = "of" & ($fieldtype).capitalizeAscii
+    # special treatment for BsonDocument
+    if typeStr == "ofBsonDocument":
+      typeStr = "ofEmbedded"
     let fieldstrNode = newLit $fieldname
-    let bsonVar = nnkBracketExpr.newTree(info.origin, fieldstrNode)
+    let bsonVar =
+      if not info.isDirectOriginVar:
+        nnkBracketExpr.newTree(info.origin, fieldstrNode)
+      else:
+        info.origin
     let callBsonVar = newCall(typestr, bsonVar)
-    let asgnVar = newDotExpr(info.resvar, fieldname)
+    let asgnVar = if not info.isResDirect: newDotExpr(info.resvar, fieldname)
+                  else: info.resvar
+    let headif = if info.isResDirect: newLit true
+                 else: newCall("contains", info.origin, fieldstrNode)
     let ifthere = nnkIfStmt.newTree(
       nnkElifBranch.newTree(
-        newCall("contains", info.origin, fieldstrNode),
+        headif,
         newAssignment(asgnVar, callBsonVar)))
     w.add nnkElifBranch.newTree(
         newCall("compiles", callBsonVar),
@@ -193,13 +213,16 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   whenhead.prepareWhenStmt(fieldType, fieldname, newinfo)
 
   newinfo.fieldDef = newIdentDefs(fieldname, fieldtype, newEmptyNode())
-  newinfo.resvar = newDotExpr(nodeInfo.resvar, fieldname)
+  newinfo.resvar = if not nodeInfo.isResDirect:
+                     newDotExpr(nodeInfo.resvar, fieldname)
+                   else: nodeInfo.resvar
 
   # checking the implementation
   var elseStmt = newStmtList()
   if fieldTypeImpl.isPrimitive:
     newinfo.fieldDef = nnkIdentDefs.newTree(fieldname, fieldTypeImpl,
       newEmptyNode())
+    newinfo.isResDirect = true
     elseStmt.add assignPrim(newinfo)
   elif fieldTypeImpl.kind == nnkObjectTy:
     var fieldobj = fieldType
@@ -208,9 +231,13 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     newinfo.fieldImpl = fieldobj.getImpl
     elseStmt.add assignObj(newinfo)
   elif fieldTypeImpl.kind == nnkBracketExpr:
-    var fieldseq = fieldtype.getImpl
-    while fieldseq.kind in {nnkRefTy, nnkDistinctTy}:
-      fieldseq = fieldseq[0].getImpl
+    var fieldseq = fieldtype
+    # handle when direct form of seq[Type] or array[N, Type]
+    if fieldseq.kind != nnkBracketExpr:
+      fieldseq = fieldseq.getImpl
+      while fieldseq.kind in {nnkRefTy, nnkDistinctTy, nnkSym}:
+        if fieldseq.kind != nnkSym: fieldseq = fieldseq[0].getImpl
+        else: fieldseq = fieldseq.getImpl
     newinfo.fieldImpl = fieldseq
     elseStmt.add assignArr(newinfo)
   else:
@@ -225,24 +252,33 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     nodeBuilder.add elseStmt
 
 template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
+  const refdist = {nnkRefTy, nnkDistinctTy}
   var
     lastImpl: NimNode
     lastTypeDef: NimNode
-    placeholder = if fieldType.kind in {nnkRefTy, nnkDistinctTy}:
+    placeholder = if fieldType.kind in refdist:
                     fieldType[0].getImpl
                   else: fieldType.getImpl
   placeholder.expectKind nnkTypeDef
   while placeholder.kind == nnkTypeDef:
     let definition = placeholder[^1]
     lastTypeDef = placeholder
-    if definition.kind in {nnkRefTy, nnkDistinctTy}:
-      placeholder = definition[0].getImpl
+    if definition.kind in refdist:
+      if definition[0].kind == nnkSym:
+        placeholder = definition[0].getImpl
+      elif definition[0].kind == nnkObjectTy:
+        lastImpl = definition[0]
+        break
     elif definition.kind == nnkObjectTy:
       lastImpl = definition
       break
     elif definition.kind == nnkBracketExpr:
       lastImpl = definition
       break
+  if placeholder.kind == nnkNilLit and lastImpl == nil:
+    lastImpl = lastTypeDef[^1]
+    if lastImpl.kind in refdist:
+      lastImpl = lastImpl[0]
   (lastTypedef, lastImpl)
 
 proc isRefOrSymRef(parents: seq[NimNode]): bool =
@@ -264,29 +300,57 @@ proc assignArr(info: NodeInfo): NimNode =
     seqvar = genSym(nskVar, "seqvar")
     fieldstr = $fieldname
     origin = info.origin
-    headif = quote do: `fieldstr` in `origin`
-    (_, seqty) = fieldtype.extractLastImpl
+    headif = if not info.isResDirect:
+               quote do: `fieldstr` in `origin`
+             else:
+               newLit true
+    (_, seqty) = if fieldtype.kind == nnkBracketExpr: (nil, fieldtype)
+                 else: fieldtype.extractLastImpl
+    bsonOrigin = if fieldstr == "dummy": origin
+                 else: quote do: `origin`[`fieldstr`]
+  
   var bodyif = newStmtList()
   bodyif.add quote do:
     var `seqvar`: `seqty`
-    var `bsonArr` = `origin`[`fieldstr`].ofArray
+    var `bsonArr` = `bsonOrigin`.ofArray
   var forstmt = newNimNode nnkForStmt
+  var forbody = newStmtList()
   if fieldtype.len == 3 or seqty.isArray:
     forstmt.add ident"i"
     forstmt.add quote do:
       0 .. min(`seqvar`.len, `bsonArr`.len) - 1
-    forstmt.add quote do:
+    forbody.add quote do:
       `seqvar`[i] = `bsonArr`[i]
   elif fieldtype.len == 2 or seqty.isSeq:
     forstmt.add ident"bsonObj"
     forstmt.add bsonArr
-    forstmt.add(quote do: `seqvar`.add bsonObj)
+    let seqobjvar = genSym(nskVar, "seqobjvar")
+    let seqtypeSym = seqty[1]
+    let fielddef = newIdentDefs(
+      nnkPostfix.newTree(ident"*", ident"dummy"),
+      seqtypeSym)
+    let newinfo = NodeInfo(
+      origin: ident"bsonObj",
+      resvar: seqobjvar,
+      fielddef: fielddef,
+      isResDirect: true,
+      isDirectOriginVar: true,
+    )
+    forbody.add quote do:
+      var `seqobjvar`: `seqtypeSym`
+    for _ in 0 .. 0:
+      identDefsCheck(forbody, newinfo, fielddef)
+    forbody.add(quote do: `seqvar`.add `seqobjvar`)
+  var lastIdentFor = seqvar
+  forstmt.add forbody
+
   bodyif.add forstmt
-  let addbody = info.parentSyms.buildBodyIf(seqvar)
+  let addbody = info.parentSyms.buildBodyIf(lastIdentFor)
   bodyif.add addbody
 
   let target = info.resvar
-  let lastIdent = addbody[^1].retrieveLastIdent
+  let lastIdent = if addbody.len > 1: addbody[^1].retrieveLastIdent
+                  else: seqVar
   bodyif.add(quote do: `target` = unown(`lastIdent`))
 
   result = quote do:
@@ -300,7 +364,11 @@ proc assignObj(info: NodeInfo): NimNode =
     inforig = info.origin
     fieldstr = $info.fieldDef[0]
     fieldType = info.fieldDef[1]
-    headif = quote do: `fieldstr` in `inforig`
+    headif = if not info.isResDirect:
+               quote do: `fieldstr` in `inforig`
+             else: newLit true
+    bsonOrig = if info.isResDirect: inforig
+               else: quote do: `inforig`[`fieldstr`]
     (lastTypedef, objty) = fieldType.extractLastImpl
   var
     bodyif = newStmtList()
@@ -310,12 +378,12 @@ proc assignObj(info: NodeInfo): NimNode =
     isTime = true
     bodyif = newStmtList(
       quote do:
-        var `bsonVar` =`inforig`[`fieldstr`].ofTime
+        var `bsonVar` =`bsonOrig`.ofTime
     )
   else:
     bodyif = newStmtList(
       quote do:
-        var `bsonVar` =`inforig`[`fieldstr`].ofEmbedded
+        var `bsonVar` =`bsonOrig`.ofEmbedded
     )
   if info.parentSyms.isRefOrSymRef or fieldType.kind == nnkRefTy:
     let firstParent = info.parentSyms[^1]
