@@ -269,6 +269,9 @@ template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
       elif definition[0].kind == nnkObjectTy:
         lastImpl = definition[0]
         break
+      elif definition[0].kind in refdist:
+        # handle when distinct ref TypeSymbol
+        placeholder = definition[0][0].getImpl
     elif definition.kind == nnkObjectTy:
       lastImpl = definition
       break
@@ -413,10 +416,10 @@ proc assignObj(info: NodeInfo): NimNode =
     identDefsCheck(bodyif, newinfo, fielddef)
   let
     addBody =
-      if isTime: info.parentSyms.buildBodyIf(bsonVar, isObject = true)
-      else: info.parentSyms[0..^2].buildBodyIf(resvar, isObject = true)
+      if isTime: info.parentSyms.buildBodyIf(bsonVar, isObject = false)
+      else: info.parentSyms[0..^2].buildBodyIf(resvar, isObject = false)
     lastIdent =
-      if addBody.len > 1: addBody[^1].retrieveLastIdent
+      if addBody.len > 0: addBody[^1].retrieveLastIdent
       else: resvar
   bodyif.add addBody
   let res = info.resvar
