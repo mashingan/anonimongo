@@ -261,9 +261,16 @@ proc assignArr(info: NodeInfo): NimNode =
     var `seqvar`: `fieldtype`
     var `bsonArr` = `origin`[`fieldstr`].ofArray
   var forstmt = newNimNode nnkForStmt
-  forstmt.add ident"bsonObj"
-  forstmt.add bsonArr
-  forstmt.add(quote do: `seqvar`.add bsonObj)
+  if fieldtype.len == 3:
+    forstmt.add ident"i"
+    forstmt.add quote do:
+      0 .. min(`seqvar`.len, `bsonArr`.len) - 1
+    forstmt.add quote do:
+      `seqvar`[i] = `bsonArr`[i]
+  elif fieldtype.len == 2:
+    forstmt.add ident"bsonObj"
+    forstmt.add bsonArr
+    forstmt.add(quote do: `seqvar`.add bsonObj)
   bodyif.add forstmt
 
   let target = info.resvar
