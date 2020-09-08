@@ -374,6 +374,20 @@ proc assignArr(info: NodeInfo): NimNode =
   result = quote do:
     if `headif`: `bodyif`
 
+
+template handleTable(n: NimNode, ops: untyped) =
+  const tblname = ["Table", "TableRef"]
+  if n.kind == nnkBracketExpr:
+    case $n[0]
+    of "typedesc":
+      if n[1].kind == nnkSym and $n[1] in tblname:
+        `ops`
+      elif n[1].kind == nnkBracketExpr and $n[1][1] in tblname:
+        `ops`
+    of tblname:
+      `ops`
+
+
 proc assignObj(info: NodeInfo): NimNode =
   let
     resvar = genSym(nskVar, "objres")
