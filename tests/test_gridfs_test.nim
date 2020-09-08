@@ -49,6 +49,11 @@ if filename != "" and saveas != "":
         require(mongo.authenticated)
       db = mongo[dbname]
 
+    test "Drop database first in case of error in previous test":
+      require db != nil
+      wr = waitFor db.dropDatabase
+      wr.success.reasonedCheck("dropDatabase error", wr.reason)
+
     test "Create default bucket":
       require db != nil
       grid = waitfor db.createBucket(chunkSize = 1.megabytes.int32)
