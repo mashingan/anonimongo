@@ -428,20 +428,22 @@ proc assignObj(info: NodeInfo): NimNode =
                else: quote do: `inforig`[`fieldstr`]
     (lastTypedef, objty) = fieldType.extractLastImpl
   var
-    bodyif = newStmtList()
     fieldImpl = getTypeImpl fieldType
-    isTime = false
+    isDirect = false
+    bsonSource = quote do:
+      `bsonOrig`.ofEmbedded
   if $lastTypedef[0] == "Time":
-    isTime = true
-    bodyif = newStmtList(
-      quote do:
-        var `bsonVar` =`bsonOrig`.ofTime
-    )
-  else:
-    bodyif = newStmtList(
-      quote do:
-        var `bsonVar` =`bsonOrig`.ofEmbedded
-    )
+    isDirect = true
+    bsonSource = quote do:
+      `bsonOrig`.ofTime
+  elif $lastTypedef[0] == "Oid":
+    isDirect = true
+    bsonSource = quote do:
+      `bsonOrig`.ofObjectId
+  var bodyif = newStmtList(
+    quote do:
+      var `bsonVar` =`bsonSource`
+  )
   if info.parentSyms.isRefOrSymRef or fieldType.kind == nnkRefTy:
     let firstParent = info.parentSyms[^1]
     bodyif.add quote do:
@@ -470,7 +472,7 @@ proc assignObj(info: NodeInfo): NimNode =
     identDefsCheck(bodyif, newinfo, fielddef)
   let
     addBody =
-      if isTime: info.parentSyms.buildBodyIf(bsonVar, isObject = false)
+      if isDirect: info.parentSyms.buildBodyIf(bsonVar, isObject = false)
       else: info.parentSyms[0..^2].buildBodyIf(resvar, isObject = false)
     lastIdent =
       if addBody.len > 0: addBody[^1].retrieveLastIdent
