@@ -382,7 +382,7 @@ proc assignArr(info: NodeInfo): NimNode =
 template handleTable(n: NimNode, ops: untyped) =
   const tblname = ["Table", "TableRef"]
   if n.kind == nnkBracketExpr:
-    case $n[0]
+    case ($n[0]).toLowerAscii
     of "typedesc":
       if n[1].kind == nnkSym and $n[1] in tblname:
         `ops`
