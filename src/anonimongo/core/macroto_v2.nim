@@ -284,11 +284,14 @@ template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
     let definition = placeholder[^1]
     lastTypeDef = placeholder
     if definition.kind in refdist:
-      if definition[0].kind == nnkSym:
+      case definition[0].kind
+      of nnkSym:
         placeholder = definition[0].getImpl
-      elif definition[0].kind == nnkObjectTy:
+      of nnkObjectTy:
         lastImpl = definition[0]
         break
+      of nnkBracketExpr:
+        placeholder = definition[0][0].getImpl
       elif definition[0].kind in refdist:
         # handle when distinct ref TypeSymbol
         placeholder = definition[0][0].getImpl
@@ -398,8 +401,8 @@ proc assignArr(info: NodeInfo): NimNode =
 template handleTable(n: NimNode, ops: untyped) =
   const tblname = ["Table", "TableRef"]
   if n.kind == nnkBracketExpr:
-    case ($n[0]).toLowerAscii
-    of "typedesc":
+    case ($n[0])
+    of "typeDesc":
       if n[1].kind == nnkSym and $n[1] in tblname:
         `ops`
       elif n[1].kind == nnkBracketExpr and $n[1][1] in tblname:
