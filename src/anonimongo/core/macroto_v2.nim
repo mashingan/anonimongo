@@ -442,9 +442,24 @@ proc assignObj(info: NodeInfo): NimNode =
   result = quote do:
     if `headif`: `bodyif`
 
+template handleTable(n: NimNode, ops: untyped) =
+  const tblname = ["Table", "TableRef"]
+  if n.kind == nnkBracketExpr:
+    if n[1].kind == nnkSym and $n[1] in tblname:
+      `ops`
+    elif n[1].kind == nnkBracketExpr and $n[1][1] in tblname:
+      `ops`
+
 macro to*(b: untyped, t: typed): untyped =
   let
     st = getType t
+
+  st.handleTable:
+    result = quote do: `t`()
+    return
+
+  checknode st
+  let
     stTyDef = st[1].getImpl
     targetTypeSym = extractBracketFrom st
     targetImpl = stTyDef[2]
