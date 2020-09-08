@@ -315,49 +315,55 @@ proc assignArr(info: NodeInfo): NimNode =
   var bodyif = newStmtList()
   bodyif.add quote do:
     var `seqvar`: `seqty`
-    var `bsonArr` = `bsonOrigin`.ofArray
-  var forstmt = newNimNode nnkForStmt
-  var forbody = newStmtList()
   let
     arrayOp = if seqty.isArray: true else: false
-    theobj = genSym(nskVar, "arrseqobj")
     arrseqType = if arrayOp: seqty[2]
                  else: seqty[1]
-    theval = if arrayOp: quote do: `bsonArr`[i]
-             else: ident"bsonObj"
-    fielddef = newIdentDefs(
-      nnkPostFix.newTree(ident"*", ident"dummy"),
-      arrseqType)
-    newinfo = NodeInfo(
-      origin: theval,
-      resvar: theobj,
-      fielddef: fielddef,
-      isResDirect: true,
-      isDirectOriginVar: true,
-    )
-  if fieldtype.len == 3 or seqty.isArray:
-    forstmt.add ident"i"
-    forstmt.add quote do:
-      0 .. min(`seqvar`.len, `bsonArr`.len) - 1
+    isBinary = arrseqType.kind == nnkSym and
+               arrseqType.strVal.toLowerAscii in ["byte", "uint8"]
+  
+  if isBinary:
+    bodyif.add quote do:
+      `seqvar` = `bsonOrigin`.ofBinary
+  else:
+    bodyif.add quote do:
+      var `bsonArr` = `bsonOrigin`.ofArray
+    let
+      theobj = genSym(nskVar, "arrseqobj")
+      theval = if arrayOp: quote do: `bsonArr`[i]
+              else: ident"bsonObj"
+      fielddef = newIdentDefs(
+        nnkPostFix.newTree(ident"*", ident"dummy"),
+        arrseqType)
+      newinfo = NodeInfo(
+        origin: theval,
+        resvar: theobj,
+        fielddef: fielddef,
+        isResDirect: true,
+        isDirectOriginVar: true,
+      )
+    var forstmt = newNimNode nnkForStmt
+    var forbody = newStmtList()
+    if fieldtype.len == 3 or seqty.isArray:
+      forstmt.add ident"i"
+      forstmt.add quote do:
+        0 .. min(`seqvar`.len, `bsonArr`.len) - 1
+    elif fieldtype.len == 2 or seqty.isSeq:
+      forstmt.add ident"bsonObj"
+      forstmt.add bsonArr
     forbody.add quote do:
       var `theobj`: `arrseqType`
     for _ in 0 .. 0:
       identDefsCheck(forbody, newinfo, fielddef)
-    forbody.add quote do:
-      `seqvar`[i] = `theobj`
-  elif fieldtype.len == 2 or seqty.isSeq:
-    forstmt.add ident"bsonObj"
-    forstmt.add bsonArr
-    forbody.add quote do:
-      var `theobj`: `arrseqType`
-    for _ in 0 .. 0:
-      identDefsCheck(forbody, newinfo, fielddef)
-    forbody.add(quote do: `seqvar`.add `theobj`)
-  var lastIdentFor = seqvar
-  forstmt.add forbody
+    if arrayOp:
+      forbody.add quote do:
+        `seqvar`[i] = `theobj`
+    else:
+      forbody.add quote do: `seqvar`.add `theobj`
+    forstmt.add forbody
+    bodyif.add forstmt
 
-  bodyif.add forstmt
-  let addbody = info.parentSyms.buildBodyIf(lastIdentFor)
+  let addbody = info.parentSyms.buildBodyIf(seqvar)
   bodyif.add addbody
 
   let target = info.resvar
