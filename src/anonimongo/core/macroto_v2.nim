@@ -318,32 +318,41 @@ proc assignArr(info: NodeInfo): NimNode =
     var `bsonArr` = `bsonOrigin`.ofArray
   var forstmt = newNimNode nnkForStmt
   var forbody = newStmtList()
+  let
+    arrayOp = if seqty.isArray: true else: false
+    theobj = genSym(nskVar, "arrseqobj")
+    arrseqType = if arrayOp: seqty[2]
+                 else: seqty[1]
+    theval = if arrayOp: quote do: `bsonArr`[i]
+             else: ident"bsonObj"
+    fielddef = newIdentDefs(
+      nnkPostFix.newTree(ident"*", ident"dummy"),
+      arrseqType)
+    newinfo = NodeInfo(
+      origin: theval,
+      resvar: theobj,
+      fielddef: fielddef,
+      isResDirect: true,
+      isDirectOriginVar: true,
+    )
   if fieldtype.len == 3 or seqty.isArray:
     forstmt.add ident"i"
     forstmt.add quote do:
       0 .. min(`seqvar`.len, `bsonArr`.len) - 1
     forbody.add quote do:
-      `seqvar`[i] = `bsonArr`[i]
+      var `theobj`: `arrseqType`
+    for _ in 0 .. 0:
+      identDefsCheck(forbody, newinfo, fielddef)
+    forbody.add quote do:
+      `seqvar`[i] = `theobj`
   elif fieldtype.len == 2 or seqty.isSeq:
     forstmt.add ident"bsonObj"
     forstmt.add bsonArr
-    let seqobjvar = genSym(nskVar, "seqobjvar")
-    let seqtypeSym = seqty[1]
-    let fielddef = newIdentDefs(
-      nnkPostfix.newTree(ident"*", ident"dummy"),
-      seqtypeSym)
-    let newinfo = NodeInfo(
-      origin: ident"bsonObj",
-      resvar: seqobjvar,
-      fielddef: fielddef,
-      isResDirect: true,
-      isDirectOriginVar: true,
-    )
     forbody.add quote do:
-      var `seqobjvar`: `seqtypeSym`
+      var `theobj`: `arrseqType`
     for _ in 0 .. 0:
       identDefsCheck(forbody, newinfo, fielddef)
-    forbody.add(quote do: `seqvar`.add `seqobjvar`)
+    forbody.add(quote do: `seqvar`.add `theobj`)
   var lastIdentFor = seqvar
   forstmt.add forbody
 
