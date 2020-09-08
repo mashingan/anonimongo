@@ -228,6 +228,8 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     var fieldobj = fieldType
     if fieldobj.kind == nnkRefTy:
       fieldobj = fieldobj[0]
+    elif fieldobj.kind == nnkBracketExpr:
+      fieldobj = fieldobj[0]
     newinfo.fieldImpl = fieldobj.getImpl
     elseStmt.add assignObj(newinfo)
   elif fieldTypeImpl.kind == nnkBracketExpr:
@@ -257,6 +259,8 @@ template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
     lastImpl: NimNode
     lastTypeDef: NimNode
     placeholder = if fieldType.kind in refdist:
+                    fieldType[0].getImpl
+                  elif fieldType.kind == nnkBracketExpr:
                     fieldType[0].getImpl
                   else: fieldType.getImpl
   placeholder.expectKind nnkTypeDef
