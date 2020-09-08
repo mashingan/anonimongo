@@ -393,6 +393,8 @@ template handleTable(n: NimNode, ops: untyped) =
 
 
 proc assignObj(info: NodeInfo): NimNode =
+  info.fieldDef[1].handleTable:
+    return newEmptyNode()
   let
     resvar = genSym(nskVar, "objres")
     targetSym = info.fieldImpl[0]
