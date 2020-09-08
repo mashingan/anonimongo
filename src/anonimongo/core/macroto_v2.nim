@@ -193,15 +193,31 @@ template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
         #newAssignment(asgnVar, callBsonVar))
         ifthere)
 
+proc handleObjectVariant(info: NodeInfo): NimNode
+
 template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
-  fielddef: NimNode) =
+  fdf: NimNode) =
+
+  if fdf.kind == nnkNilLit:
+    nodeBuilder.add quote do: discard
+    continue
+  var fieldname = fdf[0]
+  if fdf.kind == nnkRecCase:
+    fieldname = fieldname[0]
+    fieldname.passIfFieldExported
+  else:
+    fieldname.passIfFieldExported
+
+  if fdf.kind == nnkRecCase:
+    var info = nodeInfo
+    info.fieldDef = fdf
+    nodeBuilder.add handleObjectVariant(info)
+    continue
 
   # preparing with various checkings
-  fielddef.passIfIdentDefs
-  var fieldname = fielddef[0]
-  fieldname.passIfFieldExported
+  fdf.passIfIdentDefs
   fieldname.retrieveSym
-  let fieldtype = fielddef[1]
+  let fieldtype = fdf[1]
   var fieldTypeImpl = getTypeImpl fieldtype
 
   let parentSyms = fieldTypeImpl.processDistinctAndRef fieldType
@@ -462,38 +478,68 @@ proc assignObj(info: NodeInfo): NimNode =
   result = quote do:
     if `headif`: `bodyif`
 
-template handleTable(n: NimNode, ops: untyped) =
-  const tblname = ["Table", "TableRef"]
-  if n.kind == nnkBracketExpr:
-    if n[1].kind == nnkSym and $n[1] in tblname:
-      `ops`
-    elif n[1].kind == nnkBracketExpr and $n[1][1] in tblname:
-      `ops`
+proc handleObjectVariant(info: NodeInfo): NimNode =
+  info.fieldDef[0].expectKind nnkIdentDefs
+  result = newStmtList()
+  let variantKind = info.fieldDef[0][0].extractFieldName
+  let resvar = info.resvar
+  var casenode = nnkCaseStmt.newTree(quote do: `resvar`.`variantKind`)
+  for casebody in info.fieldDef[1 .. ^1]:
+    casebody.expectKind nnkOfBranch
+    #casebody[0].expectKind nnkIntLit
+    casebody[1].expectKind nnkRecList
+    if casebody[1].len == 0:
+      casenode.add nnkOfBranch.newTree(casebody[0],
+        nnkDiscardStmt.newTree(newEmptyNode()))
+      continue
+    var caseof = nnkOfBranch.newTree(casebody[0], newEmptyNode())
+    var casebodystmt = newStmtList()
+    for identdefs in casebody[1]:
+      identDefsCheck(casebodystmt, info, identdefs)
+    caseof[1] = casebodystmt
+    casenode.add caseof
+  result.add casenode
 
 macro to*(b: untyped, t: typed): untyped =
   let
     st = getType t
-
   st.handleTable:
     result = quote do: `t`()
     return
 
-  checknode st
   let
     stTyDef = st[1].getImpl
     targetTypeSym = extractBracketFrom st
     targetImpl = stTyDef[2]
     reclist = targetImpl[2]
     resvar = genSym(nskVar, "res")
-  result = newStmtList(
-    quote do:
-      var `resvar`: `targetTypeSym`
-  )
+
   var nodeInfo = NodeInfo(
     origin: b,
     target: t,
     resvar: resvar,
   )
+  var isobjectVariant = false
+  var variantKind, targetEnum: NimNode
+  var variantKindStr: string
+  for field in reclist: # check for object variant
+    case field.kind
+    of nnkEmpty: continue
+    of nnkRecCase:
+      isobjectVariant = true
+      variantKind = field[0][0]
+      if variantKind.kind == nnkPostfix: variantKind = variantKind[1]
+      targetEnum = field[0][1]
+      variantKindstr = $variantkind
+      break
+    else: discard
+  result = newStmtList()
+  if not isobjectVariant:
+    result.add quote do:
+      var `resvar`: `targetTypeSym`
+  else:
+    result.add(quote do:
+      var `resvar` = `t`(`variantKind`: parseEnum[`targetEnum`](`b`[`variantKindStr`])))
   for fielddef in reclist:
     identDefsCheck(result, nodeInfo, fielddef)
 
