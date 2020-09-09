@@ -143,13 +143,14 @@ proc extractFieldName(node: NimNode): NimNode =
 
 template passIfIdentDefs(n: NimNode) =
   if n.kind != nnkIdentDefs:
-    echo "fielddef is not ident defs"
-    checknode n
+    when defined(verbose):
+      echo "fielddef is not ident defs"
+      checknode n
     continue
 
 template passIfFieldExported(n: NimNode) =
   if not n.isSymExported:
-    echo n.repr, " not exported"
+    when defined(verbose): echo n.repr, " not exported"
     continue
 
 template retrieveSym(n: var NimNode) =
@@ -259,10 +260,11 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     newinfo.fieldImpl = fieldseq
     elseStmt.add assignArr(newinfo)
   else:
-    echo fieldType.repr, " conversion is not available"
-    checknode fieldTypeImpl
-    checknode fieldType
-    echo "==========="
+    when defined(verbose):
+      echo fieldType.repr, " conversion is not available"
+      checknode fieldTypeImpl
+      checknode fieldType
+      echo "==========="
   if whenhead.len > 0:
     whenhead.add nnkElse.newTree(elseStmt)
     nodeBuilder.add whenhead
