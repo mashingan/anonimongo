@@ -9,15 +9,15 @@ from lenientops import `/`, `+`, `*`
 
 export strutils
 
-from sugar import dump
-# node helper check, used in bsonify and macroto
-template checknode(n: untyped): untyped {.used.} =
-  dump `n`.kind
-  dump `n`.len
-  dump `n`.repr
+import bsonify
+export bsonify
 
-include bsonify
-include macroto
+when defined(to_v2):
+  import macroto_v2
+  export macroto_v2
+else:
+  import macroto
+  export macroto
 
 # Bson
 # Copyright Rahmatullah

@@ -329,17 +329,17 @@ proc drop*(g: GridFS): Future[WriteResult]{.async.} =
 
 type
   FileInfo = object
-    id: Oid
-    chunkSize: int32
-    length: int64
-    uploadDate: Time
-    filename: string
-    metadata: BsonDocument
+    id {.bsonExport.}: Oid
+    chunkSize {.bsonExport.}: int32
+    length {.bsonExport.}: int64
+    uploadDate {.bsonExport.}: Time
+    filename {.bsonExport.}: string
+    metadata {.bsonExport.}: BsonDocument
 
   DataStream = object
-      files_id: Oid
-      n: int
-      data: string ## bytes
+    files_id {.bsonExport.} : Oid
+    n {.bsonExport.} : int
+    data {.bsonExport.}: string ## bytes
 
   GridStream* = ref object of RootObj
     grid: GridFS
@@ -347,8 +347,8 @@ type
     buffered: bool
     buffer: seq[BsonDocument]
     isClosed: bool
-    info: FileInfo
-    data: DataStream
+    info {.bsonExport.}: FileInfo
+    data {.bsonExport.}: DataStream
     pos: int64
     point: int
 
