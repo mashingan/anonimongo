@@ -12,12 +12,12 @@ export strutils
 import bsonify
 export bsonify
 
-when defined(to_v2):
-  import macroto_v2
-  export macroto_v2
-else:
+when defined(oldto):
   import macroto
   export macroto
+else:
+  import macroto_v2
+  export macroto_v2
 
 # Bson
 # Copyright Rahmatullah
