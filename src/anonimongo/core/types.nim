@@ -310,10 +310,11 @@ proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
   var uris: seq[URLUri]
   if uriobj.scheme == "":
     raise newException(MongoError, &"No scheme protocol provided at \"{uri}\" uri")
-  if uriobj.scheme notin ["mongodb", "mongodb+srv"]:
+  if uriobj.scheme notin ["mongodb", "mongo", "mongodb+srv", "mongo+srv"]:
     raise newException(MongoError,
-      &"Only supports mongodb:// or mongodb+srv://, provided: \"{uriobj.scheme}\"")
-  elif uriobj.scheme == "mongodb+srv":
+      "Only supports mongodb:// or mongo:// or mongodb+srv:// or mongo+srv://, " &
+        &"provided: \"{uriobj.scheme}\"")
+  elif uriobj.scheme == "mongodb+srv" or uriobj.scheme == "mongo+srv":
     if not withSsl: raiseEnableSsl()
     let client = newDNSClient(server = dnsserver, port = dnsport)
     try:
