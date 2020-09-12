@@ -455,10 +455,10 @@ the user provides `of{MostOuterTypename}` implementation or not.
 2. Auto Bson to Type conversion can only be done to the fields that are exported or
 has custom pragma `bsonExport` as shown in this [example](#convert-from-bson-to-object-variant).
 
-3. <delete>It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
+3. ~It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
 any deep of `distinct` types (that's distinct of distinct of distinct of .... of Type), but this
 should be indication of some broken type definition and better be remedied from
-the type design itself. If user thinks otherwise, please report this issue with the example code.</delete>  
+the type design itself. If user thinks otherwise, please report this issue with the example code.~  
 As with v2 of `to` macro, the conversion of arbitrary `ref` and `distinct` is supported. It cannot support the
 `ref distinct Type` as it's not making any sense but it supports the `distinct ref Type`. Please report the issue
 if user finds the otherwise.
