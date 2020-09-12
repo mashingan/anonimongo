@@ -329,7 +329,7 @@ proc drop*(g: GridFS): Future[WriteResult]{.async.} =
 
 type
   FileInfo = object
-    id {.bsonExport.}: Oid
+    id {.bsonExport, bsonKey: "_id".}: Oid
     chunkSize {.bsonExport.}: int32
     length {.bsonExport.}: int64
     uploadDate {.bsonExport.}: Time
@@ -425,7 +425,6 @@ proc getStream*(g: GridFS, matcher: BsonBase, sort = bson(),
     raise newException(MongoError, move msg)
   when verbose: dump bsinfo
   result.info = bsinfo.to FileInfo
-  result.info.id = bsinfo["_id"]
   if buffered:
     result.buffer = newseq[BsonDocument](await g.chunks.count(
       bson({ files_id: result.info.id })))

@@ -12,6 +12,7 @@
     - [Bson examples](#bson-examples)
     - [Convert object to BsonDocument](#convert-object-to-bsondocument)
     - [Convert from Bson to object variant](#convert-from-bson-to-object-variant)
+    - [Convert with custom key Bson](#convert-with-custom-key-bson)
 
 3. [Specific Mentions for Working with Bson](#working-with-bson)
 4. [Install](#install)
@@ -349,6 +350,55 @@ let objnone = bov.to ObjectVariant
 doAssert objnone.kind == ovNone
 ```
 
+### Convert with Custom Key Bson
+
+```nim
+# This example will show to extract a specific Bson key
+# check the test_bson_test.nim for elaborate bsonKey example
+# Available in v0.4.5
+
+import oids, times, macros
+import anonimongo/core/bson
+
+type
+  SimpleIntString = object
+    intfield {.bsonExport.}: int
+    strfield*: string
+  OidString = string # provided to enable our own custom conversion definition
+  CustomObj = object
+    # we retrieve the same "_id" into `id` and `idStr` with
+    # `idStr` defined with specific conversion proc
+    id {.bsonExport, bsonKey: "_id".}: Oid
+    idStr {.bsonExport, bsonKey: "_id".}: OidString
+    sis {.bsonExport, bsonKey: "sisEmbed".}: SimpleIntString
+    currentTime {.bsonExport, bsonKey: "now".}: Time
+
+proc ofOidString(b: BsonBase): OidString =
+  echo "ofOidString is called"
+  result = $b.ofObjectId
+
+
+let bobj = bson({
+  "_id": genOid(),
+  sisEmbed: {
+    intfield: 42,
+    strfield: "forthy two"
+  },
+  now: now().toTime,
+})
+
+var cobj: CustomObj
+expandMacros:
+  cobj = bobj.to CustomObj
+
+doAssert $cobj.id == $bobj["_id"].ofObjectId
+doAssert cobj.idStr == $bobj["_id"].ofObjectId
+doAssert $cobj.id == cobj.idStr
+doAssert cobj.sis.strfield == bobj["sisEmbed"]["strfield"]
+doAssert cobj.currentTime == bobj["now"]
+```
+
+
 [TOC](#table-of-content)
 
 ## Working with Bson
@@ -405,13 +455,19 @@ the user provides `of{MostOuterTypename}` implementation or not.
 2. Auto Bson to Type conversion can only be done to the fields that are exported or
 has custom pragma `bsonExport` as shown in this [example](#convert-from-bson-to-object-variant).
 
-3. It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
+3. <delete>It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
 any deep of `distinct` types (that's distinct of distinct of distinct of .... of Type), but this
 should be indication of some broken type definition and better be remedied from
-the type design itself. If user thinks otherwise, please report this issue with the example code.
+the type design itself. If user thinks otherwise, please report this issue with the example code.</delete>  
+As with v2 of `to` macro, the conversion of arbitrary `ref` and `distinct` is supported. It cannot support the
+`ref distinct Type` as it's not making any sense but it supports the `distinct ref Type`. Please report the issue
+if user finds the otherwise.
 
 4. In case the user wants to persist with the current definition of any custom deep of `distinct` type,
 user should define the custom mechanism mentioned in point #1 above.
+
+5. With `v0.4.5`, users are able to extract custom Bson key to map with specific field name by supplying the pragma
+`bsonKey` e.g. `{.bsonKey: "theBsonKey".}`. Refer to the example [above](#convert-with-custom-key-bson). The key is **case-sensitive**.
 
 [TOC](#table-of-content)
 
@@ -444,7 +500,7 @@ nimble install https://github.com/mashingan/anonimongo@#head
 ### For dependency
 
 ```
-requires "anonimongo >= 0.2.0"
+requires "anonimongo >= 0.4.5"
 ```
 
 or directly from Github repo
@@ -683,7 +739,7 @@ anything regarded that.
 [issue #7 comment](https://github.com/mashingan/anonimongo/issues/7#issuecomment-674516511)
 * All internal connection implementations are Asynchronous IO. No support for multi-threading.
 * `retryableWrites` is doing operation twice in case the first attempt is failed. The mongo
-reference of it can be found [here](retry-wr). It's hard to test intentionally fail hence
+reference of it can be found [here][retry-wr]. It's hard to test intentionally fail hence
 it hasn't been undergone extensive testing. As it's almost no different with normal operation,
 user can retry by themselves to increase of the retrying. Bulk write is reusing the previous
 mentioned operations so it's supported too.

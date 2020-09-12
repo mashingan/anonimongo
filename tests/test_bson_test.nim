@@ -504,3 +504,25 @@ suite "Macro to object conversion tests":
     check simpobj.timeOfReference[].Time == nao
     check simpobj.distinctTimeRef.TimeRef[].Time == nao
     check simpobj.ddTime.Time == nao
+
+  type
+    CustomS2IntString = object
+      simpleIntStr {.bsonExport, bsonKey:"sis1".}: SimpleIntString
+      sref {.bsonExport, bsonKey: "sisref".}: ref SimpleIntString
+      customSeqs {.bsonExport, bsonKey: "seqs".}: seq[string]
+      customSiss {.bsonExport, bsonKey: "siss".}: seq[SimpleIntString]
+      notfoundSissref {.bsonExport.}: seq[ref SimpleIntString]
+      customArrdbar {.bsonExport, bsonKey: "arrdbar".}: array[2, DBar]
+      customDTimenow* {.bsonKey: "dtimenow".}: DTime
+  test "Extract custom key Bson defined with bsonKey pragma":
+    let bobj = s2b.to CustomS2IntString
+    check bobj.simpleIntStr.name == s2b["sis1"]["name"]
+    check bobj.sref.name == s2b["sis1"]["name"]
+    check bobj.customSeqs.len == 3
+    check bobj.customSeqs[1] == s2b["seqs"][1]
+    check bobj.customSiss.len == 2
+    check bobj.customSiss[0].name == s2b["siss"][0]["name"]
+    check bobj.notfoundSissref.len == 0
+    check bobj.customArrdbar.len == 2
+    check bobj.customArrdbar[1].Bar == s2b["arrdbar"][1]
+    check bobj.customDTimenow.Time == s2b["dtimenow"]

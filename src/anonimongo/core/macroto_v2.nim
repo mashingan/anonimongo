@@ -18,6 +18,7 @@ type
     parentSyms: seq[NimNode]
     isResDirect: bool
     isDirectOriginVar: bool
+    bsonKey: string
 
 
 template checkinfo (n: NodeInfo) {.used.} =
@@ -94,7 +95,8 @@ proc assignPrim(info: NodeInfo): NimNode =
   let
     fieldDef = info.fieldDef
     fieldname = fieldDef[0]
-    fieldNameStr = newStrLitNode $fieldname
+    fieldNameStr = if info.bsonKey == "": newStrLitNode $fieldname
+                   else: newLit info.bsonKey
     resvar = info.resvar
     bsonObject = info.origin
     headif = if not info.isDirectOriginVar:
@@ -128,11 +130,14 @@ proc isSymExported(node: NimNode): bool =
   of nnkPostFix:
     result = true
   of nnkPragmaExpr:
-    for prg in node[1]:
-      prg.expectKind nnkSym
-      if $prg == "bsonExport":
-        result = true
-        break
+    if node[0].kind == nnkPostfix:
+      result = true
+      return
+    else:
+      for prg in node[1]:
+        if prg.kind == nnkSym and $prg == "bsonExport":
+          result = true
+          break
   else:
     result = false
 
@@ -140,6 +145,7 @@ proc extractFieldName(node: NimNode): NimNode =
   if node.kind == nnkPostFix: result = node[1]
   elif node.kind == nnkPragmaExpr: result = node[0]
   else: result = newEmptyNode()
+  if result.kind == nnkPostfix: result = result[1]
 
 template passIfIdentDefs(n: NimNode) =
   if n.kind != nnkIdentDefs:
@@ -156,6 +162,15 @@ template passIfFieldExported(n: NimNode) =
 template retrieveSym(n: var NimNode) =
   n = extractFieldName n
   if n.kind == nnkEmpty: continue
+
+template extractBsonKey(n: NimNode): string =
+  var r = ""
+  if n.kind == nnkPragmaExpr and n.len > 0:
+    for pragma in n[1]:
+      if pragma.kind == nnkExprColonExpr and $pragma[0] == "bsonKey":
+        r = $pragma[1]
+        break
+  r
 
 proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
   seq[NimNode] =
@@ -174,7 +189,8 @@ template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
     # special treatment for BsonDocument
     if typeStr == "ofBsonDocument":
       typeStr = "ofEmbedded"
-    let fieldstrNode = newLit $fieldname
+    let fieldstrNode = if info.bsonKey != "": newLit info.bsonKey
+                       else: newLit $fieldname
     let bsonVar =
       if not info.isDirectOriginVar:
         nnkBracketExpr.newTree(info.origin, fieldstrNode)
@@ -215,6 +231,8 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
     nodeBuilder.add handleObjectVariant(info)
     continue
 
+  let keystr = fieldname.extractBsonKey
+
   # preparing with various checkings
   fdf.passIfIdentDefs
   fieldname.retrieveSym
@@ -225,6 +243,7 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
 
   var newinfo = nodeInfo
   newinfo.parentSyms = parentSyms
+  newinfo.bsonKey = keystr
 
   var whenhead = nnkWhenStmt.newTree()
   whenhead.prepareWhenStmt(fieldType, fieldname, newinfo)
@@ -326,7 +345,8 @@ proc assignArr(info: NodeInfo): NimNode =
     fieldtype = info.fieldDef[1]
     bsonArr = genSym(nskVar, "bsonArr")
     seqvar = genSym(nskVar, "seqvar")
-    fieldstr = $fieldname
+    fieldstr = if info.bsonKey == "": $fieldname
+               else: info.bsonKey
     origin = info.origin
     headif = if not info.isResDirect:
                quote do: `fieldstr` in `origin`
@@ -421,7 +441,8 @@ proc assignObj(info: NodeInfo): NimNode =
     targetSym = info.fieldImpl[0]
     bsonVar = genSym(nskVar, "bsonVar")
     inforig = info.origin
-    fieldstr = $info.fieldDef[0]
+    fieldstr = if info.bsonKey == "": $info.fieldDef[0]
+               else: info.bsonkey
     fieldType = info.fieldDef[1]
     headif = if not info.isResDirect:
                quote do: `fieldstr` in `inforig`
@@ -601,3 +622,5 @@ macro to*(b: untyped, t: typed): untyped =
   #checknode result
 
 template bsonExport*() {.pragma.}
+
+template bsonKey*(key: string) {.pragma.}
