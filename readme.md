@@ -174,7 +174,7 @@ close mongo
 
 In the [test_replication_sslcon.nim](tests/test_replication_sslcon.nim), there's example of emulated
 [DNS server custom for `SRV`](tests/test_replication_sslcon.nim#L105-L120)
-of DNS seedlist lookup. So the URI to connect is `localhost:3000` which in return replying with
+of DNS seedlist lookup. So the URI to connect is `localhost:5000` which in return replying with
 `localhost:27018`, `localhost:27019` and `localhost:27020` as domain of replication set.
 
 ### Upload file to GridFS
@@ -278,7 +278,25 @@ proc toBson[T: tuple | object](o: T): BsonDocument =
 
 But according to the `fieldPairs` documentation, it can only support
 tuple and object so if the user is working with ref object, they can
-only convert it manually.
+only convert it manually.  
+  
+Above `toBson` snippet code can be modified to accomodate the `bsonKey` pragma
+(starting from `v0.4.5`) to be:
+
+```nim
+import macro
+import anonimongo/core/bson
+
+proc toBson[T: tuple | object](o: T): BsonDocument:
+  result = bson()
+  for k, v in o.fieldPairs:
+    when v.hasCustomPragma(bsonKey):
+      var key = v.getCustomPragmaVal(bsonKey)
+      result[key] = v # or v.toBson for explicit conversion
+    else:
+      result[k] = v # or v.toBson for explicit conversion
+```
+
 
 Check [tests](tests/) for more examples of detailed usages.  
 Elaborate Bson examples and cases are covered in [bson_test.nim](tests/test_bson_test.nim)
@@ -474,7 +492,7 @@ user should define the custom mechanism mentioned in point #1 above.
 ## Install
 
 ```
-nimble install anonimongo
+nimble install anonimongo@" >= 0.4.5"
 ```
 
 Or to install it locally
@@ -495,6 +513,8 @@ to install the `#head` branch
 
 ```
 nimble install https://github.com/mashingan/anonimongo@#head
+#or
+nimble install anonimongo@#head
 ```
 
 ### For dependency
