@@ -41,9 +41,13 @@ scope where it's called not an asynchronous function.
 Any API that insert/update/delete will return [WriteResult][wr-doc]. So the user can check
 whether the write operation is successful or not with its field boolean `success` and the field
 string `reason` to know what's the error message returned. However it's still throwing any other
-error such as `BsonFetchError`, `KeyError`, `IndexError` and others kind of errors type which
+error such as `MongoError` (the failure related to Database APIs and Mongo APIs),
+`BsonFetchError` (getting the wrong Bson type from BsonBase),
+`KeyError` (accessing non-existent key BsonDocument or embedded document in BsonBase),
+`IndexError` (accessing index more than BsonArray length or BsonBase that's actually BsonArray length),
+`IOError` (related to socket), `TimeoutError` (when connecting with `mongodb+srv` scheme URI) which are
 raised by the underlying process. Those errors are indicating an err in the program flow hence elevated
-on how the user handles them.
+on how the user handles them.  
 
 [This page][5] (`anonimongo.html`) is the elaborate documentation. It also explains several
 modules and the categories for those modules. [The index][6] also available.
@@ -373,7 +377,7 @@ doAssert objnone.kind == ovNone
 ```nim
 # This example will show to extract a specific Bson key
 # check the test_bson_test.nim for elaborate bsonKey example
-# Available in v0.4.5
+# Available since v0.4.5
 
 import oids, times, macros
 import anonimongo/core/bson
@@ -487,6 +491,8 @@ user should define the custom mechanism mentioned in point #1 above.
 5. With `v0.4.5`, users are able to extract custom Bson key to map with specific field name by supplying the pragma
 `bsonKey` e.g. `{.bsonKey: "theBsonKey".}`. Refer to the example [above](#convert-with-custom-key-bson). The key is **case-sensitive**.
 
+6. `to` macro doesn't support for cyclic object types.
+
 [TOC](#table-of-content)
 
 ## Install
@@ -516,6 +522,9 @@ nimble install https://github.com/mashingan/anonimongo@#head
 #or
 nimble install anonimongo@#head
 ```
+
+The code in `#head` is always in tagged version. Untagged `#head` master branch
+is usually only changes in something unrelated to the code itself.
 
 ### For dependency
 
