@@ -358,17 +358,17 @@ var outb = bson({ objectVariant: bov })
 var outer: OuterObject
 let objmany = bov.to ObjectVariant
 outer = outb.to OuterObject
-check objmany.kind == ovMany
-check objmany.baseField == bov["baseField"]
-check objmany.baseInt == bov["baseInt"]
-check objmany.embed.truthy
-check objmany.refembed.truthy
-check objmany.manyField1 == bov["manyField1"]
-check objmany.intField == bov["intField"]
-check outer.variant.kind == ovMany
-check outer.variant.baseField == "this is base string"
-check outer.variant.baseInt == 3453
-check outer.variant.baseEmbed.isNil
+doAssert objmany.kind == ovMany
+doAssert objmany.baseField == bov["baseField"]
+doAssert objmany.baseInt == bov["baseInt"]
+doAssert objmany.embed.truthy
+doAssert objmany.refembed.truthy
+doAssert objmany.manyField1 == bov["manyField1"]
+doAssert objmany.intField == bov["intField"]
+doAssert outer.variant.kind == ovMany
+doAssert outer.variant.baseField == "this is base string"
+doAssert outer.variant.baseInt == 3453
+doAssert outer.variant.baseEmbed.isNil
 
 # let's change the kind to "ovOne"
 let onlyFieldMsg = "this is dynamically added"
@@ -378,19 +378,19 @@ outb.mget("objectVariant")["kind"] = "ovOne"
 outb.mget("objectVariant")["theOnlyField"] = onlyFieldMsg
 let objone = bov.to ObjectVariant
 outer = outb.to OuterObject
-check objone.kind == ovOne
-check objone.baseField == bov["baseField"]
-check objone.theOnlyField == "this is dynamically added"
-check outer.variant.kind == ovOne
-check outer.variant.theOnlyField == onlyFieldMsg
+doAssert objone.kind == ovOne
+doAssert objone.baseField == bov["baseField"]
+doAssert objone.theOnlyField == "this is dynamically added"
+doAssert outer.variant.kind == ovOne
+doAssert outer.variant.theOnlyField == onlyFieldMsg
 
 # lastly, convert to "ovNone"
 bov["kind"] = "ovNone"
 outb.mget("objectVariant")["kind"] = "ovNone"
 let objnone = bov.to ObjectVariant
 outer = outb.to OuterObject
-check objnone.kind == ovNone
-check outer.variant.kind == ovNone
+doAssert objnone.kind == ovNone
+doAssert outer.variant.kind == ovNone
 ```
 
 ### Convert with Custom Key Bson
