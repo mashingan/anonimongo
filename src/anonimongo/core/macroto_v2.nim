@@ -433,6 +433,27 @@ template handleTable(n: NimNode, ops: untyped) =
       `ops`
 
 
+proc processIfObjectVariant(n: NimNode): (bool, VariantInfo) =
+  n.expectKind nnkRecList
+  var isobjectVariant = false
+  var variantKind, targetEnum: NimNode
+  var variantKindStr: string
+  for field in n: # check for object variant
+    case field.kind
+    of nnkEmpty: continue
+    of nnkRecCase:
+      isobjectVariant = true
+      variantKind = field[0][0]
+      if variantKind.kind == nnkPostfix: variantKind = variantKind[1]
+      targetEnum = field[0][1]
+      variantKindstr = $variantkind
+      break
+    else: discard
+  result[0] = isobjectVariant
+  result[1] = VariantInfo(
+    kind: variantKind,
+    targetEnum: targetEnum,
+  )
 proc assignObj(info: NodeInfo): NimNode =
   info.fieldDef[1].handleTable:
     return newEmptyNode()
@@ -576,8 +597,7 @@ macro to*(b: untyped, t: typed): untyped =
   ## if user wants implement the specifics conversion, the user just can simply
   ## call it immediately without resorting to macro ``to``.
   ##
-  let
-    st = getType t
+  let st = getType t
   st.handleTable:
     result = quote do: `t`()
     return
@@ -594,25 +614,16 @@ macro to*(b: untyped, t: typed): untyped =
     target: t,
     resvar: resvar,
   )
-  var isobjectVariant = false
-  var variantKind, targetEnum: NimNode
-  var variantKindStr: string
-  for field in reclist: # check for object variant
-    case field.kind
-    of nnkEmpty: continue
-    of nnkRecCase:
-      isobjectVariant = true
-      variantKind = field[0][0]
-      if variantKind.kind == nnkPostfix: variantKind = variantKind[1]
-      targetEnum = field[0][1]
-      variantKindstr = $variantkind
-      break
-    else: discard
+  let (isobjectVariant, variantinfo) = reclist.processIfObjectVariant
   result = newStmtList()
   if not isobjectVariant:
     result.add quote do:
       var `resvar`: `targetTypeSym`
   else:
+    let
+      variantKind = variantinfo.kind
+      targetEnum = variantinfo.targetEnum
+      variantKindStr = $variantKind
     result.add(quote do:
       var `resvar` = `t`(`variantKind`: parseEnum[`targetEnum`](`b`[`variantKindStr`])))
   for fielddef in reclist:
