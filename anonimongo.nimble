@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 1.0.2", "nimSHA2 >= 0.1.1", "scram >= 0.1.9",
+requires "nim >= 1.2.0", "nimSHA2 >= 0.1.1", "scram >= 0.1.9",
          "sha1 >= 1.1", "dnsclient#head"
 
 task bson, "Unit test Bson":
