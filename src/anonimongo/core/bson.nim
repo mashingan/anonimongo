@@ -150,7 +150,7 @@ proc stringbytes*(s: seq[byte]): string =
 
 template `as`*(a, b: untyped): untyped =
   ## Sugar syntax for cast.
-  cast[b](a)
+  b(a)
 
 type
   BsonBase* = ref object of RootObj
@@ -490,6 +490,13 @@ proc mget*(b: var BsonBase, index: sink int): var BsonBase =
     raise newException(BsonFetchError,
       fmt"Invalid index retrieval {b}, get {b.kind}")
   result = (b as BsonArray).value[index]
+
+proc `[]=`*(b: var BsonBase, key: sink string, val: BsonBase) =
+  ## Shortcut for assigning BsonEmbed key retrieved from `mget` BsonBase
+  if b.kind != bkEmbed:
+    raise newException(BsonFetchError,
+      fmt"Invalid Bson kind key retrieval of {b}, get {b.kind}")
+  (b as BsonEmbed).value.table[key] = val
 
 proc del*(b: var BsonDocument, key: string) =
   ## Delete a field given from string key. Do nothing when there's no
