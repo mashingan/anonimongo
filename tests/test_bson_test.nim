@@ -397,6 +397,11 @@ suite "Macro to object conversion tests":
   type
     OVKind = enum
       ovOne ovMany ovNone
+    EmbedObjectVariant = object
+      field1*: int
+      field2*: string
+      truthy {.bsonExport.}: bool
+    RefEmbedObjVariant = ref EmbedObjectVariant
     ObjectVariant = object
       baseField*: string
       baseInt*: int
@@ -407,56 +412,66 @@ suite "Macro to object conversion tests":
       of ovMany:
         manyField1*: string
         intField*: int
-        embed*: BsonDocument
+        embed*: EmbedObjectVariant
+        refembed*: RefEmbedObjVariant
       of ovNone:
         nil
-  let
-    bovOne = bson({ kind: "ovOne",
-      theOnlyField: "got this",
-      baseField: "check whether not empty",
-      baseInt: 10,
-      baseEmbed: {}
-    })
-    bovMany = bson({
+    OuterObject = ref object
+      variant {.bsonExport, bsonKey: "objectVariant".}: ObjectVariant
+  test "Test object variant conversion":
+    # our Bson data
+    var bov = bson({
+      baseField: "this is base string",
+      baseInt: 3453,
       kind: "ovMany",
       manyField1: "example of ovMany",
-      baseField: "check whether not empty",
-      baseInt: 10,
-      baseEmbed: {},
       intField: 42,
-      embed: {},
+      embed: {
+        truthy: true,
+      },
+      refembed: {
+        truthy: true,
+      },
     })
-    bovNone = bson({ 
-      baseField: "check whether not empty",
-      kind: "ovNone",
-      baseInt: 10,
-      baseEmbed: {},
-    })
-  test "Test object variant conversion":
-    # test for a single field variant
-    let oovOne = bovOne.to ObjectVariant
-    check oovOne.kind == ovOne
-    check oovOne.theOnlyField == bovOne["theOnlyField"]
-    check oovOne.baseField == bovOne["baseField"]
-    check oovOne.baseInt == bovOne["baseInt"]
-    check oovOne.baseEmbed.isNil
+    var outb = bson({ objectVariant: bov })
 
-    # test for a none object variant
-    let oovNone = bovNone.to ObjectVariant
-    check oovNone.baseField == bovNone["baseField"]
-    check oovNone.baseInt == bovNone["baseInt"]
-    check oovNone.baseEmbed.isNil
-    check oovNone.kind == ovNone
-    # test for many fields
+    # let's see if it's converted to OVKind ovMany
+    var outer: OuterObject
+    let objmany = bov.to ObjectVariant
+    outer = outb.to OuterObject
+    check objmany.kind == ovMany
+    check objmany.baseField == bov["baseField"]
+    check objmany.baseInt == bov["baseInt"]
+    check objmany.embed.truthy
+    check objmany.refembed.truthy
+    check objmany.manyField1 == bov["manyField1"]
+    check objmany.intField == bov["intField"]
+    check outer.variant.kind == ovMany
+    check outer.variant.baseField == "this is base string"
+    check outer.variant.baseInt == 3453
+    check outer.variant.baseEmbed.isNil
 
-    let oovMany = bovMany.to ObjectVariant
-    check oovMany.kind == ovMany
-    check oovMany.manyField1 == bovMany["manyField1"]
-    check oovMany.intField == 42
-    check oovMany.embed.isNil
-    check oovMany.baseField == bovMany["baseField"]
-    check oovMany.baseInt == bovMany["baseInt"]
-    check oovMany.baseEmbed.isNil
+    # let's change the kind to "ovOne"
+    let onlyFieldMsg = "this is dynamically added"
+    bov["kind"] = "ovOne"
+    bov["theOnlyField"] = onlyFieldMsg
+    outb.mget("objectVariant")["kind"] = "ovOne"
+    outb.mget("objectVariant")["theOnlyField"] = onlyFieldMsg
+    let objone = bov.to ObjectVariant
+    outer = outb.to OuterObject
+    check objone.kind == ovOne
+    check objone.baseField == bov["baseField"]
+    check objone.theOnlyField == "this is dynamically added"
+    check outer.variant.kind == ovOne
+    check outer.variant.theOnlyField == onlyFieldMsg
+
+    # lastly, convert to "ovNone"
+    bov["kind"] = "ovNone"
+    outb.mget("objectVariant")["kind"] = "ovNone"
+    let objnone = bov.to ObjectVariant
+    outer = outb.to OuterObject
+    check objnone.kind == ovNone
+    check outer.variant.kind == ovNone
   
   type
     TableStringInt = Table[string, int]

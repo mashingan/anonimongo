@@ -515,6 +515,15 @@ proc assignObj(info: NodeInfo): NimNode =
   )
 
   let reclist = objty[2]
+  let (isobjectVariant, varinfo) = reclist.processIfObjectVariant
+  if isobjectVariant:
+    let
+      kind = varinfo.kind
+      target = varinfo.targetEnum
+      kindStr = $kind
+      objSym = bodyif[1][0][1]
+    bodyif[1] = quote do:
+      var `resvar` = `objSym`(`kind`: parseEnum[`target`](`bsonVar`[`kindStr`]))
   for fielddef in reclist:
     identDefsCheck(bodyif, newinfo, fielddef)
   let

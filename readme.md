@@ -288,7 +288,7 @@ Above `toBson` snippet code can be modified to accomodate the `bsonKey` pragma
 (starting from `v0.4.5`) to be:
 
 ```nim
-import macro
+import macros
 import anonimongo/core/bson
 
 proc toBson[T: tuple | object](o: T): BsonDocument:
@@ -335,9 +335,13 @@ type
       refembed*: RefEmbedObjVariant
     of ovNone:
       nil
+  OuterObject = ref object
+    variant {.bsonExport, bsonKey: "objectVariant".}: ObjectVariant
 
 # our Bson data
 var bov = bson({
+  baseField: "this is base string",
+  baseInt: 3453,
   kind: "ovMany",
   manyField1: "example of ovMany",
   intField: 42,
@@ -348,28 +352,45 @@ var bov = bson({
     truthy: true,
   },
 })
+var outb = bson({ objectVariant: bov })
 
 # let's see if it's converted to OVKind ovMany
+var outer: OuterObject
 let objmany = bov.to ObjectVariant
-doAssert objmany.kind == ovMany
-doAssert objmany.baseField == ""
-doAssert objmany.embed.truthy
-doAssert objmany.refembed.truthy
-doAssert objmany.manyField1 == bov["manyField1"]
-doAssert objmany.intField == bov["intField"]
+outer = outb.to OuterObject
+check objmany.kind == ovMany
+check objmany.baseField == bov["baseField"]
+check objmany.baseInt == bov["baseInt"]
+check objmany.embed.truthy
+check objmany.refembed.truthy
+check objmany.manyField1 == bov["manyField1"]
+check objmany.intField == bov["intField"]
+check outer.variant.kind == ovMany
+check outer.variant.baseField == "this is base string"
+check outer.variant.baseInt == 3453
+check outer.variant.baseEmbed.isNil
 
 # let's change the kind to "ovOne"
+let onlyFieldMsg = "this is dynamically added"
 bov["kind"] = "ovOne"
-bov["theOnlyField"] = "this is dynamically added"
+bov["theOnlyField"] = onlyFieldMsg
+outb.mget("objectVariant")["kind"] = "ovOne"
+outb.mget("objectVariant")["theOnlyField"] = onlyFieldMsg
 let objone = bov.to ObjectVariant
-doAssert objone.kind == ovOne
-doAssert objone.baseField == ""
-doAssert objone.theOnlyField == "this is dynamically added"
+outer = outb.to OuterObject
+check objone.kind == ovOne
+check objone.baseField == bov["baseField"]
+check objone.theOnlyField == "this is dynamically added"
+check outer.variant.kind == ovOne
+check outer.variant.theOnlyField == onlyFieldMsg
 
 # lastly, convert to "ovNone"
 bov["kind"] = "ovNone"
+outb.mget("objectVariant")["kind"] = "ovNone"
 let objnone = bov.to ObjectVariant
-doAssert objnone.kind == ovNone
+outer = outb.to OuterObject
+check objnone.kind == ovNone
+check outer.variant.kind == ovNone
 ```
 
 ### Convert with Custom Key Bson
