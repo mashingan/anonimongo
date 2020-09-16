@@ -151,7 +151,7 @@ type
     ckWrite
     ckRead
 
-  MongoError* = object of Defect
+  MongoError* = object of CatchableError
 
   MultiUri* {.deprecated: "Use MongoUri instead".} = MongoUri
 
