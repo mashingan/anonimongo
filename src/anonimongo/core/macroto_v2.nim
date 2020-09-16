@@ -19,6 +19,8 @@ type
     isResDirect: bool
     isDirectOriginVar: bool
     bsonKey: string
+  VariantInfo = object
+    kind, targetEnum: NimNode
 
 
 template checkinfo (n: NodeInfo) {.used.} =
@@ -454,6 +456,7 @@ proc processIfObjectVariant(n: NimNode): (bool, VariantInfo) =
     kind: variantKind,
     targetEnum: targetEnum,
   )
+
 proc assignObj(info: NodeInfo): NimNode =
   info.fieldDef[1].handleTable:
     return newEmptyNode()
@@ -603,10 +606,16 @@ macro to*(b: untyped, t: typed): untyped =
     return
 
   let
-    stTyDef = st[1].getImpl
+    isRef = st[1].kind == nnkBracketExpr and st[1].len > 1
+    typesym =
+      if isRef and ':' in $st[1][1]:
+        st[1][1]
+      else: st[1]
+
+    stTyDef = typesym.getImpl
     targetTypeSym = extractBracketFrom st
     targetImpl = stTyDef[2]
-    reclist = targetImpl[2]
+    reclist = if targetImpl.kind == nnkRefTy: targetImpl[0][2] else: targetImpl[2]
     resvar = genSym(nskVar, "res")
 
   var nodeInfo = NodeInfo(
@@ -619,6 +628,9 @@ macro to*(b: untyped, t: typed): untyped =
   if not isobjectVariant:
     result.add quote do:
       var `resvar`: `targetTypeSym`
+    if isRef:
+      result.add quote do:
+        new(`resvar`)
   else:
     let
       variantKind = variantinfo.kind
