@@ -436,7 +436,8 @@ template handleTable(n: NimNode, ops: untyped) =
 
 
 proc processIfObjectVariant(n: NimNode): (bool, VariantInfo) =
-  n.expectKind nnkRecList
+  if n.kind != nnkRecList:
+    return
   var isobjectVariant = false
   var variantKind, targetEnum: NimNode
   var variantKindStr: string

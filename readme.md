@@ -519,7 +519,7 @@ user should define the custom mechanism mentioned in point #1 above.
 ## Install
 
 ```
-nimble install anonimongo@" >= 0.4.5"
+nimble install anonimongo@" >= 0.4.7"
 ```
 
 Or to install it locally

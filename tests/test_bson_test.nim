@@ -476,17 +476,43 @@ suite "Macro to object conversion tests":
   type
     TableStringInt = Table[string, int]
     TableRefStringInt = TableRef[string, int]
-  test "Conversion to Table should yield nothing":
+    CustomTable = TableRef[string, BsonBase]
+    OuterTable = ref object
+      field {.bsonKey: "embedWorking", bsonExport.}: CustomTable
+
+  test "Conversion to Table/TableRef directly should yield nothing,\n" &
+    "\tworkaround with alias type and custom proc/convert/func definition" &
+    " ofAliasType":
     let
       correctbson = bson({ "1": 1, "2": 2, "3": 3, "4": 4 })
       incorrectbson = bson({ "1": "one", "2": 2, "3": 3})
+      bobj = bson({
+        field1: "this field is string",
+        field2: 3453,
+        really: true,
+        embedWorking: {
+          efield: "this is embed field string",
+          eint: 7337,
+        },
+      })
+
+    proc ofCustomTable(b: BsonBase): CustomTable =
+      let doc = b.ofEmbedded
+      result = newTable[string, BsonBase](doc.len)
+      for k, v in doc:
+        result[k] = v
+
+    let
       tsi = correctbson.to TableStringInt
       intsi = incorrectbson.to TableStringInt
       tsiref = correctbson.to TableRefStringInt
+      outer = bobj.to OuterTable
     
     check tsi.len == 0
     check tsiref.len ==  0
     check intsi.len == 0
+    check outer[].field is TableRef
+    check outer[].field["eint"] == 7337
 
   test "Implement a specific value extract with pattern of `of` & Typename " &
     "and custom pragma `bsonExport` to enable the conversion":
