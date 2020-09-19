@@ -498,6 +498,26 @@ proc `[]=`*(b: var BsonBase, key: sink string, val: BsonBase) =
       fmt"Invalid Bson kind key retrieval of {b}, get {b.kind}")
   (b as BsonEmbed).value.table[key] = val
 
+proc add*(b: var BsonArray, v: BsonBase) =
+  ## Add element to BsonArray
+  runnableExamples:
+    var barray = bsonArray()
+    barray.add 5
+    barray.add "hello, 異世界"
+    barray.add true
+    doAssert barray.len == 3
+    doAssert barray[2].ofBool
+  b.value.add v
+
+proc add*(b: var BsonBase, v: BsonBase) =
+  ## Shortcut for adding element to BsonBase that's actually BsonArray.
+  ## Use it with combination of `mget` for retriving the var BsonBase
+  if b.kind != bkArray:
+    raise newException(BsonFetchError,
+      fmt"Invalid Bson kind add value of {b}, get {b.kind}")
+  var barray = b as BsonArray
+  barray.value.add v
+
 proc del*(b: var BsonDocument, key: string) =
   ## Delete a field given from string key. Do nothing when there's no
   ## targeted field
@@ -522,6 +542,29 @@ proc len*(b: BsonDocument): int =
     b.del "field1"
     doAssert b.len == 0
   b.table.len
+
+proc len*(b: BsonArray): int =
+  ## Return the length of BsonArray
+  runnableExamples:
+    var b = bsonArray()
+    b.add 5
+    b.add "hello, 異世界"
+    b.add true
+    doAssert b.len == 3
+  b.value.len
+
+proc len*(b: BsonBase): int =
+  ## Shortcut for returning the array of BsonEmbed or BsonArray.
+  ## Throw BsonFetchError in case of not both BsonKind
+  case b.kind
+  of bkArray:
+    result = (b as BsonArray).value.len
+  of bkEmbed:
+    result = (b as BsonEmbed).value.len
+  else:
+    raise newException(BsonFetchError,
+      fmt"Invalid bson length retrieval of {b}," &
+      fmt"expected bkArray/bkEmbed or BsonDocument got {b.kind}")
 
 iterator keys*(b: BsonDocument): string =
   for k in b.table.keys:

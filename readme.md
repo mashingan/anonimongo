@@ -13,6 +13,7 @@
     - [Convert object to BsonDocument](#convert-object-to-bsondocument)
     - [Convert from Bson to object variant](#convert-from-bson-to-object-variant)
     - [Convert with custom key Bson](#convert-with-custom-key-bson)
+    - [Convert Json to and Bson and vice versa](#convert-json-bson)
 
 3. [Specific Mentions for Working with Bson](#working-with-bson)
 4. [Install](#install)
@@ -441,6 +442,86 @@ doAssert cobj.sis.strfield == bobj["sisEmbed"]["strfield"]
 doAssert cobj.currentTime == bobj["now"]
 ```
 
+### Convert Json Bson
+It's often so handy to work directly between Json and Bson. As currently, there's no direct support for
+converting directly Json to Bson and vice versa. However this snippet example will come useful for generic
+conversion between Json and Bson. This snippet example needs the Anonimongo since `v0.4.8`
+(patch for working with `BsonArray`).
+
+
+```nim
+import json, times
+
+import anonimongo/core/bson
+
+let jsonobj = %*{
+  "businessName":"TEST",
+  "businessZip":"55555",
+  "arr": [1, 2, 3, 4]
+}
+
+proc toBson(j: JsonNode): BsonDocument
+
+proc convertElem(v: JsonNode): BsonBase =
+  case v.kind
+  of JInt: result = v.getInt
+  of JString: result = v.getStr
+  of JFloat: result = v.getFloat
+  of JObject: result = v.toBson
+  of JBool: result = v.getBool
+  of JNull: result = bsonNull()
+  of JArray:
+    var arrval = bsonArray()
+    for elem in v:
+      arrval.add elem.convertElem
+    result = arrval
+
+proc toBson(j: JsonNode): BsonDocument =
+  result = bson()
+  for k, v in j:
+    result[k] = v.convertElem
+
+let bobj = jsonobj.toBson
+doAssert bobj["businessName"] == jsonobj["businessName"].getStr
+doAssert bobj["businessZip"] == jsonobj["businessZip"].getStr
+doAssert bobj["arr"].len == jsonobj["arr"].len
+
+proc toJson(b: BsonDocument): JsonNode
+
+proc convertElem(v: BsonBase): JsonNode =
+  case v.kind
+  of bkInt32, bkInt64: result = newJInt v.ofInt
+  of bkString: result = newJString v.ofString
+  of bkBinary: result = newJString v.ofBinary.stringbytes
+  of bkBool: result = newJBool v.ofBool
+  of bkDouble: result = newJFloat v.ofDouble
+  of bkEmbed: result = v.ofEmbedded.toJson
+  of bkNull: result = newJNull()
+  of bkTime: result = newJString $v.ofTime
+  of bkArray:
+    var jarray = newJArray()
+    for elem in v.ofArray:
+      jarray.add elem.convertElem
+    result = jarray
+  else:
+    discard
+
+proc toJson(b: BsonDocument): JsonNode =
+  result = newJObject()
+  for k, v in b:
+    result[k] = v.convertElem
+
+let jobj = bobj.toJson
+doAssert jobj["businessName"].getStr == jsonobj["businessName"].getStr
+doAssert jobj["businessZip"].getStr == jsonobj["businessZip"].getStr
+doAssert jobj["arr"].len == jsonobj["arr"].len
+```
+
+
+Above example we convert the `jsonobj` (`JsonNode`) to `bobj` (`BsonDocument`)
+and convert again from `bobj` to `jobj` (`JsonNode`). This should be useful
+for most cases of working with Bson and Json.
+
 
 [TOC](#table-of-content)
 
@@ -518,8 +599,14 @@ user should define the custom mechanism mentioned in point #1 above.
 
 ## Install
 
+Anonimongo requires minimum Nim version of `v1.2.0`.  
+
+For installation, we can choose several methods will be mentioned below.
+
+Using Nimble package:
+
 ```
-nimble install anonimongo@" >= 0.4.7"
+nimble install anonimongo@" >= 0.4.8"
 ```
 
 Or to install it locally
@@ -550,7 +637,7 @@ is usually only changes in something unrelated to the code itself.
 ### For dependency
 
 ```
-requires "anonimongo >= 0.4.5"
+requires "anonimongo >= 0.4.8"
 ```
 
 or directly from Github repo

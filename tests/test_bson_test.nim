@@ -143,6 +143,19 @@ suite "Bson operations tests":
     let bjsdec = decode encstr
     check bjsdec["js"].ofString == bjs["js"].ofString
 
+  test "Add element to bson array":
+    let newobj = bson({
+      q: 4, u: { "$set": { role_name: "add" }},
+    })
+    arrayembed.mget("objects").add newobj
+    check arrayembed["objects"].len == 4
+    check arrayembed["objects"][3]["q"].ofInt == newobj["q"]
+    check arrayembed["objects"][3]["u"]["$set"]["role_name"] == "add"
+
+    expect BsonFetchError:
+      var bsonInt = 4.toBson
+      bsonInt.add newobj
+
 suite "Macro to object conversion tests":
   type
     Bar = string
