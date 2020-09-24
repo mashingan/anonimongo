@@ -562,6 +562,25 @@ proc handleObjectVariant(info: NodeInfo): NimNode =
     casenode.add caseof
   result.add casenode
 
+proc extractInheritedReclist(n: NimNode): (bool, NimNode) =
+  if n.kind != nnkTypeDef:
+    return (false, newEmptyNode())
+
+  var implHead = n[2]
+  if implHead.kind == nnkRefTy:
+    implHead = implHead[0]
+  
+  result[0] = implHead[1].kind == nnkOfInherit
+  if result[0]:
+    result[1] = implHead[2]
+  result[0] = result[0] and $implHead[1][0] != "RootObj"
+  if result[0]:
+    let hdTydef = implHead[1][0].getImpl
+    let (_, nn) = hdTydef.extractInheritedReclist
+    if nn.kind == nnkRecList:
+      for n in nn:
+        result[1].add n
+
 macro to*(b: untyped, t: typed): untyped =
   ## Macro to is automatic conversion from symbol/variable BsonDocument
   ## to specified Type. This doesn't support dynamic values of array, only
@@ -627,6 +646,11 @@ macro to*(b: untyped, t: typed): untyped =
     targetImpl = stTyDef[2]
     reclist = if targetImpl.kind == nnkRefTy: targetImpl[0][2] else: targetImpl[2]
     resvar = genSym(nskVar, "res")
+
+  let (inheritance, rcc) = stTyDef.extractInheritedReclist
+  if inheritance and (rcc.kind != nnkNilLit or rcc.kind != nnkEmpty):
+    for rc in rcc:
+      reclist.add rc
 
   var nodeInfo = NodeInfo(
     origin: b,
