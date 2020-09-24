@@ -456,10 +456,17 @@ proc processIfObjectVariant(n: NimNode): (bool, VariantInfo) =
   )
 
 proc extractInheritedReclist(n: NimNode, parent = false): (bool, NimNode) =
+  result = (false, newEmptyNode())
   if n.kind != nnkTypeDef:
-    return (false, newEmptyNode())
+    return
 
   var implHead = n[2]
+
+  # ignore any Table or seq object
+  if implHead.kind == nnkBracketExpr:
+    return
+
+  # handle ref object
   if implHead.kind == nnkRefTy:
     implHead = implHead[0]
 
