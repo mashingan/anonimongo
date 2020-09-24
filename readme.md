@@ -606,7 +606,7 @@ For installation, we can choose several methods will be mentioned below.
 Using Nimble package:
 
 ```
-nimble install anonimongo@" >= 0.4.8"
+nimble install anonimongo@" >= 0.4.9"
 ```
 
 Or to install it locally
@@ -637,7 +637,7 @@ is usually only changes in something unrelated to the code itself.
 ### For dependency
 
 ```
-requires "anonimongo >= 0.4.8"
+requires "anonimongo >= 0.4.9"
 ```
 
 or directly from Github repo
