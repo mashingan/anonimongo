@@ -318,10 +318,7 @@ template extractLastImpl(fieldType: NimNode): (NimNode, NimNode) =
       elif definition[0].kind in refdist:
         # handle when distinct ref TypeSymbol
         placeholder = definition[0][0].getImpl
-    elif definition.kind == nnkObjectTy:
-      lastImpl = definition
-      break
-    elif definition.kind == nnkBracketExpr:
+    elif definition.kind in {nnkObjectTy, nnkBracketExpr, nnkSym}:
       lastImpl = definition
       break
   if placeholder.kind == nnkNilLit and lastImpl == nil:
@@ -458,6 +455,32 @@ proc processIfObjectVariant(n: NimNode): (bool, VariantInfo) =
     targetEnum: targetEnum,
   )
 
+proc extractInheritedReclist(n: NimNode, parent = false): (bool, NimNode) =
+  if n.kind != nnkTypeDef:
+    return (false, newEmptyNode())
+
+  var implHead = n[2]
+  if implHead.kind == nnkRefTy:
+    implHead = implHead[0]
+
+  while implHead.kind != nnkObjectTy:
+    if implHead.kind == nnkSym:
+      let (lastTypeDef, _) = implHead.extractLastImpl
+      implHead = lastTypeDef[2]
+
+  result[0] = implHead[1].kind == nnkOfInherit
+  if result[0] and not parent:
+    result[1] = implHead[2]
+  else:
+    result[1] = nnkRecList.newTree()
+  result[0] = result[0] and $implHead[1][0] != "RootObj"
+  if result[0]:
+    let hdTydef = implHead[1][0].getImpl
+    let (_, nn) = hdTydef.extractInheritedReclist
+    if nn.kind == nnkRecList:
+      for n in nn:
+        result[1].add n
+
 proc assignObj(info: NodeInfo): NimNode =
   info.fieldDef[1].handleTable:
     return newEmptyNode()
@@ -516,6 +539,10 @@ proc assignObj(info: NodeInfo): NimNode =
   )
 
   let reclist = objty[2]
+  let (inheritance, rcc) = lastTypeDef.extractInheritedReclist true
+  if inheritance and rcc.kind == nnkRecList:
+    for rc in rcc:
+      reclist.add rc
   let (isobjectVariant, varinfo) = reclist.processIfObjectVariant
   if isobjectVariant:
     let
@@ -561,25 +588,6 @@ proc handleObjectVariant(info: NodeInfo): NimNode =
     caseof[1] = casebodystmt
     casenode.add caseof
   result.add casenode
-
-proc extractInheritedReclist(n: NimNode): (bool, NimNode) =
-  if n.kind != nnkTypeDef:
-    return (false, newEmptyNode())
-
-  var implHead = n[2]
-  if implHead.kind == nnkRefTy:
-    implHead = implHead[0]
-  
-  result[0] = implHead[1].kind == nnkOfInherit
-  if result[0]:
-    result[1] = implHead[2]
-  result[0] = result[0] and $implHead[1][0] != "RootObj"
-  if result[0]:
-    let hdTydef = implHead[1][0].getImpl
-    let (_, nn) = hdTydef.extractInheritedReclist
-    if nn.kind == nnkRecList:
-      for n in nn:
-        result[1].add n
 
 macro to*(b: untyped, t: typed): untyped =
   ## Macro to is automatic conversion from symbol/variable BsonDocument
@@ -644,11 +652,12 @@ macro to*(b: untyped, t: typed): untyped =
     stTyDef = typesym.getImpl
     targetTypeSym = extractBracketFrom st
     targetImpl = stTyDef[2]
-    reclist = if targetImpl.kind == nnkRefTy: targetImpl[0][2] else: targetImpl[2]
+    reclist = if targetImpl.kind == nnkRefTy: targetImpl[0][2]
+              else: targetImpl[2]
     resvar = genSym(nskVar, "res")
 
-  let (inheritance, rcc) = stTyDef.extractInheritedReclist
-  if inheritance and (rcc.kind != nnkNilLit or rcc.kind != nnkEmpty):
+  let (inheritance, rcc) = stTyDef.extractInheritedReclist true
+  if inheritance and rcc.kind == nnkRecList:
     for rc in rcc:
       reclist.add rc
 
@@ -667,11 +676,11 @@ macro to*(b: untyped, t: typed): untyped =
         new(`resvar`)
   else:
     let
-      variantKind = variantinfo.kind
-      targetEnum = variantinfo.targetEnum
-      variantKindStr = $variantKind
+      vk = variantinfo.kind
+      tEnum = variantinfo.targetEnum
+      vkStr = $vk
     result.add(quote do:
-      var `resvar` = `t`(`variantKind`: parseEnum[`targetEnum`](`b`[`variantKindStr`])))
+      var `resvar` = `t`(`vk`: parseEnum[`tEnum`](`b`[`vkStr`])))
   for fielddef in reclist:
     identDefsCheck(result, nodeInfo, fielddef)
 
