@@ -42,12 +42,16 @@ scope where it's called not an asynchronous function.
 Any API that insert/update/delete will return [WriteResult][wr-doc]. So the user can check
 whether the write operation is successful or not with its field boolean `success` and the field
 string `reason` to know what's the error message returned. However it's still throwing any other
-error such as `MongoError` (the failure related to Database APIs and Mongo APIs),
-`BsonFetchError` (getting the wrong Bson type from BsonBase),
-`KeyError` (accessing non-existent key BsonDocument or embedded document in BsonBase),
-`IndexError` (accessing index more than BsonArray length or BsonBase that's actually BsonArray length),
-`IOError` (related to socket), `TimeoutError` (when connecting with `mongodb+srv` scheme URI) which are
-raised by the underlying process. Those errors are indicating an err in the program flow hence elevated
+error such as
+
+* `MongoError` (the failure related to Database APIs and Mongo APIs),
+* `BsonFetchError` (getting the wrong Bson type from BsonBase),
+* `KeyError` (accessing non-existent key BsonDocument or embedded document in BsonBase),
+* `IndexError` (accessing index more than BsonArray length or BsonBase that's actually BsonArray length),
+* `IOError` (related to socket),
+* `TimeoutError` (when connecting with `mongodb+srv` scheme URI)
+
+which are raised by the underlying process. Those errors are indicating an err in the program flow hence elevated
 on how the user handles them.  
 
 [This page][5] (`anonimongo.html`) is the elaborate documentation. It also explains several
