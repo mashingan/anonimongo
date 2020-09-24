@@ -97,6 +97,21 @@ let oldid8doc = waitfor coll.findAndModify(
   bson({ "$set": { insertId: 80 }}))
 )
 
+# find documents with combination of find which return query and one/all/iter
+let query = coll.find()
+query.limit = 5.int32 # limit the documents we'll look
+let fivedocs = waitfor query.all()
+doAssert fivedocs.len == 5
+
+# let's iterate the documents instead of bulk find
+# this iteration is bit different with iterating result
+# from `query.all` because `query.iter` is returning `Future[Cursor]`
+# which then the Cursor has `items` iterator.
+var count = 0
+for doc in waitfor query.iter:
+  inc count
+doAssert count == 5
+
 # find one document, which newly modified
 let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
 doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
