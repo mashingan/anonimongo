@@ -580,3 +580,53 @@ suite "Macro to object conversion tests":
     check bobj.customArrdbar.len == 2
     check bobj.customArrdbar[1].Bar == s2b["arrdbar"][1]
     check bobj.customDTimenow.Time == s2b["dtimenow"]
+
+  test "Conversion of inherited object and its fields":
+    type
+      BaseObject = object of RootObj
+        baseint {.bsonExport.}: int
+        basestr {.bsonExport.}: string
+        basefloat {.bsonExport.}: float
+
+      BaseAlias = BaseObject
+      Alias2Base = BaseAlias
+
+      AddEmbedBase = ref object of Alias2Base
+        addEmbed {.bsonExport, bsonKey: "embed".}: BsonDocument
+
+      AddIntBase = ref object of AddEmbedBase
+        addInt {.bsonExport, bsonKey: "int".}: int
+
+      LastDescent = ref object
+        child*: AddIntBase
+
+    template `%`(b: untyped): BsonDocument =
+      bson(b)
+
+    let b = bson({
+      embed: {
+        embedint: 34973,
+        embedstr: "eagle",
+        embedfloat: 42.0,
+      },
+      baseint: 42,
+      basestr: "five",
+      basefloat: 11.11,
+      `int`: 147,
+    })
+    let ld = bson({ child: b })
+
+    let
+      addembed = b.to AddEmbedBase
+      addint = b.to AddIntBase
+      thelast = ld.to LastDescent
+    
+    check addembed.basestr == b["basestr"]
+    check addembed.addEmbed["embedstr"].ofString == b["embed"]["embedstr"]
+    check addembed.baseint == b["baseint"]
+    check addint.addInt == b["int"]
+    check addint.addEmbed["embedstr"].ofString == b["embed"]["embedstr"]
+    check addint.baseint == addembed.baseint
+    check thelast.child.addInt == addint.addInt
+    check thelast.child.basestr == addembed.basestr
+    check thelast.child.addEmbed["embedstr"].ofString == "eagle"
