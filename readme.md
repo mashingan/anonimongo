@@ -92,10 +92,11 @@ let id5doc = waitfor coll.findOne(bson({
 doAssert id5doc["datetime"] == currtime + initDuration(hours = 5)
 
 # find one and modify, return the old document by default
+# since `v0.4.10`, the operator `!>` is added as syntax convenience
+# for `bson`. Visually `!>` can be (forcefully) looked like `b`.
 let oldid8doc = waitfor coll.findAndModify(
-  bson({ insertId: 8},
-  bson({ "$set": { insertId: 80 }}))
-)
+  !>{ insertId: 8},
+  !>{ "$set": { insertId: 80 }})
 
 # find documents with combination of find which return query and one/all/iter
 let query = coll.find()
@@ -113,13 +114,13 @@ for doc in waitfor query.iter:
 doAssert count == 5
 
 # find one document, which newly modified
-let newid8doc = waitfor coll.findOne(bson({ insertId: 80}))
+let newid8doc = waitfor coll.findOne(!>{ insertId: 80 })
 doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
 
 # remove a document
-let delStat = waitfor coll.remove(bson({
+let delStat = waitfor coll.remove(!>{
   insertId: 9,
-}), justone = true)
+}, justone = true)
 
 doAssert delStat.success  # must be true if query success
 
@@ -254,10 +255,11 @@ type
     field1*: int
     field2*: string
 
-var bintstr = bson({
+# the `!>` operator is added since `v0.4.10`
+var bintstr = !>{
   field1: 1000,
   field2: "power-level"
-})
+}
 
 let ourObj = bintstr.to IntString
 doAssert ourObj.field1 == 1000
@@ -372,7 +374,7 @@ var bov = bson({
     truthy: true,
   },
 })
-var outb = bson({ objectVariant: bov })
+var outb = !>{ objectVariant: bov }
 
 # let's see if it's converted to OVKind ovMany
 var outer: OuterObject
@@ -549,7 +551,10 @@ for most cases of working with Bson and Json.
 Bson module has some functionalities to convert to and from the Object. However there are
 some points to be aware:
 
-1. User can provide the custom proc, func, or converter with pattern of `of{Typename}` which
+1. The `to` macro is working exlusively converting object typedesc converting basic types already
+supplied with `ofType` (with `Type` is `Int|Int32|Int64|Double|String|Time|Embedded|ObjectId`).
+
+2. User can provide the custom proc, func, or converter with pattern of `of{Typename}` which
 accepting a `BsonBase` and return `Typename`. For example:
 
 ```nim
@@ -595,10 +600,10 @@ func, or converter isn't checked as it becomes meaningless to use `to` macro
 when the user can simply calling it directly. So any most outer type won't check whether
 the user provides `of{MostOuterTypename}` implementation or not.
 
-2. Auto Bson to Type conversion can only be done to the fields that are exported or
+3. Auto Bson to Type conversion can only be done to the fields that are exported or
 has custom pragma `bsonExport` as shown in this [example](#convert-from-bson-to-object-variant).
 
-3. ~It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
+4. ~It potentially breaks when there's some arbitrary hierarchy of types definition. While it can handle
 any deep of `distinct` types (that's distinct of distinct of distinct of .... of Type), but this
 should be indication of some broken type definition and better be remedied from
 the type design itself. If user thinks otherwise, please report this issue with the example code.~  
@@ -606,13 +611,26 @@ As with v2 of `to` macro, the conversion of arbitrary `ref` and `distinct` is su
 `ref distinct Type` as it's not making any sense but it supports the `distinct ref Type`. Please report the issue
 if user finds the otherwise.
 
-4. In case the user wants to persist with the current definition of any custom deep of `distinct` type,
+5. In case the user wants to persist with the current definition of any custom deep of `distinct` type,
 user should define the custom mechanism mentioned in point #1 above.
 
-5. With `v0.4.5`, users are able to extract custom Bson key to map with specific field name by supplying the pragma
+6. With `v0.4.5`, users are able to extract custom Bson key to map with specific field name by supplying the pragma
 `bsonKey` e.g. `{.bsonKey: "theBsonKey".}`. Refer to the example [above](#convert-with-custom-key-bson). The key is **case-sensitive**.
 
-6. `to` macro doesn't support for cyclic object types.
+7. `to` macro doesn't support for cyclic object types.
+
+8. As mentioned in point #1, the `to` macro is working exclusively converting the defined object type. As
+pointed out that here, [issue/10](https://github.com/mashingan/anonimongo/issues/10), `to` make it generic, it's
+reasonable for uniformed `to` convert any `typedesc`. Because the `ofType` variants for basic types are implemented
+as `converters`, it's easy for user to supply the `to` overload:
+
+```nim
+template to(b: BsonBase, name: typedesc): untyped =
+  var r: name = b
+  move r
+```
+
+There's no plan to add this snippet to the library but it maybe changed in later version.
 
 [TOC](#table-of-content)
 
@@ -625,7 +643,7 @@ For installation, we can choose several methods will be mentioned below.
 Using Nimble package:
 
 ```
-nimble install anonimongo@" >= 0.4.9"
+nimble install anonimongo@" >= 0.4.10"
 ```
 
 Or to install it locally
@@ -656,7 +674,7 @@ is usually only changes in something unrelated to the code itself.
 ### For dependency
 
 ```
-requires "anonimongo >= 0.4.9"
+requires "anonimongo >= 0.4.10"
 ```
 
 or directly from Github repo
