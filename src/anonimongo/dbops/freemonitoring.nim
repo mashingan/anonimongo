@@ -1,16 +1,16 @@
 import ../core/[bson, types, utils, wire]
 
 proc getFreeMonitoringStatus*(db: Database): Future[BsonDocument] {.async.} =
-  result = await db.crudops(bson({
+  result = await db.crudops(!>{
     getFreeMonitoringStatus: 1
-  }), "admin")
+  }, "admin")
 
 proc setFreeMonitoring*(db: Database, action = "enable"):
   Future[BsonDocument] {.async.} =
-  let q = bson({
+  let q = !>{
     setFreeMonitoring: 1,
     action: action,
-  })
+  }
   result = await db.crudops(q, "admin", cmd = ckWrite)
 
 proc enableFreeMonitoring*(db: Database): Future[BsonDocument] {.async.} =

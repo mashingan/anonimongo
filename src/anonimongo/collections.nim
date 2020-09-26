@@ -107,9 +107,10 @@ proc findOne*(c: Collection, query = bson(), projection = bsonNull(),
   result = await q.one
 
 proc findAll*(c: Collection, query = bson(), projection = bsonNull(),
-  sort = bsonNull()): Future[seq[BsonDocument]] {.async.} =
+  sort = bsonNull(), limit = 0): Future[seq[BsonDocument]] {.async.} =
   var q = c.find(query, projection)
   q.sort = sort
+  q.limit = int32 limit
   result = await q.all
 
 proc findIter*(c: Collection, query = bson(), projection = bsonNull(),

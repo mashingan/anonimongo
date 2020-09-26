@@ -13,13 +13,13 @@ suite "Bson operations tests":
   var newdoc: BsonDocument
   var nnewdoc: BsonDocument
   var newdocstr = ""
-  var arrayembed = bson({
+  var arrayembed = !>{
     objects: [
       { q: 1, u: { "$set": { role_name: "ok" }}},
       { q: 2, u: { "$set": { key_name: "ok" }}},
       { q: 3, u: { "$set": { truth: 42 }}}
     ]
-  })
+  }
   test "Defining simple bson with newbson":
     let hellodoc = newbson(
       [("hello", 100.toBson),
@@ -87,26 +87,26 @@ suite "Bson operations tests":
   test "Bson binary operations":
     require(fileExists "tests/qrcode-me.png")
     let stringbin = "MwahahaBinaryGotoki"
-    let testbinary = bson({
+    let testbinary = !>{
       dummy_binary: bsonBinary stringbin
-    })
+    }
     let (_, tbencoded) = encode testbinary
     let dectestbin = decode tbencoded
     check dectestbin["dummy_binary"].
       ofBinary.stringbytes == stringbin
 
-    let pngbin = bson({
+    let pngbin = !>{
       "qr-me": bsonBinary qrimg
-    })
+    }
     let (_, pngbinencode) = encode pngbin
     let pngdec = decode pngbinencode
     check pngdec["qr-me"].ofBinary.stringbytes == qrimg
 
   test "Bson timestamp codec operations":
     let currtime = getTime().toUnix.uint32
-    let timestampdoc = bson({
+    let timestampdoc = !>{
       timestamp: (0'u32, currtime)
-    })
+    }
     let (_, timestampstr) = encode timestampdoc
     let timestampdec = decode timestampstr
     let decurrtime = timestampdec["timestamp"].ofTimestamp[1]
@@ -135,18 +135,18 @@ suite "Bson operations tests":
     #test js code
     let jscode = "function double(x) { return x*2; }"
     let jsbson = bsonJs jscode
-    let bjs = bson({
+    let bjs = !>{
       js: jsbson,
-    })
+    }
     check bjs["js"] == jscode
     let (_, encstr) = encode bjs
     let bjsdec = decode encstr
     check bjsdec["js"].ofString == bjs["js"].ofString
 
   test "Add element to bson array":
-    let newobj = bson({
+    let newobj = !>{
       q: 4, u: { "$set": { role_name: "add" }},
-    })
+    }
     arrayembed.mget("objects").add newobj
     check arrayembed["objects"].len == 4
     check arrayembed["objects"][3]["q"].ofInt == newobj["q"]
@@ -209,25 +209,25 @@ suite "Macro to object conversion tests":
       emptyRef*: EmptyRef # no bson data
       pseudoEmptyRef*: EmptyRef # no bson data
 
-  var theb = bson({
+  var theb = !>{
     name: 10,
     str: "hello 異世界"
-  })
+  }
   test "Simple convertion bson to flat object":
     let otheb = theb.to SimpleIntString
     check otheb.name == theb["name"]
     check otheb.str == theb["str"]
 
-  let outer1 = bson({
+  let outer1 = !>{
     outerName: "outer 1",
     sis: theb
-  })
+  }
   test "Conversion with 1 level object":
     let oouter1 = outer1.to SSIntString
     check oouter1.outerName == outer1["outerName"]
     check oouter1.sis.name == outer1["sis"]["name"]
   let currtime = now().toTime
-  let s2b = bson({
+  let s2b = !>{
     sis1: theb,
     sisref: theb,
     seqs: ["hello", "異世界", "another world"],
@@ -260,7 +260,7 @@ suite "Macro to object conversion tests":
     dtimenow: currtime,
     "not-exists-field": true,
     pseudoEmptyRef: {}
-  })
+  }
 
   var ssis2: SSIntString
   test "Ref object with 1 level hierarchy":
@@ -374,7 +374,7 @@ suite "Macro to object conversion tests":
       wrap*: SSIntString
       ootimewrap*: OOTimewrap
       o3sis*: OOOSSintString
-  var bmo = bson({
+  var bmo = !>{
     wrap: outer1,
     ootimewrap: {
       otimewrap: botw,
@@ -383,7 +383,7 @@ suite "Macro to object conversion tests":
       ootimewrap: { otimewrap: botw },
       oosis: outer1,
     }
-  })
+  }
   var omo: ManyObjects
   test "Many object wraps conversion":
     omo = bmo.to ManyObjects
@@ -547,12 +547,12 @@ suite "Macro to object conversion tests":
       result = b.ofTime.DDTime
 
     let nao = now().toTime
-    let bsonObj = bson({
+    let bsonObj = !>{
       zawarudo: nao,
       timeOfReference: nao,
       distinctTimeRef: nao,
       ddTime: nao
-    })
+    }
     let simpobj = bsonObj.to SimpleObject
     check simpobj.zawarudo == nao
     check simpobj.timeOfReference[].Time == nao
@@ -599,9 +599,6 @@ suite "Macro to object conversion tests":
 
       LastDescent = ref object
         child*: AddIntBase
-
-    template `%`(b: untyped): BsonDocument =
-      bson(b)
 
     let b = bson({
       embed: {

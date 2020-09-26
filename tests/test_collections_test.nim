@@ -110,11 +110,15 @@ suite "Collections APIs tests":
     check doc["addedTime"] == (currtime + initDuration(minutes = 5 * 10))
 
   test &"Find all on {namespace}":
-    let docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
+    var docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
     let dlen = docs.len
     check dlen == insertDocs.len
     for i in 0 .. docs.high:
       check docs[i]["countId"] == dlen-i-1
+
+    let limit = 5
+    docs = waitfor coll.findAll(bson(), limit = 5)
+    check docs.len == limit
 
   test &"Find iterate on {namespace}":
     var count = 0

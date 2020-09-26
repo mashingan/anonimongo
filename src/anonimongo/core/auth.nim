@@ -24,11 +24,11 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   var user = user
   let fst = scram.prepareFirstMessage(move user)
 
-  var q = bson({
+  var q = !>{
     saslStart: int32 1,
     mechanism: mechanism,
     payload: bsonBinary fst,
-  })
+  }
 
   when T is SHA256Digest:
     q["options"] = bson({skipEmptyExchange: true})
@@ -46,11 +46,11 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
   var strres = res1.documents[0]["payload"].ofBinary.stringBytes
   let msgf = scram.prepareFinalMessage(msg, move strres)
   stream = newStringStream()
-  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
+  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, !>{
     saslContinue: int32 1,
     conversationId: res1.documents[0]["conversationId"].ofInt32,
     payload: bsonBinary msgf
-  }))
+  })
   await sock.send stream.readAll()
   let res2 = await sock.getReply
   if res2.documents.len >= 1 and not res2.documents[0].ok:
@@ -66,11 +66,11 @@ proc authenticate*(sock: AsyncSocket, user, pass: string,
     result = true
     return
   stream = newStringStream()
-  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, bson({
+  discard stream.prepareQuery(0, 0, opQuery.int32, 0, dbname, 0, 1, !>{
     saslContinue: int32 1,
     conversationId: res2.documents[0]["conversationId"].ofInt32,
     payload: bsonBinary ""
-  }))
+  })
   await sock.send stream.readAll()
   when verbose:
     let res3 = await sock.getReply
