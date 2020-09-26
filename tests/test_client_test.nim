@@ -20,9 +20,9 @@ suite "Client connection and user management tests":
   var wr: WriteResult
 
   let existingDb = "temptest"
-  let existingUser = bson({
+  let existingUser = !>{
     usersInfo: { user: user, db: "admin" },
-  })
+  }
   let newuser = "temptest-user"
 
   test "Connected mongo and authenticated":
@@ -34,14 +34,14 @@ suite "Client connection and user management tests":
     require mongo != nil
     db = mongo[existingDb]
     # test looking for not existing user
-    var reply = waitFor db.usersInfo(bson({
-      usersInfo: { user: "not-exists0user", db: "admin"}}))
+    var reply = waitFor db.usersInfo(!>{
+      usersInfo: { user: "not-exists0user", db: "admin"}})
     var (success, reason) = check reply
     check success
     # test for invalid command
-    reply = waitFor db.usersInfo(bson({
+    reply = waitFor db.usersInfo(!>{
       user: "rdruffy", db: "admin"
-    }))
+    })
     (success, reason) = check reply
     check not success
     "Look user with invalid command: ".tell reason
@@ -51,7 +51,7 @@ suite "Client connection and user management tests":
 
   test &"Create new user: {newuser}":
     wr = waitFor db.createUser(newuser, newuser,
-      roles = bsonArray("read"), customData = bson({ role: "testing"}))
+      roles = bsonArray("read"), customData = !>{ role: "testing"})
     wr.success.reasonedCheck("createUser error", wr.reason)
 
   test &"Grant roles to {newuser}":

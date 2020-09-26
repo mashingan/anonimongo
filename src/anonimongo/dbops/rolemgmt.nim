@@ -17,11 +17,11 @@ import ../core/[bson, types, wire, utils]
 proc createRole*(db: Database, name: string, privileges, roles: seq[BsonDocument],
   authRestrict: seq[BsonDocument] = @[], wt = bsonNull()):
   Future[WriteResult]{.async.} =
-  var q = bson({
+  var q = !>{
     createRole: name,
     privileges: privileges.map toBson,
     roles: roles.map toBson,
-  })
+  }
   if authRestrict.len >= 0:
     q["authenticationRestriction"] = authRestrict.map toBson
   q.addWriteConcern(db, wt)
@@ -37,9 +37,9 @@ proc updateRole*(db: Database, name: string,
   if privlen == 0 and rolelen == 0:
     result.reason = "Both privileges and roles cannot be empty."
     return
-  var q = bson({
+  var q = !>{
     updateRole: name,
-  })
+  }
   if privlen > 0:
     q["privileges"] = privileges.map toBson
   if rolelen > 0:
@@ -51,13 +51,13 @@ proc updateRole*(db: Database, name: string,
 
 proc dropRole*(db: Database, role: string, wt = bsonNull()):
   Future[WriteResult]{.async.} =
-  var q = bson({ dropRole: role })
+  var q = !>{ dropRole: role }
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
 proc dropAllRolesFromDatabase*(db: Database, wt = bsonNull()):
     Future[WriteResult] {.async.} =
-  var q = bson({ dropAllRolesFromDatabase: 1 })
+  var q = !>{ dropAllRolesFromDatabase: 1 }
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
@@ -80,7 +80,7 @@ proc grantRolesToRole*(db: Database, role: string, roles: seq[BsonDocument],
   result = await db.proceed(q)
 
 proc invalidateUserCache*(db: Database): Future[WriteResult] {.async.} =
-  result = await db.proceed(bson({ invalidateUserCache: 1 }))
+  result = await db.proceed(!>{ invalidateUserCache: 1 })
 
 proc revokePrivilegesFromRole*(db: Database, role: string, privileges: seq[BsonDocument],
   wt = bsonNull()): Future[WriteResult] {.async.} =
@@ -94,9 +94,9 @@ proc revokeRolesFromRole*(db: Database, role: string, roles: seq[BsonDocument],
 
 proc rolesInfo*(db: Database, info: BsonBase, showPriv = false,
   showBuiltin = false): Future[ReplyFormat] {.async.} =
-  let q = bson({
+  let q = !>{
     rolesInfo: info,
     showPrivileges: showPriv,
     showBuiltinRoles: showBuiltin,
-  })
+  }
   result = await sendops(q, db, cmd = ckRead)

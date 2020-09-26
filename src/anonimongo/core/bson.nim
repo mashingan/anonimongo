@@ -1040,3 +1040,6 @@ converter ofTimestamp*(b: BsonBase): TimestampInternal =
 
 template bson*(): untyped = bson({})
   ## Convenience for empty bson.
+
+template `!>`*(b: untyped): BsonDocument = bson(b)
+  ## Convenient operator over `bson`
