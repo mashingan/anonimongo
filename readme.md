@@ -62,6 +62,10 @@ modules and the categories for those modules. [The index][6] also available.
 
 ### Simple operations
 
+There are two ways to define Bson object (`newBson` and `bson`) but it's preferable use `bson`
+as `newBson` is the low-level object definition. Users can roll-out their own operator like
+in example below.
+
 ```nim
 import times
 import anonimongo
@@ -74,10 +78,10 @@ var coll = mongo["temptest"]["colltest"]
 let currtime = now().toTime()
 var idoc = newseq[BsonDocument](10)
 for i in 0 .. idoc.high:
-  idoc[i] = bson({
+  idoc[i] = bson {
     datetime: currtime + initDuration(hours = i),
     insertId: i
-  })
+  }
 
 # insert documents
 let writeRes = waitfor coll.insert(idoc)
@@ -86,14 +90,15 @@ if not writeRes.success:
 else:
   echo "inserted documents: ", writeRes.n
 
-let id5doc = waitfor coll.findOne(bson({
+let id5doc = waitfor coll.findOne(bson {
   insertId: 5
-}))
+})
 doAssert id5doc["datetime"] == currtime + initDuration(hours = 5)
 
+# we define our own operator `!>` for this example only.
+template `!>`(b: untyped): BsonDocument = bson(b)
+
 # find one and modify, return the old document by default
-# since `v0.4.10`, the operator `!>` is added as syntax convenience
-# for `bson`. Visually `!>` can be (forcefully) looked like `b`.
 let oldid8doc = waitfor coll.findAndModify(
   !>{ insertId: 8},
   !>{ "$set": { insertId: 80 }})
@@ -114,11 +119,11 @@ for doc in waitfor query.iter:
 doAssert count == 5
 
 # find one document, which newly modified
-let newid8doc = waitfor coll.findOne(!>{ insertId: 80 })
+let newid8doc = waitfor coll.findOne(bson { insertId: 80 })
 doAssert oldid8doc["datetime"].ofTime == newid8doc["datetime"]
 
 # remove a document
-let delStat = waitfor coll.remove(!>{
+let delStat = waitfor coll.remove(bson {
   insertId: 9,
 }, justone = true)
 
@@ -255,8 +260,7 @@ type
     field1*: int
     field2*: string
 
-# the `!>` operator is added since `v0.4.10`
-var bintstr = !>{
+var bintstr = bson {
   field1: 1000,
   field2: "power-level"
 }
@@ -374,7 +378,7 @@ var bov = bson({
     truthy: true,
   },
 })
-var outb = !>{ objectVariant: bov }
+var outb = bson { objectVariant: bov }
 
 # let's see if it's converted to OVKind ovMany
 var outer: OuterObject
