@@ -171,7 +171,7 @@ proc killOp*(db: Database, opid: int32): Future[WriteResult] {.async.} =
   let q = bson({ killerOp: 1, op: opid })
   result = await db.proceed(q, "admin", cmd = ckWrite)
 
-proc killCursor*(db: Database, collname: string, cursorIds: seq[int]):
+proc killCursors*(db: Database, collname: string, cursorIds: seq[int64]):
   Future[BsonDocument] {.async.} =
   let q = bson({ killCursors: collname, cursors: cursorIds.map toBson })
   let reply = await sendops(q, db, cmd = ckWrite)
