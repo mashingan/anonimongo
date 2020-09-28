@@ -74,11 +74,11 @@ iterator items*(cur: Cursor): BsonDocument =
   var doc: BsonDocument
   var newcur = cur
   let collname = newcur.collname
+  var db = cur.db
   while newcur.id != 0:
     #doc = await cur.db.getMore(cur.id, collname, batchSize)
-    doc = waitfor newcur.db.getMore(newcur.id, collname, batchSize)
+    doc = waitfor db.getMore(newcur.id, collname, batchSize)
     newcur = doc["cursor"].ofEmbedded.to Cursor
-    newcur.db = cur.db
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
