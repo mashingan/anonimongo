@@ -1,4 +1,4 @@
-import unittest, times, oids, streams, tables, os
+import unittest, times, oids, streams, tables, os, options
 import anonimongo/core/bson
 import sugar
 
@@ -600,9 +600,6 @@ suite "Macro to object conversion tests":
       LastDescent = ref object
         child*: AddIntBase
 
-    template `%`(b: untyped): BsonDocument =
-      bson(b)
-
     let b = bson({
       embed: {
         embedint: 34973,
@@ -630,3 +627,44 @@ suite "Macro to object conversion tests":
     check thelast.child.addInt == addint.addInt
     check thelast.child.basestr == addembed.basestr
     check thelast.child.addEmbed["embedstr"].ofString == "eagle"
+
+  test "Ignore any Option":
+    type
+      Embedopt = object
+        optint {.bsonExport.}: OptionalInt
+        optstr {.bsonExport.}: Option[string]
+      OptionalInt = Option[int]
+      OptionalStr = Option[string]
+      OptFields = ref object
+        optint {.bsonExport.}: OptionalInt
+        optstr {.bsonExport.}: OptionalStr
+        optbool {.bsonExport.}: Option[bool]
+        embedopt {.bsonExport.}: Embedopt
+
+    let emb = bson {
+      optint: 555,
+      optstr: "SSS"
+    }
+    let b = bson {
+      optint: 42,
+      optstr: bsonNull(),
+      optbool: false,
+      embedopt: emb,
+    }
+
+    proc ofOptionalInt(b: BsonBase): Option[int] =
+      if b.kind == bkInt32: result = some b.ofInt
+      else: result = none[int]()
+
+    proc ofOptionalStr(b: Bsonbase): Option[string] =
+      if b.kind == bkString: result = some b.ofString
+      else: result = none[string]()
+
+    let optobj = b.to OptFields
+    check optobj[].optint.isSome
+    check optobj[].optint.get == 42
+    check optobj[].optstr.isNone
+    check optobj[].optbool.isNone
+    check optobj[].embedopt.optint.isSome
+    check optobj[].embedopt.optint.get == 555
+    check optobj[].embedopt.optstr.isNone

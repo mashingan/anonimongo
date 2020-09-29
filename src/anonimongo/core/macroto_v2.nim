@@ -212,6 +212,9 @@ template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
         #newAssignment(asgnVar, callBsonVar))
         ifthere)
 
+template ignoreIfOption(n: NimNode) =
+  if n.kind == nnkBracketExpr and $n[0] == "Option": continue
+
 proc handleObjectVariant(info: NodeInfo): NimNode
 
 template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
@@ -239,6 +242,7 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   fdf.passIfIdentDefs
   fieldname.retrieveSym
   let fieldtype = fdf[1]
+  fieldtype.ignoreIfOption
   var fieldTypeImpl = getTypeImpl fieldtype
 
   let parentSyms = fieldTypeImpl.processDistinctAndRef fieldType
@@ -518,6 +522,9 @@ proc assignObj(info: NodeInfo): NimNode =
     isDirect = true
     bsonSource = quote do:
       `bsonOrig`.ofObjectId
+  elif lastTypeDef[2].kind == nnkBracketExpr and 
+      $lastTypedef[2][0] == "Option":
+    return nnkDiscardStmt.newTree(newEmptyNode())
   var bodyif = newStmtList(
     quote do:
       var `bsonVar` =`bsonSource`
