@@ -763,7 +763,7 @@ and [mongo spec][3].
 - [x] `mapReduce`
 
 
-#### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim)
+#### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim#L109)
 
 - [x] `geoSearch`
 
