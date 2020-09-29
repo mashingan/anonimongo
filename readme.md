@@ -636,6 +636,45 @@ template to(b: BsonBase, name: typedesc): untyped =
 
 There's no plan to add this snippet to the library but it maybe changed in later version.
 
+9. Any form of field type `Option[T]` is ignored. Refer to point #2 (defining the users `ofTypename`)
+to support automatic conversion. For example, the Bson field we received can have `int` or `null` so
+we implement it:
+
+```nim
+type
+  OptionalInt = Option[int]
+  TheObj = object
+    optint {.bsonExport.}: OptionalInt
+    optstr {.bsonExport.}: Option[string]
+
+let intexist = bson {
+  optint: 42,
+  optstr: "this will be ignored",
+}
+let intnull = bson {
+  optint: bsonNull(),
+  optstr: "not converted",
+}
+
+proc ofOptionalInt(b: BsonBase): Option[int] =
+  if b.kind == bkInt32: result = some b.ofInt
+  else: result = none[int]()
+  # or we can
+  # elif b.kind == bkNull: result = none[int]()
+  # just for clarity that it can have BsonInt32 or BsonNull
+  # as its value from Bson
+
+let
+  haveint = intexist.to TheObj
+  noint = intnull.to TheObj
+
+doAssert haveint.optint.isSome
+doAssert haveint.optint.get == 42
+doAssert haveint.optstr.isNone
+doAssert noint.optint.isNone
+doAssert noint.optstr.isNone
+```
+
 [TOC](#table-of-content)
 
 ## Install
