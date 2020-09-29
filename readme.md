@@ -642,6 +642,8 @@ we implement it:
 
 ```nim
 type
+  # note that we need an intermediate alias type name as `to` only knows
+  # the symbol for custom proc conversion.
   OptionalInt = Option[int]
   TheObj = object
     optint {.bsonExport.}: OptionalInt
