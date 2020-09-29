@@ -628,7 +628,7 @@ suite "Macro to object conversion tests":
     check thelast.child.basestr == addembed.basestr
     check thelast.child.addEmbed["embedstr"].ofString == "eagle"
 
-  test "Ignore any Option":
+  test "Ignore any Option and accept nil literal value":
     type
       Embedopt = object
         optint {.bsonExport.}: OptionalInt
@@ -647,9 +647,10 @@ suite "Macro to object conversion tests":
     }
     let b = bson {
       optint: 42,
-      optstr: bsonNull(),
+      optstr: nil,
       optbool: false,
       embedopt: emb,
+      null: nil,
     }
 
     proc ofOptionalInt(b: BsonBase): Option[int] =
@@ -668,3 +669,5 @@ suite "Macro to object conversion tests":
     check optobj[].embedopt.optint.isSome
     check optobj[].embedopt.optint.get == 555
     check optobj[].embedopt.optstr.isNone
+    check b["null"].kind == bkNull
+    check b["null"].isNil
