@@ -677,6 +677,9 @@ doAssert noint.optint.isNone
 doAssert noint.optstr.isNone
 ```
 
+10. Conversion to generic object and generic field type are not tested. Very likely it will break
+the whole `to` conversion.
+
 [TOC](#table-of-content)
 
 ## Install
