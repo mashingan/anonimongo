@@ -284,15 +284,15 @@ proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):
   Future[seq[BsonDocument]]{.async.} =
   type tempopt = object
     explain {.bsonExport.}: bool
-    diskuse {.bsonExport.}: bool
+    diskuse {.bsonExport, bsonKey: "allowDiskUse".}: bool
     cursor {.bsonExport.}: BsonDocument
     maxTimeMS {.bsonExport.}: int
-    bypass {.bsonExport.}: bool
+    bypass {.bsonExport, bsonKey: "bypassDocumentValidation".}: bool
     readConcern {.bsonExport.}: BsonBase
     collation {.bsonExport.}: BsonBase
     hint {.bsonExport.}: BsonBase
     comment {.bsonExport.}: string
-    wt {.bsonExport.}: BsonBase
+    wt {.bsonExport, bsonKey: "writeConcern".}: BsonBase
   var optobj = opt.to tempopt
   if not optobj.explain and optobj.cursor.isNil:
     optobj.cursor = bson()

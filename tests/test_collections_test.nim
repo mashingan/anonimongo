@@ -101,7 +101,7 @@ suite "Collections APIs tests":
           timezone: "+07:00", }}}})
     ]
     let opt = bson {
-      diskuse: true,
+      allowDiskUse: true,
       maxTimeMS: 100,
       readConcern: { level: "majority" },
     }
