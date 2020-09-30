@@ -100,7 +100,12 @@ suite "Collections APIs tests":
           format: "%G-%m-%dT-%H:%M:%S%z",
           timezone: "+07:00", }}}})
     ]
-    let aggfind = waitfor coll.aggregate(pipeline)
+    let opt = bson {
+      diskuse: true,
+      maxTimeMS: 100,
+      readConcern: { level: "majority" },
+    }
+    let aggfind = waitfor coll.aggregate(pipeline, opt)
     check aggfind.len == tensOfMinutes
 
   test &"Find one query on {namespace}":

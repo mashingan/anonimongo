@@ -283,13 +283,16 @@ proc dropIndexes*(c: Collection, indexes: seq[string]):
 proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):
   Future[seq[BsonDocument]]{.async.} =
   type tempopt = object
-    explain, diskuse: bool
-    cursor: BsonDocument
-    maxTimeMS: int
-    bypass: bool
-    readConcern, collation, hint: BsonBase
-    comment: string
-    wt: BsonBase
+    explain {.bsonExport.}: bool
+    diskuse {.bsonExport.}: bool
+    cursor {.bsonExport.}: BsonDocument
+    maxTimeMS {.bsonExport.}: int
+    bypass {.bsonExport.}: bool
+    readConcern {.bsonExport.}: BsonBase
+    collation {.bsonExport.}: BsonBase
+    hint {.bsonExport.}: BsonBase
+    comment {.bsonExport.}: string
+    wt {.bsonExport.}: BsonBase
   var optobj = opt.to tempopt
   if not optobj.explain and optobj.cursor.isNil:
     optobj.cursor = bson()
