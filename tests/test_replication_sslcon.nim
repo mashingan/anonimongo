@@ -22,7 +22,9 @@ const
   testReplication {.booldefine.} = false
 
 when testReplication and defined(ssl):
-  import unittest, threadpool, times
+  import unittest
+  from threadpool import spawn, sync
+  from times import now, toTime
   from os import sleep
   from strformat import `&`
   from osproc import Process, running
