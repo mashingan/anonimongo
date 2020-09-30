@@ -671,3 +671,42 @@ suite "Macro to object conversion tests":
     check optobj[].embedopt.optstr.isNone
     check b["null"].kind == bkNull
     check b["null"].isNil
+
+  test "No op when converting to BsonBase":
+    type
+      Flexible = object
+        field1 {.bsonExport.}: BsonBase
+        field2 {.bsonExport.}: BsonBase
+        field3 {.bsonExport.}: BsonBase
+
+    let
+      nao = now().toTime
+      b1 = bson {
+        field1: 42,
+        field2: "hello",
+        field3: nil,
+      }
+      b2 = bson {
+        field1: 42.0,
+        field2: true,
+        field3: b1,
+      }
+      b3 = bson {
+        field1: nil,
+        field2: nao,
+      }
+    var flex = b1.to Flexible
+    check flex.field1 == 42
+    check flex.field2 == "hello"
+    check flex.field3.isNil
+
+    flex = b2.to Flexible
+    check flex.field1 == 42.0
+    check flex.field2.ofBool
+    check flex.field3["field1"] == 42
+    check flex.field3["field3"].isNil
+
+    flex = b3.to Flexible
+    check flex.field1.isNil
+    check flex.field2 == nao
+    check flex.field3.isNil
