@@ -1,4 +1,4 @@
-import unittest, times, oids, streams, tables, os
+import unittest, times, oids, streams, tables, os, options
 import anonimongo/core/bson
 import sugar
 
@@ -13,13 +13,13 @@ suite "Bson operations tests":
   var newdoc: BsonDocument
   var nnewdoc: BsonDocument
   var newdocstr = ""
-  var arrayembed = !>{
+  var arrayembed = bson({
     objects: [
       { q: 1, u: { "$set": { role_name: "ok" }}},
       { q: 2, u: { "$set": { key_name: "ok" }}},
       { q: 3, u: { "$set": { truth: 42 }}}
     ]
-  }
+  })
   test "Defining simple bson with newbson":
     let hellodoc = newbson(
       [("hello", 100.toBson),
@@ -87,26 +87,26 @@ suite "Bson operations tests":
   test "Bson binary operations":
     require(fileExists "tests/qrcode-me.png")
     let stringbin = "MwahahaBinaryGotoki"
-    let testbinary = !>{
+    let testbinary = bson({
       dummy_binary: bsonBinary stringbin
-    }
+    })
     let (_, tbencoded) = encode testbinary
     let dectestbin = decode tbencoded
     check dectestbin["dummy_binary"].
       ofBinary.stringbytes == stringbin
 
-    let pngbin = !>{
+    let pngbin = bson({
       "qr-me": bsonBinary qrimg
-    }
+    })
     let (_, pngbinencode) = encode pngbin
     let pngdec = decode pngbinencode
     check pngdec["qr-me"].ofBinary.stringbytes == qrimg
 
   test "Bson timestamp codec operations":
     let currtime = getTime().toUnix.uint32
-    let timestampdoc = !>{
+    let timestampdoc = bson({
       timestamp: (0'u32, currtime)
-    }
+    })
     let (_, timestampstr) = encode timestampdoc
     let timestampdec = decode timestampstr
     let decurrtime = timestampdec["timestamp"].ofTimestamp[1]
@@ -135,18 +135,18 @@ suite "Bson operations tests":
     #test js code
     let jscode = "function double(x) { return x*2; }"
     let jsbson = bsonJs jscode
-    let bjs = !>{
+    let bjs = bson({
       js: jsbson,
-    }
+    })
     check bjs["js"] == jscode
     let (_, encstr) = encode bjs
     let bjsdec = decode encstr
     check bjsdec["js"].ofString == bjs["js"].ofString
 
   test "Add element to bson array":
-    let newobj = !>{
+    let newobj = bson({
       q: 4, u: { "$set": { role_name: "add" }},
-    }
+    })
     arrayembed.mget("objects").add newobj
     check arrayembed["objects"].len == 4
     check arrayembed["objects"][3]["q"].ofInt == newobj["q"]
@@ -209,25 +209,25 @@ suite "Macro to object conversion tests":
       emptyRef*: EmptyRef # no bson data
       pseudoEmptyRef*: EmptyRef # no bson data
 
-  var theb = !>{
+  var theb = bson({
     name: 10,
     str: "hello 異世界"
-  }
+  })
   test "Simple convertion bson to flat object":
     let otheb = theb.to SimpleIntString
     check otheb.name == theb["name"]
     check otheb.str == theb["str"]
 
-  let outer1 = !>{
+  let outer1 = bson({
     outerName: "outer 1",
     sis: theb
-  }
+  })
   test "Conversion with 1 level object":
     let oouter1 = outer1.to SSIntString
     check oouter1.outerName == outer1["outerName"]
     check oouter1.sis.name == outer1["sis"]["name"]
   let currtime = now().toTime
-  let s2b = !>{
+  let s2b = bson({
     sis1: theb,
     sisref: theb,
     seqs: ["hello", "異世界", "another world"],
@@ -260,7 +260,7 @@ suite "Macro to object conversion tests":
     dtimenow: currtime,
     "not-exists-field": true,
     pseudoEmptyRef: {}
-  }
+  })
 
   var ssis2: SSIntString
   test "Ref object with 1 level hierarchy":
@@ -374,7 +374,7 @@ suite "Macro to object conversion tests":
       wrap*: SSIntString
       ootimewrap*: OOTimewrap
       o3sis*: OOOSSintString
-  var bmo = !>{
+  var bmo = bson({
     wrap: outer1,
     ootimewrap: {
       otimewrap: botw,
@@ -383,7 +383,7 @@ suite "Macro to object conversion tests":
       ootimewrap: { otimewrap: botw },
       oosis: outer1,
     }
-  }
+  })
   var omo: ManyObjects
   test "Many object wraps conversion":
     omo = bmo.to ManyObjects
@@ -547,12 +547,12 @@ suite "Macro to object conversion tests":
       result = b.ofTime.DDTime
 
     let nao = now().toTime
-    let bsonObj = !>{
+    let bsonObj = bson({
       zawarudo: nao,
       timeOfReference: nao,
       distinctTimeRef: nao,
       ddTime: nao
-    }
+    })
     let simpobj = bsonObj.to SimpleObject
     check simpobj.zawarudo == nao
     check simpobj.timeOfReference[].Time == nao
@@ -627,3 +627,120 @@ suite "Macro to object conversion tests":
     check thelast.child.addInt == addint.addInt
     check thelast.child.basestr == addembed.basestr
     check thelast.child.addEmbed["embedstr"].ofString == "eagle"
+
+  test "Ignore any Option and accept nil literal value":
+    type
+      Embedopt = object
+        optint {.bsonExport.}: OptionalInt
+        optstr {.bsonExport.}: Option[string]
+      OptionalInt = Option[int]
+      OptionalStr = Option[string]
+      OptFields = ref object
+        optint {.bsonExport.}: OptionalInt
+        optstr {.bsonExport.}: OptionalStr
+        optbool {.bsonExport.}: Option[bool]
+        embedopt {.bsonExport.}: Embedopt
+
+    let emb = bson {
+      optint: 555,
+      optstr: "SSS"
+    }
+    let b = bson {
+      optint: 42,
+      optstr: nil,
+      optbool: false,
+      embedopt: emb,
+      null: nil,
+    }
+
+    proc ofOptionalInt(b: BsonBase): Option[int] =
+      if b.kind == bkInt32: result = some b.ofInt
+      else: result = none[int]()
+
+    proc ofOptionalStr(b: Bsonbase): Option[string] =
+      if b.kind == bkString: result = some b.ofString
+      else: result = none[string]()
+
+    let optobj = b.to OptFields
+    check optobj[].optint.isSome
+    check optobj[].optint.get == 42
+    check optobj[].optstr.isNone
+    check optobj[].optbool.isNone
+    check optobj[].embedopt.optint.isSome
+    check optobj[].embedopt.optint.get == 555
+    check optobj[].embedopt.optstr.isNone
+    check b["null"].kind == bkNull
+    check b["null"].isNil
+
+  test "No op when converting to BsonBase":
+    type
+      Flexible = object
+        field1 {.bsonExport.}: BsonBase
+        field2 {.bsonExport.}: BsonBase
+        field3 {.bsonExport.}: BsonBase
+
+    let
+      nao = now().toTime
+      b1 = bson {
+        field1: 42,
+        field2: "hello",
+        field3: nil,
+      }
+      b2 = bson {
+        field1: 42.0,
+        field2: true,
+        field3: b1,
+      }
+      b3 = bson {
+        field1: nil,
+        field2: nao,
+      }
+    var flex = b1.to Flexible
+    check flex.field1 == 42
+    check flex.field2 == "hello"
+    check flex.field3.isNil
+
+    flex = b2.to Flexible
+    check flex.field1 == 42.0
+    check flex.field2.ofBool
+    check flex.field3["field1"] == 42
+    check flex.field3["field3"].isNil
+
+    flex = b3.to Flexible
+    check flex.field1.isNil
+    check flex.field2 == nao
+    check flex.field3.isNil
+
+  test "Enum conversion":
+    type
+      En1 = enum
+        En1En1 = "en1 enum1"
+        En1En2 = "en1 enum2"
+        En1En3 = "en1 enum3"
+      En2 = enum
+        En2En1 = "en2 enum1"
+        En2En2 = "en2 enum2"
+        En2En3 = "en2 enum3"
+
+      Enough = object
+        en1ough*: En1
+        en2ough*: En2
+      EnObj = object
+        enfield1*: En1
+        enfield2*: En2
+        enough*: Enough
+
+    let ben = bson {
+      enfield1: "en1 enum3",
+      enfield2: "en2 enum2",
+      enough: {
+        en1ough: "en1 enum2",
+        en2ough: "en2 enum3",
+      },
+    }
+
+    let oen = ben.to EnObj
+    check oen.enfield1 == En1En3
+    check oen.enfield2 == En2En2
+    check oen.enough.en1ough == En1En2
+    check oen.enough.en2ough == En2En3

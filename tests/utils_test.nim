@@ -26,7 +26,7 @@ const
   runlocal* = localhost and nomongod
 
   mongourl {.strdefine, used.} = &"""mongo://rdruffy:rdruffy@localhost:27017/?tlscertificateKeyfile=certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin"""
-  verbose = defined(verbose)
+  verbose* = defined(verbose)
 
 when verbose:
   import times, strformat

@@ -74,11 +74,11 @@ iterator items*(cur: Cursor): BsonDocument =
   var doc: BsonDocument
   var newcur = cur
   let collname = newcur.collname
+  var db = cur.db
   while newcur.id != 0:
     #doc = await cur.db.getMore(cur.id, collname, batchSize)
-    doc = waitfor newcur.db.getMore(newcur.id, collname, batchSize)
+    doc = waitfor db.getMore(newcur.id, collname, batchSize)
     newcur = doc["cursor"].ofEmbedded.to Cursor
-    newcur.db = cur.db
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
@@ -283,13 +283,16 @@ proc dropIndexes*(c: Collection, indexes: seq[string]):
 proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):
   Future[seq[BsonDocument]]{.async.} =
   type tempopt = object
-    explain, diskuse: bool
-    cursor: BsonDocument
-    maxTimeMS: int
-    bypass: bool
-    readConcern, collation, hint: BsonBase
-    comment: string
-    wt: BsonBase
+    explain {.bsonExport.}: bool
+    diskuse {.bsonExport, bsonKey: "allowDiskUse".}: bool
+    cursor {.bsonExport.}: BsonDocument
+    maxTimeMS {.bsonExport.}: int
+    bypass {.bsonExport, bsonKey: "bypassDocumentValidation".}: bool
+    readConcern {.bsonExport.}: BsonBase
+    collation {.bsonExport.}: BsonBase
+    hint {.bsonExport.}: BsonBase
+    comment {.bsonExport.}: string
+    wt {.bsonExport, bsonKey: "writeConcern".}: BsonBase
   var optobj = opt.to tempopt
   if not optobj.explain and optobj.cursor.isNil:
     optobj.cursor = bson()

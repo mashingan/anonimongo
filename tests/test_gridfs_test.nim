@@ -1,6 +1,6 @@
 import unittest, os, osproc, strformat, sequtils, asyncfile
 import sugar
-import ../src/anonimongo
+import anonimongo
 import utils_test
 
 {.warning[UnusedImport]: off.}

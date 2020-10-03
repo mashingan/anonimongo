@@ -636,6 +636,76 @@ template to(b: BsonBase, name: typedesc): untyped =
 
 There's no plan to add this snippet to the library but it maybe changed in later version.
 
+9. Any form of field type `Option[T]` is ignored. Refer to point #2 (defining the users `ofTypename`)
+to support automatic conversion. For example, the Bson field we received can have `int` or `null` so
+we implement it:
+
+```nim
+type
+  # note that we need an intermediate alias type name as `to` only knows
+  # the symbol for custom proc conversion.
+  OptionalInt = Option[int]
+  TheObj = object
+    optint {.bsonExport.}: OptionalInt
+    optstr {.bsonExport.}: Option[string]
+
+let intexist = bson {
+  optint: 42,
+  optstr: "this will be ignored",
+}
+let intnull = bson {
+  optint: bsonNull(),
+  optstr: "not converted",
+}
+
+proc ofOptionalInt(b: BsonBase): Option[int] =
+  if b.kind == bkInt32: result = some b.ofInt
+  else: result = none[int]()
+  # or we can
+  # elif b.kind == bkNull: result = none[int]()
+  # just for clarity that it can have BsonInt32 or BsonNull
+  # as its value from Bson
+
+let
+  haveint = intexist.to TheObj
+  noint = intnull.to TheObj
+
+doAssert haveint.optint.isSome
+doAssert haveint.optint.get == 42
+doAssert haveint.optstr.isNone
+doAssert noint.optint.isNone
+doAssert noint.optstr.isNone
+```
+
+10. Conversion to generic object and generic field type are not tested. Very likely it will break
+the whole `to` conversion.
+
+11. Object fields conversion doesn't support when the fields are grouped together, for example:
+
+```nim
+type
+  SStr = object
+    ss1*, ss2*: string
+
+  SOkay = object
+    ss1*: string
+    ss2*: string
+
+let bstr = bson {
+  ss1: "string 1",
+  ss2: "string 2",
+}
+
+# The compiler will complain that "node" has no type.
+let sstr = bstr.to SStr
+
+# This works because the `ss1` and `ss2` aren't grouped together
+let sokay = bstr.to SOkay
+```
+
+Since each field can have differents pragma definition, it's always preferable to define
+each field as its own.
+
 [TOC](#table-of-content)
 
 ## Install
@@ -719,7 +789,7 @@ and [mongo spec][3].
 - [x] `mapReduce`
 
 
-#### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim)
+#### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim#L109)
 
 - [x] `geoSearch`
 

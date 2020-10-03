@@ -184,6 +184,27 @@ proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
       result.add n
     n = n[0].getTypeImpl
 
+proc assignEnum(info: NodeInfo): NimNode =
+  let
+    fname = info.fieldDef[0]
+    fnamestr = if info.bsonKey == "": $fname
+               else: info.bsonKey
+    ftype = info.fieldDef[1]
+    origin = info.origin
+    theval = if info.isDirectOriginVar: origin
+             else: quote do:
+              `origin`[`fnamestr`]
+    resvar = if info.isResDirect: info.resvar
+             else: newDotExpr(info.resvar, fname)
+    headif = if info.isResDirect: newLit true
+             else: quote do:
+              `fnamestr` in `origin`
+    bodyif = quote do:
+      `resvar` = parseEnum[`ftype`](`theval`)
+  result = quote do:
+    if `headif`: `bodyif`
+
+
 template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
   info: NodeInfo) =
   if fieldtype.kind notin {nnkRefTy, nnkBracketExpr}:
@@ -212,6 +233,9 @@ template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
         #newAssignment(asgnVar, callBsonVar))
         ifthere)
 
+template ignoreIfOption(n: NimNode) =
+  if n.kind == nnkBracketExpr and $n[0] == "Option": continue
+
 proc handleObjectVariant(info: NodeInfo): NimNode
 
 template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
@@ -239,6 +263,7 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
   fdf.passIfIdentDefs
   fieldname.retrieveSym
   let fieldtype = fdf[1]
+  fieldtype.ignoreIfOption
   var fieldTypeImpl = getTypeImpl fieldtype
 
   let parentSyms = fieldTypeImpl.processDistinctAndRef fieldType
@@ -280,6 +305,9 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
         else: fieldseq = fieldseq.getImpl
     newinfo.fieldImpl = fieldseq
     elseStmt.add assignArr(newinfo)
+  elif fieldTypeImpl.kind == nnkEnumTy:
+    newinfo.isResDirect = true
+    elseStmt.add assignEnum(newinfo)
   else:
     when defined(verbose):
       echo fieldType.repr, " conversion is not available"
@@ -507,22 +535,32 @@ proc assignObj(info: NodeInfo): NimNode =
     (lastTypedef, objty) = fieldType.extractLastImpl
   var
     fieldImpl = getTypeImpl fieldType
-    isDirect = false
+    isDirect = true
+    isBsonBase = false
     bsonSource = quote do:
       `bsonOrig`.ofEmbedded
   if $lastTypedef[0] == "Time":
-    isDirect = true
     bsonSource = quote do:
       `bsonOrig`.ofTime
   elif $lastTypedef[0] == "Oid":
-    isDirect = true
     bsonSource = quote do:
       `bsonOrig`.ofObjectId
+  elif $lastTypedef[0] == "BsonBase":
+    isBsonBase = true
+    bsonSource = bsonOrig
+  elif lastTypeDef[2].kind == nnkBracketExpr and 
+      $lastTypedef[2][0] == "Option":
+    return nnkDiscardStmt.newTree(newEmptyNode())
+  else:
+    isDirect = false
   var bodyif = newStmtList(
     quote do:
       var `bsonVar` =`bsonSource`
   )
-  if info.parentSyms.isRefOrSymRef or fieldType.kind == nnkRefTy:
+  if isBsonBase:
+    bodyif.add quote do:
+      var `resvar` = `bsonVar`
+  elif info.parentSyms.isRefOrSymRef or fieldType.kind == nnkRefTy:
     let firstParent = info.parentSyms[^1]
     bodyif.add quote do:
       var `resvar`:`firstParent`
@@ -538,33 +576,36 @@ proc assignObj(info: NodeInfo): NimNode =
   else:
     bodyif.add quote do:
       var `resvar`: `targetSym`
-  var newinfo = NodeInfo(
-    resvar: resvar,
-    origin: bsonVar,
-    parentSyms: fieldImpl.processDistinctAndRef fieldType,
-    fieldImpl: lastTypedef
-  )
+  if not isDirect:
+    var newinfo = NodeInfo(
+      resvar: resvar,
+      origin: bsonVar,
+      parentSyms: fieldImpl.processDistinctAndRef fieldType,
+      fieldImpl: lastTypedef
+    )
 
-  let reclist = objty[2]
-  let (inheritance, rcc) = lastTypeDef.extractInheritedReclist true
-  if inheritance and rcc.kind == nnkRecList:
-    for rc in rcc:
-      reclist.add rc
-  let (isobjectVariant, varinfo) = reclist.processIfObjectVariant
-  if isobjectVariant:
-    let
-      kind = varinfo.kind
-      target = varinfo.targetEnum
-      kindStr = $kind
-      objSym = bodyif[1][0][1]
-    bodyif[1] = quote do:
-      var `resvar` = `objSym`(`kind`: parseEnum[`target`](`bsonVar`[`kindStr`]))
-  for fielddef in reclist:
-    identDefsCheck(bodyif, newinfo, fielddef)
+    let reclist = objty[2]
+    let (inheritance, rcc) = lastTypeDef.extractInheritedReclist true
+    if inheritance and rcc.kind == nnkRecList:
+      for rc in rcc:
+        reclist.add rc
+    let (isobjectVariant, varinfo) = reclist.processIfObjectVariant
+    if isobjectVariant:
+      let
+        kind = varinfo.kind
+        target = varinfo.targetEnum
+        kindStr = $kind
+        objSym = bodyif[1][0][1]
+      bodyif[1] = quote do:
+        var `resvar` = `objSym`(`kind`: parseEnum[`target`](`bsonVar`[`kindStr`]))
+    for fielddef in reclist:
+      identDefsCheck(bodyif, newinfo, fielddef)
   let
     addBody =
-      if isDirect: info.parentSyms.buildBodyIf(bsonVar, isObject = false)
-      else: info.parentSyms[0..^2].buildBodyIf(resvar, isObject = false)
+      if isDirect and not isBsonBase:
+        info.parentSyms.buildBodyIf(bsonVar, isObject = false)
+      else:
+        info.parentSyms[0..^2].buildBodyIf(resvar, isObject = false)
     lastIdent =
       if addBody.len > 0: addBody[^1].retrieveLastIdent
       else: resvar

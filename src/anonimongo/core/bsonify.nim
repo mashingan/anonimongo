@@ -3,6 +3,8 @@ import macros
 template bsonifyCheckBody(val: NimNode) {.dirty.} =
   var objval: NimNode
   case val.kind
+  of nnkNilLit:
+    objval = quote do: bsonNull()
   of nnkTableConstr:
     objval = embedBson val
   of nnkBracket:

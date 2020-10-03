@@ -1,7 +1,7 @@
 import unittest, os, osproc, strformat, times, sequtils, sugar
 
 import utils_test
-import ../src/anonimongo
+import anonimongo
 
 {.warning[UnusedImport]: off.}
 
@@ -100,7 +100,12 @@ suite "Collections APIs tests":
           format: "%G-%m-%dT-%H:%M:%S%z",
           timezone: "+07:00", }}}})
     ]
-    let aggfind = waitfor coll.aggregate(pipeline)
+    let opt = bson {
+      allowDiskUse: true,
+      maxTimeMS: 100,
+      readConcern: { level: "majority" },
+    }
+    let aggfind = waitfor coll.aggregate(pipeline, opt)
     check aggfind.len == tensOfMinutes
 
   test &"Find one query on {namespace}":
