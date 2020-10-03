@@ -1,12 +1,12 @@
 import anonimongo/core/[bson, types, wire]
 import anonimongo/dbops/[aggregation, admmgmt, client, crud, diagnostic,
        freemonitoring, rolemgmt, replication]
-import anonimongo/[collections, gridfs]
+import anonimongo/[changestreams, collections, gridfs]
 
 export bson, types, wire
 export admmgmt, client, crud, rolemgmt, aggregation, diagnostic,
        freemonitoring, replication
-export collections, gridfs
+export changestreams, collections, gridfs
 
 ## ==========
 ## Anonimongo
