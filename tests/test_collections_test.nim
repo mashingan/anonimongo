@@ -1,7 +1,7 @@
 import unittest, os, osproc, strformat, times, sequtils, sugar
 
 import utils_test
-import ../src/anonimongo
+import anonimongo
 
 {.warning[UnusedImport]: off.}
 
