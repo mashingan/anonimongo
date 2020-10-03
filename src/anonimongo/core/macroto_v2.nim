@@ -184,6 +184,27 @@ proc processDistinctAndRef(n: var NimNode, fieldType: NimNode):
       result.add n
     n = n[0].getTypeImpl
 
+proc assignEnum(info: NodeInfo): NimNode =
+  let
+    fname = info.fieldDef[0]
+    fnamestr = if info.bsonKey == "": $fname
+               else: info.bsonKey
+    ftype = info.fieldDef[1]
+    origin = info.origin
+    theval = if info.isDirectOriginVar: origin
+             else: quote do:
+              `origin`[`fnamestr`]
+    resvar = if info.isResDirect: info.resvar
+             else: newDotExpr(info.resvar, fname)
+    headif = if info.isResDirect: newLit true
+             else: quote do:
+              `fnamestr` in `origin`
+    bodyif = quote do:
+      `resvar` = parseEnum[`ftype`](`theval`)
+  result = quote do:
+    if `headif`: `bodyif`
+
+
 template prepareWhenStmt(w: var NimNode, fieldtype, fieldname: NimNode,
   info: NodeInfo) =
   if fieldtype.kind notin {nnkRefTy, nnkBracketExpr}:
@@ -284,6 +305,9 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
         else: fieldseq = fieldseq.getImpl
     newinfo.fieldImpl = fieldseq
     elseStmt.add assignArr(newinfo)
+  elif fieldTypeImpl.kind == nnkEnumTy:
+    newinfo.isResDirect = true
+    elseStmt.add assignEnum(newinfo)
   else:
     when defined(verbose):
       echo fieldType.repr, " conversion is not available"

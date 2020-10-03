@@ -710,3 +710,37 @@ suite "Macro to object conversion tests":
     check flex.field1.isNil
     check flex.field2 == nao
     check flex.field3.isNil
+
+  test "Enum conversion":
+    type
+      En1 = enum
+        En1En1 = "en1 enum1"
+        En1En2 = "en1 enum2"
+        En1En3 = "en1 enum3"
+      En2 = enum
+        En2En1 = "en2 enum1"
+        En2En2 = "en2 enum2"
+        En2En3 = "en2 enum3"
+
+      Enough = object
+        en1ough*: En1
+        en2ough*: En2
+      EnObj = object
+        enfield1*: En1
+        enfield2*: En2
+        enough*: Enough
+
+    let ben = bson {
+      enfield1: "en1 enum3",
+      enfield2: "en2 enum2",
+      enough: {
+        en1ough: "en1 enum2",
+        en2ough: "en2 enum3",
+      },
+    }
+
+    let oen = ben.to EnObj
+    check oen.enfield1 == En1En3
+    check oen.enfield2 == En2En2
+    check oen.enough.en1ough == En1En2
+    check oen.enough.en2ough == En2En3
