@@ -680,6 +680,32 @@ doAssert noint.optstr.isNone
 10. Conversion to generic object and generic field type are not tested. Very likely it will break
 the whole `to` conversion.
 
+11. Object fields conversion doesn't support when the fields are grouped together, for example:
+
+```nim
+type
+  SStr = object
+    ss1*, ss2*: string
+
+  SOkay = object
+    ss1*: string
+    ss2*: string
+
+let bstr = bson {
+  ss1: "string 1",
+  ss2: "string 2",
+}
+
+# The compiler will complain that "node" has no type.
+let sstr = bstr.to SStr
+
+# This works because the `ss1` and `ss2` aren't grouped together
+let sokay = bstr.to SOkay
+```
+
+Since each field can have differents pragma definition, it's always preferable to define
+each field as its own.
+
 [TOC](#table-of-content)
 
 ## Install
