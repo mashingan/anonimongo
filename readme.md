@@ -14,6 +14,7 @@
     - [Convert from Bson to object variant](#convert-from-bson-to-object-variant)
     - [Convert with custom key Bson](#convert-with-custom-key-bson)
     - [Convert Json to and Bson and vice versa](#convert-json-bson)
+    - [Watching a collection](#watching-a-collection)
 
 3. [Specific Mentions for Working with Bson](#working-with-bson)
 4. [Install](#install)
@@ -546,6 +547,72 @@ doAssert jobj["arr"].len == jsonobj["arr"].len
 Above example we convert the `jsonobj` (`JsonNode`) to `bobj` (`BsonDocument`)
 and convert again from `bobj` to `jobj` (`JsonNode`). This should be useful
 for most cases of working with Bson and Json.
+
+### Watching a collection
+This example is the example of changeStream operation. In this example we will
+watch a collection and print the change to the console. It will stop when
+there's `delete` or collection `drop` operation.
+
+```nim
+import sugar
+import anonimongo
+
+## need to run the available replica set first
+## and also 
+
+proc main =
+  var mongo = newMongo(
+    MongoUri "mongodb://localhost:27018,localhost:27019,localhost27020/admin"
+    poolconn = 2)
+  defer: close mongo
+
+  if not waitfor mongo.connect:
+    echo "failed to connect, quit"
+    return
+
+  var cursor: Cursor
+  let db = mongo["temptest"]
+
+  # we are create the collection explicitly
+  dump waitfor db.create("templog")
+
+  # the namespace will be `temptest.templog`
+  let coll = db["templog"]
+
+  # we try to watch the collection, there's possible error
+  # for example the collection is not in replica set database,
+  # or the invalid options, in this example we simply do nothing
+  # to handle the error except printing it out to the screen
+  try:
+    cursor = waitfor coll.watch()
+  except MongoError:
+    echo "cannot watch the cursor"
+    echo getCurrentExceptionMsg()
+    return
+
+  var lastChange: ChangeStream
+
+  # we define our callback for how we're going to handle it,
+  # in this example we dump the change info to the screen
+  # and using the closure to assign the value to the
+  # `lastChange` variable
+  # With `stopWhen = {csDelete, csDrop}`, the loop of watch
+  # will break when there's delete operation or the collection
+  # is dropped.
+  # note that in the current example, we just only want to
+  # watch the collection so we `waitFor` it to end, in case
+  # we want to do the other thing we can run the `cursor.forEach`
+  # in the background.
+  waitFor cursor.forEach(
+    proc(cs: ChangeStream) = dump cs; lastChange = cs,
+    stopWhen = {csDelete, csDrop})
+
+  dump lastChange
+  #doAssert lastChange.operationType == csDelete
+  dump waitfor coll.drop
+
+main()
+```
 
 
 [TOC](#table-of-content)
