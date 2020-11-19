@@ -287,7 +287,8 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
   )
   if ssl:
     var sslinfo = sslinfo
-    sslinfo.protocol = protSSLv23
+    when defined(ssl):
+      sslinfo.protocol = protSSLv23
     result.setSsl sslInfo
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
