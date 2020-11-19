@@ -272,7 +272,7 @@ proc checkTlsValidity(m: Mongo) =
       &"""Can't have {tlsHostInval.join(" and ")}""")
 
 proc newMongo*(host = "localhost", port = 27017, master = true,
-  poolconn = poolconn, sslinfo = SslInfo()): Mongo =
+  poolconn = poolconn, sslinfo = SslInfo(), ssl = defined(ssl)): Mongo =
   ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
   result = Mongo(
     servers: newTable[string, MongoConn](1),
@@ -285,10 +285,10 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
     port: Port port,
     pool: initPool(poolconn)
   )
-  var sslinfo = sslinfo
-  when defined(ssl):
+  if ssl:
+    var sslinfo = sslinfo
     sslinfo.protocol = protSSLv23
-  result.setSsl sslInfo
+    result.setSsl sslInfo
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
 proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
