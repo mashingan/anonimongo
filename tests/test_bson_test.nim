@@ -170,58 +170,56 @@ suite "Bson operations tests":
     check fileCompare["arr"].len == 0
 
     # first encoding mutation
-    itemCompare.mget("arr").add 42
-    var (itemN, itemStr) = encode itemCompare
-    check itemStr != baseStr
-    check itemN != baseN
-    fileCompare.mget("arr").add 42
-    var (fileN, fileStr) = encode fileCompare
-    check fileStr != baseStr
-    check fileN != baseN
-
-    # second encoding mutation
-    itemCompare.mget("arr").add 42.0
-    (itemN, itemStr) = encode itemCompare
-    check itemStr != baseStr
-    check itemN != baseN
-    fileCompare.mget("arr").add 42.0
-    (fileN, fileStr) = encode fileCompare
-    check fileStr != baseStr
-    check fileN != baseN
-
-    # third encoding mutation
-    itemCompare.mget("arr").add true
-    (itemN, itemStr) = encode itemCompare
-    check itemStr != baseStr
-    check itemN != baseN
-    fileCompare.mget("arr").add true
-    (fileN, fileStr) = encode fileCompare
-    check fileStr != baseStr
-    check fileN != baseN
-
-    # final encoding mutation
-    itemCompare.mget("arr").add "nanana"
-    (itemN, itemStr) = encode itemCompare
-    check itemStr == baseStr
-    check itemN == baseN
-    fileCompare.mget("arr").add "nanana"
-    (fileN, fileStr) = encode fileCompare
-    check fileStr == baseStr
-    check fileN == baseN
+    template compareArr(b: var BsonDocument, val: BsonBase, notsame = true) =
+      b.mget("arr").add val
+      let (n, str) = encode b
+      if notsame:
+        check n != baseN
+        check str != baseStr
+      else:
+        check n == baseN
+        check str == baseStr
+    itemCompare.compareArr(42)
+    fileCompare.compareArr(42)
+    itemCompare.compareArr(42.0)
+    fileCompare.compareArr(42.0)
+    itemCompare.compareArr(true)
+    fileCompare.compareArr(true)
+    itemCompare.compareArr("nanana", notsame = false)
+    fileCompare.compareArr("nanana", notsame = false)
 
     # change the value to test the `[]=`
-    let curr = now().toTime
     let newval = bsonArray(1, 1.2, true, false, now().toTime)
     itemCompare["new-key"] = newval
-    (itemN, itemStr) = encode itemCompare
+    let (itemN, itemStr) = encode itemCompare
     check itemStr != baseStr
     check itemN != baseN
     fileCompare["new-key"] = newval
-    (fileN, fileStr) = encode fileCompare
+    let (fileN, fileStr) = encode fileCompare
     check fileStr != baseStr
     check fileN != baseN
     check itemStr == fileStr
     check itemN == itemN
+
+  test "Clear stream for BsonDocument when fetched with mget":
+    let baseObjCompare = bson {
+      base: {
+        field1: 42,
+        field2: 42.0,
+      },
+    }
+    let (baseObjN, baseObjStr) = encode baseObjCompare
+    var mutObj = bson {
+      base: {},
+    }
+    var (mutN, mutStr) = encode mutObj
+    check mutN != baseObjN
+    check mutStr != baseObjStr
+    mutObj.mget("base")["field1"] = 42
+    mutObj.mget("base")["field2"] = 42.0
+    (mutN, mutStr) = encode mutObj
+    check mutN == baseObjN
+    check mutStr == baseObjStr
 
 suite "Macro to object conversion tests":
   type
