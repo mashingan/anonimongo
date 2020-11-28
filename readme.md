@@ -784,7 +784,7 @@ For installation, we can choose several methods will be mentioned below.
 Using Nimble package:
 
 ```
-nimble install anonimongo@" >= 0.4.10"
+nimble install anonimongo
 ```
 
 Or to install it locally
