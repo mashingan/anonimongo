@@ -406,6 +406,7 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
   result = value[idx]
 
 proc clearStream(b: var BsonDocument) =
+  b.encoded = false
   if b.filename == "":
     b.stream = newStringStream()
   else:
@@ -449,7 +450,6 @@ proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
     doAssert bsonobj["currtime"] == currtime
     doAssert bsonobj["thefloat"] == 42.0
   
-  b.encoded = false
   b.table[key] = val
   b.clearStream
 
@@ -470,7 +470,6 @@ proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
     bsonobj.mget("fieldint") = 2
     doAssert not bsonobj.encoded
   
-  b.encoded = false
   b.clearStream
   b.table[key]
 
@@ -486,7 +485,9 @@ proc mget*(b: var BsonBase, key: sink string): var BsonBase =
   if b.kind != bkEmbed:
     raise newException(BsonFetchError,
       fmt"Invalid key retrieval of {b}, get {b.kind}")
-  result = (b as BsonEmbed).value.table[key]
+  var bdoc = b as BsonEmbed
+  bdoc.value.clearStream
+  result = bdoc.value.mget(key)
 
 proc mget*(b: var BsonBase, index: sink int): var BsonBase =
   ## Actual a mutable accessor for indexed key BsonArray.
@@ -542,7 +543,6 @@ proc del*(b: var BsonDocument, key: string) =
     b.del "f2"
     doAssert b.len == 1
   b.table.del key
-  b.encoded = false
   b.clearStream
 
 proc len*(b: BsonDocument): int =
