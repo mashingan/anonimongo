@@ -220,6 +220,7 @@ type
     ## BsonBase.
     table: BsonInternal
     stream: Stream
+    filename: string
     encoded*: bool
       ## Flag whether the document already encoded
       ## to avoid repeated encoding.
@@ -404,6 +405,12 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
     raise newException(IndexError, fmt"{b}: {idx} not in 0..{value.len-1}")
   result = value[idx]
 
+proc clearStream(b: var BsonDocument) =
+  if b.filename == "":
+    b.stream = newStringStream()
+  else:
+    b.stream = newFileStream(b.filename, fmReadWrite)
+
 proc `[]`*[T: int | string](b: BsonBase, key: sink T): BsonBase =
   ## BsonBase Accessor whether indexed key or string key. Offload the
   ## actual operations to actual BsonBase accessors.
@@ -444,6 +451,7 @@ proc `[]=`*(b: var BsonDocument, key: sink string, val: BsonBase) =
   
   b.encoded = false
   b.table[key] = val
+  b.clearStream
 
 proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
   ## Return a mutable field access, any change to this variable
@@ -463,6 +471,7 @@ proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
     doAssert not bsonobj.encoded
   
   b.encoded = false
+  b.clearStream
   b.table[key]
 
 proc mget*(b: var BsonBase, key: sink string): var BsonBase =
@@ -496,7 +505,9 @@ proc `[]=`*(b: var BsonBase, key: sink string, val: BsonBase) =
   if b.kind != bkEmbed:
     raise newException(BsonFetchError,
       fmt"Invalid Bson kind key retrieval of {b}, get {b.kind}")
-  (b as BsonEmbed).value.table[key] = val
+  var bdoc = b as BsonEmbed
+  bdoc.value.clearStream
+  bdoc.value.table[key] = val
 
 proc add*(b: var BsonArray, v: BsonBase) =
   ## Add element to BsonArray
@@ -531,6 +542,8 @@ proc del*(b: var BsonDocument, key: string) =
     b.del "f2"
     doAssert b.len == 1
   b.table.del key
+  b.encoded = false
+  b.clearStream
 
 proc len*(b: BsonDocument): int =
   ## Return the how many key-value in BsonDocument.
@@ -843,13 +856,17 @@ proc bsonJs*(code: string | seq[Rune]): BsonBase =
   BsonJs(value: value, kind: bkJs)
 
 proc newBson*(table = newOrderedTable[string, BsonBase](),
-    stream: Stream = newStringStream()): BsonDocument =
+    stream: Stream = newStringStream(),
+    filename = ""): BsonDocument =
   ## A primordial BsonDocument allocators. Preferably to use
   ## `bson macro<#bson.m,untyped>`_ instead, except the
   ## need to specify the stream used for the BsonDocument.
+  let thestream = if filename == "": stream
+                  else: newFileStream(filename, fmReadWrite)
   BsonDocument(
     table: table,
-    stream: stream
+    stream: thestream,
+    filename: filename,
   )
 
 proc decodeKey(s: Stream): (string, BsonKind) =

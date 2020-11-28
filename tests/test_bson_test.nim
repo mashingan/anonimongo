@@ -156,6 +156,73 @@ suite "Bson operations tests":
       var bsonInt = 4.toBson
       bsonInt.add newobj
 
+  test "Clear stream when Bson is modified":
+    let baseCompare = bson {
+      arr: [42, 42.0, true, "nanana"],
+    }
+    let (baseN, baseStr) = encode baseCompare
+    var itemCompare = bson { arr: [] }
+    var fileCompare = newBson(filename = "filetest.bson")
+    fileCompare["arr"] = bsonArray()
+    check itemCompare["arr"].kind == bkArray
+    check itemCompare["arr"].len == 0
+    check fileCompare["arr"].kind == bkArray
+    check fileCompare["arr"].len == 0
+
+    # first encoding mutation
+    itemCompare.mget("arr").add 42
+    var (itemN, itemStr) = encode itemCompare
+    check itemStr != baseStr
+    check itemN != baseN
+    fileCompare.mget("arr").add 42
+    var (fileN, fileStr) = encode fileCompare
+    check fileStr != baseStr
+    check fileN != baseN
+
+    # second encoding mutation
+    itemCompare.mget("arr").add 42.0
+    (itemN, itemStr) = encode itemCompare
+    check itemStr != baseStr
+    check itemN != baseN
+    fileCompare.mget("arr").add 42.0
+    (fileN, fileStr) = encode fileCompare
+    check fileStr != baseStr
+    check fileN != baseN
+
+    # third encoding mutation
+    itemCompare.mget("arr").add true
+    (itemN, itemStr) = encode itemCompare
+    check itemStr != baseStr
+    check itemN != baseN
+    fileCompare.mget("arr").add true
+    (fileN, fileStr) = encode fileCompare
+    check fileStr != baseStr
+    check fileN != baseN
+
+    # final encoding mutation
+    itemCompare.mget("arr").add "nanana"
+    (itemN, itemStr) = encode itemCompare
+    check itemStr == baseStr
+    check itemN == baseN
+    fileCompare.mget("arr").add "nanana"
+    (fileN, fileStr) = encode fileCompare
+    check fileStr == baseStr
+    check fileN == baseN
+
+    # change the value to test the `[]=`
+    let curr = now().toTime
+    let newval = bsonArray(1, 1.2, true, false, now().toTime)
+    itemCompare["new-key"] = newval
+    (itemN, itemStr) = encode itemCompare
+    check itemStr != baseStr
+    check itemN != baseN
+    fileCompare["new-key"] = newval
+    (fileN, fileStr) = encode fileCompare
+    check fileStr != baseStr
+    check fileN != baseN
+    check itemStr == fileStr
+    check itemN == itemN
+
 suite "Macro to object conversion tests":
   type
     Bar = string
