@@ -20,10 +20,10 @@ type
   CompressorId* {.size: sizeof(byte).} = enum
     ## Compression ID which will be used as indicattor what
     ## kind of compression used when sending the message.
-    cidNoop # NOOP. The content is uncompressed.
-    cidSnappy # Using snappy compression.
-    cidZlib # using zlib compression.
-    cidZstd # using zstd compression.
+    cidNoop = (0, "noop") # NOOP. The content is uncompressed.
+    cidSnappy = "snappy" # Using snappy compression.
+    cidZlib = "zlib" # using zlib compression.
+    cidZstd = "zstd" # using zstd compression.
 
   MsgHeader* = object
     ## An object that will spearhead any exchanges of Bson data.
