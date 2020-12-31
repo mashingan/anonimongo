@@ -427,6 +427,8 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     result.retryableWrites = try: parseBool result.query["retryablewrites"][0]
                              except: false
 
+  if "compression" in result.query and result.query["compression"].len > 0:
+    result.query["compression"] = result.query["compression"][0].split(",")
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated
@@ -436,6 +438,11 @@ proc port*(m: MongoConn): Port = m.port
 proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
+proc compressions*(m: Mongo): seq[string] =
+  if "compression" in m.query: m.query["compression"]
+  else: @[]
+proc `compression=`*(m: Mongo, vals: seq[string]) =
+  m.query["compression"] = vals
 
 template pickAnyServer(m: Mongo, test: untyped): MongoConn =
   var res: MongoConn
