@@ -17,6 +17,14 @@ type
     opCommandReply
     opMsg = 2013'i32
 
+  CompressorId* {.size: sizeof(byte).} = enum
+    ## Compression ID which will be used as indicattor what
+    ## kind of compression used when sending the message.
+    cidNoop # NOOP. The content is uncompressed.
+    cidSnappy # Using snappy compression.
+    cidZlib # using zlib compression.
+    cidZstd # using zstd compression.
+
   MsgHeader* = object
     ## An object that will spearhead any exchanges of Bson data.
     messageLength*, requestId*, responseTo*, opCode*: int32
