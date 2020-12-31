@@ -439,10 +439,10 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 proc compressions*(m: Mongo): seq[string] =
-  if "compression" in m.query: m.query["compression"]
+  if "compressors" in m.query: m.query["compressors"]
   else: @[]
-proc `compression=`*(m: Mongo, vals: seq[string]) =
-  m.query["compression"] = vals
+proc `compressions=`*(m: Mongo, vals: seq[string]) =
+  m.query["compressors"] = vals
 
 template pickAnyServer(m: Mongo, test: untyped): MongoConn =
   var res: MongoConn
