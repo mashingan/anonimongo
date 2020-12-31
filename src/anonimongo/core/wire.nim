@@ -15,6 +15,7 @@ type
     opInsert opReserved opQuery opGetMore opDelete opKillCursors
     opCommand = 2010'i32
     opCommandReply
+    opCompressed
     opMsg = 2013'i32
 
   CompressorId* {.size: sizeof(byte).} = enum
@@ -95,28 +96,49 @@ proc replyParse*(s: Stream): ReplyFormat =
 
 proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
-    query = newbson(), selector = newbson()): int =
+    query = newbson(), selector = newbson(), compress = cidNoop): int =
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
+  template writeStream(msgstream: Stream): int =
+    var length = 0
+    msgstream.writeLE flags;                             length += 4
+    msgstream.write collname; msgstream.write 0x00.byte; length += collname.len + 1
+    msgstream.writeLE nskip; msgstream.writeLE nreturn;  length += 2 * 4
+
+    length += s.serialize query
+    if not selector.isNil:
+      length += s.serialize selector
+    length
+
   result = s.msgHeader(reqId, target, opcode)
 
-  s.writeLE flags;                     result += 4
-  s.write collname; s.write 0x00.byte; result += collname.len + 1
-  s.writeLE nskip; s.writeLE nreturn;  result += 2 * 4
+  if compress == cidNoop:
+    result += s.writeStream
 
-  result += s.serialize query
-  if not selector.isNil:
-    result += s.serialize selector
+    s.setPosition 0
+    s.writeLE result.int32
+    s.setPosition 0
+  else:
+    var ss = newStringStream()
+    let length = ss.writeStream
+    s.writeLE opcode
+    s.writeLE length.int32
+    s.write compress
+    ss.setPosition 0
+    let msgall = ss.readAll
+    s.write msgall
+    result += msgall.len + 2 * sizeof(int32) + sizeof(byte)
 
-  s.setPosition 0
-  s.writeLE result.int32
-  s.setPosition 0
+    s.setPosition 0
+    s.writeLE result.int32
+    s.setPosition(3 * sizeof(int32))
+    s.writeLE opCompressed
 
 template prepare*(q: BsonDocument, flags: int32, dbname: string,
-  id = 0, skip = 0, limit = 1): untyped =
+  id = 0, skip = 0, limit = 1, compress = cidNoop): untyped =
   var s = newStringStream()
   discard s.prepareQuery(id, 0, opQuery.int32, flags, dbname, skip,
-    limit, q)
+    limit, q, compress = compress)
   unown(s)
 
 proc ok*(b: BsonDocument): bool =

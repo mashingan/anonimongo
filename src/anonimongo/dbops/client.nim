@@ -1,4 +1,5 @@
-import asyncdispatch, tables, deques, strformat, sequtils
+import std/[asyncdispatch, tables, deques, strformat, sequtils]
+from std/strutils import parseEnum
 import os, net
 
 import ../core/[types, wire, bson, pool, utils]
@@ -45,10 +46,9 @@ proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
       }
     }
   })
-  #[ TODO: will be enabled later
-  if "compressors" in m.query:
-    q["compression"] = m.query["compressors"].map toBson
-    ]#
+  let compressions = m.compressions
+  if compressions.len > 0:
+    q["compression"] = compressions.mapIt(($it).toBson)
   when verbose:
     echo "Handshake id: ", id
     dump q
@@ -89,11 +89,17 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
       m.hosts = hktemp.hosts
       m.primary = hktemp.primary
       if m.hosts.len <= 1: m.retryableWrites = false
+      var serverCompressions =
+        if "compression" in b: b["compression"].ofArray.mapIt(
+          it.ofString.parseEnum[:CompressorId])
+        else: @[]
+      echo "Server support compressions: ", serverCompressions
+      m.compressions = serverCompressions
 
 proc cuUsers(db: Database, query: BsonDocument):
   Future[WriteResult] {.async.} =
   let dbname = if db.name != "": db.name else: "admin"
-  result = await db.proceed(query, dbname)
+  result = await db.proceed(query, dbname, needCompress = false)
 
 template dropPrologue(db: Database, qfield, val: untyped): untyped =
   var dbname = db.name & ".$cmd"

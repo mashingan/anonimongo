@@ -52,6 +52,7 @@ type
     flags: QueryFlags
     readPreference*: ReadPreference
     retryableWrites*: bool
+    compressions*: seq[CompressorId]
     query: TableRef[string, seq[string]]
 
   ReadPreference* {.pure.} = enum
@@ -438,11 +439,6 @@ proc port*(m: MongoConn): Port = m.port
 proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
-proc compressions*(m: Mongo): seq[string] =
-  if "compressors" in m.query: m.query["compressors"]
-  else: @[]
-proc `compressions=`*(m: Mongo, vals: seq[string]) =
-  m.query["compressors"] = vals
 
 template pickAnyServer(m: Mongo, test: untyped): MongoConn =
   var res: MongoConn

@@ -12,7 +12,8 @@ func cmd*(name: string): string = name & ".$cmd"
 func flags*(d: Database): int32 = d.db.flags as int32
   ## Get Mongo available ``wire.QueryFlags`` as int32 bitfield
 
-proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
+proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead,
+  compress = cidNoop):
   Future[ReplyFormat]{.async.} =
   ## A helper utility which greatly simplify actual Database command
   ## queries. Any new command implementation usually use this
@@ -37,7 +38,7 @@ proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead):
   let dbname = if name == "": db.name.cmd else: name.cmd
   let (id, conn) = await dbconn.pool.getConn()
   defer: dbconn.pool.endConn(id)
-  var s = prepare(q, db.flags, dbname, id.int32)
+  var s = prepare(q, db.flags, dbname, id.int32, compress = compress)
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
   result = unown(reply)
@@ -74,11 +75,19 @@ proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
     return false
   true
 
-proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
+proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead,
+  needCompress = true):
   Future[WriteResult] {.async.} =
   ## Helper utility that basically utilize another two main operations
   ## ``sendops`` and ``epilogueCheck``.
-  let reply = await sendops(q, db, dbname, cmd)
+  #let reply = await sendops(q, db, dbname, cmd, compress)
+  let reply =
+    if needCompress:
+      let compressions = db.db.compressions
+      let compress = if compressions.len > 0: compressions[0]
+                     else: cidNoop
+      await sendops(q, db, dbname, cmd, compress = compress)
+    else: await sendops(q, db, dbname, cmd)
   result = WriteResult(kind: wkSingle)
   result.success = epilogueCheck(reply, result.reason)
 
@@ -87,7 +96,11 @@ proc crudops*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
   Future[BsonDocument]{.async.} =
   ## About the same as ``proceed`` but this will return a BsonDocument
   ## compared to ``proceed`` that return ``WriteResult``.
-  let reply = await sendops(q, db, dbname, cmd)
+  let compressions = db.db.compressions
+  let compress =
+    if compressions.len > 0: compressions[0]
+    else: cidNoop
+  let reply = await sendops(q, db, dbname, cmd, compress)
   var (success, reason) = check reply
   if not success:
     raise newException(MongoError, move reason)
