@@ -428,8 +428,10 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     result.retryableWrites = try: parseBool result.query["retryablewrites"][0]
                              except: false
 
-  if "compression" in result.query and result.query["compression"].len > 0:
-    result.query["compression"] = result.query["compression"][0].split(",")
+  if "compressors" in result.query and result.query["compressors"].len > 0:
+    when verbose: dump result.query["compressors"]
+    result.compressions = result.query["compressors"].mapIt(it.parseEnum[:CompressorId])
+    when verbose: dump result.compressions
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated

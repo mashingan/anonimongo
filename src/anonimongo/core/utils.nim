@@ -13,7 +13,7 @@ func flags*(d: Database): int32 = d.db.flags as int32
   ## Get Mongo available ``wire.QueryFlags`` as int32 bitfield
 
 proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead,
-  compress = cidNoop):
+  compression = cidNoop):
   Future[ReplyFormat]{.async.} =
   ## A helper utility which greatly simplify actual Database command
   ## queries. Any new command implementation usually use this
@@ -38,7 +38,7 @@ proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead,
   let dbname = if name == "": db.name.cmd else: name.cmd
   let (id, conn) = await dbconn.pool.getConn()
   defer: dbconn.pool.endConn(id)
-  var s = prepare(q, db.flags, dbname, id.int32, compress = compress)
+  var s = prepare(q, db.flags, dbname, id.int32, compression = compression)
   await conn.socket.send s.readAll
   let reply = await conn.socket.getReply
   result = unown(reply)
@@ -84,9 +84,10 @@ proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead,
   let reply =
     if needCompress:
       let compressions = db.db.compressions
-      let compress = if compressions.len > 0: compressions[0]
-                     else: cidNoop
-      await sendops(q, db, dbname, cmd, compress = compress)
+      let compression = if compressions.len > 0: compressions[0]
+                        else: cidNoop
+      when verbose: dump compression
+      await sendops(q, db, dbname, cmd, compression = compression)
     else: await sendops(q, db, dbname, cmd)
   result = WriteResult(kind: wkSingle)
   result.success = epilogueCheck(reply, result.reason)
@@ -97,10 +98,10 @@ proc crudops*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
   ## About the same as ``proceed`` but this will return a BsonDocument
   ## compared to ``proceed`` that return ``WriteResult``.
   let compressions = db.db.compressions
-  let compress =
+  let compression =
     if compressions.len > 0: compressions[0]
     else: cidNoop
-  let reply = await sendops(q, db, dbname, cmd, compress)
+  let reply = await sendops(q, db, dbname, cmd, compression)
   var (success, reason) = check reply
   if not success:
     raise newException(MongoError, move reason)

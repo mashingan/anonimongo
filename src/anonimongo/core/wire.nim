@@ -3,6 +3,8 @@ import asyncdispatch, asyncnet
 from sugar import dump
 import bson
 
+import supersnappy, zippy
+
 export streams, asyncnet, asyncdispatch
 
 const verbose {.booldefine.} = false
@@ -18,7 +20,7 @@ type
     opCompressed
     opMsg = 2013'i32
 
-  CompressorId* {.size: sizeof(byte).} = enum
+  CompressorId* {.size: sizeof(uint8).} = enum
     ## Compression ID which will be used as indicattor what
     ## kind of compression used when sending the message.
     cidNoop = (0, "noop") # NOOP. The content is uncompressed.
@@ -96,7 +98,7 @@ proc replyParse*(s: Stream): ReplyFormat =
 
 proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
-    query = newbson(), selector = newbson(), compress = cidNoop): int =
+    query = newbson(), selector = newbson(), compression = cidNoop): int =
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
   template writeStream(msgstream: Stream): int =
@@ -110,35 +112,46 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
       length += s.serialize selector
     length
 
-  result = s.msgHeader(reqId, target, opcode)
-
-  if compress == cidNoop:
+  if compression == cidNoop:
+    result = s.msgHeader(reqId, target, opcode)
     result += s.writeStream
 
-    s.setPosition 0
-    s.writeLE result.int32
-    s.setPosition 0
   else:
+    result = s.msgHeader(reqId, target, opCompressed.int32)
     var ss = newStringStream()
     let length = ss.writeStream
     s.writeLE opcode
     s.writeLE length.int32
-    s.write compress
+    s.write compression.uint8
     ss.setPosition 0
     let msgall = ss.readAll
-    s.write msgall
-    result += msgall.len + 2 * sizeof(int32) + sizeof(byte)
+    result += 2 * sizeof(int32) + sizeof(byte)
+    case compression
+    of cidSnappy:
+      let compressedMsg = supersnappy.compress(msgall)
+      result += compressedMsg.len
+      s.write compressedMsg
+    of cidZlib:
+      let compressedMsg = zippy.compress(msgall.bytes, dataformat = dfZlib)
+      result += compressedMsg.len
+      s.write compressedMsg
+    else:
+      # not supported compression id
+      let prev = s.getPosition
+      s.setPosition prev
+      s.write cidNoop
+      result += msgall.len
+      s.write msgall
 
-    s.setPosition 0
-    s.writeLE result.int32
-    s.setPosition(3 * sizeof(int32))
-    s.writeLE opCompressed
+  s.setPosition 0
+  s.writeLE result.int32
+  s.setPosition 0
 
 template prepare*(q: BsonDocument, flags: int32, dbname: string,
-  id = 0, skip = 0, limit = 1, compress = cidNoop): untyped =
+  id = 0, skip = 0, limit = 1, compression = cidNoop): untyped =
   var s = newStringStream()
   discard s.prepareQuery(id, 0, opQuery.int32, flags, dbname, skip,
-    limit, q, compress = compress)
+    limit, q, compression = compression)
   unown(s)
 
 proc ok*(b: BsonDocument): bool =
@@ -203,10 +216,25 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.async.} =
   when verbose:
     dump msghdr
   let bytelen = msghdr.messageLength
-
   var rest = await socket.recv(size = bytelen-16)
   var restStream = newStringStream move(rest)
-  result = replyParse restStream
+  if msghdr.opCode != opCompressed.int32:
+    result = replyParse restStream
+  else:
+    discard restStream.readIntLE int32
+    discard restStream.readIntLE int32
+    let compression = restStream.readInt8.CompressorId
+    case compression
+    of cidSnappy:
+      let origmsg = supersnappy.uncompress(restStream.readAll)
+      result = replyParse newStringStream(origmsg)
+    of cidZlib:
+      let origmsg = zippy.uncompress(restStream.readAll.bytes).stringbytes
+      result = replyParse newStringStream(origmsg)
+    else:
+      discard
+  when verbose:
+    look result
 
 proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
   batchSize = 50, maxTimeMS = 0): Future[ReplyFormat] {.async.} =

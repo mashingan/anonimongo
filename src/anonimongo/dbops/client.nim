@@ -51,6 +51,7 @@ proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
     q["compression"] = compressions.mapIt(($it).toBson)
   when verbose:
     echo "Handshake id: ", id
+    dump compressions
     dump q
   var db = db
   let dbc = m[move db]
@@ -156,7 +157,9 @@ proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.}
 
 proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
-  let reply = await sendops(q, db, cmd = ckWrite)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  let reply = await sendops(q, db, cmd = ckWrite, compression = compression)
   let (success, reason) = check reply
   result = WriteResult(
     success: success,
