@@ -138,7 +138,7 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     else:
       # not supported compression id
       let prev = s.getPosition
-      s.setPosition prev
+      s.setPosition prev-1
       s.write cidNoop
       result += msgall.len
       s.write msgall
