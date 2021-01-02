@@ -107,9 +107,9 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     msgstream.write collname; msgstream.write 0x00.byte; length += collname.len + 1
     msgstream.writeLE nskip; msgstream.writeLE nreturn;  length += 2 * 4
 
-    length += s.serialize query
+    length += msgstream.serialize query
     if not selector.isNil:
-      length += s.serialize selector
+      length += msgstream.serialize selector
     length
 
   if compression == cidNoop:
@@ -134,7 +134,7 @@ proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
     of cidZlib:
       let compressedMsg = zippy.compress(msgall.bytes, dataformat = dfZlib)
       result += compressedMsg.len
-      s.write compressedMsg
+      for b in compressedMsg: s.write b
     else:
       # not supported compression id
       let prev = s.getPosition
