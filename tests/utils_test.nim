@@ -25,7 +25,10 @@ const
   nomongod* = not defined(nomongod)
   runlocal* = localhost and nomongod
 
-  mongourl {.strdefine, used.} = &"""mongo://rdruffy:rdruffy@localhost:27017/?tlscertificateKeyfile=certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin"""
+  mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
+    "?tlscertificateKeyfile=" &
+    &"certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin" &
+    "&compressors=snappy,zlib"
   verbose* = defined(verbose)
 
 when verbose:
@@ -36,7 +39,11 @@ proc startmongo*: Process =
     "--port", "27017",
     "--dbpath", dbpath,
     "--bind_ip_all",
+    "--networkMessageCompressors", "snappy,zlib",
     "--auth"]
+  when defined(uri):
+    args.add "--networkMessageCompressors"
+    args.add "snappy,zlib"
   when defined(ssl):
     args.add "--sslMode"
     args.add "requireSSL"

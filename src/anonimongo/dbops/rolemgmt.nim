@@ -99,4 +99,6 @@ proc rolesInfo*(db: Database, info: BsonBase, showPriv = false,
     showPrivileges: showPriv,
     showBuiltinRoles: showBuiltin,
   })
-  result = await sendops(q, db, cmd = ckRead)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  result = await sendops(q, db, cmd = ckRead, compression = compression)

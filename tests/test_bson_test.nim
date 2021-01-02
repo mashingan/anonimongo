@@ -216,6 +216,9 @@ suite "Bson operations tests":
     check mutN != baseObjN
     check mutStr != baseObjStr
     mutObj.mget("base")["field1"] = 42
+    (mutN, mutStr) = encode mutObj
+    check mutN != baseObjN
+    check mutStr != baseObjStr
     mutObj.mget("base")["field2"] = 42.0
     (mutN, mutStr) = encode mutObj
     check mutN == baseObjN

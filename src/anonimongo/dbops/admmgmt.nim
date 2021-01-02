@@ -79,7 +79,9 @@ proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
   var q = bson({ listCollections: 1})
   if not filter.isNil:
     q["filter"] = filter
-  let reply = await sendops(q, db, dbname, cmd = ckRead)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  let reply = await sendops(q, db, dbname, cmd = ckRead, compression = compression)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -119,7 +121,9 @@ proc listDatabaseNames*(db: Mongo | Database): Future[seq[string]] {.async.} =
 proc listIndexes*(db: Database, coll: string):
   Future[seq[BsonBase]]{.async.} =
   let q = bson({ listIndexes: coll })
-  let reply = await sendops(q, db, cmd = ckRead)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  let reply = await sendops(q, db, cmd = ckRead, compression = compression)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -160,7 +164,9 @@ proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
   var q = bson({ currentOp: 1})
   for k, v in opt:
     q[k] = v
-  let reply = await sendops(q, db, "admin", cmd = ckRead)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  let reply = await sendops(q, db, "admin", cmd = ckRead, compression = compression)
   let (success, reason) = check reply
   if not success:
     echo reason
@@ -174,7 +180,9 @@ proc killOp*(db: Database, opid: int32): Future[WriteResult] {.async.} =
 proc killCursors*(db: Database, collname: string, cursorIds: seq[int64]):
   Future[BsonDocument] {.async.} =
   let q = bson({ killCursors: collname, cursors: cursorIds.map toBson })
-  let reply = await sendops(q, db, cmd = ckWrite)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  let reply = await sendops(q, db, cmd = ckWrite, compression = compression)
   let (success, reason) = check reply
   if not success:
     echo reason
