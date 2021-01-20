@@ -65,7 +65,24 @@ modules and the categories for those modules. [The index][6] also available.
 
 There are two ways to define Bson object (`newBson` and `bson`) but it's preferable use `bson`
 as `newBson` is the low-level object definition. Users can roll-out their own operator like
-in example below.
+in example below.  
+For creating client, it's preferable to use `newMongo` overload with `MongoUri` argument because
+the `MongoUri` overload has better support for various client options such as
+
++ `AppName` for identifying your application when connecting to Mongodb server.
++ `readPreference` which support `primary` (default), `primaryPreferred`, `secondary`, `secondaryPreferred`.
++ `w` (as write concern option).
++ `retryableWrites` which can be supplied with `false` (default) or `true`.
++ `compressors` which support list of compressor: `snappy` and `zlib`.
++ `authSources` that point which database we want to authenticate.  
+This won't be used if in the `MongoUri` users provide the path to the database intended.  
+So the database source in case of `MongoUri` `"mongodb://localhost:27017/not-admin?authSources=admin"` is `"not-admin"`.
++ `ssl` or `tls` which can be `false` (default if not using `mongodb+srv` scheme), or true (default if using `mongodb+srv` scheme).
++ `tlsInsecure`, `tlsAllowInvalidCertificates`, `tlsAllowInvalidHostnames`. Please refer to Mongodb documentation
+as these 3 options have elaborate usage. In most cases, users don't have to bother about these 3 options.
+
+All above options parameters are case-insensitive but the values are not because
+Mongodb server is not accepting case-insensitive values.
 
 ```nim
 import times
@@ -557,8 +574,8 @@ there's `delete` or collection `drop` operation.
 import sugar
 import anonimongo
 
+## watching feature can only be done to the replica set Mongodb server so users
 ## need to run the available replica set first
-## and also 
 
 proc main =
   var mongo = newMongo(
