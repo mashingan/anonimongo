@@ -389,6 +389,12 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     query: decodeQuery(uri[0].query),
     readPreference: ReadPreference.primary
   )
+
+  if uri[0].path != "":
+    var paths = uri[0].path.split("/")
+    if paths.len > 1:
+      result.db = paths[1]
+
   for u in uri:
     let port = try: parseInt(u.port)
               except ValueError: 27017
@@ -414,9 +420,6 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
 
   result.checkTlsValidity
 
-  if "authSource".toLower in result.query:
-    result.db = result.query["authsource"][0]
-
   result.handleSsl
 
   if "readPreference".toLowerAscii in result.query:
@@ -432,6 +435,11 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     when verbose: dump result.query["compressors"]
     result.compressions = result.query["compressors"].mapIt(it.parseEnum[:CompressorId])
     when verbose: dump result.compressions
+
+  if "authsources" in result.query and result.query["authsources"].len > 0:
+    var paths = result.query["authsources"][0].split("/")
+    if paths.len > 1 and result.db != "":
+      result.db = paths[1]
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated

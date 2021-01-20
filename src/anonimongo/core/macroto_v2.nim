@@ -295,7 +295,7 @@ template identDefsCheck(nodeBuilder: var NimNode, nodeInfo: NodeInfo,
       fieldobj = fieldobj[0]
     newinfo.fieldImpl = fieldobj.getImpl
     elseStmt.add assignObj(newinfo)
-  elif fieldTypeImpl.kind == nnkBracketExpr:
+  elif fieldTypeImpl.kind == nnkBracketExpr and ($fieldTypeImpl[0] in ["seq", "array"]):
     var fieldseq = fieldtype
     # handle when direct form of seq[Type] or array[N, Type]
     if fieldseq.kind != nnkBracketExpr:

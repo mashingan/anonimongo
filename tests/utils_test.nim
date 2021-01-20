@@ -41,9 +41,6 @@ proc startmongo*: Process =
     "--bind_ip_all",
     "--networkMessageCompressors", "snappy,zlib",
     "--auth"]
-  when defined(uri):
-    args.add "--networkMessageCompressors"
-    args.add "snappy,zlib"
   when defined(ssl):
     args.add "--sslMode"
     args.add "requireSSL"
