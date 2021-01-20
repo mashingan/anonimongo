@@ -1,8 +1,10 @@
+import tables
 import anonimongo/core/[bson, types, wire]
 import anonimongo/dbops/[aggregation, admmgmt, client, crud, diagnostic,
        freemonitoring, rolemgmt, replication]
 import anonimongo/[changestreams, collections, gridfs]
 
+export tables.pairs
 export bson, types, wire
 export admmgmt, client, crud, rolemgmt, aggregation, diagnostic,
        freemonitoring, replication
