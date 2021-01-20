@@ -420,9 +420,6 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
 
   result.checkTlsValidity
 
-  if "authSource".toLower in result.query:
-    result.db = result.query["authsource"][0]
-
   result.handleSsl
 
   if "readPreference".toLowerAscii in result.query:
