@@ -40,9 +40,12 @@ suite "Client connection and user management tests":
 
     reply = waitFor db.usersInfo(existingUser)
     let users = reply["users"]
-    check users.len == 1
-    let theuser = users[0]
-    check theuser["user"] == user
+    when defined(existingMongoSetup):
+      check users.len == 1
+      let theuser = users[0]
+      check theuser["user"] == user
+    else:
+      check users.len == 0
 
   test &"Create new user: {newuser}":
     wr = waitFor db.createUser(newuser, newuser,
