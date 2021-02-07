@@ -20,9 +20,9 @@ suite "Client connection and user management tests":
   var wr: WriteResult
 
   let existingDb = "temptest"
-  let existingUser = bson({
-    usersInfo: { user: user, db: "admin" },
-  })
+  let existingUser = bson {
+    user: user, db: "admin"
+  }
   let newuser = "temptest-user"
 
   test "Connected mongo and authenticated":
@@ -34,40 +34,82 @@ suite "Client connection and user management tests":
     require mongo != nil
     db = mongo[existingDb]
     # test looking for not existing user
-    var reply = waitFor db.usersInfo(bson({
-      usersInfo: { user: "not-exists0user", db: "admin"}}))
-    var (success, reason) = check reply
-    check success
-    # test for invalid command
-    reply = waitFor db.usersInfo(bson({
-      user: "rdruffy", db: "admin"
-    }))
-    (success, reason) = check reply
-    check not success
-    "Look user with invalid command: ".tell reason
+    var reply = waitFor db.usersInfo("not-exists0user")
+    check reply.ok
+    check reply["users"].len == 0
+
     reply = waitFor db.usersInfo(existingUser)
-    (success, reason) = check reply
-    success.reasonedCheck("usersInfo error", reason)
+    let users = reply["users"]
+    check users.len == 1
+    let theuser = users[0]
+    check theuser["user"] == user
 
   test &"Create new user: {newuser}":
     wr = waitFor db.createUser(newuser, newuser,
       roles = bsonArray("read"), customData = bson({ role: "testing"}))
     wr.success.reasonedCheck("createUser error", wr.reason)
+    var reply = waitFor db.usersInfo(newuser)
+    check reply.ok
+    let users = reply["users"]
+    check users.len == 1
+    let newdoc = users[0].ofEmbedded
+    check newdoc["user"] == newuser
+    check newdoc["customData"]["role"] == "testing"
+
+  test &"Look for all users in {existingDb}":
+    let reply = waitFor db.usersInfo(1)
+    check reply.ok
+    check reply["users"].len == 1
+
+  test &"No added {newuser} to admin database":
+    let reply = waitFor db.usersInfo(bson {
+      user: newuser, db: "admin",
+    })
+    check reply.ok
+    check reply["users"].len == 0
+
+  test &"Check info of the connected user {db.db.username}":
+    let reply = waitFor db.usersInfo(bson {
+      user: db.db.username, db: "admin"
+    })
+    check reply.ok
+    let users = reply["users"]
+    check users.len == 1
 
   test &"Grant roles to {newuser}":
     wr = waitFor db.grantRolesToUser(newuser,
       roles = bsonArray("readWrite"))
     wr.success.reasonedCheck("grantRolesToUser error", wr.reason)
 
+  proc checkUserRoles(checkRoles: seq[string]) {.used.} =
+    var reply = waitFor db.usersInfo(newuser)
+    check reply.ok
+    let users = reply["users"]
+    check users.len == 1
+    for udoc in users.ofArray:
+      let roles = udoc["roles"].ofArray
+      check roles.len == checkRoles.len
+      for role in roles.ofArray:
+        check role["role"] in checkRoles
+
+  test &"Check newly granted roles to {newuser}":
+    checkUserRoles @["read", "readWrite"]
+
   test &"Revoke roles to {newuser}":
     wr = waitFor db.revokeRolesFromUser(newuser,
-      roles = bsonArray("readWrite"))
+      roles = bsonArray("read", "readWrite"))
     wr.success.reasonedCheck("revokeRolesFromUser error", wr.reason)
+
+  test &"Check newly revoked roles to {newuser}":
+    checkUserRoles @[]
 
   test &"Update {newuser}":
     wr = waitFor db.updateUser(newuser, newuser,
       roles = bsonArray("read"))
     wr.success.reasonedCheck("updateUser error", wr.reason)
+
+  test &"Check newly updated roles to {newuser}":
+    checkUserRoles @["read"]
 
   test &"Delete/drop the {newuser}":
     wr = waitFor db.dropUser(newuser)

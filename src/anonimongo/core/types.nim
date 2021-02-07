@@ -537,6 +537,9 @@ proc appname*(m: Mongo): string =
   else:
     result = ""
 
+func username*(m: Mongo): string =
+  m.main.username
+
 proc tailableCursor*(m: Mongo) =
   ## Set `Mongo<#Mongo>`_ to support TailableCursor
   m.flags.incl Flags.TailableCursor
