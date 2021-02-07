@@ -436,8 +436,8 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     result.compressions = result.query["compressors"].mapIt(it.parseEnum[:CompressorId])
     when verbose: dump result.compressions
 
-  if "authsources" in result.query and result.query["authsources"].len > 0:
-    var paths = result.query["authsources"][0].split("/")
+  if "authsource" in result.query and result.query["authsource"].len > 0:
+    var paths = result.query["authsource"][0].split("/")
     if paths.len > 1 and result.db != "":
       result.db = paths[1]
 

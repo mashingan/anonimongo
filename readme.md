@@ -74,9 +74,9 @@ the `MongoUri` overload has better support for various client options such as
 + `w` (as write concern option).
 + `retryableWrites` which can be supplied with `false` (default) or `true`.
 + `compressors` which support list of compressor: `snappy` and `zlib`.
-+ `authSources` that point which database we want to authenticate.  
++ `authSource` that point which database we want to authenticate.  
 This won't be used if in the `MongoUri` users provide the path to the database intended.  
-So the database source in case of `MongoUri` `"mongodb://localhost:27017/not-admin?authSources=admin"` is `"not-admin"`.
+So the database source in case of `MongoUri` `"mongodb://localhost:27017/not-admin?authSource=admin"` is `"not-admin"`.
 + `ssl` or `tls` which can be `false` (default if not using `mongodb+srv` scheme), or true (default if using `mongodb+srv` scheme).
 + `tlsInsecure`, `tlsAllowInvalidCertificates`, `tlsAllowInvalidHostnames`. Please refer to Mongodb documentation
 as these 3 options have elaborate usage. In most cases, users don't have to bother about these 3 options.
