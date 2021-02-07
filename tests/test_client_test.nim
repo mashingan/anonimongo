@@ -74,7 +74,16 @@ suite "Client connection and user management tests":
     })
     check reply.ok
     let users = reply["users"]
-    check users.len == 1
+
+    # This is needed to avoid the tripping of number users in admin when
+    # running github action.
+    # Since the os used, Ubuntu, has pristine mongo installation so
+    # there's no user created for it hence it's always returning zero
+    # when checking the users in admin databaes.
+    when defined(existingMongoSetup):
+      check users.len == 1
+    else:
+      check users.len == 0
 
   test &"Grant roles to {newuser}":
     wr = waitFor db.grantRolesToUser(newuser,
