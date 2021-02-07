@@ -152,8 +152,21 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
     mechanism, writeConcern, customData)
   result = await cuUsers(db, q)
 
-proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
-  result = await sendops(query, db, cmd = ckRead)
+proc usersInfo*(db: Database, usersInfo: BsonBase, showCredentials = false,
+  showPrivileges = false, showAuthenticationRestictions = false,
+  filters = bson(), comment = bsonNull()): Future[BsonDocument]{.async.} =
+  var q = bson {
+    usersInfo: usersInfo
+  }
+  for _, (k, v) in [("showCredentials", showCredentials),
+    ("showPrivileges", showPrivileges),
+    ("showAuthenticationRestictions", showAuthenticationRestictions)]:
+    if v: q[k] = v
+  if not filters.isNil:
+    q["filters"] = filters
+  if not comment.isNil:
+    q["comment"] = comment
+  result = await db.crudops(q, cmd = ckRead)
 
 proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
