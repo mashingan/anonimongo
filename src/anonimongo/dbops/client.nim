@@ -26,7 +26,7 @@ when verbose:
 const
   drivername = "anonimongo"
   description = "nim mongo driver"
-  anonimongoVersion* = "0.5.0"
+  anonimongoVersion* = "0.5.2"
 
 proc handshake(m: Mongo, isMaster: bool, s: AsyncSocket, db: string, id: int32,
   appname = "Anonimongo client apps"):Future[ReplyFormat] {.async.} =
@@ -152,8 +152,21 @@ proc updateUser*(db: Database, user, pwd: string, roles = bsonArray(),
     mechanism, writeConcern, customData)
   result = await cuUsers(db, q)
 
-proc usersInfo*(db: Database, query: BsonDocument): Future[ReplyFormat]{.async.} =
-  result = await sendops(query, db, cmd = ckRead)
+proc usersInfo*(db: Database, usersInfo: BsonBase, showCredentials = false,
+  showPrivileges = false, showAuthenticationRestictions = false,
+  filters = bson(), comment = bsonNull()): Future[BsonDocument]{.async.} =
+  var q = bson {
+    usersInfo: usersInfo
+  }
+  for _, (k, v) in [("showCredentials", showCredentials),
+    ("showPrivileges", showPrivileges),
+    ("showAuthenticationRestictions", showAuthenticationRestictions)]:
+    if v: q[k] = v
+  if not filters.isNil:
+    q["filters"] = filters
+  if not comment.isNil:
+    q["comment"] = comment
+  result = await db.crudops(q, cmd = ckRead)
 
 proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropAllUsersFromDatabase, 1)
@@ -175,26 +188,25 @@ proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
     result.success = false
     result.reason = stat.errMsg
     return
-  #result = (true, stat["n"].ofInt)
   result.n = stat["n"]
 
 proc dropUser*(db: Database, user: string): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropUser, user)
   result = await db.proceed(q)
 
-proc roleOps(db: Database, user: string, roles = bsonArray(),
-  writeConcern = bsonNull()): Future[WriteResult] {.async.} =
+template grantOrRevoke(db: Database, op: untyped, user: string,
+  roles, writeConcern: BsonBase): untyped =
   var q = bson({
-    grantRolesToUser: user,
+    `op`: user,
     roles: roles,
   })
   q.addWriteConcern(db, writeConcern)
-  result = await db.proceed(q)
+  q
 
 proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[WriteResult] {.async.} =
-  result = await roleOps(db, user, roles, writeConcern)
+  result = await db.proceed(grantOrRevoke(db, grantRolesToUser, user, roles, writeConcern))
 
 proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[WriteResult] {.async.} =
-  result = await roleOps(db, user, roles, writeConcern)
+  result = await db.proceed(grantOrRevoke(db, revokeRolesFromUser, user, roles, writeConcern))

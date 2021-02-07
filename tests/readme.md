@@ -83,6 +83,20 @@ nim c -r tests/test_gridfs_test.nim
 nimble test
 ```
 
+For reference, this is my own `config.nims` for my local setting:
+
+```nim
+switch("define", "filename=D:/Downloads/Date A Bullet [Preview] [1080p].mp4")
+switch("define", "saveas=date_bullet_preview.mp4")
+switch("define", "key=")
+switch("define", "cert=")
+switch("define", "testReplication=yes")
+switch("define", "testChangeStreams=yes")
+switch("define", "uri")
+switch("define", "existingMongoSetup")
+"ConvFromXToItselfNotNeeded".hint off
+```
+
 Any others variable can be checked in that [utils_test.nim](utils_test.nim).  
 In the platform where these tests run, the Mongo server only boot-up when the any of test running
 (except `test_bson_test.nim`) and then shutdown the Mongo server before the test ends. This only works
