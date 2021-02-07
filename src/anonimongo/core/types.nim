@@ -436,10 +436,9 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     result.compressions = result.query["compressors"].mapIt(it.parseEnum[:CompressorId])
     when verbose: dump result.compressions
 
-  if "authsource" in result.query and result.query["authsource"].len > 0:
-    var paths = result.query["authsource"][0].split("/")
-    if paths.len > 1 and result.db != "":
-      result.db = paths[1]
+  if "authsource" in result.query and result.query["authsource"].len > 0 and
+    result.db == "":
+    result.db = result.query["authsource"][0]
 
 proc tls*(m: Mongo): bool = m.tls
 proc authenticated*(m: Mongo): bool = m.authenticated
