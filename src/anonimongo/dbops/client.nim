@@ -175,26 +175,25 @@ proc dropAllUsersFromDatabase*(db: Database): Future[WriteResult] {.async.} =
     result.success = false
     result.reason = stat.errMsg
     return
-  #result = (true, stat["n"].ofInt)
   result.n = stat["n"]
 
 proc dropUser*(db: Database, user: string): Future[WriteResult] {.async.} =
   let (_, q) = dropPrologue(db, dropUser, user)
   result = await db.proceed(q)
 
-proc roleOps(db: Database, user: string, roles = bsonArray(),
-  writeConcern = bsonNull()): Future[WriteResult] {.async.} =
+template grantOrRevoke(db: Database, op: untyped, user: string,
+  roles, writeConcern: BsonBase): untyped =
   var q = bson({
-    grantRolesToUser: user,
+    `op`: user,
     roles: roles,
   })
   q.addWriteConcern(db, writeConcern)
-  result = await db.proceed(q)
+  q
 
 proc grantRolesToUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[WriteResult] {.async.} =
-  result = await roleOps(db, user, roles, writeConcern)
+  result = await db.proceed(grantOrRevoke(db, grantRolesToUser, user, roles, writeConcern))
 
 proc revokeRolesFromUser*(db: Database, user: string, roles = bsonArray(),
   writeConcern = bsonNull()): Future[WriteResult] {.async.} =
-  result = await roleOps(db, user, roles, writeConcern)
+  result = await db.proceed(grantOrRevoke(db, revokeRolesFromUser, user, roles, writeConcern))
