@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.5.0"
+version       = "0.5.2"
 author        = "Rahmatullah"
 description   = "Anonimongo - Another pure Nim Mongo driver"
 license       = "MIT"
