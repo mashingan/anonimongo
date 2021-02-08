@@ -221,7 +221,7 @@ close mongo
 ```
 
 In the [test_replication_sslcon.nim](tests/test_replication_sslcon.nim), there's example of emulated
-[DNS server custom for `SRV`](tests/test_replication_sslcon.nim#L105-L120)
+[DNS server custom for `SRV`](tests/utils_replica.nim#L29-L92)
 of DNS seedlist lookup. So the URI to connect is `localhost:5000` which in return replying with
 `localhost:27018`, `localhost:27019` and `localhost:27020` as domain of replication set.
 
