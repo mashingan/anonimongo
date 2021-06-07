@@ -8,6 +8,9 @@ on any machine that support Docker.
 
 # Run example
 
+Set the environment variable of TODOLIST_PATH to point where it resides, or manually change the volumes
+field in `docker-compose.yml`.
+
 In case of just running the example to see how it works, simply run
 
 ```
