@@ -8,8 +8,7 @@ import types
 let
   appName = getEnv("appName", "Todolist app")
   mongo = newMongo(
-    # MongoUri "mongodb://rootuser:rootpass@mongodb:27017/admin",
-    MongoUri fmt"mongodb://localhost:27017/admin?appName={appName}",
+    MongoUri fmt"mongodb://rootuser:rootpass@mongodb:27017/admin&appName={appName}",
     poolconn = 8,
   )
 
@@ -20,9 +19,9 @@ block tryconnect:
       if not waitFor mongo.connect:
         echo "cannot connect to mongo"
         continue
-      #if not waitfor mongo.authenticate[:SHA1Digest]:
-        #echo "cannot authenticate"
-        #continue
+      if not waitfor mongo.authenticate[:SHA1Digest]:
+        echo "cannot authenticate"
+        continue
       connectSuccess = true
       break tryconnect
     except:
