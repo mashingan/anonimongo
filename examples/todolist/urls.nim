@@ -5,6 +5,6 @@ import ./views
 const urlPatterns* = @[
   pattern("/", todoList),
   pattern("/new", newItem),
-  pattern("/edit/{id}/{task}", editItem),
+  pattern("/edit/{id}", editItem),
   pattern("/item/{item}", showItem)
 ]

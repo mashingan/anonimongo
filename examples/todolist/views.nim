@@ -6,8 +6,10 @@ import ./templates/basic
 import types
 
 let
+  appName = getEnv("appName", "Todolist app")
   mongo = newMongo(
-    MongoUri "mongodb://rootuser:rootpass@mongodb:27017/admin",
+    # MongoUri "mongodb://rootuser:rootpass@mongodb:27017/admin",
+    MongoUri fmt"mongodb://localhost:27017/admin?appName={appName}",
     poolconn = 8,
   )
 
@@ -18,9 +20,9 @@ block tryconnect:
       if not waitFor mongo.connect:
         echo "cannot connect to mongo"
         continue
-      if not waitfor mongo.authenticate[:SHA1Digest]:
-        echo "cannot authenticate"
-        continue
+      #if not waitfor mongo.authenticate[:SHA1Digest]:
+        #echo "cannot authenticate"
+        #continue
       connectSuccess = true
       break tryconnect
     except:
@@ -91,7 +93,7 @@ proc editItem*(ctx: Context) {.async, gcsafe.} =
   else:
     let
       id = parseOid ctx.getPathParams("id", "").cstring
-      task = ctx.getPathParams("task", "")
+      task: string = try: (await todocoll.findOne(bson { "_id": id }))["title"] except: ""
     resp htmlResponse(editList(id, task))
 
 proc showItem*(ctx: Context) {.async, gcsafe.} =

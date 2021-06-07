@@ -16,7 +16,7 @@ proc makeList*(rows: seq[Entry]): string =
         tr:
           td: a(href = fmt"/item/{row.id}"): text row.title
           td: text(if row.isTodo: "todo" else: "done")
-          td: a(href = fmt"/edit/{row.id}/{row.title}"): text "Edit"
+          td: a(href = fmt"/edit/{row.id}"): text "Edit"
     p: a(href = "/new"): text "New Item"
   result = $vnode
 
