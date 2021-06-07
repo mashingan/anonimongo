@@ -94,7 +94,7 @@ proc connect*(m: Mongo): Future[bool] {.async.} =
         if "compression" in b: b["compression"].ofArray.mapIt(
           it.ofString.parseEnum[:CompressorId])
         else: @[]
-      echo "Server support compressions: ", serverCompressions
+      when verbose: echo "Server support compressions: ", serverCompressions
       m.compressions = serverCompressions
 
 proc cuUsers(db: Database, query: BsonDocument):

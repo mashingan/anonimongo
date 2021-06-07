@@ -15,6 +15,7 @@
     - [Convert with custom key Bson](#convert-with-custom-key-bson)
     - [Convert Json to and Bson and vice versa](#convert-json-bson)
     - [Watching a collection](#watching-a-collection)
+    - [Todolist app](#todolist-app)
 
 3. [Specific Mentions for Working with Bson](#working-with-bson)
 4. [Install](#install)
@@ -630,6 +631,10 @@ proc main =
 
 main()
 ```
+
+### Todolist App
+
+Head over to [Todolist Example](examples/todolist).
 
 
 [TOC](#table-of-content)
