@@ -11,7 +11,7 @@ bin           = @["app"]
 # Dependencies
 
 requires "nim >= 1.4.2", "jester", "karax",
-         "anonimongo", "ws"
+         "anonimongo#head", "ws", "httpbeast"
 
 task build, "Unit test Bson":
   exec "nim c -d:danger --passL:\"-static -no-pie\" app.nim"

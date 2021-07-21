@@ -1,14 +1,24 @@
 <!DOCTYPE html>
 <html lang=en>
-  <head>
-    <meta charset="utf-8">
-    <title>Upload File</title>
-    <script src="/js/app.js"></script>
-  </head>
-  <body>
+
+<head>
+  <meta charset="utf-8">
+  <title>Upload File</title>
+  <script src="/js/app.js"></script>
+  <link rel="stylesheet" type="text/css" href="/css/style.css" media="screen" />
+</head>
+
+<body>
+  <div class="div-body">
     <form action="" method="post" enctype="multipart/form-data">
-      <input id="input-field" type="file" name="file" value="file"/>
-      <input type="button" value="Submit" name="submit-button" onclick="submit_file()"/>
+      <input id="input-field" type="file" name="file" value="file" />
+      <input class="submit" type="button" value="Submit" name="submit-button" onclick="submit_file()" />
     </form>
-  </body>
+    <div id="upload-info" class="upload-info">
+      Upload Failed.
+    </div>
+    <a href="/list">Back to list</a>
+  </div>
+</body>
+
 </html>

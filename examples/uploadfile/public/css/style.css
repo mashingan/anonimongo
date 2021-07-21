@@ -1,0 +1,36 @@
+body {
+  width: 360px;
+  height: 640px;
+}
+
+.div-body {
+  width: 80%;
+}
+
+form {
+  display: block;
+  /* width: 80%; */
+  margin: 0 auto;
+}
+
+input {
+  display: block;
+  /* width: 80%; */
+  margin-top: 10px;
+}
+
+.submit {
+  width: 100%;
+  background-color: cadetblue;
+  margin-bottom: 10px;
+}
+
+.upload-info {
+  display: none;
+  width: 78%;
+  border: 5px solid red;
+  /* border-radius: 5%; */
+  background-color: red;
+  margin: 5px auto 0 auto;
+  text-align: center;
+}

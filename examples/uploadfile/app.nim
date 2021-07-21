@@ -9,8 +9,8 @@ let
   appName = getEnv("appName", "Upload Grid FS")
   portApp = Port(try: parseInt(getEnv("port", "3000")) except: 3000)
   mongo = newMongo(
-    MongoUri fmt"mongodb://rootuser:rootpass@localhost:27017/admin?appName={appName}",
-    # MongoUri fmt"mongodb://localhost:27017/temptest&appName={appName}",
+    MongoUri fmt"mongodb://rootuser:rootpass@mongodb:27017/admin?appName={appName}",
+    # MongoUri fmt"mongodb://localhost:27017/admin?appName={appName}",
     poolconn = 8,
   )
 
@@ -24,9 +24,9 @@ block tryconnect:
       if not waitFor mongo.connect:
         echo "cannot connect to mongo"
         continue
-      # if not waitfor mongo.authenticate[:SHA1Digest]:
-      #   echo "cannot authenticate"
-      #   continue
+      if not waitfor mongo.authenticate[:SHA1Digest]:
+        echo "cannot authenticate"
+        continue
       connectSuccess = true
       break tryconnect
     except:
@@ -38,16 +38,21 @@ var grid = waitfor mongo["temptest"].getBucket()
 #var wr = waitfor grid.uploadFile(filename)
 
 proc generateList: Future[VNode] {.async.} =
-  result = buildHtml(ul):
-    for fname in await grid.listFileNames:
-      let linkhref = fmt"""http://localhost:{$portApp.int}/play/{fname}"""
-      li:
-        a(href=linkhref): text fname
+  result = buildHtml(tdiv):
+    ul:
+      for fname in await grid.listFileNames:
+        let linkhref = fmt"""http://localhost:{$portApp.int}/play/{fname}"""
+        li:
+          a(href=linkhref): text fname
+
+    a(href="/upload.html"): text "Upload new file"
 
 proc generatePlayer(fname: string): VNode =
   discard
 
 routes:
+  get "/":
+    redirect uri("/list")
   get "/list":
     resp $(await generateList())
     # resp Http404, "List is not available yet"
@@ -76,6 +81,7 @@ routes:
   get "/play/@videofile":
     #await request.sendHeaders(newHttpHeaders([
     #  ("Content-Type", "video/mkv")]))
+    enableRawMode()
     try:
       var gs = await grid.getStream(@"videofile")
       defer: close gs
@@ -98,16 +104,12 @@ routes:
         request.send(data)
         await sleepAsync(100)
 
-      resp Http200, "ok"
+      # resp Http200, "ok"
     except:
       let excmsg = getCurrentExceptionMsg()
       dump excmsg
-      resp Http500, excmsg
-    #request.client.close()
-    #close request
-    #var native = request.getNativeReq
-    #close native.client
-    #break route
+
+    redirect uri "/list"
 
  # get "/live":
   #   await response.sendHeaders()
@@ -120,51 +122,38 @@ routes:
   #   quitapp()
   get "/ws-upload":
     echo "in ws-upload"
+    var wsconn = await newWebSocket(request)
     try:
-      var wsconn = await newWebSocket(request)
       await wsconn.send("send the filename")
       var fname = await wsconn.receiveStrPacket()
       var f = openAsync(fname, fmWrite)
       while wsconn.readyState == Open:
         let (op, seqbyte) = await wsconn.receivePacket()
-        if op != Binary:
-          resp Http400, "invalid sent format"
-          wsconn.close()
-          return
-        var cnt = 0
-        if seqbyte.len < 4096:
-          await f.write seqbyte.join
-          continue
+        if op == Text:
+          let msg = $seqbyte
+          if msg == "done":
+            await wsconn.send("ok")
+            break
+        if op == Binary:
+          # resp Http400, "invalid sent format"
+          # wsconn.close()
+          # return
+          var cnt = 0
+          if seqbyte.len < 4096:
+            await f.write seqbyte.join
+            continue
 
-        while cnt < (seqbyte.len-4096):
-          let datastr = seqbyte[cnt .. cnt+4095].join
-          cnt.inc 4096
-          await f.write(datastr)
+          while cnt < (seqbyte.len-4096):
+            let datastr = seqbyte[cnt .. cnt+4095].join
+            cnt.inc 4096
+            await f.write(datastr)
+        await wsconn.send("ok")
 
-        wsconn.close()
+      wsconn.close()
       f.close()
       discard await grid.uploadFile(fname)
+      removeFile fname
     except:
+      await wsconn.send("error")
       echo "websocket close: ", getCurrentExceptionMsg()
     resp Http200, "file uploaded"
-
-  # post "/upload":
-  #   echo "in upload"
-  #   var f: AsyncFile
-  #   var fstream = newFutureStream[string]("routes.upload")
-  #   try:
-  #     f = openAsync("uploaded.file", fmWrite)
-  #   except IOError:
-  #     echo getCurrentExceptionMsg()
-  #     resp Http500, "Cannot upload file"
-  #     return
-  #   echo "ready to write"
-  #   var datastream = newStringStream(request.formData.getOrDefault("file").body)
-  #   # var asyncwrite = f.writeFromStream(fstream)
-  #   while not datastream.atEnd:
-  #     # read each of 500 bytes
-  #     let strdata = datastream.readStr(1024 * 1024)
-  #     echo strdata.len
-  #     await fstream.write strdata
-  #   fstream.complete
-  #   resp Http200, "uploaded"

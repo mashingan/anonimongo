@@ -9,13 +9,13 @@ services:
       - PUID=1000
       - PGID=1000
     volumes:
-      - $TODOLIST_PATH/database:/data
+      - ./database:/data
     networks: 
       - mongodb_network
     ports:
       - 27017:27017
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo 10.10.10.60:27017/test --quiet
+      test: echo 'db.runCommand("ping").ok' | mongo mongodb:27017/test --quiet
       interval: 30s
       timeout: 10s
       retries: 3
@@ -31,7 +31,7 @@ services:
     - ME_CONFIG_BASICAUTH_USERNAME=admin
     - ME_CONFIG_BASICAUTH_PASSWORD=admin123
     volumes:
-      - $TODOLIST_PATH/database:/data/db
+      - ./database:/data/db
     depends_on: 
       - mongodb
     networks: 
@@ -39,32 +39,30 @@ services:
     ports:
       - 8081:8081
     healthcheck:
-      test: wget --quiet --tries=3 --spider http://admin:admin123@10.10.10.60:8081 || exit 1
+      test: wget --quiet --tries=3 --spider http://admin:admin123@mongo-express:8081 || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
-  prologue-app:
+  upload-file:
     # image: prologue-app
     build: .
-    container_name: todolist-mongo
+    container_name: upload-file
     volumes:
-      - $TODOLIST_PATH:/data/db
+      - .:/data/db
     depends_on: 
       - mongodb
     networks: 
       - mongodb_network
     ports: 
-      - 8080:8080
+      - 3000:3000
     environment: 
       - WAIT_HOST=mongodb:27017
       - WAIT_HOST_TIMEOUT=300
       - WAIT_SLEEP_INTERVAL=30
       - WAIT_HOST_CONNECT_TIMEOUT=30
       - debug=true
-      - port=8080
-      - appName=TodoList
-      - staticDir=/static
-      - secretKey=Pr435ol67ogue
+      - port=3000
+      - appName=UploadFile
 volumes:
   mongodb-data:
     name: mongodb-data

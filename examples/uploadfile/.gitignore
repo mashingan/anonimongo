@@ -4,3 +4,4 @@ nimbledeps/*
 !config.nims
 buildcache/*
 !buildcache/.gitkeep
+database
