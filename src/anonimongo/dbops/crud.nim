@@ -1,4 +1,4 @@
-import tables, sequtils
+import tables, sequtils, asyncdispatch
 import ../core/[bson, types, wire, utils]
 import diagnostic
 
@@ -70,13 +70,15 @@ proc find*(db: Database, coll: string,query = bson(),
   else: result = await crudops(db, q)
 
 proc getMore*(db: Database, cursorId: int64, collname: string, batchSize: int,
-  maxTimeMS = 0): Future[BsonDocument]{.async.} =
+  maxTimeMS = -1): Future[BsonDocument]{.async.} =
   var q = bson({
     getMore: cursorId,
     collection: collname,
     batchSize: batchSize,
-    maxTimeMS: maxTimeMS,
    })
+   # added guard to fix this https://jira.mongodb.org/browse/DOCS-13346
+  if maxTimeMS >= 0 and db.db.isTailable:
+    q["maxTimeMS"] = maxTimeMS
   result = await db.crudops(q)
 
 proc insert*(db: Database, coll: string, documents: seq[BsonDocument],
