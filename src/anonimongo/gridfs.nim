@@ -354,6 +354,7 @@ type
 
 func currchunk(gs: GridStream): int = gs.data.n * gs.info.chunkSize
 func fileSize*(gs: GridStream): int64 = gs.info.length
+func metadata*(gs: GridStream): BsonDocument = gs.info.metadata
 
 proc close*(gs: GridStream) =
   gs.isClosed = true

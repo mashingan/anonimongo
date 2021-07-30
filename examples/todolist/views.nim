@@ -57,7 +57,9 @@ proc newItem*(ctx: Context) {.async, gcsafe.} =
     discard await todocoll.insert(@[
       bson { "_id": id, title: row, isTodo: true }
     ])
-    resp htmlResponse(fmt"<p>The new task was inserted into the database, the ID is {id}</p><a href=/>Back to list</a>")
+    resp htmlResponse(
+      fmt"<p>The new task was inserted into the database, the ID is {id}" &
+      "</p><a href=/>Back to list</a>")
   else:
     resp htmlResponse(newList())
 
