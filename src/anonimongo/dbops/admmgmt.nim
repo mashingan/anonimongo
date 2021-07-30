@@ -109,7 +109,16 @@ proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
   let res = reply.documents[0]
   if res.ok:
     when not defined(release):
-      echo "All database size: ", res["totalSize"].ofInt
+      # why this? in mongo 4.0 the size is double
+      # but during the build in github action, the type
+      # is changed to int hence this guard
+      stdout.write "All database size: "
+      let total = res["totalSize"]
+      if total.kind == bkDouble:
+        echo total.ofDouble
+      elif total.kind in [bkInt32,bkInt64]:
+        echo total.ofInt
+      # echo "All database size: ", res["totalSize"].ofInt
     result = res["databases"]
   else:
     echo res.errmsg
