@@ -10,9 +10,6 @@ bin           = @["app"]
 
 # Dependencies
 
-# requires "nim >= 1.4.2", "prologue", "karax",
-#          "nimSHA2 >= 0.1.1", "scram >= 0.1.9",
-#          "sha1 >= 1.1", "dnsclient", "supersnappy", "zippy"
 requires "nim >= 1.4.2", "prologue", "karax",
           "anonimongo"
 
