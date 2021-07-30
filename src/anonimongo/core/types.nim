@@ -548,6 +548,10 @@ proc noTailable*(m: Mongo) =
   ## Set `Mongo<#Mongo>`_ to not support TailableCursor
   m.flags.excl Flags.TailableCursor
 
+func isTailable*(m: Mongo): bool =
+  ## Check whether `Mongo<#Mongo>`_ is tailable set
+  Flags.TailableCursor in m.flags
+
 proc slaveOk*(m: Mongo) =
   ## Set `Mongo<#Mongo>`_ to support SlaveOk flag
   m.flags.incl Flags.SlaveOk
