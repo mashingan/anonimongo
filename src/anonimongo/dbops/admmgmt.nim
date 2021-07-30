@@ -109,7 +109,7 @@ proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
   let res = reply.documents[0]
   if res.ok:
     when not defined(release):
-      echo "All database size: ", res["totalSize"].ofDouble
+      echo "All database size: ", res["totalSize"].ofInt
     result = res["databases"]
   else:
     echo res.errmsg
