@@ -164,7 +164,10 @@ when testReplication and defined(ssl):
       let wr = waitfor tempcoll.insert(@[b])
       wr.success.reasonedCheck("Retry tempcoll.insert", wr.reason)
 
-    discard waitfor mongo.shutdown(timeout = 10)
+    # apparently in some mongodb version, there's this problem
+    # https://dba.stackexchange.com/questions/179616/mongodb-hangs-up-on-shutdown
+    # if the problem persists, this replication action test would be disabled.
+    discard waitfor mongo.shutdown(timeout = 10, force = true)
     mongo.close
     processes.cleanup
     sleep 3000
