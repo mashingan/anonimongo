@@ -53,16 +53,6 @@ else:
 ##   })
 ##   doAssert $bdoc == """{"arfield":["hello",1,4.2,true]}"""
 ##
-## Currently, based on test, we cannot add empty embed bson object literally
-## and had to define a variable for it, and also a field started with number,
-## e.g.
-##
-## .. code-block:: Nim
-##
-##   var _ = bson({ embed: {}, 1: "the field isn't supported too" })
-##
-## The snip above will throw compiler error because of empty set and macro
-## error because of something ``nnkIntLitNode``.
 ##
 ## .. _Bson spec: http://bsonspec.org
 ## .. _BsonDocument: #BsonDocument
