@@ -392,7 +392,7 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
       fmt"Invalid indexed retrieval of {b}, get {b.kind}")
   let value = (b as BsonArray).value
   if idx >= value.len:
-    when defined(anoIndexError):
+    when NimMinor < 4:
       raise newException(IndexError, fmt"{b}: {idx} not in 0..{value.len-1}")
     else:
       raise newException(IndexDefect, fmt"{b}: {idx} not in 0..{value.len-1}")
