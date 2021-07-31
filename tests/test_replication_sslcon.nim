@@ -150,10 +150,6 @@ when testReplication and defined(ssl):
       check true
 
     test "Retry inserting to database":
-      skip() # this weirdly hangs during github action
-             # likely because the above is skipped
-             # but this isn't happened in local dev
-             # with mongodb v4.0
       tempcoll = db["test"]
       let b = bson({
         entry: currtime,

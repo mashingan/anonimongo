@@ -61,9 +61,9 @@ proc withAuth*(m: Mongo): bool =
 
 proc testsetup*: Mongo =
   when defined(ssl):
-    let sslinfo = initSSLInfo(key, cert)
+    let sslinfo {.used.} = initSSLInfo(key, cert)
   else:
-    let sslinfo = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
+    let sslinfo {.used.} = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
   when not defined(uri):
     let mongo = newMongo(host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
   else:
