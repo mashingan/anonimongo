@@ -32,7 +32,10 @@ block tryconnect:
       break tryconnect
     except:
       echo getCurrentExceptionMsg()
-      sleep 5_000 # wait for 5 seconds
+      sleep 1_000 # wait for 5 seconds
+
+if not connectSuccess:
+  quit "Cannot connect mongo, quit!", QuitFailure
 
 #var grid = waitfor mongo["newtemptest"].createBucket()
 var grid = waitfor mongo["temptest"].getBucket()
