@@ -177,3 +177,11 @@ routes:
       await wsconn.send("error")
       echo "websocket close: ", getCurrentExceptionMsg()
     resp Http200, "file uploaded"
+  delete "/delete/@filename":
+    let fname = decodeUrl @"filename"
+    let matcher = bson { filename: fname }
+    let wr = await grid.removeFile(matcher, one = true)
+    if not wr.success:
+      resp Http500, wr.reason
+      return
+    resp Http200, fmt"{fname} is successfully deleted"
