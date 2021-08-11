@@ -3,7 +3,7 @@ from std/sugar import dump
 from std/strutils import parseInt
 from std/uri import decodeUrl
 import jester, ws, ws/jester_extra
-import anonimongo
+import anonimongo, anonimongo/core/pool
 import karax/[karaxdsl, vdom]
 
 let
@@ -41,13 +41,20 @@ if not connectSuccess:
 var grid = waitfor mongo["temptest"].getBucket()
 #var wr = waitfor grid.uploadFile(filename)
 
+template kxi: int = 0
+template addEventHandler(n: VNode; k: EventKind; action: string; kxi: int) =
+  n.setAttr($k, action)
+
 proc generateList: Future[VNode] {.async.} =
   result = buildHtml(tdiv):
-    ul:
-      for fname in await grid.listFileNames:
+    script(src="/js/app.js")
+    ul(id="list-file"):
+      for i, fname in await grid.listFileNames:
         let linkhref = fmt"""http://localhost:{$portApp.int}/play/{fname}"""
-        li:
+        let idnum = fmt"id-{$i}"
+        li(id=fmt"{idnum}"):
           a(href=linkhref): text fname
+          a(href="#", onclick=fmt"removeFile('{fname}','{idnum}')"): text "[-]"
 
     a(href="/upload.html"): text "Upload new file"
 
