@@ -47,3 +47,19 @@ function submit_file() {
   }
   return true;
 }
+
+async function removeFile( filename, refid ) {
+  let resp = await fetch( `/delete/${ filename }`, {
+    method: "DELETE",
+    mode: 'cors',
+    cache: 'no-cache',
+    credentials: 'same-origin',
+  } )
+  if ( resp.status === 200 ) {
+    let parentul = document.querySelector( "#list-file" )
+    let alink = document.querySelector( `#${ refid }` )
+    parentul.removeChild( alink )
+    console.log( `deleting ${ filename } is success` )
+  }
+  return true
+}
