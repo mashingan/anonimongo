@@ -10,8 +10,8 @@ bin           = @["app"]
 
 # Dependencies
 
-requires "nim >= 1.4.2", "jester", "karax",
+requires "nim >= 1.4.8", "jester", "karax",
          "anonimongo#head", "ws", "httpbeast"
 
-task build, "Unit test Bson":
-  exec "nim c -d:danger --passL:\"-static -no-pie\" app.nim"
+task build, "Default built command":
+  exec "nim c -d:danger --gc:orc -d:useMalloc --passL:\"-static -no-pie\" app.nim"
