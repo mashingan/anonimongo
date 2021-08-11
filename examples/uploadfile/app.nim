@@ -1,6 +1,7 @@
 import std/[os, asyncfile, asyncdispatch, asyncstreams, streams, strformat]
 from std/sugar import dump
 from std/strutils import parseInt
+from std/uri import decodeUrl
 import jester, ws, ws/jester_extra
 import anonimongo
 import karax/[karaxdsl, vdom]
@@ -47,8 +48,21 @@ proc generateList: Future[VNode] {.async.} =
 
     a(href="/upload.html"): text "Upload new file"
 
-proc generatePlayer(fname: string): VNode =
-  discard
+# proc generatePlayer(fname: string): VNode =
+#   discard
+
+proc recheckAndReconnect(g: GridFS): Future[void] {.async.} =
+  let _ = await mongo.connect
+  let _ = await mongo.authenticate[:SHA1Digest]
+  # for k, mongoconn in g.files.db.mongo.servers.mpairs:
+  # for k, mongoconn in g.files.db.db.servers.mpairs:
+  #   for id, conn in mongoconn.pool.connections.mpairs:
+  #     if conn.socket.isClosed:
+  #       conn = Connection(
+  #         socket: newAsyncSocket(),
+  #         id: id,
+  #       )
+
 
 routes:
   get "/":
@@ -78,13 +92,11 @@ routes:
 # </body>
 # </html>"""
 
-  get "/play/@videofile":
-    #await request.sendHeaders(newHttpHeaders([
-    #  ("Content-Type", "video/mkv")]))
+  get "/play/@sendfile":
     enableRawMode()
+    var gs: GridStream
     try:
-      var gs = await grid.getStream(@"videofile")
-      defer: close gs
+      gs = await grid.getStream(decodeUrl @"sendfile")
       dump gs.fileSize
       var curread = 0
       let metadata = gs.metadata
@@ -98,18 +110,23 @@ routes:
       ])
       while curread < gs.fileSize:
         var data = await gs.read(1500.kilobytes)
-        dump gs.getPosition
+        # dump gs.getPosition
         curread += data.len
-        dump curread
+        # dump curread
         request.send(data)
         await sleepAsync(100)
 
-      # resp Http200, "ok"
+    except IOError:
+      let ioerrmsg = getCurrentExceptionMsg()
+      asyncCheck(recheckAndReconnect grid)
+      dump ioerrmsg
     except:
       let excmsg = getCurrentExceptionMsg()
       dump excmsg
-
-    redirect uri "/list"
+    finally:
+      if gs != nil:
+        close gs
+      # close request
 
  # get "/live":
   #   await response.sendHeaders()
@@ -149,7 +166,7 @@ routes:
             await f.write(datastr)
         await wsconn.send("ok")
 
-      wsconn.close()
+      # wsconn.close()
       f.close()
       discard await grid.uploadFile(fname)
       removeFile fname
