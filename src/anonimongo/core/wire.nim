@@ -235,34 +235,3 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.async.} =
       discard
   when verbose:
     look result
-
-proc getMore*(s: AsyncSocket, id: int64, dbname, collname: string,
-  batchSize = 50, maxTimeMS = 0): Future[ReplyFormat] {.async.} =
-  ## Retrieve more data from cursor id. The returned documents
-  ## are in result["cursor"]["nextBatch"] instead of in firstBatch.
-  var ss = newStringStream()
-  let moreq = bson({
-    getMore: id,
-    collection: collname,
-    batchSize: batchSize,
-    maxTimeMS: maxTimeMS,
-  })
-  when verbose:
-    dump moreq
-  discard ss.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
-    0, 1, moreq)
-  await s.send ss.readAll
-  result = await s.getReply
-
-# not tested when there's no way to create database
-proc dropDatabase*(sock: AsyncSocket, dbname = "temptest",
-    writeConcern = newbson()): Future[ReplyFormat] {.async.} =
-  ## Artifact from older APIs development. Don't use it.
-  var q = newbson(("dropDatabase", 1.toBson))
-  if not writeConcern.isNil:
-    q["writeConcern"] = writeConcern
-  var s = newStringStream()
-  discard s.prepareQuery(0, 0, opQuery.int32, 0, dbname & ".$cmd",
-    0, 1, q)
-  await sock.send s.readAll
-  result = await sock.getReply
