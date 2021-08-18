@@ -40,22 +40,18 @@ proc forEach*(c: Cursor, cb: proc(b: ChangeStream),
   let collname = c.collname
   #defer: asyncCheck db.killCursors(collname, @[c.id])
   var cs: ChangeStream
+  template processEntry(el: untyped) =
+    cs = `el`.to ChangeStream
+    cb(cs)
+    when csVerbose: dump cs
+    if cs.operationType in stopWhen:
+      break always
   block always:
     while c.id != 0:
       when csVerbose: dump db == nil
       if db == nil: break always
-      for fbatch in c.firstBatch:
-        cs = fbatch.to ChangeStream
-        cb(cs)
-        when csVerbose: dump cs
-        if cs.operationType in stopWhen:
-          break always
-      for nbatch in c.nextBatch:
-        cs = nbatch.to ChangeStream
-        cb(cs)
-        when csVerbose: dump cs
-        if cs.operationType in stopWhen:
-          break always
+      for fbatch in c.firstBatch: processEntry fbatch
+      for nbatch in c.nextBatch: processEntry nbatch
       var forEachReply: BsonDocument
       try:
         forEachReply = await db.getMore(c.id, collname, 101)
