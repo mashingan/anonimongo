@@ -20,3 +20,4 @@ nimcache/
 *.mp4
 
 config.nims
+*.settings
