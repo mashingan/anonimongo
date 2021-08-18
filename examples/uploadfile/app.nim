@@ -47,7 +47,7 @@ template addEventHandler(n: VNode; k: EventKind; action: string; kxi: int) =
 
 proc generateList: Future[VNode] {.async.} =
   result = buildHtml(tdiv):
-    script(src="/js/app.js")
+    script(src="/js/appjs.js")
     ul(id="list-file"):
       for i, fname in await grid.listFileNames:
         let linkhref = fmt"""http://localhost:{$portApp.int}/play/{fname}"""
