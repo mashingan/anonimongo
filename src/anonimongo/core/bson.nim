@@ -6,6 +6,7 @@ from strutils import parseHexInt, join, parseInt, toHex,
 from strformat import fmt
 from sequtils import toSeq
 from lenientops import `/`, `+`, `*`
+import streamable
 
 export strutils
 
@@ -59,7 +60,7 @@ else:
 ## .. _BsonBase: #BsonBase
 ## .. _BsonArray: #BsonArray
 
-template writeLE*[T](s: Stream, val: T): untyped =
+template writeLE*[T](s: Streamable, val: T): untyped =
   ## Utility template to write any value to comply to
   ## less endian byte stream.
   when cpuEndian == bigEndian:
@@ -75,7 +76,7 @@ template writeLE*[T](s: Stream, val: T): untyped =
   else:
     s.write val
 
-template readIntLE*(s: Stream, which: typedesc): untyped =
+template readIntLE*(s: Streamable, which: typedesc): untyped =
   ## Utility template to read int value which int type is
   ## specified in less endian format and adapt accordingly
   ## to current machine endianess.
@@ -95,7 +96,7 @@ template readIntLE*(s: Stream, which: typedesc): untyped =
       s.readInt64
 
 
-template readFloatLE(s: Stream): untyped =
+template readFloatLE(s: Streamable): untyped =
   ## Read less endian float64
   when cpuEndian == bigEndian:
     var tempBE = s.readFloat64
@@ -105,7 +106,7 @@ template readFloatLE(s: Stream): untyped =
   else:
     s.readFloat64
 
-template peekInt32LE*(s: Stream): untyped =
+template peekInt32LE*(s: Streamable): untyped =
   ## Peek less endian int32
   when cpuEndian == bigEndian:
     var tempbe = s.peekInt32
@@ -209,7 +210,7 @@ type
     ## Any user will mainly handle this often instead of
     ## BsonBase.
     table: BsonInternal
-    stream: Stream
+    stream: Streamable
     filename: string
     encoded*: bool
       ## Flag whether the document already encoded
@@ -401,7 +402,7 @@ proc `[]`*(b: BsonBase, idx: sink int): BsonBase =
 proc clearStream(b: var BsonDocument) =
   b.encoded = false
   if b.filename == "":
-    b.stream = newStringStream()
+    b.stream = newStream()
   else:
     b.stream = newFileStream(b.filename, fmReadWrite)
 
@@ -643,7 +644,7 @@ proc `$`*(doc: BsonDocument): string =
     result &= '}'
 
 
-proc writeKey(s: Stream, key: string, kind: BsonKind): int32 =
+proc writeKey(s: Streamable, key: string, kind: BsonKind): int32 =
   s.write kind.byte
   s.write key
   s.write 0x00.byte
@@ -651,29 +652,29 @@ proc writeKey(s: Stream, key: string, kind: BsonKind): int32 =
 
 proc encode*(doc: BsonDocument): (int, string)
 
-proc encode(s: Stream, key: string, doc: BsonInt32): int =
+proc encode(s: Streamable, key: string, doc: BsonInt32): int =
   result = s.writeKey(key, bkInt32) + doc.value.sizeof
   s.writeLE doc.value
 
-proc encode(s: Stream, key: string, doc: BsonInt64): int =
+proc encode(s: Streamable, key: string, doc: BsonInt64): int =
   result = s.writeKey(key, bkInt64) + doc.value.sizeof
   s.writeLE doc.value
 
-proc encode(s: Stream, key: string, doc: BsonString | BsonJs): int =
+proc encode(s: Streamable, key: string, doc: BsonString | BsonJs): int =
   let sbytes = ($doc.value).bytes
   result = s.writeKey(key, doc.kind) + int32.sizeof + sbytes.len + 1
   s.writeLE (sbytes.len + 1).int32
   for c in sbytes: s.write c
   s.write 0x00.byte
 
-proc encode(s: Stream, key: string, doc: BsonDouble): int =
+proc encode(s: Streamable, key: string, doc: BsonDouble): int =
   result = s.writeKey(key, bkDouble) + doc.value.sizeof
   s.writeLE doc.value
 
-proc encode(s: Stream, key: string, doc: BsonArray): int =
+proc encode(s: Streamable, key: string, doc: BsonArray): int =
   var embedArray = BsonDocument(
     table: newOrderedTable[string, BsonBase](),
-    stream: newStringStream()
+    stream: newStream()
   )
   for i, b in doc.value:
     embedArray[$i] = b
@@ -682,38 +683,38 @@ proc encode(s: Stream, key: string, doc: BsonArray): int =
   result = s.writeKey(key, bkArray) + hlength
   s.write currbuff
 
-proc encode(s: Stream, key: string, doc: BsonBool): int =
+proc encode(s: Streamable, key: string, doc: BsonBool): int =
   result = s.writeKey(key, bkBool) + byte.sizeof
   if doc.value: s.write 0x01.byte
   else: s.write 0x00.byte
 
-proc encode(s: Stream, key: string, doc: BsonTime): int =
+proc encode(s: Streamable, key: string, doc: BsonTime): int =
   result = s.writeKey(key, bkTime) + int64.sizeof
   let timeval = doc.value.ms
   s.writeLE timeval
 
-proc encode(s: Stream, key: string, doc: BsonDocument): int =
+proc encode(s: Streamable, key: string, doc: BsonDocument): int =
   result = s.writeKey(key, bkEmbed)
   let (embedlen, embedstr) = encode doc
   result += embedlen
   s.write embedstr
 
-proc encode(s: Stream, key: string, doc: BsonNull): int =
+proc encode(s: Streamable, key: string, doc: BsonNull): int =
   result = s.writeKey(key, bkNull)
 
-proc encode(s: Stream, key: string, doc: BsonObjectId): int =
+proc encode(s: Streamable, key: string, doc: BsonObjectId): int =
   result = s.writeKey(key, bkObjectId) + doc.value.bytes.len
   for b in doc.value.bytes:
     s.write b
 
-proc encode(s: Stream, key: string, doc: BsonBinary): int =
+proc encode(s: Streamable, key: string, doc: BsonBinary): int =
   result = s.writeKey(key, bkBinary) + int32.sizeof + byte.sizeof + doc.value.len
   s.writeLE doc.value.len.int32
   s.write doc.subtype.byte
   for b in doc.value:
     s.writeLE b
 
-proc encode(s: Stream, key: string, doc: BsonTimestamp): int =
+proc encode(s: Streamable, key: string, doc: BsonTimestamp): int =
   result = s.writeKey(key, bkTimestamp) + uint64.sizeof
   s.writeLE doc.value[0]
   s.writeLE doc.value[1]
@@ -849,7 +850,7 @@ proc bsonJs*(code: string | seq[Rune]): BsonBase =
   BsonJs(value: value, kind: bkJs)
 
 proc newBson*(table = newOrderedTable[string, BsonBase](),
-    stream: Stream = newStringStream(),
+    stream: Streamable = newStream(),
     filename = ""): BsonDocument =
   ## A primordial BsonDocument allocators. Preferably to use
   ## `bson macro<#bson.m,untyped>`_ instead, except the
@@ -862,7 +863,7 @@ proc newBson*(table = newOrderedTable[string, BsonBase](),
     filename: filename,
   )
 
-proc decodeKey(s: Stream): (string, BsonKind) =
+proc decodeKey(s: Streamable): (string, BsonKind) =
   let kind = s.readInt8.BsonKind
   var buff = ""
   while true:
@@ -874,7 +875,7 @@ proc decodeKey(s: Stream): (string, BsonKind) =
 
 proc decode*(strbytes: string): BsonDocument
 
-proc decodeArray(s: Stream): seq[BsonBase] =
+proc decodeArray(s: Streamable): seq[BsonBase] =
   let length = s.peekInt32LE
   let doc = decode s.readStr(length)
   var ordTable = newOrderedTable[int, BsonBase]()
@@ -889,32 +890,32 @@ proc decodeArray(s: Stream): seq[BsonBase] =
   for _, d in ordTable:
     result.add d
 
-proc decodeString(s: Stream): seq[Rune] =
+proc decodeString(s: Streamable): seq[Rune] =
   let length = s.readIntLE int32
   let buff = s.readStr(length-1)
   discard s.readChar # discard last 0x00
   result = toSeq(buff.runes)
 
-proc decodeBool(s: Stream): bool =
+proc decodeBool(s: Streamable): bool =
   case s.readInt8
   of 0x00: false
   of 0x01: true
   else: false
 
-proc decodeObjectId(s: Stream): Oid =
+proc decodeObjectId(s: Streamable): Oid =
   var buff = ""
   for _ in 1 .. 12:
     buff &= s.readChar.ord.toHex(2).toLowerAscii
   result = parseOid buff.cstring
 
-proc readMilliseconds(s: Stream): Time =
+proc readMilliseconds(s: Streamable): Time =
   let
     currsec = s.readIntLE int64
     secfrac = int64(currsec / 1000.0)
     millfrac = int64((currsec mod 1000) * 1e6)
   initTime(secfrac, millfrac)
 
-proc decodeBinary(s: Stream): (BsonSubtype, seq[byte]) =
+proc decodeBinary(s: Streamable): (BsonSubtype, seq[byte]) =
   var thebytes = newseq[byte]()
   let length = s.readIntLE int32
   let subtype = s.readChar.BsonSubtype
@@ -922,7 +923,7 @@ proc decodeBinary(s: Stream): (BsonSubtype, seq[byte]) =
     thebytes.add s.readChar.byte
   result = (subtype, thebytes)
 
-proc decode(s: Stream): (string, BsonBase) =
+proc decode(s: Streamable): (string, BsonBase) =
   let (key, kind) = s.decodeKey
   var val: BsonBase
   case kind
@@ -963,7 +964,7 @@ proc decode(s: Stream): (string, BsonBase) =
 proc decode*(strbytes: string): BsonDocument =
   ## Decode a binary stream into BsonDocument.
   var
-    stream = newStringStream(strbytes)
+    stream = newStream(strbytes)
     table = newOrderedTable[string, BsonBase]()
   discard stream.readIntLE(int32)
   while not stream.atEnd:
@@ -987,7 +988,7 @@ proc newBson*(table: varargs[(string, BsonBase)]): BsonDocument =
     tableres[t[0]] = t[1]
   BsonDocument(
     table: tableres,
-    stream: newStringStream()
+    stream: newStream()
   )
 
 template bsonFetcher(b: BsonBase, targetKind: BsonKind,
