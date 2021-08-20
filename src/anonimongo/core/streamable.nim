@@ -19,58 +19,70 @@ type
     p.peekChar is char
     p.peekInt8 is int8
 
-  Streamable* {.explain.} = concept s
+  Streamable* {.explain.} = concept var s
     Readable
     Writable
     Peekable
-    s.readAll is string
-    s.atEnd is bool
-    s.setPosition(int)
-    s.getPosition is int
+    proc readAll(s: var Streamable): string
+    proc atEnd(s: var Streamable): bool
+    proc setPosition(s: var Streamable, n: int)
+    proc getPosition(s: var Streamable): int
+    # s.readAll is string
+    # s.atEnd is bool
+    # s.setPosition(int)
+    # s.getPosition is int
 
-  DefaultStream* = ref object
+  DefaultStream* = object
     data: string
     pos: int
     length: int
 
-proc write*[T](s: DefaultStream, data: T) =
+when defined(anostreamable):
+  type MainStream* = DefaultStream
+else:
+  type MainStream* = Stream
+
+proc write*[T](s: var DefaultStream, data: T) =
   when sizeof(data) == 8 and data isnot string:
     let datarr = cast[array[8, byte]](data)
     s.data &= $datarr
-    s.length += 4
+    s.length += 8
   elif sizeof(data) == 4 and data isnot string:
     let datarr = cast[array[4, byte]](data)
     s.data &= $datarr
-    s.length += 2
+    s.length += 4
   elif data.type is char:
     s.data &= data
     inc s.length
+  elif sizeof(data) == 1 and data isnot string:
+    s.data &= chr data
+    s.length += 1
   elif data.type is string:
     s.data &= data
     s.length += data.len
 
-proc readAll*(s: DefaultStream): string =
+proc readAll*(s: var DefaultStream): string =
   result = s.data[s.pos .. ^1]
   s.pos = s.length - 1
 
-proc peekChar*(s: DefaultStream): char =
+proc peekChar*(s: var DefaultStream): char =
   let thepos = min(s.pos, s.length-1)
   s.data[thepos]
-proc peekInt8*(s: DefaultStream): int8 =
+proc peekInt8*(s: var DefaultStream): int8 =
   let thepos = min(s.pos, s.length-1)
   s.data[thepos].int8
-proc peekInt32*(s: DefaultStream): int32 =
+proc peekInt32*(s: var DefaultStream): int32 =
   if s.pos+4 >= s.length: return int32.low
   var arr: array[4,  byte]
   for i, c in s.data[s.pos .. s.pos+3]: arr[i] = byte c
   cast[int32](arr)
 
-proc peekStr*(s: DefaultStream, n: int): string =
+proc peekStr*(s: var DefaultStream, n: int): string =
   s.data[s.pos ..< min(n, s.length-1)]
 
-proc atEnd*(s: DefaultStream): bool = s.pos == s.length - 1
+proc atEnd*(s: var DefaultStream): bool = s.pos >= s.length - 1
 
-proc read*[T](s: DefaultStream, data: var T) =
+proc read*[T](s: var DefaultStream, data: var T) =
   when sizeof(data) == 8 and data isnot string:
     var datarr: array[8, byte]
     for i, c in s.data[s.pos .. s.pos+3]:
@@ -96,20 +108,20 @@ proc read*[T](s: DefaultStream, data: var T) =
       data = s.data[s.pos ..< thelen]
       s.pos += thelen
 
-proc readFloat64*(s: DefaultStream): float64 = s.read(result)
-proc readInt64*(s: DefaultStream): int64 = s.read(result)
-proc readInt32*(s: DefaultStream): int32 = s.read(result)
-proc readUint32*(s: DefaultStream): uint32 = s.read(result)
-proc readInt8*(s: DefaultStream): int8 = s.read(result)
-proc readChar*(s: DefaultStream): char = s.read(result)
-proc readStr*(s: DefaultStream, n: int): string =
+proc readFloat64*(s: var DefaultStream): float64 = s.read(result)
+proc readInt64*(s: var DefaultStream): int64 = s.read(result)
+proc readInt32*(s: var DefaultStream): int32 = s.read(result)
+proc readUint32*(s: var DefaultStream): uint32 = s.read(result)
+proc readInt8*(s: var DefaultStream): int8 = s.read(result)
+proc readChar*(s: var DefaultStream): char = s.read(result)
+proc readStr*(s: var DefaultStream, n: int): string =
   result = newString(n)
   s.read(result)
 
 proc getPosition*(s: DefaultStream): int = s.pos
-proc setPosition*(s: DefaultStream, pos: int) = s.pos = min(pos, s.length-1)
+proc setPosition*(s: var DefaultStream, pos: int) = s.pos = min(pos, s.length-1)
 
-proc newStream*(d = ""): Streamable =
+proc newStream*(d = ""): MainStream =
   when not defined(anostreamable):
     newStringStream(d)
   else:
@@ -119,20 +131,11 @@ proc newStream*(d = ""): Streamable =
       length: d.len
     )
 
-# var sslib = newStringStream("hello world")
-# dump sslib is Readable
-# dump sslib is Writable
-# dump sslib is Peekable
-# dump sslib is Streamable
-# echoStream sslib
-# sslib.setPosition 0
-# dump sslib.peak1
-
 when isMainModule:
   import std/sugar
 
-  proc echoStream(s: Streamable) = echo s.readAll
-  proc peak1(s: Streamable): string = s.peekStr(1)
+  proc echoStream(s: var Streamable) = echo s.readAll
+  proc peak1(s: var Streamable): string = s.peekStr(1)
 
   var cs = newStream("hello world")
   dump cs is Readable

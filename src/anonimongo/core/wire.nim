@@ -2,6 +2,7 @@ import streams, strformat
 import asyncdispatch, asyncnet
 from sugar import dump
 import bson
+import streamable
 
 import supersnappy, zippy
 
@@ -62,19 +63,19 @@ type
   ResponseFlags* = set[RFlags]
     ## The actual available ResponseFlags.
 
-proc serialize(s: Stream, doc: BsonDocument): int =
+proc serialize(s: var Streamable, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
   result = doclen
   s.write docstr
 
-proc msgHeader(s: Stream, reqId, returnTo, opCode: int32): int=
+proc msgHeader(s: var Streamable, reqId, returnTo, opCode: int32): int=
   result = 16
   s.write 0'i32
   s.writeLE reqId
   s.writeLE returnTo
   s.writeLE opCode
 
-proc msgHeaderFetch(s: Stream): MsgHeader =
+proc msgHeaderFetch(s: var Streamable): MsgHeader =
   MsgHeader(
     messageLength: s.readIntLE int32,
     requestId: s.readIntLE int32,
@@ -82,7 +83,7 @@ proc msgHeaderFetch(s: Stream): MsgHeader =
     opCode: s.readIntLE int32
   )
 
-proc replyParse*(s: Stream): ReplyFormat =
+proc replyParse*(s: var Streamable): ReplyFormat =
   ## Get the ReplyFormat from given data stream.
   result = ReplyFormat(
     responseFlags: s.readIntLE int32,
@@ -96,20 +97,20 @@ proc replyParse*(s: Stream): ReplyFormat =
     result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
-proc prepareQuery*(s: Stream, reqId, target, opcode, flags: int32,
+proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
     query = newbson(), selector = newbson(), compression = cidNoop): int =
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
-  template writeStream(msgstream: Stream): int =
+  template writeStream(s: untyped): int =
     var length = 0
-    msgstream.writeLE flags;                             length += 4
-    msgstream.write collname; msgstream.write 0x00.byte; length += collname.len + 1
-    msgstream.writeLE nskip; msgstream.writeLE nreturn;  length += 2 * 4
+    `s`.writeLE flags;                       length += 4
+    `s`.write collname; `s`.write 0x00.byte; length += collname.len + 1
+    `s`.writeLE nskip;  `s`.writeLE nreturn; length += 2 * 4
 
-    length += msgstream.serialize query
+    length += `s`.serialize query
     if not selector.isNil:
-      length += msgstream.serialize selector
+      length += `s`.serialize selector
     length
 
   if compression == cidNoop:
@@ -227,10 +228,12 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.async.} =
     case compression
     of cidSnappy:
       let origmsg = supersnappy.uncompress(restStream.readAll)
-      result = replyParse newStringStream(origmsg)
+      var msg = newStream origmsg
+      result = replyParse msg
     of cidZlib:
       let origmsg = zippy.uncompress(restStream.readAll.bytes).stringbytes
-      result = replyParse newStringStream(origmsg)
+      var msg = newStream origmsg
+      result = replyParse msg
     else:
       discard
   when verbose:
