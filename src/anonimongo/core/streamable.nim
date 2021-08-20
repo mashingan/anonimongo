@@ -107,7 +107,7 @@ proc readStr*(s: DefaultStream, n: int): string =
   s.read(result)
 
 proc getPosition*(s: DefaultStream): int = s.pos
-proc setPosition*(s: DefaultStream, pos: int) = s.pos = max(pos, s.length-1)
+proc setPosition*(s: DefaultStream, pos: int) = s.pos = min(pos, s.length-1)
 
 proc newStream*(d = ""): Streamable =
   when not defined(anostreamable):
@@ -140,5 +140,5 @@ when isMainModule:
   dump cs is Peekable
   dump cs is Streamable
   echoStream(cs) {.explain.}
-  cs.pos = 0
+  cs.setPosition 0
   dump cs.peak1
