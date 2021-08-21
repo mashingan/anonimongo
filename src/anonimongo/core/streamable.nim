@@ -7,6 +7,7 @@ type
     r.readFloat64 is float64
     r.readChar is char
     r.readInt8 is int8
+    r.readUint8 is byte
     r.readInt32 is int32
     r.readInt64 is int64
     r.readStr(int) is string
@@ -46,49 +47,44 @@ proc write*[T](s: var DefaultStream, data: T) =
     s.data &= newString(bufcap)
     s.cap += bufcap
   when sizeof(data) == 8 and data isnot string:
-    if s.length+8 > s.cap: addcap()
+    if s.pos+8 > s.cap: addcap()
     var datarr = cast[array[8, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
-    if s.length == 0: dec s.pos
-    s.length += 8
     s.pos += 8
+    if s.pos > s.length: s.length += 8
   elif sizeof(data) == 4 and data isnot string:
-    if s.length+4 > s.cap: addcap()
+    if s.pos+4 > s.cap: addcap()
     var datarr = cast[array[4, byte]](data)
-    for i, b in datarr: s.data[s.pos+i] = chr b
-    if s.length == 0: dec s.pos
-    s.length += 4
+    for i, b in datarr:
+      s.data[s.pos+i] = chr b
     s.pos += 4
+    if s.pos > s.length: s.length += 4
   elif sizeof(data) == 2 and data isnot string:
-    if s.length+2 > s.cap: addcap()
+    if s.pos+2 > s.cap: addcap()
     var datarr = cast[array[2, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
-    if s.length == 0: dec s.pos
-    s.length += 2
     s.pos += 2
+    if s.pos > s.length: s.length += 2
   elif data.type is char:
-    if s.length + 1 > s.cap: addcap()
+    if s.pos + 1 > s.cap: addcap()
     s.data[s.pos] = data
-    if s.length == 0: dec s.pos
-    inc s.length
+    if s.pos == 0: dec s.pos
     inc s.pos
+    if s.pos > s.length: s.length += 1
   elif sizeof(data) == 1 and data isnot string:
-    if s.length + 1 > s.cap: addcap()
+    if s.pos + 1 > s.cap: addcap()
     s.data[s.pos] = chr data
-    s.length += 1
-    if s.length == 0: dec s.pos
     s.pos += 1
+    if s.pos > s.length: s.length += 1
   elif data.type is string:
-    let newlen = s.length + data.len
+    let addlen = s.pos + data.len
     var newcap = 0
-    while s.cap < newlen:
+    if addlen > s.cap:
       s.cap += bufcap
       newcap += bufcap
+    s.length = addlen
     s.data &= newString(newcap)
-    # s.data[s.pos ..< data.len] = data
     for i, c in data: s.data[s.pos+i] = c
-    if s.length == 0: dec s.pos
-    s.length = newlen
     s.pos += data.len
 
 proc readAll*(s: var DefaultStream): string =
@@ -153,13 +149,14 @@ proc readInt64*(s: var DefaultStream): int64 = s.read(result)
 proc readInt32*(s: var DefaultStream): int32 = s.read(result)
 proc readUint32*(s: var DefaultStream): uint32 = s.read(result)
 proc readInt8*(s: var DefaultStream): int8 = s.read(result)
+proc readUint8*(s: var DefaultStream): uint8 = s.read(result)
 proc readChar*(s: var DefaultStream): char = s.read(result)
 proc readStr*(s: var DefaultStream, n: int): string =
   result = newString(n)
   s.read(result)
 
-proc getPosition*(s: DefaultStream): int =  min(s.pos, s.length-1)
-proc setPosition*(s: var DefaultStream, pos: int) = s.pos = min(pos, s.length-1)
+proc getPosition*(s: DefaultStream): int =  s.pos
+proc setPosition*(s: var DefaultStream, pos: int) = s.pos = min(pos, s.length)
 
 proc newStream*(d = ""): MainStream =
   when not defined(anostreamable):
@@ -171,7 +168,7 @@ proc newStream*(d = ""): MainStream =
     elif d.len > cap:
       let ncap = d.len div cap
       let rcap = d.len mod cap
-      cap = if rcap == 0: ncap else: ncap+1
+      cap = bufcap * (if rcap == 0: ncap else: ncap+1)
       data &= newString(bufcap - rcap)
     DefaultStream(
       data: data,
