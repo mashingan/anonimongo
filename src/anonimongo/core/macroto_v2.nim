@@ -1,5 +1,7 @@
 import macros, sugar, strformat, strutils
 
+const verbose = defined(anoverbose)
+
 {.warning[UnusedImport]: off.}
 
 template checknode(n: untyped): untyped {.used.} =
@@ -733,7 +735,13 @@ macro to*(b: untyped, t: typed): untyped =
     identDefsCheck(result, nodeInfo, fielddef)
 
   result.add(quote do: unown(`resvar`))
-  #checknode result
+  let declnode = result[0]
+  let assgNode = newStmtList(result[1..^1])
+  result = quote do:
+    `declnode`
+    block:
+      `assgNode`
+  when verbose: checknode result
 
 template bsonExport*() {.pragma.}
 
