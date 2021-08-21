@@ -1,6 +1,9 @@
 {.experimental.}
 import std/streams
 
+template `as`(a, b: untyped): untyped =
+  cast[b](a)
+
 type
   Readable* = concept r, type T
     proc read[T](r: Readable, x: var T)
@@ -46,25 +49,18 @@ proc write*[T](s: var DefaultStream, data: T) =
   template addcap =
     s.data &= newString(bufcap)
     s.cap += bufcap
+  template datawrite(n: static[int]) =
+    if s.pos + 8 > s.cap: addcap()
+    var datarr = data as array[n, byte]
+    for i, b in datarr: s.data[s.pos+i] = chr b
+    s.pos += n
+    if s.pos > s.length: s.length += n
   when sizeof(data) == 8 and data isnot string:
-    if s.pos+8 > s.cap: addcap()
-    var datarr = cast[array[8, byte]](data)
-    for i, b in datarr: s.data[s.pos+i] = chr b
-    s.pos += 8
-    if s.pos > s.length: s.length += 8
+    datawrite(8)
   elif sizeof(data) == 4 and data isnot string:
-    if s.pos+4 > s.cap: addcap()
-    var datarr = cast[array[4, byte]](data)
-    for i, b in datarr:
-      s.data[s.pos+i] = chr b
-    s.pos += 4
-    if s.pos > s.length: s.length += 4
+    datawrite(4)
   elif sizeof(data) == 2 and data isnot string:
-    if s.pos+2 > s.cap: addcap()
-    var datarr = cast[array[2, byte]](data)
-    for i, b in datarr: s.data[s.pos+i] = chr b
-    s.pos += 2
-    if s.pos > s.length: s.length += 2
+    datawrite(2)
   elif data.type is char:
     if s.pos + 1 > s.cap: addcap()
     s.data[s.pos] = data
@@ -72,10 +68,7 @@ proc write*[T](s: var DefaultStream, data: T) =
     inc s.pos
     if s.pos > s.length: s.length += 1
   elif sizeof(data) == 1 and data isnot string:
-    if s.pos + 1 > s.cap: addcap()
-    s.data[s.pos] = chr data
-    s.pos += 1
-    if s.pos > s.length: s.length += 1
+    datawrite(1)
   elif data.type is string:
     let addlen = s.pos + data.len
     var newcap = 0
@@ -101,7 +94,7 @@ proc peekInt32*(s: var DefaultStream): int32 =
   if s.pos+4 >= s.length: return int32.low
   var arr: array[4,  byte]
   for i, c in s.data[s.pos .. s.pos+3]: arr[i] = byte c
-  cast[int32](arr)
+  arr as int32
 
 proc peekStr*(s: var DefaultStream, n: int): string =
   s.data[s.pos ..< min(n, s.length)]
@@ -109,29 +102,22 @@ proc peekStr*(s: var DefaultStream, n: int): string =
 proc atEnd*(s: var DefaultStream): bool = s.pos >= s.length
 
 proc read*[T](s: var DefaultStream, data: var T) =
+  template readata(n: static[int]) =
+    var datarr: array[n, byte]
+    for i, c in s.data[s.pos .. s.pos+n-1]: datarr[i] = byte c
+    data = datarr as T
+    s.pos += n
   when sizeof(data) == 8 and data isnot string:
-    var datarr: array[8, byte]
-    for i, c in s.data[s.pos .. s.pos+7]:
-      datarr[i] = byte c
-    data = cast[T](datarr)
-    s.pos += 8
+    readata(8)
   elif sizeof(data) == 4 and data isnot string:
-    var datarr: array[4, byte]
-    for i, c in s.data[s.pos .. s.pos+3]:
-      datarr[i] = byte c
-    data = cast[T](datarr)
-    s.pos += 4
+    readata(4)
   elif data is char:
     data = s.data[s.pos]
     inc s.pos
   elif sizeof(data) == 2 and data isnot string:
-    var datarr: array[2, byte]
-    for i, c in s.data[s.pos .. s.pos+1]:
-      datarr[i] = byte c
-    data = cast[T](datarr)
-    s.pos += 2
+    readata(2)
   elif sizeof(data) == 1 and data isnot string:
-    data = cast[T](s.data[s.pos])
+    data = s.data[s.pos] as T
     s.pos += 1
   elif data is string:
     let datalen = data.len
