@@ -27,15 +27,14 @@ type
     proc atEnd(s: var Streamable): bool
     proc setPosition(s: var Streamable, n: int)
     proc getPosition(s: var Streamable): int
-    # s.readAll is string
-    # s.atEnd is bool
-    # s.setPosition(int)
-    # s.getPosition is int
 
   DefaultStream* = object
     data: string
     pos: int
     length: int
+    cap: int
+
+const bufcap = 128
 
 when defined(anostreamable):
   type MainStream* = DefaultStream
@@ -43,26 +42,49 @@ else:
   type MainStream* = Stream
 
 proc write*[T](s: var DefaultStream, data: T) =
+  template addcap =
+    s.data &= newString(bufcap)
+    s.cap += bufcap
   when sizeof(data) == 8 and data isnot string:
+    if s.length+8 > s.cap: addcap()
     let datarr = cast[array[8, byte]](data)
-    s.data &= $datarr
+    for i, b in datarr: s.data[s.pos+i] = chr b
     s.length += 8
+    if s.length == 0: dec s.pos
+    s.pos += 8
   elif sizeof(data) == 4 and data isnot string:
+    if s.length+4 > s.cap: addcap()
     let datarr = cast[array[4, byte]](data)
-    s.data &= $datarr
+    s.data &= newString(4)
+    for i, b in datarr: s.data[s.pos+i] = chr b
     s.length += 4
+    if s.length == 0: dec s.pos
+    s.pos += 4
   elif data.type is char:
+    if s.length + 1 > s.cap: addcap()
     s.data &= data
     inc s.length
+    inc s.pos
   elif sizeof(data) == 1 and data isnot string:
+    if s.length + 1 > s.cap: addcap()
     s.data &= chr data
     s.length += 1
+    if s.length == 0: dec s.pos
+    s.pos += 1
   elif data.type is string:
-    s.data &= data
-    s.length += data.len
+    let newlen = s.length + data.len
+    var newcap = 0
+    while s.cap < newlen:
+      s.cap += bufcap
+      newcap += bufcap
+    s.data &= newString(newcap)
+    s.data[s.pos ..< data.len] = data
+    s.length = newlen
+    if s.length == 0: dec s.pos
+    s.pos += data.len
 
 proc readAll*(s: var DefaultStream): string =
-  result = s.data[s.pos .. ^1]
+  result = s.data[s.pos ..< s.length]
   s.pos = s.length - 1
 
 proc peekChar*(s: var DefaultStream): char =
@@ -101,7 +123,7 @@ proc read*[T](s: var DefaultStream, data: var T) =
   elif data.type is string:
     let datalen = data.len
     if datalen == 0:
-      data = s.data[s.pos .. ^1]
+      data = s.data[s.pos ..< s.length]
       s.pos = s.length-1
     elif datalen > 0:
       let thelen = min(datalen, s.length)
@@ -125,10 +147,19 @@ proc newStream*(d = ""): MainStream =
   when not defined(anostreamable):
     newStringStream(d)
   else:
+    var cap = bufcap
+    var data = newString(cap)
+    if d.len > cap:
+      data = d
+      let ncap = d.len div cap
+      let rcap = d.len mod cap
+      cap = if rcap == 0: ncap else: ncap+1
+      data &= newString(bufcap - rcap)
     DefaultStream(
-      data: d,
+      data: data,
       pos: 0,
-      length: d.len
+      length: d.len,
+      cap: cap
     )
 
 when isMainModule:

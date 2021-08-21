@@ -9,6 +9,7 @@ from lenientops import `/`, `+`, `*`
 import streamable
 
 export strutils
+export streamable
 
 import bsonify
 export bsonify
@@ -864,8 +865,11 @@ proc newBson*(table = newOrderedTable[string, BsonBase](),
   ## A primordial BsonDocument allocators. Preferably to use
   ## `bson macro<#bson.m,untyped>`_ instead, except the
   ## need to specify the stream used for the BsonDocument.
-  let thestream = if filename == "": stream
-                  else: newFileStream(filename, fmReadWrite)
+  when not defined(anostreamable):
+    var thestream = if filename == "": stream
+                    else: newFileStream(filename, fmReadWrite)
+  else:
+    var thestream = stream
   BsonDocument(
     table: table,
     stream: thestream,
@@ -932,8 +936,12 @@ proc decodeBinary(s: var Streamable): (BsonSubtype, seq[byte]) =
     thebytes.add s.readChar.byte
   result = (subtype, thebytes)
 
+import sugar
 proc decode(s: var Streamable): (string, BsonBase) =
+  dump s.getPosition
   let (key, kind) = s.decodeKey
+  dump key
+  dump kind
   var val: BsonBase
   case kind
   of bkInt32:
