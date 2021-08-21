@@ -62,6 +62,7 @@ suite "Bson operations tests":
     check newdoc["this is null"].isNil
     check newdoc["now"] == currtime
     check newdoc["_id"] == curroid
+    check newdoc["a percent of truth"] == 0.42
     when not defined(anostreamable):
       check fileExists bsonFilename
 

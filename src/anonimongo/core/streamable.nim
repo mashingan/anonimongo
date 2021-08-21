@@ -49,26 +49,27 @@ proc write*[T](s: var DefaultStream, data: T) =
     if s.length+8 > s.cap: addcap()
     var datarr = cast[array[8, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
-    s.length += 8
     if s.length == 0: dec s.pos
+    s.length += 8
     s.pos += 8
   elif sizeof(data) == 4 and data isnot string:
     if s.length+4 > s.cap: addcap()
     var datarr = cast[array[4, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
-    s.length += 4
     if s.length == 0: dec s.pos
+    s.length += 4
     s.pos += 4
   elif sizeof(data) == 2 and data isnot string:
     if s.length+2 > s.cap: addcap()
     var datarr = cast[array[2, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
-    s.length += 2
     if s.length == 0: dec s.pos
+    s.length += 2
     s.pos += 2
   elif data.type is char:
     if s.length + 1 > s.cap: addcap()
     s.data[s.pos] = data
+    if s.length == 0: dec s.pos
     inc s.length
     inc s.pos
   elif sizeof(data) == 1 and data isnot string:
@@ -86,8 +87,8 @@ proc write*[T](s: var DefaultStream, data: T) =
     s.data &= newString(newcap)
     # s.data[s.pos ..< data.len] = data
     for i, c in data: s.data[s.pos+i] = c
-    s.length = newlen
     if s.length == 0: dec s.pos
+    s.length = newlen
     s.pos += data.len
 
 proc readAll*(s: var DefaultStream): string =
@@ -107,7 +108,7 @@ proc peekInt32*(s: var DefaultStream): int32 =
   cast[int32](arr)
 
 proc peekStr*(s: var DefaultStream, n: int): string =
-  s.data[s.pos ..< min(n, s.length-1)]
+  s.data[s.pos ..< min(n, s.length)]
 
 proc atEnd*(s: var DefaultStream): bool = s.pos >= s.length
 
@@ -124,7 +125,7 @@ proc read*[T](s: var DefaultStream, data: var T) =
       datarr[i] = byte c
     data = cast[T](datarr)
     s.pos += 4
-  elif data.type is char:
+  elif data is char:
     data = s.data[s.pos]
     inc s.pos
   elif sizeof(data) == 2 and data isnot string:
@@ -134,16 +135,14 @@ proc read*[T](s: var DefaultStream, data: var T) =
     data = cast[T](datarr)
     s.pos += 2
   elif sizeof(data) == 1 and data isnot string:
-    var datarr: array[2, byte]
-    for i, c in s.data[s.pos .. s.pos]:
-      datarr[i] = byte c
-    data = cast[T](datarr)
+    data = cast[T](s.data[s.pos])
     s.pos += 1
-  elif data.type is string:
+  elif data is string:
     let datalen = data.len
     if datalen == 0:
-      data = s.data[s.pos ..< s.length]
-      s.pos = s.length-1
+      # data = s.data[s.pos ..< s.length]
+      # s.pos = s.length-1
+      discard
     elif datalen > 0:
       let thelen = min(s.pos+datalen, s.length-1)
       data = s.data[s.pos ..< thelen]
@@ -159,7 +158,7 @@ proc readStr*(s: var DefaultStream, n: int): string =
   result = newString(n)
   s.read(result)
 
-proc getPosition*(s: DefaultStream): int = s.pos
+proc getPosition*(s: DefaultStream): int =  min(s.pos, s.length-1)
 proc setPosition*(s: var DefaultStream, pos: int) = s.pos = min(pos, s.length-1)
 
 proc newStream*(d = ""): MainStream =
