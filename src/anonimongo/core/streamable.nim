@@ -136,13 +136,11 @@ proc read*[T](s: var DefaultStream, data: var T) =
   elif data is string:
     let datalen = data.len
     if datalen == 0:
-      # data = s.data[s.pos ..< s.length]
-      # s.pos = s.length-1
       discard
     elif datalen > 0:
       let thelen = min(s.pos+datalen, s.length-1)
       data = s.data[s.pos ..< thelen]
-      s.pos += thelen
+      s.pos = thelen
 
 proc readFloat64*(s: var DefaultStream): float64 = s.read(result)
 proc readInt64*(s: var DefaultStream): int64 = s.read(result)

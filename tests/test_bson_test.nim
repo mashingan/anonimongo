@@ -72,11 +72,7 @@ suite "Bson operations tests":
     check num > 0
 
   test "Decode bson":
-    dump newdoc
-    dump newdocstr
-    dump newdocstr.len
     nnewdoc = decode newdocstr
-    dump nnewdoc
     check nnewdoc["hello"].ofInt == 100
     check nnewdoc["hello world"] == isekai
     check nnewdoc["array world"].ofArray.len == 3

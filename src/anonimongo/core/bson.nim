@@ -670,17 +670,10 @@ proc encode(s: var Streamable, key: string, doc: BsonInt64): int =
   result = s.writeKey(key, bkInt64) + doc.value.sizeof
   s.writeLE doc.value
 
-# import sugar
 proc encode(s: var Streamable, key: string, doc: BsonString | BsonJs): int =
-  # dump sbytes
-  # dump $sbytes
   let sbytes = ($doc.value).bytes
   result = s.writeKey(key, doc.kind) + int32.sizeof + sbytes.len + 1
   s.writeLE (sbytes.len + 1).int32
-  # dump doc.value
-  # dump $doc.value
-  # for c in sbytes: stdout.write c.chr
-  # echo()
   for c in sbytes: s.write c.chr
   s.write 0x00.byte
 
@@ -884,7 +877,7 @@ proc newBson*(table = newOrderedTable[string, BsonBase](),
   )
 
 proc decodeKey(s: var Streamable): (string, BsonKind) =
-  let kind = s.readInt8.BsonKind
+  let kind = s.readUint8.BsonKind
   var buff = ""
   while true:
     var achar = s.readChar
