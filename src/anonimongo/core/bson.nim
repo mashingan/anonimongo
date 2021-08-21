@@ -662,26 +662,33 @@ proc writeKey(s: var Streamable, key: string, kind: BsonKind): int32 =
 
 proc encode*(doc: BsonDocument): (int, string)
 
-proc encodeInt32(s: var Streamable, key: string, doc: BsonInt32): int =
+proc encode(s: var Streamable, key: string, doc: BsonInt32): int =
   result = s.writeKey(key, bkInt32) + doc.value.sizeof
   s.writeLE doc.value
 
-proc encodeInt64(s: var Streamable, key: string, doc: BsonInt64): int =
+proc encode(s: var Streamable, key: string, doc: BsonInt64): int =
   result = s.writeKey(key, bkInt64) + doc.value.sizeof
   s.writeLE doc.value
 
-proc encodeString(s: var Streamable, key: string, doc: BsonString | BsonJs): int =
+# import sugar
+proc encode(s: var Streamable, key: string, doc: BsonString | BsonJs): int =
+  # dump sbytes
+  # dump $sbytes
   let sbytes = ($doc.value).bytes
   result = s.writeKey(key, doc.kind) + int32.sizeof + sbytes.len + 1
   s.writeLE (sbytes.len + 1).int32
-  for c in sbytes: s.write c
+  # dump doc.value
+  # dump $doc.value
+  # for c in sbytes: stdout.write c.chr
+  # echo()
+  for c in sbytes: s.write c.chr
   s.write 0x00.byte
 
-proc encodeDouble(s: var Streamable, key: string, doc: BsonDouble): int =
+proc encode(s: var Streamable, key: string, doc: BsonDouble): int =
   result = s.writeKey(key, bkDouble) + doc.value.sizeof
   s.writeLE doc.value
 
-proc encodeArray(s: var Streamable, key: string, doc: BsonArray): int =
+proc encode(s: var Streamable, key: string, doc: BsonArray): int =
   var embedArray = BsonDocument(
     table: newOrderedTable[string, BsonBase](),
     stream: newStream()
@@ -693,12 +700,12 @@ proc encodeArray(s: var Streamable, key: string, doc: BsonArray): int =
   result = s.writeKey(key, bkArray) + hlength
   s.write currbuff
 
-proc encodeBool(s: var Streamable, key: string, doc: BsonBool): int =
+proc encode(s: var Streamable, key: string, doc: BsonBool): int =
   result = s.writeKey(key, bkBool) + byte.sizeof
   if doc.value: s.write 0x01.byte
   else: s.write 0x00.byte
 
-proc encodeTime(s: var Streamable, key: string, doc: BsonTime): int =
+proc encode(s: var Streamable, key: string, doc: BsonTime): int =
   result = s.writeKey(key, bkTime) + int64.sizeof
   let timeval = doc.value.ms
   s.writeLE timeval
@@ -709,22 +716,22 @@ proc encode(s: var Streamable, key: string, doc: BsonDocument): int =
   result += embedlen
   s.write embedstr
 
-proc encodeNull(s: var Streamable, key: string, doc: BsonNull): int =
+proc encode(s: var Streamable, key: string, doc: BsonNull): int =
   result = s.writeKey(key, bkNull)
 
-proc encodeOid(s: var Streamable, key: string, doc: BsonObjectId): int =
+proc encode(s: var Streamable, key: string, doc: BsonObjectId): int =
   result = s.writeKey(key, bkObjectId) + doc.value.bytes.len
   for b in doc.value.bytes:
     s.write b
 
-proc encodeBinary(s: var Streamable, key: string, doc: BsonBinary): int =
+proc encode(s: var Streamable, key: string, doc: BsonBinary): int =
   result = s.writeKey(key, bkBinary) + int32.sizeof + byte.sizeof + doc.value.len
   s.writeLE doc.value.len.int32
   s.write doc.subtype.byte
   for b in doc.value:
     s.writeLE b
 
-proc encodeTimestamp(s: var Streamable, key: string, doc: BsonTimestamp): int =
+proc encode(s: var Streamable, key: string, doc: BsonTimestamp): int =
   result = s.writeKey(key, bkTimestamp) + uint64.sizeof
   s.writeLE doc.value[0]
   s.writeLE doc.value[1]
@@ -742,34 +749,34 @@ proc encode*(doc: BsonDocument): (int, string) =
   for k, v in doc:
     case v.kind
     of bkInt32:
-      length += doc.stream.encodeInt32(k, v as BsonInt32)
+      length += doc.stream.encode(k, v as BsonInt32)
     of bkInt64:
-      length += doc.stream.encodeInt64(k, v as BsonInt64)
+      length += doc.stream.encode(k, v as BsonInt64)
     of bkString:
-      length += doc.stream.encodeString(k, v as BsonString)
+      length += doc.stream.encode(k, v as BsonString)
     of bkDouble:
-      length += doc.stream.encodeDouble(k, v as BsonDouble)
+      length += doc.stream.encode(k, v as BsonDouble)
     of bkArray:
-      length += doc.stream.encodeArray(k, v as BsonArray)
+      length += doc.stream.encode(k, v as BsonArray)
     of bkEmbed:
       let bdoc = (v as BsonEmbed).value
       if bdoc.isNil: continue
       let ndoc = bdoc as BsonDocument
       length += doc.stream.encode(k, ndoc)
     of bkBool:
-      length += doc.stream.encodeBool(k, v as BsonBool)
+      length += doc.stream.encode(k, v as BsonBool)
     of bkTime:
-      length += doc.stream.encodeTime(k, v as BsonTime)
+      length += doc.stream.encode(k, v as BsonTime)
     of bkNull:
-      length += doc.stream.encodeNull(k, v as BsonNull)
+      length += doc.stream.encode(k, v as BsonNull)
     of bkObjectId:
-      length += doc.stream.encodeOid(k, v as BsonObjectId)
+      length += doc.stream.encode(k, v as BsonObjectId)
     of bkBinary:
-      length += doc.stream.encodeBinary(k, v as BsonBinary)
+      length += doc.stream.encode(k, v as BsonBinary)
     of bkTimestamp:
-      length += doc.stream.encodeTimestamp(k, v as BsonTimestamp)
+      length += doc.stream.encode(k, v as BsonTimestamp)
     of bkJs:
-      length += doc.stream.encodeString(k, v as BsonJs)
+      length += doc.stream.encode(k, v as BsonJs)
     else:
       discard
 
@@ -936,12 +943,8 @@ proc decodeBinary(s: var Streamable): (BsonSubtype, seq[byte]) =
     thebytes.add s.readChar.byte
   result = (subtype, thebytes)
 
-import sugar
 proc decode(s: var Streamable): (string, BsonBase) =
-  dump s.getPosition
   let (key, kind) = s.decodeKey
-  dump key
-  dump kind
   var val: BsonBase
   case kind
   of bkInt32:

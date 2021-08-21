@@ -47,27 +47,33 @@ proc write*[T](s: var DefaultStream, data: T) =
     s.cap += bufcap
   when sizeof(data) == 8 and data isnot string:
     if s.length+8 > s.cap: addcap()
-    let datarr = cast[array[8, byte]](data)
+    var datarr = cast[array[8, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
     s.length += 8
     if s.length == 0: dec s.pos
     s.pos += 8
   elif sizeof(data) == 4 and data isnot string:
     if s.length+4 > s.cap: addcap()
-    let datarr = cast[array[4, byte]](data)
-    s.data &= newString(4)
+    var datarr = cast[array[4, byte]](data)
     for i, b in datarr: s.data[s.pos+i] = chr b
     s.length += 4
     if s.length == 0: dec s.pos
     s.pos += 4
+  elif sizeof(data) == 2 and data isnot string:
+    if s.length+2 > s.cap: addcap()
+    var datarr = cast[array[2, byte]](data)
+    for i, b in datarr: s.data[s.pos+i] = chr b
+    s.length += 2
+    if s.length == 0: dec s.pos
+    s.pos += 2
   elif data.type is char:
     if s.length + 1 > s.cap: addcap()
-    s.data &= data
+    s.data[s.pos] = data
     inc s.length
     inc s.pos
   elif sizeof(data) == 1 and data isnot string:
     if s.length + 1 > s.cap: addcap()
-    s.data &= chr data
+    s.data[s.pos] = chr data
     s.length += 1
     if s.length == 0: dec s.pos
     s.pos += 1
@@ -78,7 +84,8 @@ proc write*[T](s: var DefaultStream, data: T) =
       s.cap += bufcap
       newcap += bufcap
     s.data &= newString(newcap)
-    s.data[s.pos ..< data.len] = data
+    # s.data[s.pos ..< data.len] = data
+    for i, c in data: s.data[s.pos+i] = c
     s.length = newlen
     if s.length == 0: dec s.pos
     s.pos += data.len
@@ -102,31 +109,43 @@ proc peekInt32*(s: var DefaultStream): int32 =
 proc peekStr*(s: var DefaultStream, n: int): string =
   s.data[s.pos ..< min(n, s.length-1)]
 
-proc atEnd*(s: var DefaultStream): bool = s.pos >= s.length - 1
+proc atEnd*(s: var DefaultStream): bool = s.pos >= s.length
 
 proc read*[T](s: var DefaultStream, data: var T) =
   when sizeof(data) == 8 and data isnot string:
     var datarr: array[8, byte]
+    for i, c in s.data[s.pos .. s.pos+7]:
+      datarr[i] = byte c
+    data = cast[T](datarr)
+    s.pos += 8
+  elif sizeof(data) == 4 and data isnot string:
+    var datarr: array[4, byte]
     for i, c in s.data[s.pos .. s.pos+3]:
       datarr[i] = byte c
     data = cast[T](datarr)
     s.pos += 4
-  elif sizeof(data) == 4 and data isnot string:
-    var datarr: array[4, byte]
+  elif data.type is char:
+    data = s.data[s.pos]
+    inc s.pos
+  elif sizeof(data) == 2 and data isnot string:
+    var datarr: array[2, byte]
     for i, c in s.data[s.pos .. s.pos+1]:
       datarr[i] = byte c
     data = cast[T](datarr)
     s.pos += 2
-  elif data.type is char:
-    data = s.data[s.pos]
-    inc s.pos
+  elif sizeof(data) == 1 and data isnot string:
+    var datarr: array[2, byte]
+    for i, c in s.data[s.pos .. s.pos]:
+      datarr[i] = byte c
+    data = cast[T](datarr)
+    s.pos += 1
   elif data.type is string:
     let datalen = data.len
     if datalen == 0:
       data = s.data[s.pos ..< s.length]
       s.pos = s.length-1
     elif datalen > 0:
-      let thelen = min(datalen, s.length)
+      let thelen = min(s.pos+datalen, s.length-1)
       data = s.data[s.pos ..< thelen]
       s.pos += thelen
 
@@ -148,9 +167,9 @@ proc newStream*(d = ""): MainStream =
     newStringStream(d)
   else:
     var cap = bufcap
-    var data = newString(cap)
-    if d.len > cap:
-      data = d
+    var data = d
+    if data == "": data = newString(cap)
+    elif d.len > cap:
       let ncap = d.len div cap
       let rcap = d.len mod cap
       cap = if rcap == 0: ncap else: ncap+1
