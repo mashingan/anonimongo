@@ -49,7 +49,7 @@ template addcap(s: var DefaultStream) =
 proc write*(s: var DefaultStream, data: string) =
   let addlen = s.pos + data.len
   var newcap = 0
-  if addlen > s.cap:
+  while s.cap <= addlen:
     s.cap += bufcap
     newcap += bufcap
   s.length = addlen
@@ -107,17 +107,8 @@ proc read*[T](s: var DefaultStream, data: var T) =
   template readata(n: static[int]) {.used.} =
     copyMem(addr data, addr s.data[s.pos], n)
     s.pos += n
-  when sizeof(data) == 8 and data isnot string:
-    readata(8)
-  elif sizeof(data) == 4 and data isnot string:
-    readata(4)
-  elif data is char:
-    data = s.data[s.pos]
-    inc s.pos
-  elif sizeof(data) == 2 and data isnot string:
-    readata(2)
-  elif sizeof(data) == 1 and data isnot string:
-    readata(1)
+  when data isnot string:
+    readata sizeof(data)
   elif data is string:
     let datalen = data.len
     if datalen == 0:
@@ -147,7 +138,7 @@ proc newStream*(d = ""): MainStream =
   else:
     var cap = bufcap
     var data = d
-    if data == "": data = newString(cap)
+    if data.len < cap: data &= newString(cap - data.len)
     elif d.len > cap:
       let ncap = d.len div cap
       let rcap = d.len mod cap
