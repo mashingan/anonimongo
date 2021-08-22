@@ -69,20 +69,7 @@ template datawrite[T](s: var DefaultStream, n: int, data: T) =
   s.pos += n
   s.length = max(s.pos, s.length)
 
-proc write*[T: float|int|int64|uint64|float64](s: var DefaultStream, data: T) =
-  datawrite(s, 8, data)
-
-proc write*[T: int32|uint32|float32](s: var DefaultStream, data: T) =
-  var data = data
-  datawrite(s, 4, data)
-
-proc write*[T: int16|uint16](s: var DefaultStream, data: T) =
-  var data = data
-  datawrite(s, 2,  data)
-
-proc write*[T: int8|uint8](s: var DefaultStream, data: T) =
-  var data = data
-  datawrite(s, 1,  data)
+proc write*[T](s: var DefaultStream, data: T) = s.datawrite(sizeof data, data)
 
 proc readAll*(s: var DefaultStream): string =
   result = s.data[s.pos ..< s.length]
