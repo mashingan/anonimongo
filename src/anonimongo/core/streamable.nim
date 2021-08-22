@@ -1,9 +1,6 @@
 {.experimental.}
 import std/streams
 
-template `as`(a, b: untyped): untyped =
-  cast[b](a)
-
 type
   Readable* = concept r, type T
     proc read[T](r: Readable, x: var T)
@@ -38,47 +35,54 @@ type
     length: int
     cap: int
 
-const bufcap = 128
+const bufcap {.intdefine.} = 128
 
 when defined(anostreamable):
   type MainStream* = DefaultStream
 else:
   type MainStream* = Stream
 
-proc write*[T](s: var DefaultStream, data: T) =
-  template addcap =
-    s.data &= newString(bufcap)
+template addcap(s: var DefaultStream) =
+  s.data &= newString(bufcap)
+  s.cap += bufcap
+
+proc write*(s: var DefaultStream, data: string) =
+  let addlen = s.pos + data.len
+  var newcap = 0
+  if addlen > s.cap:
     s.cap += bufcap
-  template datawrite(n: static[int]) =
-    if s.pos + 8 > s.cap: addcap()
-    var datarr = data as array[n, byte]
-    for i, b in datarr: s.data[s.pos+i] = chr b
-    s.pos += n
-    if s.pos > s.length: s.length += n
-  when sizeof(data) == 8 and data isnot string:
-    datawrite(8)
-  elif sizeof(data) == 4 and data isnot string:
-    datawrite(4)
-  elif sizeof(data) == 2 and data isnot string:
-    datawrite(2)
-  elif data.type is char:
-    if s.pos + 1 > s.cap: addcap()
-    s.data[s.pos] = data
-    if s.pos == 0: dec s.pos
-    inc s.pos
-    if s.pos > s.length: s.length += 1
-  elif sizeof(data) == 1 and data isnot string:
-    datawrite(1)
-  elif data.type is string:
-    let addlen = s.pos + data.len
-    var newcap = 0
-    if addlen > s.cap:
-      s.cap += bufcap
-      newcap += bufcap
-    s.length = addlen
-    s.data &= newString(newcap)
-    for i, c in data: s.data[s.pos+i] = c
-    s.pos += data.len
+    newcap += bufcap
+  s.length = addlen
+  s.data &= newString(newcap)
+  for i, c in data: s.data[s.pos+i] = c
+  s.pos += data.len
+
+proc write*(s: var DefaultStream, data: char) =
+  if s.pos + 1 > s.cap: addcap(s)
+  s.data[s.pos] = data
+  inc s.pos
+  s.length = max(s.pos, s.length)
+
+template datawrite[T](s: var DefaultStream, n: int, data: T) =
+  if s.pos + n > s.cap: addcap(s)
+  copyMem(addr s.data[s.pos], unsafeAddr data, n)
+  s.pos += n
+  s.length = max(s.pos, s.length)
+
+proc write*[T: float|int|int64|uint64|float64](s: var DefaultStream, data: T) =
+  datawrite(s, 8, data)
+
+proc write*[T: int32|uint32|float32](s: var DefaultStream, data: T) =
+  var data = data
+  datawrite(s, 4, data)
+
+proc write*[T: int16|uint16](s: var DefaultStream, data: T) =
+  var data = data
+  datawrite(s, 2,  data)
+
+proc write*[T: int8|uint8](s: var DefaultStream, data: T) =
+  var data = data
+  datawrite(s, 1,  data)
 
 proc readAll*(s: var DefaultStream): string =
   result = s.data[s.pos ..< s.length]
@@ -92,9 +96,7 @@ proc peekInt8*(s: var DefaultStream): int8 =
   s.data[thepos].int8
 proc peekInt32*(s: var DefaultStream): int32 =
   if s.pos+4 >= s.length: return int32.low
-  var arr: array[4,  byte]
-  for i, c in s.data[s.pos .. s.pos+3]: arr[i] = byte c
-  arr as int32
+  copyMem(addr result, addr s.data[s.pos], 4)
 
 proc peekStr*(s: var DefaultStream, n: int): string =
   s.data[s.pos ..< min(n, s.length)]
@@ -102,10 +104,8 @@ proc peekStr*(s: var DefaultStream, n: int): string =
 proc atEnd*(s: var DefaultStream): bool = s.pos >= s.length
 
 proc read*[T](s: var DefaultStream, data: var T) =
-  template readata(n: static[int]) =
-    var datarr: array[n, byte]
-    for i, c in s.data[s.pos .. s.pos+n-1]: datarr[i] = byte c
-    data = datarr as T
+  template readata(n: static[int]) {.used.} =
+    copyMem(addr data, addr s.data[s.pos], n)
     s.pos += n
   when sizeof(data) == 8 and data isnot string:
     readata(8)
@@ -117,8 +117,7 @@ proc read*[T](s: var DefaultStream, data: var T) =
   elif sizeof(data) == 2 and data isnot string:
     readata(2)
   elif sizeof(data) == 1 and data isnot string:
-    data = s.data[s.pos] as T
-    s.pos += 1
+    readata(1)
   elif data is string:
     let datalen = data.len
     if datalen == 0:
