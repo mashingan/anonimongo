@@ -1,0 +1,7 @@
+# ignore all files those don't have extensions
+*
+!*.*
+!/*
+
+go.sum
+*.exe

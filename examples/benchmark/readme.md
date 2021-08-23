@@ -17,11 +17,6 @@ docker run --rm -dp 27017:27017 mongo:{version}
 with `version` is the Mongodb version, such as `latest` or `4.2`, or others e.g.
 `docker run --rm -dp 27017:27017 mongo:4.2`
 
-The naming test will use the same name between different languages to group it
-together. Currently this is still flat directory structure but if the more
-examples added, this will be reorganized into separate folders for each
-test group.
-
 ## Python setup
 
 The Python is using virtual environment (venv) to avoid polluting workspace.  
@@ -54,6 +49,16 @@ nim r -d:danger testfile.nim
 we can add various compile options such as `--gc:arc` or `--gc:orc` to see its
 difference.
 
+# Golang setup
+
+As long we have the Golang installation ready, to test we do
+
+```bash
+go mod tidy
+go test -benchmem -bench . -benchmem
+```
+
+and look for third tab, that has `somenum ns/op`, as the timing.
 
 ## Result and Contribution
 
