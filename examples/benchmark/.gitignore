@@ -5,3 +5,4 @@
 
 go.sum
 *.exe
+pyvenv.cfg
