@@ -16,6 +16,8 @@
     - [Convert Json to and Bson and vice versa](#convert-json-bson)
     - [Watching a collection](#watching-a-collection)
     - [Todolist app](#todolist-app)
+    - [Upload-file](#upload-file)
+    - [Benchmark examples](#benchmark-examples)
 
 3. [Specific Mentions for Working with Bson](#working-with-bson)
 4. [Install](#install)
@@ -635,6 +637,14 @@ main()
 ### Todolist App
 
 Head over to [Todolist Example](examples/todolist).
+
+### Upload-file
+
+Check [Upload-file Example](examples/uploadfile).
+
+### Benchmark Examples
+
+Various examples while benchmarking [here](examples/benchmark).
 
 
 [TOC](#table-of-content)

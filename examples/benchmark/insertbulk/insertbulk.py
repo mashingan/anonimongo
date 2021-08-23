@@ -10,7 +10,7 @@ docs = []
 maxiter = 10000
 isekai = "hello異世界"
 currtime = dt.datetime.now()
-curroid = objectid.ObjectId()
+# curroid = objectid.ObjectId()
 coll.drop()
 for i in range(maxiter):
     docs.append({

@@ -1,7 +1,7 @@
 # Various Benchmark
 
 This folder will accumulate many examples of operations with its benchmark.
-With time, it will added several languages together with its Mongodb
+With time, it will be added several languages together with its Mongodb
 library.  
 
 The Mongodb used is local installation whether system/current os installation
@@ -49,13 +49,13 @@ nim r -d:danger testfile.nim
 we can add various compile options such as `--gc:arc` or `--gc:orc` to see its
 difference.
 
-# Golang setup
+## Golang setup
 
 As long we have the Golang installation ready, to test we do
 
 ```bash
 go mod tidy
-go test -benchmem -bench . -benchmem
+go test -benchmem -bench .
 ```
 
 and look for third tab, that has `somenum ns/op`, as the timing.
@@ -64,7 +64,35 @@ and look for third tab, that has `somenum ns/op`, as the timing.
 
 For this particular (benchmark) examples, any contribution is appreciated to give
 a nuanced and fair comparison for each language version.  
-By no means the values are absolute as each app/program for each user is different,
+By no means the values are absolute as each app/program for each user's case is
+ different,
 but this should give better information and perspective.  
-Currently there's no table to put here and advised for anyone who want to see the
-result to run it.
+
+### Run version
+```bash
+$ nim -v
+Nim Compiler Version 1.4.4 [Windows: amd64]
+Compiled at 2021-02-23
+Copyright (c) 2006-2020 by Andreas Rumpf
+
+$ python -V
+Python 3.9.6
+
+$ go version
+go version go1.16.4 windows/amd64
+```
+
+### Run mode
+
+```bash
+$ nim r -d:danger --gc:orc ./{examplename}.nim
+
+$ python ./{examplename}.py
+
+$ go test -bench . -benchmem
+```
+
+### Local result
+| Test\Language    	| Nim (ms) 	| Python (ms) 	| Golang (ms) 	|
+|------------------	|:--------:	|:-----------:	|:-----------:	|
+| insert bulk/many 	|  92.040  	|  151.54565  	|  118.215250 	|
