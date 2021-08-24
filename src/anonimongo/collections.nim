@@ -1,7 +1,7 @@
 import sequtils, strformat
 import sugar
 
-import dbops/[admmgmt, aggregation, aggregation, crud]
+import dbops/[admmgmt, aggregation, crud]
 import core/[bson, types, utils, wire]
 
 {.warning[UnusedImport]: off.}

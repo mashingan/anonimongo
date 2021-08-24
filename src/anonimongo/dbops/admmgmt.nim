@@ -93,7 +93,8 @@ proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
 proc listCollectionNames*(db: Database, dbname = ""):
   Future[seq[string]] {.async.} =
   for b in await db.listCollections(dbname):
-    result.add b["name"]
+    var name: string = b["name"]
+    result.add name.move
 
 proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
   let q = bson({ listDatabases: 1 })
