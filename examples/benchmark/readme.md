@@ -26,6 +26,7 @@ To setup the venv, do
 python3 -m venv .
 ./script/activate
 pip install pymongo
+pip install motor # used in insertfind examples
 ```
 
 to create a Python environment in this particular folder and installing pymongo
@@ -93,6 +94,7 @@ $ go test -bench . -benchmem
 ```
 
 ### Local result
-| Test\Language    	| Nim (ms) 	| Python (ms) 	| Golang (ms) 	|
-|------------------	|:--------:	|:-----------:	|:-----------:	|
-| insert bulk/many 	|  92.040  	|  151.54565  	|  118.215250 	|
+| Test\Language                     	| Nim (ms) 	|  Python (ms)  	| Golang (ms) 	|
+|-----------------------------------	|:--------:	|:-------------:	|:-----------:	|
+| insert bulk/many                  	|  92.040  	|   151.54565   	|  118.215250 	|
+| insert 100 (1 by 1) and find last 	| 78.683   	| 41.523589 	    | 80.01250    	|
