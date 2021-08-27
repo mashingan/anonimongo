@@ -863,214 +863,214 @@ and [mongo spec][3].
 
 ### Features connection
 
-- [x] URI connect
-- [x] Multiquery on URI connect
-- [x] Multihost on URI connect
-- [ ] Multihost on simple connect
-- [x] SSL/TLS connection
-- [x] SCRAM-SHA-1 authentication
-- [x] SCRAM-SHA-256 authentication
-- [x] `isMaster` connection
-- [x] `TailableCursor` connection
-- [x] `SlaveOk` operations
-- [X] Compression connection
-- [x] Retryable writes
-- [ ] Retryable reads
-- [ ] Sessions
+- :heavy_check_mark: URI connect
+- :heavy_check_mark: Multiquery on URI connect
+- :heavy_check_mark: Multihost on URI connect
+- :white_square_button: Multihost on simple connect
+- :heavy_check_mark: SSL/TLS connection
+- :heavy_check_mark: SCRAM-SHA-1 authentication
+- :heavy_check_mark: SCRAM-SHA-256 authentication
+- :heavy_check_mark: `isMaster` connection
+- :heavy_check_mark: `TailableCursor` connection
+- :heavy_check_mark: `SlaveOk` operations
+- :heavy_check_mark: Compression connection
+- :heavy_check_mark: Retryable writes
+- :white_square_button: Retryable reads
+- :white_square_button: Sessions
 
 ### Features commands
 
 #### :white_check_mark: Aggregation commands 4/4 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-aggregation/) [Anonimongo module](src/anonimongo/dbops/aggregation.nim)
 
-- [x] `aggregate`
-- [x] `count`
-- [x] `distinct`
-- [x] `mapReduce`
+- :heavy_check_mark: `aggregate`
+- :heavy_check_mark: `count`
+- :heavy_check_mark: `distinct`
+- :heavy_check_mark: `mapReduce`
 
 
 #### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim#L109)
 
-- [x] `geoSearch`
+- :heavy_check_mark: `geoSearch`
 
 
 #### :white_check_mark: Query and write operations commands 7/7 (<del>8</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-crud/) [Anonimongo module](src/anonimongo/dbops/crud.nim)
 
-- [x] `delete`
-- [x] `find`
-- [x] `findAndModify`
-- [x] `getMore`
-- [x] `insert`
-- [x] `update`
-- [x] `getLastError`
-- [ ] `resetError` (deprecated)
+- :heavy_check_mark: `delete`
+- :heavy_check_mark: `find`
+- :heavy_check_mark: `findAndModify`
+- :heavy_check_mark: `getMore`
+- :heavy_check_mark: `insert`
+- :heavy_check_mark: `update`
+- :heavy_check_mark: `getLastError`
+- :white_square_button: `resetError` (deprecated)
 
 
 #### :x: Query plan cache commands 0/6 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-plan-cache/) <del>Anonimongo module</del>
 
-- [ ] `planCacheClear`
-- [ ] `planCacheClearFilters`
-- [ ] `planCacheListFilters`
-- [ ] `planCacheListPlans`
-- [ ] `planCacheListQueryShapes`
-- [ ] `planCacheSetFilter`
+- :white_square_button: `planCacheClear`
+- :white_square_button: `planCacheClearFilters`
+- :white_square_button: `planCacheListFilters`
+- :white_square_button: `planCacheListPlans`
+- :white_square_button: `planCacheListQueryShapes`
+- :white_square_button: `planCacheSetFilter`
 
 
 #### :ballot_box_with_check: Database operations commands 1/3 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-authentication/) [Anonimongo module](src/anonimongo/core/types.nim#L500)
 
-- [x] `authenticate`, implemented as Mongo proc.
-- [ ] `getnonce`
-- [ ] `logout`
+- :heavy_check_mark: `authenticate`, implemented as Mongo proc.
+- :white_square_button: `getnonce`
+- :white_square_button: `logout`
 
 #### :white_check_mark: User management commands 7/7 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-user-management/) [Anonimongo module](src/anonimongo/dbops/client.nim)
 
-- [x] `createUser`
-- [x] `dropAllUsersFromDatabase`
-- [x] `dropUser`
-- [x] `grantRolesToUser`
-- [x] `revokeRolesFromUser`
-- [x] `updateUser`
-- [x] `usersInfo`
+- :heavy_check_mark: `createUser`
+- :heavy_check_mark: `dropAllUsersFromDatabase`
+- :heavy_check_mark: `dropUser`
+- :heavy_check_mark: `grantRolesToUser`
+- :heavy_check_mark: `revokeRolesFromUser`
+- :heavy_check_mark: `updateUser`
+- :heavy_check_mark: `usersInfo`
 
 #### :white_check_mark: Role management commands 10/10 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-role-management/) [Anonimongo module](src/anonimongo/dbops/rolemgmt.nim)
 
-- [x] `createRole`
-- [x] `dropRole`
-- [x] `dropAllRolesFromDatabase`
-- [x] `grantPrivilegesToRole`
-- [x] `grantRolesToRole`
-- [x] `invalidateUserCache`
-- [x] `revokePrivilegesFromRole`
-- [x] `rovokeRolesFromRole`
-- [x] `rolesInfo`
-- [x] `updateRole`
+- :heavy_check_mark: `createRole`
+- :heavy_check_mark: `dropRole`
+- :heavy_check_mark: `dropAllRolesFromDatabase`
+- :heavy_check_mark: `grantPrivilegesToRole`
+- :heavy_check_mark: `grantRolesToRole`
+- :heavy_check_mark: `invalidateUserCache`
+- :heavy_check_mark: `revokePrivilegesFromRole`
+- :heavy_check_mark: `rovokeRolesFromRole`
+- :heavy_check_mark: `rolesInfo`
+- :heavy_check_mark: `updateRole`
 
 
 #### :white_check_mark: Replication commands 12/12(<del>13</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-replication/) [Anonimongo module](src/anonimongo/dbops/replication.nim)
 
-- [ ] `applyOps` (internal command)
-- [x] `isMaster`
-- [x] `replSetAbortPrimaryCatchUp`
-- [x] `replSetFreeze`
-- [x] `replSetGetConfig`
-- [x] `replSetGetStatus`
-- [x] `replSetGetStatus`
-- [x] `replSetInitiate`
-- [x] `replSetMaintenance`
-- [x] `replSetReconfig`
-- [x] `replSetResizeOplog`
-- [x] `replSetStepDown`
-- [x] `replSetSyncFrom`
+- :white_square_button: `applyOps` (internal command)
+- :heavy_check_mark: `isMaster`
+- :heavy_check_mark: `replSetAbortPrimaryCatchUp`
+- :heavy_check_mark: `replSetFreeze`
+- :heavy_check_mark: `replSetGetConfig`
+- :heavy_check_mark: `replSetGetStatus`
+- :heavy_check_mark: `replSetGetStatus`
+- :heavy_check_mark: `replSetInitiate`
+- :heavy_check_mark: `replSetMaintenance`
+- :heavy_check_mark: `replSetReconfig`
+- :heavy_check_mark: `replSetResizeOplog`
+- :heavy_check_mark: `replSetStepDown`
+- :heavy_check_mark: `replSetSyncFrom`
 
 #### :x: Sharding commands 0/27 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-sharding/) <del>Anonimongo module</del>
 
-- [ ] `addShard`
-- [ ] `addShardToZone`
-- [ ] `balancerStart`
-- [ ] `balancerStop`
-- [ ] `checkShardingIndex`
-- [ ] `clearJumboFlag`
-- [ ] `cleanupOrphaned`
-- [ ] `enableSharding`
-- [ ] `flushRouterConfig`
-- [ ] `getShardMap`
-- [ ] `getShardVersion`
-- [ ] `isdbgrid`
-- [ ] `listShard`
-- [ ] `medianKey`
-- [ ] `moveChunk`
-- [ ] `movePrimary`
-- [ ] `mergeChunks`
-- [ ] `removeShard`
-- [ ] `removeShardFromZone`
-- [ ] `setShardVersion`
-- [ ] `shardCollection`
-- [ ] `shardCollection`
-- [ ] `split`
-- [ ] `splitChunk`
-- [ ] `splitVector`
-- [ ] `unsetSharding`
-- [ ] `updateZoneKeyRange`
+- :white_square_button: `addShard`
+- :white_square_button: `addShardToZone`
+- :white_square_button: `balancerStart`
+- :white_square_button: `balancerStop`
+- :white_square_button: `checkShardingIndex`
+- :white_square_button: `clearJumboFlag`
+- :white_square_button: `cleanupOrphaned`
+- :white_square_button: `enableSharding`
+- :white_square_button: `flushRouterConfig`
+- :white_square_button: `getShardMap`
+- :white_square_button: `getShardVersion`
+- :white_square_button: `isdbgrid`
+- :white_square_button: `listShard`
+- :white_square_button: `medianKey`
+- :white_square_button: `moveChunk`
+- :white_square_button: `movePrimary`
+- :white_square_button: `mergeChunks`
+- :white_square_button: `removeShard`
+- :white_square_button: `removeShardFromZone`
+- :white_square_button: `setShardVersion`
+- :white_square_button: `shardCollection`
+- :white_square_button: `shardCollection`
+- :white_square_button: `split`
+- :white_square_button: `splitChunk`
+- :white_square_button: `splitVector`
+- :white_square_button: `unsetSharding`
+- :white_square_button: `updateZoneKeyRange`
 
 #### :x: Session commands 0/8 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-sessions/) <del>Anonimongo module</del>
 
-- [ ] `abortTransaction`
-- [ ] `commitTransaction`
-- [ ] `endSessions`
-- [ ] `killAllSessions`
-- [ ] `killAllSessionByPattern`
-- [ ] `killSessions`
-- [ ] `refreshSessions`
-- [ ] `startSession`
+- :white_square_button: `abortTransaction`
+- :white_square_button: `commitTransaction`
+- :white_square_button: `endSessions`
+- :white_square_button: `killAllSessions`
+- :white_square_button: `killAllSessionByPattern`
+- :white_square_button: `killSessions`
+- :white_square_button: `refreshSessions`
+- :white_square_button: `startSession`
 
 #### :ballot_box_with_check: Administration commands 13/28 (<del>29</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-administration/) [Anonimongo module](src/anonimongo/dbops/admmgmt.nim)
 
-- [ ] `clean` (internal namespace command)
-- [ ] `cloneCollection`
-- [ ] `cloneCollectionAsCapped`
-- [ ] `collMod`
-- [ ] `compact`
-- [ ] `connPoolSync`
-- [ ] `convertToCapped`
-- [x] `create`
-- [x] `createIndexes`
-- [x] `currentOp`
-- [x] `drop`
-- [x] `dropDatabase`
-- [ ] `dropConnections`
-- [x] `dropIndexes`
-- [ ] `filemd5`
-- [ ] `fsync`
-- [ ] `fsyncUnlock`
-- [ ] `getParameter`
-- [x] `killCursors`
-- [x] `killOp`
-- [x] `listCollections`
-- [x] `listDatabases`
-- [x] `listIndexes`
-- [ ] `logRotate`
-- [ ] `reIndex`
-- [x] `renameCollection`
-- [ ] `setFeatureCompabilityVersion`
-- [ ] `setParameter`
-- [x] `shutdown`
+- :white_square_button: `clean` (internal namespace command)
+- :white_square_button: `cloneCollection`
+- :white_square_button: `cloneCollectionAsCapped`
+- :white_square_button: `collMod`
+- :white_square_button: `compact`
+- :white_square_button: `connPoolSync`
+- :white_square_button: `convertToCapped`
+- :heavy_check_mark: `create`
+- :heavy_check_mark: `createIndexes`
+- :heavy_check_mark: `currentOp`
+- :heavy_check_mark: `drop`
+- :heavy_check_mark: `dropDatabase`
+- :white_square_button: `dropConnections`
+- :heavy_check_mark: `dropIndexes`
+- :white_square_button: `filemd5`
+- :white_square_button: `fsync`
+- :white_square_button: `fsyncUnlock`
+- :white_square_button: `getParameter`
+- :heavy_check_mark: `killCursors`
+- :heavy_check_mark: `killOp`
+- :heavy_check_mark: `listCollections`
+- :heavy_check_mark: `listDatabases`
+- :heavy_check_mark: `listIndexes`
+- :white_square_button: `logRotate`
+- :white_square_button: `reIndex`
+- :heavy_check_mark: `renameCollection`
+- :white_square_button: `setFeatureCompabilityVersion`
+- :white_square_button: `setParameter`
+- :heavy_check_mark: `shutdown`
 
 #### :white_check_mark: Diagnostic commands 17/17 (<del>26</del>) [Mongo module](https://docs.mongodb.com/manual/reference/command/nav-diagnostic/) [Anonimongo module](src/anonimongo/dbops/diagnostic.nim)
 
-- [ ] `availableQueryOptions` (internal command)
-- [x] `buildInfo`
-- [x] `collStats`
-- [x] `connPoolStats`
-- [x] `connectionStatus`
-- [ ] `cursorInfo` (removed, use metrics.cursor from `serverStatus` instead)
-- [x] `dataSize`
-- [x] `dbHash`
-- [x] `dbStats`
-- [ ] `diagLogging` (removed, on Mongo 3.6, use mongoreplay instead)
-- [ ] `driverOIDTest` (internal command)
-- [x] `explain`
-- [ ] `features` (internal command)
-- [x] `getCmdLineOpts`
-- [x] `getLog`
-- [x] `hostInfo`
-- [ ] `isSelf` (internal command)
-- [x] `listCommands`
-- [ ] `netstat` (internal command)
-- [x] `ping`
-- [ ] `profile` (internal command)
-- [x] `serverStatus`
-- [x] `shardConnPoolStats`
-- [x] `top`
-- [x] `validate`
-- [ ] `whatsmyuri` (internal command)
+- :white_square_button: `availableQueryOptions` (internal command)
+- :heavy_check_mark: `buildInfo`
+- :heavy_check_mark: `collStats`
+- :heavy_check_mark: `connPoolStats`
+- :heavy_check_mark: `connectionStatus`
+- :white_square_button: `cursorInfo` (removed, use metrics.cursor from `serverStatus` instead)
+- :heavy_check_mark: `dataSize`
+- :heavy_check_mark: `dbHash`
+- :heavy_check_mark: `dbStats`
+- :white_square_button: `diagLogging` (removed, on Mongo 3.6, use mongoreplay instead)
+- :white_square_button: `driverOIDTest` (internal command)
+- :heavy_check_mark: `explain`
+- :white_square_button: `features` (internal command)
+- :heavy_check_mark: `getCmdLineOpts`
+- :heavy_check_mark: `getLog`
+- :heavy_check_mark: `hostInfo`
+- :white_square_button: `isSelf` (internal command)
+- :heavy_check_mark: `listCommands`
+- :white_square_button: `netstat` (internal command)
+- :heavy_check_mark: `ping`
+- :white_square_button: `profile` (internal command)
+- :heavy_check_mark: `serverStatus`
+- :heavy_check_mark: `shardConnPoolStats`
+- :heavy_check_mark: `top`
+- :heavy_check_mark: `validate`
+- :white_square_button: `whatsmyuri` (internal command)
 
 #### :white_check_mark: Free monitoring commands 2/2 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-free-monitoring/) [Anonimongo module](src/anonimongo/dbops/freemonitoring.nim)
 
-- [x] `getFreeMonitoringStatus`
-- [x] `setFreeMonitoring`
+- :heavy_check_mark: `getFreeMonitoringStatus`
+- :heavy_check_mark: `setFreeMonitoring`
 
 #### :x: <del>Auditing commands 0/1</del>, only available for Mongodb Enterprise and AtlasDB [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-auditing/) <del>Anonimongo module</del>
 
-- [ ] `logApplicationMessage`
+- :white_square_button: `logApplicationMessage`
 
 
 
