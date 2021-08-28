@@ -1,0 +1,7 @@
+!Dockerfile
+nimbledeps/*
+!nimbledeps/.gitkeep
+!config.nims
+buildcache/*
+!buildcache/.gitkeep
+database
