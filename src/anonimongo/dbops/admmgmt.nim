@@ -229,7 +229,7 @@ proc setDefaultRWConcern*(db: Database, defaultReadConcern = bsonNull(),
   if all([defaultReadConcern, defaultWriteConcern].map(isNil), (x) => x ):
     result = bsonNull()
     return
-  var q = bson { setDefaultRWConcern: 1'i32 }
+  var q = bson { setDefaultRWConcern: 1 }
   q.addOptional("defaultReadConcern", defaultReadConcern)
   q.addOptional("defaultWriteConcern", defaultWriteConcern)
   q.addOptional("writeConcern", wt)
@@ -238,6 +238,17 @@ proc setDefaultRWConcern*(db: Database, defaultReadConcern = bsonNull(),
                     else: cidNoop
   let reply = await sendOps(q, db, "admin", cmd = ckWrite,
     compression = compression)
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    result = bsonNull()
+    return
+  result = reply.documents[0]
+
+proc getDefaultReadConcern*(db: Database, inMemory = false, comment = bsonNull()):
+  Future[BsonDocument]{.async.} =
+  let q = bson { getDefaultReadConcern: 1,  inMemory: inMemory, comment: comment}
+  let reply = await sendops(q, db, "admin")
   let (success, reason) = check reply
   if not success:
     echo reason
