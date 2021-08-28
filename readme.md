@@ -847,7 +847,7 @@ is usually only changes in something unrelated to the code itself.
 ### For dependency
 
 ```
-requires "anonimongo >= 0.4.10"
+requires "anonimongo"
 ```
 
 or directly from Github repo
@@ -882,9 +882,9 @@ and [mongo spec][3].
 
 #### :white_check_mark: Aggregation commands 4/4 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-aggregation/) [Anonimongo module](src/anonimongo/dbops/aggregation.nim)
 
-- :heavy_check_mark: `aggregate`
-- :heavy_check_mark: `count`
-- :heavy_check_mark: `distinct`
+- :heavy_check_mark: `aggregate` (collection procs: [`aggregate`](/src/anonimongo/collections.nim#L283))
+- :heavy_check_mark: `count` (collection procs: [`count`](/src/anonimongo.collections.nim#L231))
+- :heavy_check_mark: `distinct` (collection procs: [`distinct`](/src/anonimongo.collections.nim#L267))
 - :heavy_check_mark: `mapReduce`
 
 
@@ -895,12 +895,12 @@ and [mongo spec][3].
 
 #### :white_check_mark: Query and write operations commands 7/7 (<del>8</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-crud/) [Anonimongo module](src/anonimongo/dbops/crud.nim)
 
-- :heavy_check_mark: `delete`
-- :heavy_check_mark: `find`
-- :heavy_check_mark: `findAndModify`
+- :heavy_check_mark: `delete` (collection procs: [`remove`](/src/anonimongo/collections.nim#L167), [`remove`](/src/anonimongo/collections.nim#L179), [`remove`](/src/anonimongo/collections.nim#L199))
+- :heavy_check_mark: `find` (collection procs: [`find`](/src/anonimongo/collections.nim#L99), [`findOne`](/src/anonimongo/collections.nim#L103), [`findAll`](/src/anonimongo/collections.nim#L109), [`findIter`](/src/anonimongo/collections.nim#L116))
+- :heavy_check_mark: `findAndModify` (collection procs: [`findAndModify`](/src/anonimongo/collections.nim#L122))
 - :heavy_check_mark: `getMore`
-- :heavy_check_mark: `insert`
-- :heavy_check_mark: `update`
+- :heavy_check_mark: `insert` (collection procs: [`insert`](/src/anonimongo/collections.nim#L211))
+- :heavy_check_mark: `update` (collection procs: [`update`](/src/anonimongo/collections.nim#L143))
 - :heavy_check_mark: `getLastError`
 - :white_square_button: `resetError` (deprecated)
 
@@ -915,9 +915,9 @@ and [mongo spec][3].
 - :white_square_button: `planCacheSetFilter`
 
 
-#### :ballot_box_with_check: Database operations commands 1/3 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-authentication/) [Anonimongo module](src/anonimongo/core/types.nim#L500)
+#### :ballot_box_with_check: Database operations commands 1/3 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-authentication/) [Anonimongo module](src/anonimongo/core/types.nim#L511)
 
-- :heavy_check_mark: `authenticate`, implemented as Mongo proc.
+- :heavy_check_mark: `authenticate`, implemented as Mongo proc. ([`authenticate`](src/anonimongo/core/types.nim#L511), [`authenticate`](src/anonimongo/core/types.nim#L519))
 - :white_square_button: `getnonce`
 - :white_square_button: `logout`
 
@@ -1012,12 +1012,12 @@ and [mongo spec][3].
 - :white_square_button: `connPoolSync`
 - :white_square_button: `convertToCapped`
 - :heavy_check_mark: `create`
-- :heavy_check_mark: `createIndexes`
+- :heavy_check_mark: `createIndexes` (collection proc: [`createIndexes`](src/anonimongo/collections.nim#L248))
 - :heavy_check_mark: `currentOp`
 - :heavy_check_mark: `drop`
 - :heavy_check_mark: `dropDatabase`
 - :white_square_button: `dropConnections`
-- :heavy_check_mark: `dropIndexes`
+- :heavy_check_mark: `dropIndexes` (collection procs: [`dropIndex`](src/anonimongo/collections.nim#L275), [`dropIndexes`](src/anonimongo/collections.nim#L275))
 - :white_square_button: `filemd5`
 - :white_square_button: `fsync`
 - :white_square_button: `fsyncUnlock`
@@ -1026,7 +1026,7 @@ and [mongo spec][3].
 - :heavy_check_mark: `killOp`
 - :heavy_check_mark: `listCollections`
 - :heavy_check_mark: `listDatabases`
-- :heavy_check_mark: `listIndexes`
+- :heavy_check_mark: `listIndexes` (collection proc: [`listIndexes`](src/anonimongo/collections.nim#L264))
 - :white_square_button: `logRotate`
 - :white_square_button: `reIndex`
 - :heavy_check_mark: `renameCollection`
