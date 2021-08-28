@@ -59,10 +59,11 @@ proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
   q.addOptional("comment", comment)
   result = await db.proceed(q, cmd = ckWrite)
 
-proc dropCollection*(db: Database, coll: string, wt = bsonNull()):
-  Future[WriteResult]{.async.} =
+proc dropCollection*(db: Database, coll: string, wt = bsonNull(),
+  comment = bsonNull()): Future[WriteResult]{.async.} =
   var q = bson({ drop: coll })
   q.addWriteConcern(db, wt)
+  q.addOptional("comment", comment)
   result = await db.proceed(q, cmd = ckWrite)
 
 proc dropDatabase*(db: Database, wt = bsonNull()):
