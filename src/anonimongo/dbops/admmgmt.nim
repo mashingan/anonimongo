@@ -48,12 +48,15 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   result = await db.proceed(q, cmd = ckWrite)
 
 proc createIndexes*(db: Database, coll: string, indexes: BsonBase,
-  writeConcern = bsonNull()): Future[WriteResult]{.async.} =
+  writeConcern = bsonNull(), commitQuorum = bsonNull(), comment = bsonNull()):
+  Future[WriteResult]{.async.} =
   var q = bson({
     createIndexes: coll,
     indexes: indexes,
   })
   q.addWriteConcern(db, writeConcern)
+  q.addOptional("commitQuorum", commitQuorum)
+  q.addOptional("comment", comment)
   result = await db.proceed(q, cmd = ckWrite)
 
 proc dropCollection*(db: Database, coll: string, wt = bsonNull()):
