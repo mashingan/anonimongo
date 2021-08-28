@@ -1002,7 +1002,7 @@ and [mongo spec][3].
 - :white_square_button: `refreshSessions`
 - :white_square_button: `startSession`
 
-#### :ballot_box_with_check: Administration commands 13/28 (<del>29</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-administration/) [Anonimongo module](src/anonimongo/dbops/admmgmt.nim)
+#### :ballot_box_with_check: Administration commands 15/32 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-administration/) [Anonimongo module](src/anonimongo/dbops/admmgmt.nim)
 
 - :white_square_button: `clean` (internal namespace command)
 - :white_square_button: `cloneCollection`
@@ -1022,6 +1022,7 @@ and [mongo spec][3].
 - :white_square_button: `fsync`
 - :white_square_button: `fsyncUnlock`
 - :white_square_button: `getParameter`
+- :heavy_check_mark: `getDefaultReadConcern`
 - :heavy_check_mark: `killCursors`
 - :heavy_check_mark: `killOp`
 - :heavy_check_mark: `listCollections`
@@ -1030,7 +1031,9 @@ and [mongo spec][3].
 - :white_square_button: `logRotate`
 - :white_square_button: `reIndex`
 - :heavy_check_mark: `renameCollection`
+- :heavy_check_mark: `setDefaultRWConcern`
 - :white_square_button: `setFeatureCompabilityVersion`
+- :white_square_button: `setIndexCommitQuorum`
 - :white_square_button: `setParameter`
 - :heavy_check_mark: `shutdown`
 
