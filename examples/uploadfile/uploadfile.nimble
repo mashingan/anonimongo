@@ -10,7 +10,7 @@ bin           = @["app"]
 
 # Dependencies
 
-requires "nim >= 1.4.8", "jester", "karax",
+requires "nim >= 1.4.0", "jester", "karax",
          "anonimongo#head", "ws", "httpbeast"
 
 task build, "Default built command":
