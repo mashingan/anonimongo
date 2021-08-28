@@ -1,0 +1,29 @@
+opReply	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opReply	OpCode.opReply	
+opUpdate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opUpdate	OpCode.opUpdate	
+opInsert	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opInsert	OpCode.opInsert	
+opReserved	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opReserved	OpCode.opReserved	
+opQuery	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opQuery	OpCode.opQuery	
+opGetMore	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opGetMore	OpCode.opGetMore	
+opDelete	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opDelete	OpCode.opDelete	
+opKillCursors	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opKillCursors	OpCode.opKillCursors	
+opCommand	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opCommand	OpCode.opCommand	
+opCommandReply	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opCommandReply	OpCode.opCommandReply	
+opCompressed	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opCompressed	OpCode.opCompressed	
+opMsg	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#opMsg	OpCode.opMsg	
+OpCode	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#OpCode	wire: OpCode	
+CompressorId	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#CompressorId	wire: CompressorId	
+MsgHeader	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#MsgHeader	wire: MsgHeader	
+ReplyFormat	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#ReplyFormat	wire: ReplyFormat	
+Flags	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#Flags	wire: Flags	
+QueryFlags	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#QueryFlags	wire: QueryFlags	
+RFlags	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#RFlags	wire: RFlags	
+ResponseFlags	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#ResponseFlags	wire: ResponseFlags	
+replyParse	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#replyParse,Streamable	wire: replyParse(s: var Streamable): ReplyFormat	
+prepareQuery	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#prepareQuery,Streamable,int32,int32,int32,int32,string,int32,int32	wire: prepareQuery(s: var Streamable; reqId, target, opcode, flags: int32;\n             collname: string; nskip, nreturn: int32; query = newBson();\n             selector = newBson(); compression = cidNoop): int	
+prepare	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#prepare.t,BsonDocument,int32,string,int,int,int	wire: prepare(q: BsonDocument; flags: int32; dbname: string; id = 0; skip = 0;\n        limit = 1; compression = cidNoop): untyped	
+ok	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#ok,BsonDocument	wire: ok(b: BsonDocument): bool	
+errmsg	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#errmsg,BsonDocument	wire: errmsg(b: BsonDocument): string	
+code	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#code,BsonDocument	wire: code(b: BsonDocument): int	
+check	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#check.t,ReplyFormat	wire: check(r: ReplyFormat): (bool, string)	
+look	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#look,ReplyFormat	wire: look(reply: ReplyFormat)	
+getReply	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.5.3/anonimongo/core/wire.html#getReply,AsyncSocket	wire: getReply(socket: AsyncSocket): Future[ReplyFormat]	

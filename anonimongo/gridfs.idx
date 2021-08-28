@@ -1,0 +1,24 @@
+kilobytes	anonimongo/gridfs.html#kilobytes,Positive	gridfs: kilobytes(n: Positive): int	
+megabytes	anonimongo/gridfs.html#megabytes,Positive	gridfs: megabytes(n: Positive): int	
+createBucket	anonimongo/gridfs.html#createBucket,Database,string	gridfs: createBucket(db: Database; name = &quot;fs&quot;; chunkSize = defaultChunkSize): Future[\n    GridFS]	
+createBucket	anonimongo/gridfs.html#createBucket,Collection,string	gridfs: createBucket(c: Collection; name = &quot;fs&quot;; chunkSize = defaultChunkSize): Future[\n    GridFS]	
+getBucket	anonimongo/gridfs.html#getBucket,Database,string	gridfs: getBucket(db: Database; name = &quot;fs&quot;): Future[GridFS]	
+getBucket	anonimongo/gridfs.html#getBucket,Collection,string	gridfs: getBucket(c: Collection; name = &quot;fs&quot;): Future[GridFS]	
+uploadFile	anonimongo/gridfs.html#uploadFile,GridFS,AsyncFile,string,int32	gridfs: uploadFile(g: GridFS; f: AsyncFile; filename = &quot;&quot;; chunk = 0&apos;i32;\n           metadata = bson()): Future[WriteResult]	
+uploadFile	anonimongo/gridfs.html#uploadFile,GridFS,string,int32	gridfs: uploadFile(g: GridFS; filename: string; chunk = 0&apos;i32; metadata = bson()): Future[\n    WriteResult]	
+downloadFile	anonimongo/gridfs.html#downloadFile,GridFS,AsyncFile,string	gridfs: downloadFile(g: GridFS; f: AsyncFile; filename = &quot;&quot;): Future[WriteResult]	
+downloadFile	anonimongo/gridfs.html#downloadFile,GridFS,string	gridfs: downloadFile(bucket: GridFS; filename: string): Future[WriteResult]	
+downloadAs	anonimongo/gridfs.html#downloadAs,GridFS,string,string	gridfs: downloadAs(g: GridFS; source, target: string): Future[WriteResult]	
+availableFiles	anonimongo/gridfs.html#availableFiles,GridFS	gridfs: availableFiles(g: GridFS; query = bson()): Future[int]	
+listFileNames	anonimongo/gridfs.html#listFileNames,GridFS	gridfs: listFileNames(g: GridFS; matcher = &quot;all&quot;.toBson; sort = bson()): Future[\n    seq[string]]	
+removeFile	anonimongo/gridfs.html#removeFile,GridFS	gridfs: removeFile(g: GridFS; matcher = &quot;all&quot;.toBson; one = false): Future[WriteResult]	
+drop	anonimongo/gridfs.html#drop,GridFS	gridfs: drop(g: GridFS): Future[WriteResult]	
+GridStream	anonimongo/gridfs.html#GridStream	gridfs: GridStream	
+fileSize	anonimongo/gridfs.html#fileSize,GridStream	gridfs: fileSize(gs: GridStream): int64	
+metadata	anonimongo/gridfs.html#metadata,GridStream	gridfs: metadata(gs: GridStream): BsonDocument	
+close	anonimongo/gridfs.html#close,GridStream	gridfs: close(gs: GridStream)	
+setPosition	anonimongo/gridfs.html#setPosition,GridStream,int64	gridfs: setPosition(gs: GridStream; pos: int64; chunkn = -1): owned(Future[void])	
+getPosition	anonimongo/gridfs.html#getPosition,GridStream	gridfs: getPosition(gs: GridStream): int64	
+read	anonimongo/gridfs.html#read,GridStream,int64	gridfs: read(gs: GridStream; length = 0&apos;i64): Future[string]	
+readAll	anonimongo/gridfs.html#readAll,GridStream	gridfs: readAll(gs: GridStream): Future[string]	
+getStream	anonimongo/gridfs.html#getStream,GridFS,BsonBase	gridfs: getStream(g: GridFS; matcher: BsonBase; sort = bson(); buffered = false): Future[\n    GridStream]	

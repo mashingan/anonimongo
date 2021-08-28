@@ -1,0 +1,15 @@
+csInsert	anonimongo/changestreams.html#csInsert	ChangeStreamEvent.csInsert	
+csUpdate	anonimongo/changestreams.html#csUpdate	ChangeStreamEvent.csUpdate	
+csReplace	anonimongo/changestreams.html#csReplace	ChangeStreamEvent.csReplace	
+csDelete	anonimongo/changestreams.html#csDelete	ChangeStreamEvent.csDelete	
+csInvalidate	anonimongo/changestreams.html#csInvalidate	ChangeStreamEvent.csInvalidate	
+csDrop	anonimongo/changestreams.html#csDrop	ChangeStreamEvent.csDrop	
+csDropDatabase	anonimongo/changestreams.html#csDropDatabase	ChangeStreamEvent.csDropDatabase	
+csRename	anonimongo/changestreams.html#csRename	ChangeStreamEvent.csRename	
+ChangeStreamEvent	anonimongo/changestreams.html#ChangeStreamEvent	changestreams: ChangeStreamEvent	
+ChangeStreamId	anonimongo/changestreams.html#ChangeStreamId	changestreams: ChangeStreamId	
+Namespace	anonimongo/changestreams.html#Namespace	changestreams: Namespace	
+DocumentKey	anonimongo/changestreams.html#DocumentKey	changestreams: DocumentKey	
+ChangeStream	anonimongo/changestreams.html#ChangeStream	changestreams: ChangeStream	
+forEach	anonimongo/changestreams.html#forEach,Cursor,proc(ChangeStream),set[ChangeStreamEvent]	changestreams: forEach(c: Cursor; cb: proc (b: ChangeStream); stopWhen: set[ChangeStreamEvent]): owned(\n    Future[void])	
+watch	anonimongo/changestreams.html#watch,Collection,seq[BsonDocument]	changestreams: watch(coll: Collection; pipelines: seq[BsonDocument] = @[]; options = bson()): Future[\n    Cursor]	

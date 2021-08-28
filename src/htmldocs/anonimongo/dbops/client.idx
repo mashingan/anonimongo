@@ -1,9 +1,0 @@
-Client module and User Management Commands	anonimongo/dbops/client.html#client-module-and-user-management-commands	 Client module and User Management Commands	
-connect	anonimongo/dbops/client.html#connect,Mongo	client: connect(m: Mongo): Future[bool]	
-createUser	anonimongo/dbops/client.html#createUser,Database,string,string	client: createUser(db: Database; user, pwd: string; roles = bsonArray();\n           restrictions = bsonArray();\n           mechanism = bsonArray(&quot;SCRAM-SHA-256&quot;, &quot;SCRAM-SHA-1&quot;);\n           writeConcern = bsonNull(); customData = bsonNull()): Future[WriteResult]	
-updateUser	anonimongo/dbops/client.html#updateUser,Database,string,string	client: updateUser(db: Database; user, pwd: string; roles = bsonArray();\n           restrictions = bsonArray();\n           mechanism = bsonArray(&quot;SCRAM-SHA-256&quot;, &quot;SCRAM-SHA-1&quot;);\n           writeConcern = bsonNull(); customData = bsonNull()): Future[WriteResult]	
-usersInfo	anonimongo/dbops/client.html#usersInfo,Database,BsonDocument	client: usersInfo(db: Database; query: BsonDocument): Future[ReplyFormat]	
-dropAllUsersFromDatabase	anonimongo/dbops/client.html#dropAllUsersFromDatabase,Database	client: dropAllUsersFromDatabase(db: Database): Future[WriteResult]	
-dropUser	anonimongo/dbops/client.html#dropUser,Database,string	client: dropUser(db: Database; user: string): Future[WriteResult]	
-grantRolesToUser	anonimongo/dbops/client.html#grantRolesToUser,Database,string	client: grantRolesToUser(db: Database; user: string; roles = bsonArray();\n                 writeConcern = bsonNull()): Future[WriteResult]	
-revokeRolesFromUser	anonimongo/dbops/client.html#revokeRolesFromUser,Database,string	client: revokeRolesFromUser(db: Database; user: string; roles = bsonArray();\n                    writeConcern = bsonNull()): Future[WriteResult]	

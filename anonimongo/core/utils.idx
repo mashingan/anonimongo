@@ -1,0 +1,10 @@
+cmd	anonimongo/core/utils.html#cmd,string	utils: cmd(name: string): string	
+flags	anonimongo/core/utils.html#flags,Database	utils: flags(d: Database): int32	
+sendOps	anonimongo/core/utils.html#sendOps,BsonDocument,Database,string	utils: sendOps(q: BsonDocument; db: Database; name = &quot;&quot;; cmd = ckRead;\n        compression = cidNoop): Future[ReplyFormat]	
+addWriteConcern	anonimongo/core/utils.html#addWriteConcern,BsonDocument,Database,BsonBase	utils: addWriteConcern(q: var BsonDocument; db: Database; wt: BsonBase)	
+addOptional	anonimongo/core/utils.html#addOptional.t,BsonDocument,string,BsonBase	utils: addOptional(q: var BsonDocument; name: string; f: BsonBase)	
+addConditional	anonimongo/core/utils.html#addConditional.t,BsonDocument,string,BsonBase	utils: addConditional(q: var BsonDocument; field: string; val: BsonBase)	
+epilogueCheck	anonimongo/core/utils.html#epilogueCheck,ReplyFormat,string	utils: epilogueCheck(reply: ReplyFormat; target: var string): bool	
+proceed	anonimongo/core/utils.html#proceed,Database,BsonDocument,string	utils: proceed(db: Database; q: BsonDocument; dbname = &quot;&quot;; cmd = ckRead;\n        needCompress = true): Future[WriteResult]	
+crudops	anonimongo/core/utils.html#crudops,Database,BsonDocument,string	utils: crudops(db: Database; q: BsonDocument; dbname = &quot;&quot;; cmd = ckRead): Future[\n    BsonDocument]	
+getWResult	anonimongo/core/utils.html#getWResult,BsonDocument	utils: getWResult(b: BsonDocument): WriteResult	

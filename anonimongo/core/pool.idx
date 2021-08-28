@@ -1,0 +1,13 @@
+Connection	anonimongo/core/pool.html#Connection	pool: Connection	
+Pool	anonimongo/core/pool.html#Pool	pool: Pool	
+connections	anonimongo/core/pool.html#connections,Pool	pool: connections(p: Pool): lent TableRef[int, Connection]	
+initConnection	anonimongo/core/pool.html#initConnection,int	pool: initConnection(id = 0): Connection	
+contains	anonimongo/core/pool.html#contains,Pool,int	pool: contains(p: Pool; i: int): bool	
+`[]`	anonimongo/core/pool.html#[],Pool,int	pool: `[]`(p: Pool; i: int): lent Connection	
+`[]=`	anonimongo/core/pool.html#[]=,Pool,int,Connection	pool: `[]=`(p: Pool; i: int; c: Connection)	
+initPool	anonimongo/core/pool.html#initPool,int	pool: initPool(size = 16): Pool	
+getConn	anonimongo/core/pool.html#getConn,Pool	pool: getConn(p: Pool): Future[(int, Connection)]	
+connect	anonimongo/core/pool.html#connect,Pool,string,int	pool: connect(p: Pool; address: string; port: int): owned(Future[void])	
+close	anonimongo/core/pool.html#close,Pool	pool: close(p: Pool)	
+endConn	anonimongo/core/pool.html#endConn,Pool,Positive	pool: endConn(p: Pool; i: Positive)	
+authenticate	anonimongo/core/pool.html#authenticate,Pool,string,string,typedesc,string	pool: authenticate(p: Pool; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): Future[bool]	
