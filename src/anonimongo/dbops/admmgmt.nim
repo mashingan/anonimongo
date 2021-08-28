@@ -1,4 +1,4 @@
-import strformat, sequtils
+import std/[strformat, sequtils]
 import ../core/[types, bson, wire, utils]
 
 ## Administration Commands
@@ -66,14 +66,15 @@ proc dropCollection*(db: Database, coll: string, wt = bsonNull(),
   q.addOptional("comment", comment)
   result = await db.proceed(q, cmd = ckWrite)
 
-proc dropDatabase*(db: Database, wt = bsonNull()):
+proc dropDatabase*(db: Database, wt = bsonNull(), comment = bsonNull()):
   Future[WriteResult]{.async.} =
   var q = bson({ dropDatabase: 1 })
   q.addWriteConcern(db, wt)
+  q.addOptional("comment", comment)
   result = await db.proceed(q, cmd = ckWrite)
 
 proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
-  wt = bsonNull()): Future[WriteResult] {.async.} =
+  wt = bsonNull(), comment = bsonNull()): Future[WriteResult] {.async.} =
   var q = bson({
     dropIndexes: coll,
     index: indexes,
@@ -81,11 +82,15 @@ proc dropIndexes*(db: Database, coll: string, indexes: BsonBase,
   q.addWriteConcern(db, wt)
   result = await db.proceed(q, cmd = ckWrite)
 
-proc listCollections*(db: Database, dbname = "", filter = bsonNull()):
+proc listCollections*(db: Database, dbname = "", filter = bsonNull(),
+  nameonly = false, authorizedCollections = false, comment = bsonNull()):
   Future[seq[BsonBase]] {.async.} =
   var q = bson({ listCollections: 1})
   if not filter.isNil:
     q["filter"] = filter
+  q.addConditional("nameOnly", nameonly)
+  q.addConditional("authorizedCollections", authorizedCollections)
+  q.addOptional("comment", comment)
   let compression = if db.db.compressions.len > 0: db.db.compressions[0]
                     else: cidNoop
   let reply = await sendops(q, db, dbname, cmd = ckRead, compression = compression)
@@ -103,8 +108,13 @@ proc listCollectionNames*(db: Database, dbname = ""):
     var name: string = b["name"]
     result.add name.move
 
-proc listDatabases*(db: Mongo | Database): Future[seq[BsonBase]] {.async.} =
+proc listDatabases*(db: Mongo | Database, filter = bsonNull(), nameonly = false,
+  authorizedCollections = false, comment = bsonNull()): Future[seq[BsonBase]] {.async.} =
   let q = bson({ listDatabases: 1 })
+  q.addOptional("filter", filter)
+  q.addConditional("nameOnly", nameonly)
+  q.addConditional("authorizedCollections", authorizedCollections)
+  q.addOptional("comment", comment)
   when db is Mongo:
     let dbm = db["admin"]
   else:
@@ -135,9 +145,10 @@ proc listDatabaseNames*(db: Mongo | Database): Future[seq[string]] {.async.} =
   for d in await listDatabases(db):
     result.add d["name"]
 
-proc listIndexes*(db: Database, coll: string):
+proc listIndexes*(db: Database, coll: string, comment = bsonNull()):
   Future[seq[BsonBase]]{.async.} =
-  let q = bson({ listIndexes: coll })
+  var q = bson({ listIndexes: coll })
+  q.addOptional("comment", comment)
   let compression = if db.db.compressions.len > 0: db.db.compressions[0]
                     else: cidNoop
   let reply = await sendops(q, db, cmd = ckRead, compression = compression)
@@ -149,7 +160,8 @@ proc listIndexes*(db: Database, coll: string):
   if res.ok:
     result = res["cursor"]["firstBatch"]
 
-proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
+proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull(),
+  comment = bsonNull()):
   Future[WriteResult] {.async.} =
   let source = &"{db.name}.{`from`}"
   let dest = &"{db.name}.{to}"
@@ -159,11 +171,13 @@ proc renameCollection*(db: Database, `from`, to: string, wt = bsonNull()):
     dropTarget: false,
   })
   q.addWriteConcern(db, wt)
+  q.addOptional("comment", comment)
   result = await db.proceed(q, "admin", cmd = ckWrite)
 
-proc shutdown*(db: Mongo | Database, force = false, timeout = 0):
-    Future[WriteResult] {.async.} =
+proc shutdown*(db: Mongo | Database, force = false, timeout = 10,
+  comment = bsonNull()): Future[WriteResult] {.async.} =
   var q = bson({ shutdown: 1, force: force, timeoutSecs: timeout })
+  q.addOptional("comment", comment)
   when db is Mongo:
     let mdb = db["admin"]
   else:
@@ -190,8 +204,10 @@ proc currentOp*(db: Database, opt = bson()): Future[BsonDocument]{.async.} =
     return
   result = reply.documents[0]
 
-proc killOp*(db: Database, opid: int32): Future[WriteResult] {.async.} =
-  let q = bson({ killerOp: 1, op: opid })
+proc killOp*(db: Database, opid: int32, comment = bsonNull()):
+  Future[WriteResult] {.async.} =
+  var q = bson({ killerOp: 1, op: opid })
+  q.addConditional("comment", comment)
   result = await db.proceed(q, "admin", cmd = ckWrite)
 
 proc killCursors*(db: Database, collname: string, cursorIds: seq[int64]):
