@@ -111,7 +111,7 @@ proc listCollectionNames*(db: Database, dbname = ""):
 
 proc listDatabases*(db: Mongo | Database, filter = bsonNull(), nameonly = false,
   authorizedCollections = false, comment = bsonNull()): Future[seq[BsonBase]] {.async.} =
-  let q = bson({ listDatabases: 1 })
+  var q = bson({ listDatabases: 1 })
   q.addOptional("filter", filter)
   q.addConditional("nameOnly", nameonly)
   q.addConditional("authorizedCollections", authorizedCollections)
@@ -127,17 +127,7 @@ proc listDatabases*(db: Mongo | Database, filter = bsonNull(), nameonly = false,
     return
   let res = reply.documents[0]
   if res.ok:
-    when not defined(release):
-      # why this? in mongo 4.0 the size is double
-      # but during the build in github action, the type
-      # is changed to int hence this guard
-      stdout.write "All database size: "
-      let total = res["totalSize"]
-      if total.kind == bkDouble:
-        echo total.ofDouble
-      elif total.kind in [bkInt32,bkInt64]:
-        echo total.ofInt
-      # echo "All database size: ", res["totalSize"].ofInt
+    when not defined(release): echo "All database size: ", res["totalSize"]
     result = res["databases"]
   else:
     echo res.errmsg
@@ -211,17 +201,21 @@ proc killOp*(db: Database, opid: int32, comment = bsonNull()):
   q.addConditional("comment", comment)
   result = await db.proceed(q, "admin", cmd = ckWrite)
 
-proc killCursors*(db: Database, collname: string, cursorIds: seq[int64]):
-  Future[BsonDocument] {.async.} =
-  let q = bson({ killCursors: collname, cursors: cursorIds.map toBson })
+template sendEpilogue(db: Database, q: BsonDocument, mode: CommandKind): untyped =
   let compression = if db.db.compressions.len > 0: db.db.compressions[0]
                     else: cidNoop
-  let reply = await sendops(q, db, cmd = ckWrite, compression = compression)
+  let reply = await sendops(q, db, "admin", cmd = mode, compression = compression)
   let (success, reason) = check reply
   if not success:
     echo reason
+    result = bsonNull()
     return
   result = reply.documents[0]
+
+proc killCursors*(db: Database, collname: string, cursorIds: seq[int64]):
+  Future[BsonDocument] {.async.} =
+  let q = bson({ killCursors: collname, cursors: cursorIds.map toBson })
+  sendEpilogue(db, q, ckWrite)
 
 proc setDefaultRWConcern*(db: Database, defaultReadConcern = bsonNull(),
   defaultWriteConcern = bsonNull(), wt = bsonNull(), comment = bsonNull()):
@@ -234,24 +228,9 @@ proc setDefaultRWConcern*(db: Database, defaultReadConcern = bsonNull(),
   q.addOptional("defaultWriteConcern", defaultWriteConcern)
   q.addOptional("writeConcern", wt)
   q.addOptional("comment", comment)
-  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
-                    else: cidNoop
-  let reply = await sendOps(q, db, "admin", cmd = ckWrite,
-    compression = compression)
-  let (success, reason) = check reply
-  if not success:
-    echo reason
-    result = bsonNull()
-    return
-  result = reply.documents[0]
+  sendEpilogue(db, q, ckWrite)
 
 proc getDefaultReadConcern*(db: Database, inMemory = false, comment = bsonNull()):
   Future[BsonDocument]{.async.} =
   let q = bson { getDefaultReadConcern: 1,  inMemory: inMemory, comment: comment}
-  let reply = await sendops(q, db, "admin")
-  let (success, reason) = check reply
-  if not success:
-    echo reason
-    result = bsonNull()
-    return
-  result = reply.documents[0]
+  sendEpilogue(db, q, ckRead)
