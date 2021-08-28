@@ -1,4 +1,5 @@
 import std/[strformat, sequtils]
+from std/sugar import `=>`
 import ../core/[types, bson, wire, utils]
 
 ## Administration Commands
@@ -219,5 +220,27 @@ proc killCursors*(db: Database, collname: string, cursorIds: seq[int64]):
   let (success, reason) = check reply
   if not success:
     echo reason
+    return
+  result = reply.documents[0]
+
+proc setDefaultRWConcern*(db: Database, defaultReadConcern = bsonNull(),
+  defaultWriteConcern = bsonNull(), wt = bsonNull(), comment = bsonNull()):
+  Future[BsonDocument]{.async.} =
+  if all([defaultReadConcern, defaultWriteConcern].map(isNil), (x) => x ):
+    result = bsonNull()
+    return
+  var q = bson { setDefaultRWConcern: 1'i32 }
+  q.addOptional("defaultReadConcern", defaultReadConcern)
+  q.addOptional("defaultWriteConcern", defaultWriteConcern)
+  q.addOptional("writeConcern", wt)
+  q.addOptional("comment", comment)
+  let compression = if db.db.compressions.len > 0: db.db.compressions[0]
+                    else: cidNoop
+  let reply = await sendOps(q, db, "admin", cmd = ckWrite,
+    compression = compression)
+  let (success, reason) = check reply
+  if not success:
+    echo reason
+    result = bsonNull()
     return
   result = reply.documents[0]
