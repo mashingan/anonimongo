@@ -108,7 +108,7 @@ function main() {
   username: string
   password: string
   pool*: Pool
-  authenticated: bool"><wbr />Mongo<wbr />Conn<span class="attachedType"></span></a></li>
+  authenticated: bool">MongoConn</a></li>
   <li><a class="reference" href="#Mongo"
     title="Mongo = ref object of RootObj
   hosts*: seq[string]
@@ -122,34 +122,34 @@ function main() {
   readPreference*: ReadPreference
   retryableWrites*: bool
   compressions*: seq[CompressorId]
-  query: TableRef[string, seq[string]]"><wbr />Mongo<span class="attachedType"></span></a></li>
+  query: TableRef[string, seq[string]]">Mongo</a></li>
   <li><a class="reference" href="#ReadPreference"
     title="ReadPreference {.pure.} = enum
   primary = &quot;primary&quot;, primaryPreferred = &quot;primaryPreferred&quot;,
   secondary = &quot;secondary&quot;, secondaryPreferred = &quot;secondaryPreferred&quot;,
-  nearest = &quot;nearest&quot;"><wbr />Read<wbr />Preference<span class="attachedType"></span></a></li>
+  nearest = &quot;nearest&quot;">ReadPreference</a></li>
   <li><a class="reference" href="#SslInfo"
     title="SslInfo = object
   keyfile*: string           ## Key file path
   certfile*: string          ## Certificate file path
   when false or true:
-      protocol*: SslProtVersion ## The SSL/TLS protocol"><wbr />Ssl<wbr />Info<span class="attachedType"></span></a></li>
+      protocol*: SslProtVersion ## The SSL/TLS protocol">SslInfo</a></li>
   <li><a class="reference" href="#Database"
     title="Database = ref object of RootObj
   name*: string
-  db*: Mongo"><wbr />Database<span class="attachedType"></span></a></li>
+  db*: Mongo">Database</a></li>
   <li><a class="reference" href="#Collection"
     title="Collection = ref object
   name*: string              ## Collection name
   dbname: string             ## Database name, easier than ``coll.db.name``
-  db*: Database"><wbr />Collection<span class="attachedType"></span></a></li>
+  db*: Database">Collection</a></li>
   <li><a class="reference" href="#Cursor"
     title="Cursor = object
   id*: int64
   firstBatch*: seq[BsonDocument]
   nextBatch*: seq[BsonDocument]
   db*: Database
-  ns*: string"><wbr />Cursor<span class="attachedType"></span></a></li>
+  ns*: string">Cursor</a></li>
   <li><a class="reference" href="#Query"
     title="Query = object
   query*: BsonDocument
@@ -158,10 +158,10 @@ function main() {
   writeConcern*: BsonBase
   collection*: Collection
   skip*, limit*, batchSize*: int32
-  readConcern*, max*, min*: BsonBase"><wbr />Query<span class="attachedType"></span></a></li>
+  readConcern*, max*, min*: BsonBase">Query</a></li>
   <li><a class="reference" href="#WriteKind"
     title="WriteKind = enum
-  wkSingle, wkMany"><wbr />Write<wbr />Kind<span class="attachedType"></span></a></li>
+  wkSingle, wkMany">WriteKind</a></li>
   <li><a class="reference" href="#WriteResult"
     title="WriteResult = object
   success*: bool
@@ -172,26 +172,26 @@ function main() {
       errmsgs*: seq[string]  ## For various error message when writing.
     
   of wkSingle:
-      nil"><wbr />Write<wbr />Result<span class="attachedType"></span></a></li>
+      nil">WriteResult</a></li>
   <li><a class="reference" href="#BulkResult"
     title="BulkResult = object
   nInserted*, nModified*, nRemoved*: int
-  writeErrors*: seq[string]"><wbr />Bulk<wbr />Result<span class="attachedType"></span></a></li>
+  writeErrors*: seq[string]">BulkResult</a></li>
   <li><a class="reference" href="#GridFS"
     title="GridFS = ref object
   name*: string
   files*: Collection
   chunks*: Collection
-  chunkSize*: int32"><wbr />Grid<wbr />FS<span class="attachedType"></span></a></li>
+  chunkSize*: int32">GridFS</a></li>
   <li><a class="reference" href="#CommandKind"
     title="CommandKind = enum
-  ckWrite, ckRead"><wbr />Command<wbr />Kind<span class="attachedType"></span></a></li>
+  ckWrite, ckRead">CommandKind</a></li>
   <li><a class="reference" href="#MongoError"
-    title="MongoError = object of CatchableError"><wbr />Mongo<wbr />Error<span class="attachedType"></span></a></li>
+    title="MongoError = object of CatchableError">MongoError</a></li>
   <li><a class="reference" href="#MultiUri"
-    title="MultiUri {.deprecated: &quot;Use MongoUri instead&quot;.} = MongoUri"><wbr />Multi<wbr />Uri<span class="attachedType"></span></a></li>
+    title="MultiUri {.deprecated: &quot;Use MongoUri instead&quot;.} = MongoUri">MultiUri</a></li>
   <li><a class="reference" href="#MongoUri"
-    title="MongoUri = distinct string"><wbr />Mongo<wbr />Uri<span class="attachedType"></span></a></li>
+    title="MongoUri = distinct string">MongoUri</a></li>
 
   </ul>
 </li>
@@ -199,13 +199,13 @@ function main() {
   <a class="reference reference-toplevel" href="#10" id="60">Consts</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#poolconn"
-    title="poolconn = 64"><wbr />poolconn<span class="attachedType"></span></a></li>
+    title="poolconn = 64">poolconn</a></li>
   <li><a class="reference" href="#verbose"
-    title="verbose = false"><wbr />verbose<span class="attachedType"></span></a></li>
+    title="verbose = false">verbose</a></li>
   <li><a class="reference" href="#verifypeer"
-    title="verifypeer = false"><wbr />verifypeer<span class="attachedType"></span></a></li>
+    title="verifypeer = false">verifypeer</a></li>
   <li><a class="reference" href="#cafile"
-    title="cafile = &quot;&quot;"><wbr />cafile<span class="attachedType"></span></a></li>
+    title="cafile = &quot;&quot;">cafile</a></li>
 
   </ul>
 </li>
@@ -214,141 +214,141 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">appname
       <li><a class="reference" href="#appname%2CMongo"
-    title="appname(m: Mongo): string">appname,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="appname(m: Mongo): string">appname,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">close
       <li><a class="reference" href="#close%2CMongo"
-    title="close(m: Mongo)">close,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="close(m: Mongo)">close,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">hasUserAuth
       <li><a class="reference" href="#hasUserAuth%2CMongo"
-    title="hasUserAuth(m: Mongo): bool">hasUserAuth,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="hasUserAuth(m: Mongo): bool">hasUserAuth,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">query
       <li><a class="reference" href="#query%2CMongo"
-    title="query(m: Mongo): lent TableRef[string, seq[string]]">query,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="query(m: Mongo): lent TableRef[string, seq[string]]">query,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">tls
       <li><a class="reference" href="#tls%2CMongo"
-    title="tls(m: Mongo): bool">tls,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="tls(m: Mongo): bool">tls,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">main
       <li><a class="reference" href="#main%2CMongo"
-    title="main(m: Mongo): MongoConn">main,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="main(m: Mongo): MongoConn">main,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">secondaryPreferred
       <li><a class="reference" href="#secondaryPreferred%2CMongo"
-    title="secondaryPreferred(m: Mongo): MongoConn">secondaryPreferred,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="secondaryPreferred(m: Mongo): MongoConn">secondaryPreferred,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">mainPreferred
       <li><a class="reference" href="#mainPreferred%2CMongo"
-    title="mainPreferred(m: Mongo): MongoConn">mainPreferred,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="mainPreferred(m: Mongo): MongoConn">mainPreferred,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">secondary
       <li><a class="reference" href="#secondary%2CMongo"
-    title="secondary(m: Mongo): MongoConn">secondary,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="secondary(m: Mongo): MongoConn">secondary,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">newMongo
       <li><a class="reference" href="#newMongo%2Cstring%2Cint"
     title="newMongo(host = &quot;localhost&quot;; port = 27017; master = true; poolconn = poolconn;
-         sslinfo = SslInfo(); ssl = defined(ssl)): Mongo">newMongo,string,int<span class="attachedType">Mongo</span></a></li>
+         sslinfo = SslInfo(); ssl = defined(ssl)): Mongo">newMongo,<wbr>string,<wbr>int</a></li>
   <li><a class="reference" href="#newMongo%2CMongoUri%2Cstring%2Cint"
     title="newMongo(muri: MongoUri; poolconn = poolconn; dnsserver = &quot;8.8.8.8&quot;;
-         dnsport = 53): Mongo">newMongo,MongoUri,string,int<span class="attachedType">MongoUri</span></a></li>
+         dnsport = 53): Mongo">newMongo,<wbr>MongoUri,<wbr>string,<wbr>int</a></li>
   <li><a class="reference" href="#newMongo%2CUri"
-    title="newMongo(uri: Uri; poolconn = poolconn): Mongo">newMongo,Uri<span class="attachedType">Mongo</span></a></li>
+    title="newMongo(uri: Uri; poolconn = poolconn): Mongo">newMongo,<wbr>Uri</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">tailableCursor
       <li><a class="reference" href="#tailableCursor%2CMongo"
-    title="tailableCursor(m: Mongo)">tailableCursor,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="tailableCursor(m: Mongo)">tailableCursor,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">flags
       <li><a class="reference" href="#flags%2CMongo"
-    title="flags(m: Mongo): QueryFlags">flags,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="flags(m: Mongo): QueryFlags">flags,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">initSslInfo
       <li><a class="reference" href="#initSslInfo%2Cstring%2Cstring"
-    title="initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo">initSslInfo,string,string<span class="attachedType">SslInfo</span></a></li>
+    title="initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo">initSslInfo,<wbr>string,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">port
       <li><a class="reference" href="#port%2CMongoConn"
-    title="port(m: MongoConn): Port">port,MongoConn<span class="attachedType">MongoConn</span></a></li>
+    title="port(m: MongoConn): Port">port,<wbr>MongoConn</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">slaveOk
       <li><a class="reference" href="#slaveOk%2CMongo"
-    title="slaveOk(m: Mongo)">slaveOk,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="slaveOk(m: Mongo)">slaveOk,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">noSlave
       <li><a class="reference" href="#noSlave%2CMongo"
-    title="noSlave(m: Mongo)">noSlave,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="noSlave(m: Mongo)">noSlave,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">collname
       <li><a class="reference" href="#collname%2CCursor"
-    title="collname(cur: Cursor): string">collname,Cursor<span class="attachedType">Cursor</span></a></li>
+    title="collname(cur: Cursor): string">collname,<wbr>Cursor</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">host
       <li><a class="reference" href="#host%2CMongoConn"
-    title="host(m: MongoConn): string">host,MongoConn<span class="attachedType">MongoConn</span></a></li>
+    title="host(m: MongoConn): string">host,<wbr>MongoConn</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">appname=
       <li><a class="reference" href="#appname%3D%2CMongo%2Cstring"
-    title="appname=(m: Mongo; name: string)">appname=,Mongo,string<span class="attachedType">Mongo</span></a></li>
+    title="appname=(m: Mongo; name: string)">appname=,<wbr>Mongo,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">initQuery
       <li><a class="reference" href="#initQuery%2CCollection%2Cint32%2Cint32%2Cint32"
     title="initQuery(query = bson(); collection: Collection = nil; skip = 0&apos;i32;
-          limit = 0&apos;i32; batchSize = 101&apos;i32): Query">initQuery,Collection,int32,int32,int32<span class="attachedType">Query</span></a></li>
+          limit = 0&apos;i32; batchSize = 101&apos;i32): Query">initQuery,<wbr>Collection,<wbr>int32,<wbr>int32,<wbr>int32</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">authenticate
       <li><a class="reference" href="#authenticate%2CMongo%2Cstring%2Cstring"
     title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo; user, pass: string): Future[
-    bool]">authenticate,Mongo,string,string<span class="attachedType">Mongo</span></a></li>
+    bool]">authenticate,<wbr>Mongo,<wbr>string,<wbr>string</a></li>
   <li><a class="reference" href="#authenticate%2CMongo"
-    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo): Future[bool]">authenticate,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo): Future[bool]">authenticate,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">dbname
       <li><a class="reference" href="#dbname%2CCursor"
-    title="dbname(cur: Cursor): string">dbname,Cursor<span class="attachedType">Cursor</span></a></li>
+    title="dbname(cur: Cursor): string">dbname,<wbr>Cursor</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">noTailable
       <li><a class="reference" href="#noTailable%2CMongo"
-    title="noTailable(m: Mongo)">noTailable,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="noTailable(m: Mongo)">noTailable,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">authenticated
       <li><a class="reference" href="#authenticated%2CMongo"
-    title="authenticated(m: Mongo): bool">authenticated,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="authenticated(m: Mongo): bool">authenticated,<wbr>Mongo</a></li>
   <li><a class="reference" href="#authenticated%2CMongoConn"
-    title="authenticated(m: MongoConn): bool">authenticated,MongoConn<span class="attachedType">MongoConn</span></a></li>
+    title="authenticated(m: MongoConn): bool">authenticated,<wbr>MongoConn</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">[]
       <li><a class="reference" href="#%5B%5D%2CMongo%2Cstring"
-    title="`[]`(m: Mongo; name: string): Database">[],Mongo,string<span class="attachedType">Mongo</span></a></li>
+    title="`[]`(m: Mongo; name: string): Database">[],<wbr>Mongo,<wbr>string</a></li>
   <li><a class="reference" href="#%5B%5D%2CDatabase%2Cstring"
-    title="`[]`(dbase: Database; name: string): Collection">[],Database,string<span class="attachedType">Database</span></a></li>
+    title="`[]`(dbase: Database; name: string): Collection">[],<wbr>Database,<wbr>string</a></li>
 
   </ul>
 
@@ -359,12 +359,12 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">username
       <li><a class="reference" href="#username%2CMongo"
-    title="username(m: Mongo): string">username,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="username(m: Mongo): string">username,<wbr>Mongo</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">isTailable
       <li><a class="reference" href="#isTailable%2CMongo"
-    title="isTailable(m: Mongo): bool">isTailable,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="isTailable(m: Mongo): bool">isTailable,<wbr>Mongo</a></li>
 
   </ul>
 
@@ -1069,7 +1069,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:26 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:52 UTC</small>
       </div>
     </div>
   </div>

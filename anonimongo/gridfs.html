@@ -110,7 +110,7 @@ function main() {
   info {.bsonExport.}: FileInfo
   data {.bsonExport.}: DataStream
   pos: int64
-  point: int"><wbr />Grid<wbr />Stream<span class="attachedType"></span></a></li>
+  point: int">GridStream</a></li>
 
   </ul>
 </li>
@@ -120,85 +120,85 @@ function main() {
       <ul class="simple nested-toc-section">createBucket
       <li><a class="reference" href="#createBucket%2CDatabase%2Cstring"
     title="createBucket(db: Database; name = &quot;fs&quot;; chunkSize = defaultChunkSize): Future[
-    GridFS]">createBucket,Database,string<span class="attachedType"></span></a></li>
+    GridFS]">createBucket,<wbr>Database,<wbr>string</a></li>
   <li><a class="reference" href="#createBucket%2CCollection%2Cstring"
     title="createBucket(c: Collection; name = &quot;fs&quot;; chunkSize = defaultChunkSize): Future[
-    GridFS]">createBucket,Collection,string<span class="attachedType"></span></a></li>
+    GridFS]">createBucket,<wbr>Collection,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">drop
       <li><a class="reference" href="#drop%2CGridFS"
-    title="drop(g: GridFS): Future[WriteResult]">drop,GridFS<span class="attachedType"></span></a></li>
+    title="drop(g: GridFS): Future[WriteResult]">drop,<wbr>GridFS</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">close
       <li><a class="reference" href="#close%2CGridStream"
-    title="close(gs: GridStream)">close,GridStream<span class="attachedType">GridStream</span></a></li>
+    title="close(gs: GridStream)">close,<wbr>GridStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readAll
       <li><a class="reference" href="#readAll%2CGridStream"
-    title="readAll(gs: GridStream): Future[string]">readAll,GridStream<span class="attachedType">GridStream</span></a></li>
+    title="readAll(gs: GridStream): Future[string]">readAll,<wbr>GridStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">availableFiles
       <li><a class="reference" href="#availableFiles%2CGridFS"
-    title="availableFiles(g: GridFS; query = bson()): Future[int]">availableFiles,GridFS<span class="attachedType"></span></a></li>
+    title="availableFiles(g: GridFS; query = bson()): Future[int]">availableFiles,<wbr>GridFS</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">uploadFile
       <li><a class="reference" href="#uploadFile%2CGridFS%2CAsyncFile%2Cstring%2Cint32"
     title="uploadFile(g: GridFS; f: AsyncFile; filename = &quot;&quot;; chunk = 0&apos;i32;
-           metadata = bson()): Future[WriteResult]">uploadFile,GridFS,AsyncFile,string,int32<span class="attachedType"></span></a></li>
+           metadata = bson()): Future[WriteResult]">uploadFile,<wbr>GridFS,<wbr>AsyncFile,<wbr>string,<wbr>int32</a></li>
   <li><a class="reference" href="#uploadFile%2CGridFS%2Cstring%2Cint32"
     title="uploadFile(g: GridFS; filename: string; chunk = 0&apos;i32; metadata = bson()): Future[
-    WriteResult]">uploadFile,GridFS,string,int32<span class="attachedType"></span></a></li>
+    WriteResult]">uploadFile,<wbr>GridFS,<wbr>string,<wbr>int32</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">listFileNames
       <li><a class="reference" href="#listFileNames%2CGridFS"
     title="listFileNames(g: GridFS; matcher = &quot;all&quot;.toBson; sort = bson()): Future[
-    seq[string]]">listFileNames,GridFS<span class="attachedType"></span></a></li>
+    seq[string]]">listFileNames,<wbr>GridFS</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">downloadAs
       <li><a class="reference" href="#downloadAs%2CGridFS%2Cstring%2Cstring"
-    title="downloadAs(g: GridFS; source, target: string): Future[WriteResult]">downloadAs,GridFS,string,string<span class="attachedType"></span></a></li>
+    title="downloadAs(g: GridFS; source, target: string): Future[WriteResult]">downloadAs,<wbr>GridFS,<wbr>string,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">read
       <li><a class="reference" href="#read%2CGridStream%2Cint64"
-    title="read(gs: GridStream; length = 0&apos;i64): Future[string]">read,GridStream,int64<span class="attachedType">GridStream</span></a></li>
+    title="read(gs: GridStream; length = 0&apos;i64): Future[string]">read,<wbr>GridStream,<wbr>int64</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">setPosition
       <li><a class="reference" href="#setPosition%2CGridStream%2Cint64"
-    title="setPosition(gs: GridStream; pos: int64; chunkn = -1): owned(Future[void])">setPosition,GridStream,int64<span class="attachedType">GridStream</span></a></li>
+    title="setPosition(gs: GridStream; pos: int64; chunkn = -1): owned(Future[void])">setPosition,<wbr>GridStream,<wbr>int64</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getStream
       <li><a class="reference" href="#getStream%2CGridFS%2CBsonBase"
     title="getStream(g: GridFS; matcher: BsonBase; sort = bson(); buffered = false): Future[
-    GridStream]">getStream,GridFS,BsonBase<span class="attachedType">GridStream</span></a></li>
+    GridStream]">getStream,<wbr>GridFS,<wbr>BsonBase</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">downloadFile
       <li><a class="reference" href="#downloadFile%2CGridFS%2CAsyncFile%2Cstring"
-    title="downloadFile(g: GridFS; f: AsyncFile; filename = &quot;&quot;): Future[WriteResult]">downloadFile,GridFS,AsyncFile,string<span class="attachedType"></span></a></li>
+    title="downloadFile(g: GridFS; f: AsyncFile; filename = &quot;&quot;): Future[WriteResult]">downloadFile,<wbr>GridFS,<wbr>AsyncFile,<wbr>string</a></li>
   <li><a class="reference" href="#downloadFile%2CGridFS%2Cstring"
-    title="downloadFile(bucket: GridFS; filename: string): Future[WriteResult]">downloadFile,GridFS,string<span class="attachedType"></span></a></li>
+    title="downloadFile(bucket: GridFS; filename: string): Future[WriteResult]">downloadFile,<wbr>GridFS,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">removeFile
       <li><a class="reference" href="#removeFile%2CGridFS"
-    title="removeFile(g: GridFS; matcher = &quot;all&quot;.toBson; one = false): Future[WriteResult]">removeFile,GridFS<span class="attachedType"></span></a></li>
+    title="removeFile(g: GridFS; matcher = &quot;all&quot;.toBson; one = false): Future[WriteResult]">removeFile,<wbr>GridFS</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getBucket
       <li><a class="reference" href="#getBucket%2CDatabase%2Cstring"
-    title="getBucket(db: Database; name = &quot;fs&quot;): Future[GridFS]">getBucket,Database,string<span class="attachedType"></span></a></li>
+    title="getBucket(db: Database; name = &quot;fs&quot;): Future[GridFS]">getBucket,<wbr>Database,<wbr>string</a></li>
   <li><a class="reference" href="#getBucket%2CCollection%2Cstring"
-    title="getBucket(c: Collection; name = &quot;fs&quot;): Future[GridFS]">getBucket,Collection,string<span class="attachedType"></span></a></li>
+    title="getBucket(c: Collection; name = &quot;fs&quot;): Future[GridFS]">getBucket,<wbr>Collection,<wbr>string</a></li>
 
   </ul>
 
@@ -209,27 +209,27 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">kilobytes
       <li><a class="reference" href="#kilobytes%2CPositive"
-    title="kilobytes(n: Positive): int">kilobytes,Positive<span class="attachedType"></span></a></li>
+    title="kilobytes(n: Positive): int">kilobytes,<wbr>Positive</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">megabytes
       <li><a class="reference" href="#megabytes%2CPositive"
-    title="megabytes(n: Positive): int">megabytes,Positive<span class="attachedType"></span></a></li>
+    title="megabytes(n: Positive): int">megabytes,<wbr>Positive</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">fileSize
       <li><a class="reference" href="#fileSize%2CGridStream"
-    title="fileSize(gs: GridStream): int64">fileSize,GridStream<span class="attachedType">GridStream</span></a></li>
+    title="fileSize(gs: GridStream): int64">fileSize,<wbr>GridStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getPosition
       <li><a class="reference" href="#getPosition%2CGridStream"
-    title="getPosition(gs: GridStream): int64">getPosition,GridStream<span class="attachedType">GridStream</span></a></li>
+    title="getPosition(gs: GridStream): int64">getPosition,<wbr>GridStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">metadata
       <li><a class="reference" href="#metadata%2CGridStream"
-    title="metadata(gs: GridStream): BsonDocument">metadata,GridStream<span class="attachedType">GridStream</span></a></li>
+    title="metadata(gs: GridStream): BsonDocument">metadata,<wbr>GridStream</a></li>
 
   </ul>
 
@@ -586,7 +586,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:28 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:55 UTC</small>
       </div>
     </div>
   </div>

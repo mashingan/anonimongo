@@ -104,32 +104,34 @@ function main() {
     title="OpCode = enum
   opReply = 1, opUpdate = 2001, opInsert, opReserved, opQuery, opGetMore,
   opDelete, opKillCursors, opCommand = 2010, opCommandReply, opCompressed,
-  opMsg = 2013"><wbr />Op<wbr />Code<span class="attachedType"></span></a></li>
+  opMsg = 2013">OpCode</a></li>
   <li><a class="reference" href="#CompressorId"
     title="CompressorId {.size: 1.} = enum
   cidNoop = (0, &quot;noop&quot;), cidSnappy = &quot;snappy&quot;, cidZlib = &quot;zlib&quot;,
-  cidZstd = &quot;zstd&quot;"><wbr />Compressor<wbr />Id<span class="attachedType"></span></a></li>
+  cidZstd = &quot;zstd&quot;">CompressorId</a></li>
   <li><a class="reference" href="#MsgHeader"
     title="MsgHeader = object
-  messageLength*, requestId*, responseTo*, opCode*: int32"><wbr />Msg<wbr />Header<span class="attachedType"></span></a></li>
+  messageLength*, requestId*, responseTo*, opCode*: int32">MsgHeader</a></li>
   <li><a class="reference" href="#ReplyFormat"
     title="ReplyFormat = object
   responseFlags*: int32
   cursorId*: int64
   startingFrom*: int32
   numberReturned*: int32
-  documents*: seq[BsonDocument]"><wbr />Reply<wbr />Format<span class="attachedType"></span></a></li>
+  documents*: seq[BsonDocument]">ReplyFormat</a></li>
   <li><a class="reference" href="#Flags"
     title="Flags {.size: 4, pure.} = enum
-  Reserved, TailableCursor, SlaveOk, OplogReplay, NoCursorTimeout, AwaitData,
-  Exhaust, Partial"><wbr />Flags<span class="attachedType"></span></a></li>
+  Reserved, TailableCursor, SlaveOk, OplogReplay, ## mongodb internal use only, don&apos;t set
+  NoCursorTimeout,          ## disable cursor timeout, default timeout 10 minutes
+  AwaitData,                ## used with tailable cursor
+  Exhaust, Partial           ## get partial data instead of error when some shards are down">Flags</a></li>
   <li><a class="reference" href="#QueryFlags"
-    title="QueryFlags = set[Flags]"><wbr />Query<wbr />Flags<span class="attachedType"></span></a></li>
+    title="QueryFlags = set[Flags]">QueryFlags</a></li>
   <li><a class="reference" href="#RFlags"
     title="RFlags {.size: 4, pure.} = enum
-  CursorNotFound, QueryFailure, ShardConfigStale, AwaitCapable"><wbr />RFlags<span class="attachedType"></span></a></li>
+  CursorNotFound, QueryFailure, ShardConfigStale, AwaitCapable">RFlags</a></li>
   <li><a class="reference" href="#ResponseFlags"
-    title="ResponseFlags = set[RFlags]"><wbr />Response<wbr />Flags<span class="attachedType"></span></a></li>
+    title="ResponseFlags = set[RFlags]">ResponseFlags</a></li>
 
   </ul>
 </li>
@@ -140,37 +142,37 @@ function main() {
       <li><a class="reference" href="#prepareQuery%2CStreamable%2Cint32%2Cint32%2Cint32%2Cint32%2Cstring%2Cint32%2Cint32"
     title="prepareQuery(s: var Streamable; reqId, target, opcode, flags: int32;
              collname: string; nskip, nreturn: int32; query = newBson();
-             selector = newBson(); compression = cidNoop): int">prepareQuery,Streamable,int32,int32,int32,int32,string,int32,int32<span class="attachedType"></span></a></li>
+             selector = newBson(); compression = cidNoop): int">prepareQuery,<wbr>Streamable,<wbr>int32,<wbr>int32,<wbr>int32,<wbr>int32,<wbr>string,<wbr>int32,<wbr>int32</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getReply
       <li><a class="reference" href="#getReply%2CAsyncSocket"
-    title="getReply(socket: AsyncSocket): Future[ReplyFormat]">getReply,AsyncSocket<span class="attachedType">ReplyFormat</span></a></li>
+    title="getReply(socket: AsyncSocket): Future[ReplyFormat]">getReply,<wbr>AsyncSocket</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">look
       <li><a class="reference" href="#look%2CReplyFormat"
-    title="look(reply: ReplyFormat)">look,ReplyFormat<span class="attachedType">ReplyFormat</span></a></li>
+    title="look(reply: ReplyFormat)">look,<wbr>ReplyFormat</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">errmsg
       <li><a class="reference" href="#errmsg%2CBsonDocument"
-    title="errmsg(b: BsonDocument): string">errmsg,BsonDocument<span class="attachedType"></span></a></li>
+    title="errmsg(b: BsonDocument): string">errmsg,<wbr>BsonDocument</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">code
       <li><a class="reference" href="#code%2CBsonDocument"
-    title="code(b: BsonDocument): int">code,BsonDocument<span class="attachedType"></span></a></li>
+    title="code(b: BsonDocument): int">code,<wbr>BsonDocument</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">ok
       <li><a class="reference" href="#ok%2CBsonDocument"
-    title="ok(b: BsonDocument): bool">ok,BsonDocument<span class="attachedType"></span></a></li>
+    title="ok(b: BsonDocument): bool">ok,<wbr>BsonDocument</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">replyParse
       <li><a class="reference" href="#replyParse%2CStreamable"
-    title="replyParse(s: var Streamable): ReplyFormat">replyParse,Streamable<span class="attachedType">ReplyFormat</span></a></li>
+    title="replyParse(s: var Streamable): ReplyFormat">replyParse,<wbr>Streamable</a></li>
 
   </ul>
 
@@ -181,9 +183,9 @@ function main() {
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#prepare.t%2CBsonDocument%2Cint32%2Cstring%2Cint%2Cint%2Cint"
     title="prepare(q: BsonDocument; flags: int32; dbname: string; id = 0; skip = 0;
-        limit = 1; compression = cidNoop): untyped"><wbr />prepare<span class="attachedType"></span></a></li>
+        limit = 1; compression = cidNoop): untyped">prepare</a></li>
   <li><a class="reference" href="#check.t%2CReplyFormat"
-    title="check(r: ReplyFormat): (bool, string)"><wbr />check<span class="attachedType">ReplyFormat</span></a></li>
+    title="check(r: ReplyFormat): (bool, string)">check</a></li>
 
   </ul>
 </li>
@@ -262,8 +264,10 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="Flags"></a>
 <dt><pre><a href="wire.html#Flags"><span class="Identifier">Flags</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">size</span><span class="Other">:</span> <span class="DecNumber">4</span><span class="Other">,</span> <span class="Identifier">pure</span></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">Reserved</span><span class="Other">,</span> <span class="Identifier">TailableCursor</span><span class="Other">,</span> <span class="Identifier">SlaveOk</span><span class="Other">,</span> <span class="Identifier">OplogReplay</span><span class="Other">,</span> <span class="Identifier">NoCursorTimeout</span><span class="Other">,</span> <span class="Identifier">AwaitData</span><span class="Other">,</span>
-  <span class="Identifier">Exhaust</span><span class="Other">,</span> <span class="Identifier">Partial</span></pre></dt>
+  <span class="Identifier">Reserved</span><span class="Other">,</span> <span class="Identifier">TailableCursor</span><span class="Other">,</span> <span class="Identifier">SlaveOk</span><span class="Other">,</span> <span class="Identifier">OplogReplay</span><span class="Other">,</span> <span class="Comment">## mongodb internal use only, don't set</span>
+  <span class="Identifier">NoCursorTimeout</span><span class="Other">,</span>          <span class="Comment">## disable cursor timeout, default timeout 10 minutes</span>
+  <span class="Identifier">AwaitData</span><span class="Other">,</span>                <span class="Comment">## used with tailable cursor</span>
+  <span class="Identifier">Exhaust</span><span class="Other">,</span> <span class="Identifier">Partial</span>           <span class="Comment">## get partial data instead of error when some shards are down</span></pre></dt>
 <dd>
 
 Bitfield used when query the mongo command.
@@ -434,7 +438,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:27 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:54 UTC</small>
       </div>
     </div>
   </div>

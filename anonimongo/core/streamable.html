@@ -104,16 +104,16 @@ function main() {
     r.readInt32 is int32
     r.readInt64 is int64
     r.readStr(int) is string
-    r.readUint32 is uint32"><wbr />Readable<span class="attachedType"></span></a></li>
+    r.readUint32 is uint32">Readable</a></li>
   <li><a class="reference" href="#Writable"
     title="Writable = concept wtypeof(T)
-    write[T](w: Writable; x: var T)"><wbr />Writable<span class="attachedType"></span></a></li>
+    write[T](w: Writable; x: var T)">Writable</a></li>
   <li><a class="reference" href="#Peekable"
     title="Peekable = concept ptypeof(T)
     peekStr(p: Peekable; n: int): string
     p.peekInt32 is int32
     p.peekChar is char
-    p.peekInt8 is int8"><wbr />Peekable<span class="attachedType"></span></a></li>
+    p.peekInt8 is int8">Peekable</a></li>
   <li><a class="reference" href="#Streamable"
     title="Streamable {.explain.} = concept var s
     Readable
@@ -122,15 +122,15 @@ function main() {
     readAll(s: var Streamable): string
     atEnd(s: var Streamable): bool
     setPosition(s: var Streamable; n: int)
-    getPosition(s: var Streamable): int"><wbr />Streamable<span class="attachedType"></span></a></li>
+    getPosition(s: var Streamable): int">Streamable</a></li>
   <li><a class="reference" href="#DefaultStream"
     title="DefaultStream = object
   data: string
   pos: int
   length: int
-  cap: int"><wbr />Default<wbr />Stream<span class="attachedType"></span></a></li>
+  cap: int">DefaultStream</a></li>
   <li><a class="reference" href="#MainStream"
-    title="MainStream = Stream"><wbr />Main<wbr />Stream<span class="attachedType"></span></a></li>
+    title="MainStream = Stream">MainStream</a></li>
 
   </ul>
 </li>
@@ -139,101 +139,101 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">peekInt32
       <li><a class="reference" href="#peekInt32%2CDefaultStream"
-    title="peekInt32(s: var DefaultStream): int32">peekInt32,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="peekInt32(s: var DefaultStream): int32">peekInt32,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readUint8
       <li><a class="reference" href="#readUint8%2CDefaultStream"
-    title="readUint8(s: var DefaultStream): uint8">readUint8,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readUint8(s: var DefaultStream): uint8">readUint8,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">atEnd
       <li><a class="reference" href="#atEnd%2CDefaultStream"
-    title="atEnd(s: var DefaultStream): bool">atEnd,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="atEnd(s: var DefaultStream): bool">atEnd,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">newStream
       <li><a class="reference" href="#newStream%2Cstring"
-    title="newStream(d = &quot;&quot;): MainStream">newStream,string<span class="attachedType">MainStream</span></a></li>
+    title="newStream(d = &quot;&quot;): MainStream">newStream,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">peekInt8
       <li><a class="reference" href="#peekInt8%2CDefaultStream"
-    title="peekInt8(s: var DefaultStream): int8">peekInt8,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="peekInt8(s: var DefaultStream): int8">peekInt8,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">write
       <li><a class="reference" href="#write%2CDefaultStream%2Cstring"
-    title="write(s: var DefaultStream; data: string)">write,DefaultStream,string<span class="attachedType">DefaultStream</span></a></li>
+    title="write(s: var DefaultStream; data: string)">write,<wbr>DefaultStream,<wbr>string</a></li>
   <li><a class="reference" href="#write%2CDefaultStream%2Cchar"
-    title="write(s: var DefaultStream; data: char)">write,DefaultStream,char<span class="attachedType">DefaultStream</span></a></li>
+    title="write(s: var DefaultStream; data: char)">write,<wbr>DefaultStream,<wbr>char</a></li>
   <li><a class="reference" href="#write%2CDefaultStream%2CT"
-    title="write[T](s: var DefaultStream; data: T)">write,DefaultStream,T<span class="attachedType">DefaultStream</span></a></li>
+    title="write[T](s: var DefaultStream; data: T)">write,<wbr>DefaultStream,<wbr>T</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readAll
       <li><a class="reference" href="#readAll%2CDefaultStream"
-    title="readAll(s: var DefaultStream): string">readAll,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readAll(s: var DefaultStream): string">readAll,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readInt8
       <li><a class="reference" href="#readInt8%2CDefaultStream"
-    title="readInt8(s: var DefaultStream): int8">readInt8,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readInt8(s: var DefaultStream): int8">readInt8,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">peekStr
       <li><a class="reference" href="#peekStr%2CDefaultStream%2Cint"
-    title="peekStr(s: var DefaultStream; n: int): string">peekStr,DefaultStream,int<span class="attachedType">DefaultStream</span></a></li>
+    title="peekStr(s: var DefaultStream; n: int): string">peekStr,<wbr>DefaultStream,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getPosition
       <li><a class="reference" href="#getPosition%2CDefaultStream"
-    title="getPosition(s: DefaultStream): int">getPosition,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="getPosition(s: DefaultStream): int">getPosition,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">peekChar
       <li><a class="reference" href="#peekChar%2CDefaultStream"
-    title="peekChar(s: var DefaultStream): char">peekChar,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="peekChar(s: var DefaultStream): char">peekChar,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readChar
       <li><a class="reference" href="#readChar%2CDefaultStream"
-    title="readChar(s: var DefaultStream): char">readChar,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readChar(s: var DefaultStream): char">readChar,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">read
       <li><a class="reference" href="#read%2CDefaultStream%2CT"
-    title="read[T](s: var DefaultStream; data: var T)">read,DefaultStream,T<span class="attachedType">DefaultStream</span></a></li>
+    title="read[T](s: var DefaultStream; data: var T)">read,<wbr>DefaultStream,<wbr>T</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">setPosition
       <li><a class="reference" href="#setPosition%2CDefaultStream%2Cint"
-    title="setPosition(s: var DefaultStream; pos: int)">setPosition,DefaultStream,int<span class="attachedType">DefaultStream</span></a></li>
+    title="setPosition(s: var DefaultStream; pos: int)">setPosition,<wbr>DefaultStream,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readStr
       <li><a class="reference" href="#readStr%2CDefaultStream%2Cint"
-    title="readStr(s: var DefaultStream; n: int): string">readStr,DefaultStream,int<span class="attachedType">DefaultStream</span></a></li>
+    title="readStr(s: var DefaultStream; n: int): string">readStr,<wbr>DefaultStream,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readInt64
       <li><a class="reference" href="#readInt64%2CDefaultStream"
-    title="readInt64(s: var DefaultStream): int64">readInt64,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readInt64(s: var DefaultStream): int64">readInt64,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readFloat64
       <li><a class="reference" href="#readFloat64%2CDefaultStream"
-    title="readFloat64(s: var DefaultStream): float64">readFloat64,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readFloat64(s: var DefaultStream): float64">readFloat64,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readUint32
       <li><a class="reference" href="#readUint32%2CDefaultStream"
-    title="readUint32(s: var DefaultStream): uint32">readUint32,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readUint32(s: var DefaultStream): uint32">readUint32,<wbr>DefaultStream</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">readInt32
       <li><a class="reference" href="#readInt32%2CDefaultStream"
-    title="readInt32(s: var DefaultStream): int32">readInt32,DefaultStream<span class="attachedType">DefaultStream</span></a></li>
+    title="readInt32(s: var DefaultStream): int32">readInt32,<wbr>DefaultStream</a></li>
 
   </ul>
 
@@ -588,7 +588,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:22 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:48 UTC</small>
       </div>
     </div>
   </div>

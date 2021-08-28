@@ -103,12 +103,12 @@ function main() {
       <li><a class="reference" href="#Connection"
     title="Connection = object
   socket*: AsyncSocket       ## Socket which used for sending/receiving Bson.
-  id*: int                   ## Identifier which used in pool for socket availability."><wbr />Connection<span class="attachedType"></span></a></li>
+  id*: int                   ## Identifier which used in pool for socket availability.">Connection</a></li>
   <li><a class="reference" href="#Pool"
     title="Pool = ref object
   connections: TableRef[int, Connection] ## Actual pool for keeping connections.
   available*: Deque[int]     ## The deque mechanism to indicate which\
-                             ## connection available."><wbr />Pool<span class="attachedType"></span></a></li>
+                             ## connection available.">Pool</a></li>
 
   </ul>
 </li>
@@ -117,58 +117,58 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">initConnection
       <li><a class="reference" href="#initConnection%2Cint"
-    title="initConnection(id = 0): Connection">initConnection,int<span class="attachedType">Connection</span></a></li>
+    title="initConnection(id = 0): Connection">initConnection,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">contains
       <li><a class="reference" href="#contains%2CPool%2Cint"
-    title="contains(p: Pool; i: int): bool">contains,Pool,int<span class="attachedType">Pool</span></a></li>
+    title="contains(p: Pool; i: int): bool">contains,<wbr>Pool,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">initPool
       <li><a class="reference" href="#initPool%2Cint"
-    title="initPool(size = 16): Pool">initPool,int<span class="attachedType">Pool</span></a></li>
+    title="initPool(size = 16): Pool">initPool,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">close
       <li><a class="reference" href="#close%2CPool"
-    title="close(p: Pool)">close,Pool<span class="attachedType">Pool</span></a></li>
+    title="close(p: Pool)">close,<wbr>Pool</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">[]=
       <li><a class="reference" href="#%5B%5D%3D%2CPool%2Cint%2CConnection"
-    title="`[]=`(p: Pool; i: int; c: Connection)">[]=,Pool,int,Connection<span class="attachedType">Pool</span></a></li>
+    title="`[]=`(p: Pool; i: int; c: Connection)">[]=,<wbr>Pool,<wbr>int,<wbr>Connection</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">connections
       <li><a class="reference" href="#connections%2CPool"
-    title="connections(p: Pool): lent TableRef[int, Connection]">connections,Pool<span class="attachedType">Pool</span></a></li>
+    title="connections(p: Pool): lent TableRef[int, Connection]">connections,<wbr>Pool</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">endConn
       <li><a class="reference" href="#endConn%2CPool%2CPositive"
-    title="endConn(p: Pool; i: Positive)">endConn,Pool,Positive<span class="attachedType">Pool</span></a></li>
+    title="endConn(p: Pool; i: Positive)">endConn,<wbr>Pool,<wbr>Positive</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">connect
       <li><a class="reference" href="#connect%2CPool%2Cstring%2Cint"
-    title="connect(p: Pool; address: string; port: int): owned(Future[void])">connect,Pool,string,int<span class="attachedType">Pool</span></a></li>
+    title="connect(p: Pool; address: string; port: int): owned(Future[void])">connect,<wbr>Pool,<wbr>string,<wbr>int</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getConn
       <li><a class="reference" href="#getConn%2CPool"
-    title="getConn(p: Pool): Future[(int, Connection)]">getConn,Pool<span class="attachedType">Pool</span></a></li>
+    title="getConn(p: Pool): Future[(int, Connection)]">getConn,<wbr>Pool</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">authenticate
       <li><a class="reference" href="#authenticate%2CPool%2Cstring%2Cstring%2Ctypedesc%2Cstring"
     title="authenticate(p: Pool; user, pass: string; T: typedesc = Sha256Digest;
-             dbname = &quot;admin.$cmd&quot;): Future[bool]">authenticate,Pool,string,string,typedesc,string<span class="attachedType">Pool</span></a></li>
+             dbname = &quot;admin.$cmd&quot;): Future[bool]">authenticate,<wbr>Pool,<wbr>string,<wbr>string,<wbr>typedesc,<wbr>string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">[]
       <li><a class="reference" href="#%5B%5D%2CPool%2Cint"
-    title="`[]`(p: Pool; i: int): lent Connection">[],Pool,int<span class="attachedType">Pool</span></a></li>
+    title="`[]`(p: Pool; i: int): lent Connection">[],<wbr>Pool,<wbr>int</a></li>
 
   </ul>
 
@@ -361,7 +361,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:26 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:42:52 UTC</small>
       </div>
     </div>
   </div>
