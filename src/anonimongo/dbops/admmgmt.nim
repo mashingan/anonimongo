@@ -22,7 +22,8 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
   storageEngine = bsonNull(),
   validator = bsonNull(), validationLevel = "strict", validationAction = "error",
   indexOptionDefaults = bsonNull(), viewOn = "",
-  pipeline = bsonArray(), collation = bsonNull(), writeConcern = bsonNull()):
+  pipeline = bsonArray(), collation = bsonNull(), writeConcern = bsonNull(),
+  expireAfterSeconds = 0, timeseries = bsonNull()):
   Future[WriteResult] {.async.} =
   var q = bson({
     create: name,
@@ -31,6 +32,8 @@ proc create*(db: Database, name: string, capsizemax = (false, 0, 0),
     q["capped"] = true
     q["size"] = capsizemax[1]
     q["max"] = capsizemax[2]
+  q.addOptional("timeseries", timeseries)
+  if expireAfterSeconds > 0: q["expireAfterSeconds"] = expireAfterSeconds
   q.addOptional("storageEngine", storageEngine)
   q.addOptional("validator", validator)
   q["validationLevel"] = validationLevel
