@@ -104,24 +104,24 @@ function main() {
     title="ChangeStreamEvent = enum
   csInsert = &quot;insert&quot;, csUpdate = &quot;update&quot;, csReplace = &quot;replace&quot;,
   csDelete = &quot;delete&quot;, csInvalidate = &quot;invalidate&quot;, csDrop = &quot;drop&quot;,
-  csDropDatabase = &quot;dropDatabase&quot;, csRename = &quot;rename&quot;">ChangeStreamEvent</a></li>
+  csDropDatabase = &quot;dropDatabase&quot;, csRename = &quot;rename&quot;"><wbr />Change<wbr />Stream<wbr />Event<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#ChangeStreamId"
     title="ChangeStreamId = object
-  data* {.bsonKey: &quot;_data&quot;.}: string">ChangeStreamId</a></li>
+  data* {.bsonKey: &quot;_data&quot;.}: string"><wbr />Change<wbr />Stream<wbr />Id<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Namespace"
     title="Namespace = object
   db*: string
-  coll*: string">Namespace</a></li>
+  coll*: string"><wbr />Namespace<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#DocumentKey"
     title="DocumentKey = object
-  id* {.bsonKey: &quot;_id&quot;.}: Oid">DocumentKey</a></li>
+  id* {.bsonKey: &quot;_id&quot;.}: Oid"><wbr />Document<wbr />Key<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#ChangeStream"
     title="ChangeStream = object
   id* {.bsonKey: &quot;_id&quot;.}: ChangeStreamId
   operationType*: ChangeStreamEvent
   fullDocument*: BsonDocument
   ns*: Namespace
-  documentKey*: DocumentKey">ChangeStream</a></li>
+  documentKey*: DocumentKey"><wbr />Change<wbr />Stream<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -131,13 +131,13 @@ function main() {
       <ul class="simple nested-toc-section">forEach
       <li><a class="reference" href="#forEach%2CCursor%2Cproc%28ChangeStream%29%2Cset%5BChangeStreamEvent%5D"
     title="forEach(c: Cursor; cb: proc (b: ChangeStream); stopWhen: set[ChangeStreamEvent]): owned(
-    Future[void])">forEach,<wbr>Cursor,<wbr>proc(ChangeStream),<wbr>set[ChangeStreamEvent]</a></li>
+    Future[void])">forEach,Cursor,proc(ChangeStream),set[ChangeStreamEvent]<span class="attachedType">ChangeStream</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">watch
       <li><a class="reference" href="#watch%2CCollection%2Cseq%5BBsonDocument%5D"
     title="watch(coll: Collection; pipelines: seq[BsonDocument] = @[]; options = bson()): Future[
-    Cursor]">watch,<wbr>Collection,<wbr>seq[BsonDocument]</a></li>
+    Cursor]">watch,Collection,seq[BsonDocument]<span class="attachedType"></span></a></li>
 
   </ul>
 
@@ -272,7 +272,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:51 UTC</small>
       </div>
     </div>
   </div>

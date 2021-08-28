@@ -103,53 +103,53 @@ function main() {
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#BsonBase"
     title="BsonBase = ref object of RootObj
-  kind*: BsonKind">BsonBase</a></li>
+  kind*: BsonKind"><wbr />Bson<wbr />Base<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonInt32"
     title="BsonInt32 = ref object of BsonBase
-  value*: int32">BsonInt32</a></li>
+  value*: int32"><wbr />Bson<wbr />Int32<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonInt64"
     title="BsonInt64 = ref object of BsonBase
-  value*: int64">BsonInt64</a></li>
+  value*: int64"><wbr />Bson<wbr />Int64<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonTimestamp"
     title="BsonTimestamp = ref object of BsonBase
-  value*: TimestampInternal">BsonTimestamp</a></li>
+  value*: TimestampInternal"><wbr />Bson<wbr />Timestamp<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonDouble"
     title="BsonDouble = ref object of BsonBase
-  value*: float64">BsonDouble</a></li>
+  value*: float64"><wbr />Bson<wbr />Double<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonNull"
-    title="BsonNull = ref object of BsonBase">BsonNull</a></li>
+    title="BsonNull = ref object of BsonBase"><wbr />Bson<wbr />Null<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonBool"
     title="BsonBool = ref object of BsonBase
-  value*: bool">BsonBool</a></li>
+  value*: bool"><wbr />Bson<wbr />Bool<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonTime"
     title="BsonTime = ref object of BsonBase
-  value*: Time">BsonTime</a></li>
+  value*: Time"><wbr />Bson<wbr />Time<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonArray"
     title="BsonArray = ref object of BsonBase
-  value*: seq[BsonBase]">BsonArray</a></li>
+  value*: seq[BsonBase]"><wbr />Bson<wbr />Array<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonString"
     title="BsonString = ref object of BsonBase
-  value*: seq[Rune]">BsonString</a></li>
+  value*: seq[Rune]"><wbr />Bson<wbr />String<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonJs"
     title="BsonJs = ref object of BsonBase
-  value*: seq[Rune]">BsonJs</a></li>
+  value*: seq[Rune]"><wbr />Bson<wbr />Js<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonEmbed"
     title="BsonEmbed = ref object of BsonBase
-  value*: BsonDocument">BsonEmbed</a></li>
+  value*: BsonDocument"><wbr />Bson<wbr />Embed<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonObjectId"
     title="BsonObjectId = ref object of BsonBase
-  value*: Oid">BsonObjectId</a></li>
+  value*: Oid"><wbr />Bson<wbr />Object<wbr />Id<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonBinary"
     title="BsonBinary = ref object of BsonBase
   subtype*: BsonSubtype
-  value*: seq[byte]">BsonBinary</a></li>
+  value*: seq[byte]"><wbr />Bson<wbr />Binary<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonDocument"
     title="BsonDocument = ref object
   table: BsonInternal
   stream: MainStream
   filename: string
   encoded*: bool             ## Flag whether the document already encoded
-                             ## to avoid repeated encoding.">BsonDocument</a></li>
+                             ## to avoid repeated encoding."><wbr />Bson<wbr />Document<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonKind"
     title="BsonKind = enum
   bkEmptyArray = (0, &quot;BsonEmptyArray&quot;), bkDouble = (1, &quot;BsonDouble&quot;),
@@ -159,12 +159,12 @@ function main() {
   bkDbPointer, bkJs = &quot;BsonJSFunction&quot;, bkSymbol, bkJsScope,
   bkInt32 = &quot;BsonInt32&quot;, bkTimestamp = &quot;BsonTimestamp&quot;, bkInt64 = &quot;BsonInt64&quot;,
   bkDecimal = &quot;BsonDecimal&quot;, bkMaxKey = (127, &quot;BsonMaxKey&quot;),
-  bkMinKey = (255, &quot;BsonMinKey&quot;)">BsonKind</a></li>
+  bkMinKey = (255, &quot;BsonMinKey&quot;)"><wbr />Bson<wbr />Kind<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonSubtype"
     title="BsonSubtype = enum
-  stGeneric = 0, stFunction, stBinaryOld, stUuidOld, stUuid, stMd5">BsonSubtype</a></li>
+  stGeneric = 0, stFunction, stBinaryOld, stUuidOld, stUuid, stMd5"><wbr />Bson<wbr />Subtype<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BsonFetchError"
-    title="BsonFetchError = object of Defect">BsonFetchError</a></li>
+    title="BsonFetchError = object of Defect"><wbr />Bson<wbr />Fetch<wbr />Error<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -173,135 +173,135 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">contains
       <li><a class="reference" href="#contains%2CBsonDocument%2Cstring"
-    title="contains(b: BsonDocument; key: string): bool">contains,<wbr>BsonDocument,<wbr>string</a></li>
+    title="contains(b: BsonDocument; key: string): bool">contains,BsonDocument,string<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#contains%2CBsonBase%2Cstring"
-    title="contains(b: BsonBase; key: string): bool">contains,<wbr>BsonBase,<wbr>string</a></li>
+    title="contains(b: BsonBase; key: string): bool">contains,BsonBase,string<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">$
       <li><a class="reference" href="#%24%2CBsonBase"
-    title="`$`(v: BsonBase): string">$,<wbr>BsonBase</a></li>
+    title="`$`(v: BsonBase): string">$,BsonBase<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#%24%2CBsonDocument"
-    title="`$`(doc: BsonDocument): string">$,<wbr>BsonDocument</a></li>
+    title="`$`(doc: BsonDocument): string">$,BsonDocument<span class="attachedType">BsonDocument</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">isNil
       <li><a class="reference" href="#isNil%2CBsonBase"
-    title="isNil(b: BsonBase): bool">isNil,<wbr>BsonBase</a></li>
+    title="isNil(b: BsonBase): bool">isNil,BsonBase<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#isNil%2CBsonDocument"
-    title="isNil(b: BsonDocument): bool">isNil,<wbr>BsonDocument</a></li>
+    title="isNil(b: BsonDocument): bool">isNil,BsonDocument<span class="attachedType">BsonDocument</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">del
       <li><a class="reference" href="#del%2CBsonDocument%2Cstring"
-    title="del(b: var BsonDocument; key: string)">del,<wbr>BsonDocument,<wbr>string</a></li>
+    title="del(b: var BsonDocument; key: string)">del,BsonDocument,string<span class="attachedType">BsonDocument</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">bytes
       <li><a class="reference" href="#bytes%2Cstring"
-    title="bytes(s: string): seq[byte]">bytes,<wbr>string</a></li>
+    title="bytes(s: string): seq[byte]">bytes,string<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#bytes%2COid"
-    title="bytes(o: Oid): seq[byte]">bytes,<wbr>Oid</a></li>
+    title="bytes(o: Oid): seq[byte]">bytes,Oid<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">bsonNull
       <li><a class="reference" href="#bsonNull_2"
-    title="bsonNull(): BsonBase">bsonNull_2</a></li>
+    title="bsonNull(): BsonBase">bsonNull_2<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">[]=
       <li><a class="reference" href="#%5B%5D%3D%2CBsonDocument%2Csinkstring%2CBsonBase"
-    title="`[]=`(b: var BsonDocument; key: sink string; val: BsonBase)">[]=,<wbr>BsonDocument,<wbr>sinkstring,<wbr>BsonBase</a></li>
+    title="`[]=`(b: var BsonDocument; key: sink string; val: BsonBase)">[]=,BsonDocument,sinkstring,BsonBase<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#%5B%5D%3D%2CBsonBase%2Csinkstring%2CBsonBase"
-    title="`[]=`(b: var BsonBase; key: sink string; val: BsonBase)">[]=,<wbr>BsonBase,<wbr>sinkstring,<wbr>BsonBase</a></li>
+    title="`[]=`(b: var BsonBase; key: sink string; val: BsonBase)">[]=,BsonBase,sinkstring,BsonBase<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">len
       <li><a class="reference" href="#len%2CBsonDocument"
-    title="len(b: BsonDocument): int">len,<wbr>BsonDocument</a></li>
+    title="len(b: BsonDocument): int">len,BsonDocument<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#len%2CBsonArray"
-    title="len(b: BsonArray): int">len,<wbr>BsonArray</a></li>
+    title="len(b: BsonArray): int">len,BsonArray<span class="attachedType">BsonArray</span></a></li>
   <li><a class="reference" href="#len%2CBsonBase"
-    title="len(b: BsonBase): int">len,<wbr>BsonBase</a></li>
+    title="len(b: BsonBase): int">len,BsonBase<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">add
       <li><a class="reference" href="#add%2CBsonArray%2CBsonBase"
-    title="add(b: var BsonArray; v: BsonBase)">add,<wbr>BsonArray,<wbr>BsonBase</a></li>
+    title="add(b: var BsonArray; v: BsonBase)">add,BsonArray,BsonBase<span class="attachedType">BsonArray</span></a></li>
   <li><a class="reference" href="#add%2CBsonBase%2CBsonBase"
-    title="add(b: var BsonBase; v: BsonBase)">add,<wbr>BsonBase,<wbr>BsonBase</a></li>
+    title="add(b: var BsonBase; v: BsonBase)">add,BsonBase,BsonBase<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">decode
       <li><a class="reference" href="#decode%2Cstring"
-    title="decode(strbytes: string): BsonDocument">decode,<wbr>string</a></li>
+    title="decode(strbytes: string): BsonDocument">decode,string<span class="attachedType">BsonDocument</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">ms
       <li><a class="reference" href="#ms%2CTime"
-    title="ms(a: Time): int64">ms,<wbr>Time</a></li>
+    title="ms(a: Time): int64">ms,Time<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">bsonBinary
       <li><a class="reference" href="#bsonBinary%2Cstring"
-    title="bsonBinary(binstr: string; subtype = stGeneric): BsonBase">bsonBinary,<wbr>string</a></li>
+    title="bsonBinary(binstr: string; subtype = stGeneric): BsonBase">bsonBinary,string<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#bsonBinary%2Cseq%5Bbyte%5D"
-    title="bsonBinary(binseq: seq[byte]; subtype = stGeneric): BsonBase">bsonBinary,<wbr>seq[byte]</a></li>
+    title="bsonBinary(binseq: seq[byte]; subtype = stGeneric): BsonBase">bsonBinary,seq[byte]<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">bsonArray
       <li><a class="reference" href="#bsonArray%2Cvarargs%5BBsonBase%2CtoBson%5D"
-    title="bsonArray(args: varargs[BsonBase, toBson]): BsonBase">bsonArray,<wbr>varargs[BsonBase,<wbr>toBson]</a></li>
+    title="bsonArray(args: varargs[BsonBase, toBson]): BsonBase">bsonArray,varargs[BsonBase,toBson]<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">bsonJs
       <li><a class="reference" href="#bsonJs_2"
-    title="bsonJs(code: string | seq[Rune]): BsonBase">bsonJs_2</a></li>
+    title="bsonJs(code: string | seq[Rune]): BsonBase">bsonJs_2<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">stringbytes
       <li><a class="reference" href="#stringbytes%2Cseq%5Bbyte%5D"
-    title="stringbytes(s: seq[byte]): string">stringbytes,<wbr>seq[byte]</a></li>
+    title="stringbytes(s: seq[byte]): string">stringbytes,seq[byte]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">mget
       <li><a class="reference" href="#mget%2CBsonDocument%2Csinkstring"
-    title="mget(b: var BsonDocument; key: sink string): var BsonBase">mget,<wbr>BsonDocument,<wbr>sinkstring</a></li>
+    title="mget(b: var BsonDocument; key: sink string): var BsonBase">mget,BsonDocument,sinkstring<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#mget%2CBsonBase%2Csinkstring"
-    title="mget(b: var BsonBase; key: sink string): var BsonBase">mget,<wbr>BsonBase,<wbr>sinkstring</a></li>
+    title="mget(b: var BsonBase; key: sink string): var BsonBase">mget,BsonBase,sinkstring<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#mget%2CBsonBase%2Csinkint"
-    title="mget(b: var BsonBase; index: sink int): var BsonBase">mget,<wbr>BsonBase,<wbr>sinkint</a></li>
+    title="mget(b: var BsonBase; index: sink int): var BsonBase">mget,BsonBase,sinkint<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">==
       <li><a class="reference" href="#%3D%3D%2CBsonBase%2CTime"
-    title="`==`(b: BsonBase; t: Time): bool">==,<wbr>BsonBase,<wbr>Time</a></li>
+    title="`==`(b: BsonBase; t: Time): bool">==,BsonBase,Time<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#%3D%3D%2CTime%2CBsonBase"
-    title="`==`(t: Time; b: BsonBase): bool">==,<wbr>Time,<wbr>BsonBase</a></li>
+    title="`==`(t: Time; b: BsonBase): bool">==,Time,BsonBase<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">[]
       <li><a class="reference" href="#%5B%5D%2CBsonDocument%2Csinkstring"
-    title="`[]`(b: BsonDocument; key: sink string): BsonBase">[],<wbr>BsonDocument,<wbr>sinkstring</a></li>
+    title="`[]`(b: BsonDocument; key: sink string): BsonBase">[],BsonDocument,sinkstring<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#%5B%5D%2CBsonBase%2Csinkstring"
-    title="`[]`(b: BsonBase; key: sink string): BsonBase">[],<wbr>BsonBase,<wbr>sinkstring</a></li>
+    title="`[]`(b: BsonBase; key: sink string): BsonBase">[],BsonBase,sinkstring<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#%5B%5D%2CBsonBase%2Csinkint"
-    title="`[]`(b: BsonBase; idx: sink int): BsonBase">[],<wbr>BsonBase,<wbr>sinkint</a></li>
+    title="`[]`(b: BsonBase; idx: sink int): BsonBase">[],BsonBase,sinkint<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#%5B%5D%2CBsonBase%2CsinkT"
-    title="`[]`[T: int | string](b: BsonBase; key: sink T): BsonBase">[],<wbr>BsonBase,<wbr>sinkT</a></li>
+    title="`[]`[T: int | string](b: BsonBase; key: sink T): BsonBase">[],BsonBase,sinkT<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">encode
       <li><a class="reference" href="#encode%2CBsonDocument"
-    title="encode(doc: BsonDocument): (int, string)">encode,<wbr>BsonDocument</a></li>
+    title="encode(doc: BsonDocument): (int, string)">encode,BsonDocument<span class="attachedType">BsonDocument</span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">newBson
       <li><a class="reference" href="#newBson%2CStreamable%2Cstring"
     title="newBson(table = newOrderedTable[string, BsonBase]();
-        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument">newBson,<wbr>Streamable,<wbr>string</a></li>
+        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument">newBson,Streamable,string<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#newBson%2Cvarargs%5B%5D"
-    title="newBson(table: varargs[(string, BsonBase)]): BsonDocument">newBson,<wbr>varargs[]</a></li>
+    title="newBson(table: varargs[(string, BsonBase)]): BsonDocument">newBson,varargs[]<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
 
@@ -311,11 +311,11 @@ function main() {
   <a class="reference reference-toplevel" href="#15" id="65">Iterators</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#pairs.i%2CBsonDocument"
-    title="pairs(b: BsonDocument): (string, BsonBase)">pairs</a></li>
+    title="pairs(b: BsonDocument): (string, BsonBase)"><wbr />pairs<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#mpairs.i%2CBsonDocument"
-    title="mpairs(b: BsonDocument): (unown string, var BsonBase)">mpairs</a></li>
+    title="mpairs(b: BsonDocument): (unown string, var BsonBase)"><wbr />mpairs<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#keys.i%2CBsonDocument"
-    title="keys(b: BsonDocument): string">keys</a></li>
+    title="keys(b: BsonDocument): string"><wbr />keys<span class="attachedType">BsonDocument</span></a></li>
 
   </ul>
 </li>
@@ -323,53 +323,53 @@ function main() {
   <a class="reference reference-toplevel" href="#16" id="66">Converters</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#toBson.c%2CBsonBase"
-    title="toBson(v: BsonBase): BsonBase">toBson</a></li>
+    title="toBson(v: BsonBase): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c"
-    title="toBson(value: int | int32): BsonBase">toBson</a></li>
+    title="toBson(value: int | int32): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2Cint64"
-    title="toBson(value: int64): BsonBase">toBson</a></li>
+    title="toBson(value: int64): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c_2"
-    title="toBson(values: string | seq[Rune]): BsonBase">toBson</a></li>
+    title="toBson(values: string | seq[Rune]): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2CSomeFloat"
-    title="toBson(value: SomeFloat): BsonBase">toBson</a></li>
+    title="toBson(value: SomeFloat): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2Cseq%5BBsonBase%5D"
-    title="toBson(value: seq[BsonBase]): BsonBase">toBson</a></li>
+    title="toBson(value: seq[BsonBase]): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2Cbool"
-    title="toBson(value: bool): BsonBase">toBson</a></li>
+    title="toBson(value: bool): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2CTime"
-    title="toBson(value: Time): BsonBase">toBson</a></li>
+    title="toBson(value: Time): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2COid"
-    title="toBson(value: Oid): BsonBase">toBson</a></li>
+    title="toBson(value: Oid): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2CBsonDocument"
-    title="toBson(value: BsonDocument): BsonBase">toBson</a></li>
+    title="toBson(value: BsonDocument): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonDocument</span></a></li>
   <li><a class="reference" href="#toBson.c%2CopenArray%5Bbyte%5D"
-    title="toBson(value: openArray[byte]): BsonBase">toBson</a></li>
+    title="toBson(value: openArray[byte]): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#toBson.c%2CTimestampInternal"
-    title="toBson(value: TimestampInternal): BsonBase">toBson</a></li>
+    title="toBson(value: TimestampInternal): BsonBase"><wbr />to<wbr />Bson<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofInt32.c%2CBsonBase"
-    title="ofInt32(b: BsonBase): int32">ofInt32</a></li>
+    title="ofInt32(b: BsonBase): int32"><wbr />of<wbr />Int32<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofInt64.c%2CBsonBase"
-    title="ofInt64(b: BsonBase): int64">ofInt64</a></li>
+    title="ofInt64(b: BsonBase): int64"><wbr />of<wbr />Int64<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofInt.c%2CBsonBase"
-    title="ofInt(b: BsonBase): int">ofInt</a></li>
+    title="ofInt(b: BsonBase): int"><wbr />of<wbr />Int<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofDouble.c%2CBsonBase"
-    title="ofDouble(b: BsonBase): float64">ofDouble</a></li>
+    title="ofDouble(b: BsonBase): float64"><wbr />of<wbr />Double<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofString.c%2CBsonBase"
-    title="ofString(b: BsonBase): string">ofString</a></li>
+    title="ofString(b: BsonBase): string"><wbr />of<wbr />String<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofTime.c%2CBsonBase"
-    title="ofTime(b: BsonBase): Time">ofTime</a></li>
+    title="ofTime(b: BsonBase): Time"><wbr />of<wbr />Time<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofObjectId.c%2CBsonBase"
-    title="ofObjectId(b: BsonBase): Oid">ofObjectId</a></li>
+    title="ofObjectId(b: BsonBase): Oid"><wbr />of<wbr />Object<wbr />Id<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofArray.c%2CBsonBase"
-    title="ofArray(b: BsonBase): seq[BsonBase]">ofArray</a></li>
+    title="ofArray(b: BsonBase): seq[BsonBase]"><wbr />of<wbr />Array<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofBool.c%2CBsonBase"
-    title="ofBool(b: BsonBase): bool">ofBool</a></li>
+    title="ofBool(b: BsonBase): bool"><wbr />of<wbr />Bool<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofEmbedded.c%2CBsonBase"
-    title="ofEmbedded(b: BsonBase): BsonDocument">ofEmbedded</a></li>
+    title="ofEmbedded(b: BsonBase): BsonDocument"><wbr />of<wbr />Embedded<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofBinary.c%2CBsonBase"
-    title="ofBinary(b: BsonBase): seq[byte]">ofBinary</a></li>
+    title="ofBinary(b: BsonBase): seq[byte]"><wbr />of<wbr />Binary<span class="attachedType">BsonBase</span></a></li>
   <li><a class="reference" href="#ofTimestamp.c%2CBsonBase"
-    title="ofTimestamp(b: BsonBase): TimestampInternal">ofTimestamp</a></li>
+    title="ofTimestamp(b: BsonBase): TimestampInternal"><wbr />of<wbr />Timestamp<span class="attachedType">BsonBase</span></a></li>
 
   </ul>
 </li>
@@ -377,15 +377,15 @@ function main() {
   <a class="reference reference-toplevel" href="#18" id="68">Templates</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#writeLE.t%2CStreamable%2CT"
-    title="writeLE[T; ](s: var Streamable; val: T): untyped">writeLE</a></li>
+    title="writeLE[T; ](s: var Streamable; val: T): untyped"><wbr />write<wbr />LE<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#readIntLE.t%2CStreamable%2Ctypedesc"
-    title="readIntLE(s: var Streamable; which: typedesc): untyped">readIntLE</a></li>
+    title="readIntLE(s: var Streamable; which: typedesc): untyped"><wbr />read<wbr />Int<wbr />LE<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#peekInt32LE.t%2CStreamable"
-    title="peekInt32LE(s: var Streamable): untyped">peekInt32LE</a></li>
+    title="peekInt32LE(s: var Streamable): untyped"><wbr />peek<wbr />Int32LE<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#as.t%2Cuntyped%2Cuntyped"
-    title="`as`(a, b: untyped): untyped">`as`</a></li>
+    title="`as`(a, b: untyped): untyped"><wbr />`as`<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#bson.t"
-    title="bson(): untyped">bson</a></li>
+    title="bson(): untyped"><wbr />bson<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -1613,7 +1613,7 @@ class="link-seesrc" target="_blank">Source</a>
 <div class="section" id="19">
 <h1><a class="toc-backref" href="#19">Exports</a></h1>
 <dl class="item">
-<a href="streamable.html#readUint8,DefaultStream"><span class="Identifier">readUint8</span></a>, <a href="streamable.html#atEnd,DefaultStream"><span class="Identifier">atEnd</span></a>, <a href="streamable.html#setPosition,DefaultStream,int"><span class="Identifier">setPosition</span></a>, <a href="streamable.html#write,DefaultStream,T"><span class="Identifier">write</span></a>, <a href="streamable.html#peekInt32,DefaultStream"><span class="Identifier">peekInt32</span></a>, <a href="streamable.html#readFloat64,DefaultStream"><span class="Identifier">readFloat64</span></a>, <a href="streamable.html#readUint32,DefaultStream"><span class="Identifier">readUint32</span></a>, <a href="streamable.html#Peekable"><span class="Identifier">Peekable</span></a>, <a href="streamable.html#Writable"><span class="Identifier">Writable</span></a>, <a href="streamable.html#peekStr,DefaultStream,int"><span class="Identifier">peekStr</span></a>, <a href="streamable.html#newStream,string"><span class="Identifier">newStream</span></a>, <a href="streamable.html#peekChar,DefaultStream"><span class="Identifier">peekChar</span></a>, <a href="streamable.html#readInt32,DefaultStream"><span class="Identifier">readInt32</span></a>, <a href="streamable.html#readInt8,DefaultStream"><span class="Identifier">readInt8</span></a>, <a href="streamable.html#write,DefaultStream,char"><span class="Identifier">write</span></a>, <a href="streamable.html#peekInt8,DefaultStream"><span class="Identifier">peekInt8</span></a>, <a href="streamable.html#MainStream"><span class="Identifier">MainStream</span></a>, <a href="streamable.html#getPosition,DefaultStream"><span class="Identifier">getPosition</span></a>, <a href="streamable.html#readAll,DefaultStream"><span class="Identifier">readAll</span></a>, <a href="streamable.html#Readable"><span class="Identifier">Readable</span></a>, <a href="streamable.html#readChar,DefaultStream"><span class="Identifier">readChar</span></a>, <a href="streamable.html#readInt64,DefaultStream"><span class="Identifier">readInt64</span></a>, <a href="streamable.html#DefaultStream"><span class="Identifier">DefaultStream</span></a>, <a href="streamable.html#write,DefaultStream,string"><span class="Identifier">write</span></a>, <a href="streamable.html#readStr,DefaultStream,int"><span class="Identifier">readStr</span></a>, <a href="streamable.html#Streamable"><span class="Identifier">Streamable</span></a>, <a href="streamable.html#read,DefaultStream,T"><span class="Identifier">read</span></a>, <a href="bsonify.html#bson.m,untyped"><span class="Identifier">bson</span></a>, <a href="macroto_v2.html#to.m,untyped,typed"><span class="Identifier">to</span></a>, <a href="macroto_v2.html#bsonExport.t"><span class="Identifier">bsonExport</span></a>, <a href="macroto_v2.html#bsonKey.t,string"><span class="Identifier">bsonKey</span></a>
+<a href="streamable.html#readUint8"><span class="Identifier">readUint8</span></a>, <a href="streamable.html#atEnd"><span class="Identifier">atEnd</span></a>, <a href="streamable.html#setPosition"><span class="Identifier">setPosition</span></a>, <a href="streamable.html#write"><span class="Identifier">write</span></a>, <a href="streamable.html#peekInt32"><span class="Identifier">peekInt32</span></a>, <a href="streamable.html#readFloat64"><span class="Identifier">readFloat64</span></a>, <a class="reference external" href="streamable.html">streamable</a>, <a href="streamable.html#readUint32"><span class="Identifier">readUint32</span></a>, <a href="streamable.html#Peekable"><span class="Identifier">Peekable</span></a>, <a href="streamable.html#Writable"><span class="Identifier">Writable</span></a>, <a href="streamable.html#peekStr"><span class="Identifier">peekStr</span></a>, <a href="streamable.html#newStream"><span class="Identifier">newStream</span></a>, <a href="streamable.html#peekChar"><span class="Identifier">peekChar</span></a>, <a href="streamable.html#readInt32"><span class="Identifier">readInt32</span></a>, <a href="streamable.html#readInt8"><span class="Identifier">readInt8</span></a>, <a href="streamable.html#write"><span class="Identifier">write</span></a>, <a href="streamable.html#peekInt8"><span class="Identifier">peekInt8</span></a>, <a href="streamable.html#MainStream"><span class="Identifier">MainStream</span></a>, <a href="streamable.html#getPosition"><span class="Identifier">getPosition</span></a>, <a href="streamable.html#readAll"><span class="Identifier">readAll</span></a>, <a href="streamable.html#Readable"><span class="Identifier">Readable</span></a>, <a href="streamable.html#readChar"><span class="Identifier">readChar</span></a>, <a href="streamable.html#readInt64"><span class="Identifier">readInt64</span></a>, <a href="streamable.html#DefaultStream"><span class="Identifier">DefaultStream</span></a>, <a href="streamable.html#write"><span class="Identifier">write</span></a>, <a href="streamable.html#readStr"><span class="Identifier">readStr</span></a>, <a href="streamable.html#Streamable"><span class="Identifier">Streamable</span></a>, <a href="streamable.html#read"><span class="Identifier">read</span></a>, <a href="bsonify.html#bson"><span class="Identifier">bson</span></a>, <a class="reference external" href="bsonify.html">bsonify</a>, <a href="macroto_v2.html#to"><span class="Identifier">to</span></a>, <a class="reference external" href="macroto_v2.html">macroto_v2</a>, <a href="macroto_v2.html#bsonExport"><span class="Identifier">bsonExport</span></a>, <a href="macroto_v2.html#bsonKey"><span class="Identifier">bsonKey</span></a>
 </dl></div>
 
   </div>
@@ -1623,7 +1623,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:40 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:47 UTC</small>
       </div>
     </div>
   </div>

@@ -108,30 +108,30 @@ function main() {
               fields = bsonNull(); upsert = false; bypass = false;
               wt = bsonNull(); collation = bsonNull();
               arrayFilters: seq[BsonDocument] = @[]; explain = &quot;&quot;): Future[
-    BsonDocument]">findAndModify,<wbr>Database,<wbr>string,<wbr>seq[BsonDocument],<wbr>string</a></li>
+    BsonDocument]">findAndModify,Database,string,seq[BsonDocument],string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getLastError
       <li><a class="reference" href="#getLastError%2CDatabase"
-    title="getLastError(db: Database; opt = bson()): Future[BsonDocument]">getLastError,<wbr>Database</a></li>
+    title="getLastError(db: Database; opt = bson()): Future[BsonDocument]">getLastError,Database<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getMore
       <li><a class="reference" href="#getMore%2CDatabase%2Cint64%2Cstring%2Cint"
     title="getMore(db: Database; cursorId: int64; collname: string; batchSize: int;
-        maxTimeMS = -1): Future[BsonDocument]">getMore,<wbr>Database,<wbr>int64,<wbr>string,<wbr>int</a></li>
+        maxTimeMS = -1): Future[BsonDocument]">getMore,Database,int64,string,int<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">insert
       <li><a class="reference" href="#insert%2CDatabase%2Cstring%2Cseq%5BBsonDocument%5D%2Cstring"
     title="insert(db: Database; coll: string; documents: seq[BsonDocument]; ordered = true;
-       wt = bsonNull(); bypass = false; explain = &quot;&quot;): Future[BsonDocument]">insert,<wbr>Database,<wbr>string,<wbr>seq[BsonDocument],<wbr>string</a></li>
+       wt = bsonNull(); bypass = false; explain = &quot;&quot;): Future[BsonDocument]">insert,Database,string,seq[BsonDocument],string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">delete
       <li><a class="reference" href="#delete%2CDatabase%2Cstring%2Cseq%5BBsonDocument%5D%2Cstring"
     title="delete(db: Database; coll: string; deletes: seq[BsonDocument]; ordered = true;
-       wt = bsonNull(); explain = &quot;&quot;): Future[BsonDocument]">delete,<wbr>Database,<wbr>string,<wbr>seq[BsonDocument],<wbr>string</a></li>
+       wt = bsonNull(); explain = &quot;&quot;): Future[BsonDocument]">delete,Database,string,seq[BsonDocument],string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">find
@@ -142,13 +142,13 @@ function main() {
      readConcern = bsonNull(); max = bsonNull(); min = bsonNull();
      returnKey = false; showRecordId = false; tailable = false;
      awaitData = false; oplogReplay = false; noCursorTimeout = false;
-     partial = false; collation = bsonNull(); explain = &quot;&quot;): Future[BsonDocument]">find,<wbr>Database,<wbr>string,<wbr>int,<wbr>int,<wbr>int,<wbr>string,<wbr>int,<wbr>string</a></li>
+     partial = false; collation = bsonNull(); explain = &quot;&quot;): Future[BsonDocument]">find,Database,string,int,int,int,string,int,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">update
       <li><a class="reference" href="#update%2CDatabase%2Cstring%2Cseq%5BBsonDocument%5D%2Cstring"
     title="update(db: Database; coll: string; updates: seq[BsonDocument]; ordered = true;
-       wt = bsonNull(); bypass = false; explain = &quot;&quot;): Future[BsonDocument]">update,<wbr>Database,<wbr>string,<wbr>seq[BsonDocument],<wbr>string</a></li>
+       wt = bsonNull(); bypass = false; explain = &quot;&quot;): Future[BsonDocument]">update,Database,string,seq[BsonDocument],string<span class="attachedType"></span></a></li>
 
   </ul>
 
@@ -291,7 +291,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:51 UTC</small>
       </div>
     </div>
   </div>

@@ -105,41 +105,41 @@ function main() {
       <li><a class="reference" href="#createIndexes%2CDatabase%2Cstring%2CBsonBase"
     title="createIndexes(db: Database; coll: string; indexes: BsonBase;
               writeConcern = bsonNull(); commitQuorum = bsonNull();
-              comment = bsonNull()): Future[WriteResult]">createIndexes,<wbr>Database,<wbr>string,<wbr>BsonBase</a></li>
+              comment = bsonNull()): Future[WriteResult]">createIndexes,Database,string,BsonBase<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">killOp
       <li><a class="reference" href="#killOp%2CDatabase%2Cint32"
-    title="killOp(db: Database; opid: int32; comment = bsonNull()): Future[WriteResult]">killOp,<wbr>Database,<wbr>int32</a></li>
+    title="killOp(db: Database; opid: int32; comment = bsonNull()): Future[WriteResult]">killOp,Database,int32<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">dropIndexes
       <li><a class="reference" href="#dropIndexes%2CDatabase%2Cstring%2CBsonBase"
     title="dropIndexes(db: Database; coll: string; indexes: BsonBase; wt = bsonNull();
-            comment = bsonNull()): Future[WriteResult]">dropIndexes,<wbr>Database,<wbr>string,<wbr>BsonBase</a></li>
+            comment = bsonNull()): Future[WriteResult]">dropIndexes,Database,string,BsonBase<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">listDatabases
       <li><a class="reference" href="#listDatabases"
     title="listDatabases(db: Mongo | Database; filter = bsonNull(); nameonly = false;
               authorizedCollections = false; comment = bsonNull()): Future[
-    seq[BsonBase]]">listDatabases</a></li>
+    seq[BsonBase]]">listDatabases<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">shutdown
       <li><a class="reference" href="#shutdown%2C%2Cint"
     title="shutdown(db: Mongo | Database; force = false; timeout = 10; comment = bsonNull()): Future[
-    WriteResult]">shutdown,<wbr>,<wbr>int</a></li>
+    WriteResult]">shutdown,,int<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">listCollectionNames
       <li><a class="reference" href="#listCollectionNames%2CDatabase%2Cstring"
-    title="listCollectionNames(db: Database; dbname = &quot;&quot;): Future[seq[string]]">listCollectionNames,<wbr>Database,<wbr>string</a></li>
+    title="listCollectionNames(db: Database; dbname = &quot;&quot;): Future[seq[string]]">listCollectionNames,Database,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">listDatabaseNames
       <li><a class="reference" href="#listDatabaseNames"
-    title="listDatabaseNames(db: Mongo | Database): Future[seq[string]]">listDatabaseNames</a></li>
+    title="listDatabaseNames(db: Mongo | Database): Future[seq[string]]">listDatabaseNames<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">create
@@ -149,62 +149,62 @@ function main() {
        validationLevel = &quot;strict&quot;; validationAction = &quot;error&quot;;
        indexOptionDefaults = bsonNull(); viewOn = &quot;&quot;; pipeline = bsonArray();
        collation = bsonNull(); writeConcern = bsonNull();
-       expireAfterSeconds = 0; timeseries = bsonNull()): Future[WriteResult]">create,<wbr>Database,<wbr>string,<wbr>(bool,<wbr> int,<wbr> int),<wbr>string,<wbr>string,<wbr>string,<wbr>int</a></li>
+       expireAfterSeconds = 0; timeseries = bsonNull()): Future[WriteResult]">create,Database,string,(bool, int, int),string,string,string,int<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">setDefaultRWConcern
       <li><a class="reference" href="#setDefaultRWConcern%2CDatabase"
     title="setDefaultRWConcern(db: Database; defaultReadConcern = bsonNull();
                     defaultWriteConcern = bsonNull(); wt = bsonNull();
-                    comment = bsonNull()): Future[BsonDocument]">setDefaultRWConcern,<wbr>Database</a></li>
+                    comment = bsonNull()): Future[BsonDocument]">setDefaultRWConcern,Database<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">renameCollection
       <li><a class="reference" href="#renameCollection%2CDatabase%2Cstring%2Cstring"
     title="renameCollection(db: Database; from, to: string; wt = bsonNull();
-                 comment = bsonNull()): Future[WriteResult]">renameCollection,<wbr>Database,<wbr>string,<wbr>string</a></li>
+                 comment = bsonNull()): Future[WriteResult]">renameCollection,Database,string,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getDefaultReadConcern
       <li><a class="reference" href="#getDefaultReadConcern%2CDatabase"
     title="getDefaultReadConcern(db: Database; inMemory = false; comment = bsonNull()): Future[
-    BsonDocument]">getDefaultReadConcern,<wbr>Database</a></li>
+    BsonDocument]">getDefaultReadConcern,Database<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">listIndexes
       <li><a class="reference" href="#listIndexes%2CDatabase%2Cstring"
     title="listIndexes(db: Database; coll: string; comment = bsonNull()): Future[
-    seq[BsonBase]]">listIndexes,<wbr>Database,<wbr>string</a></li>
+    seq[BsonBase]]">listIndexes,Database,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">dropCollection
       <li><a class="reference" href="#dropCollection%2CDatabase%2Cstring"
     title="dropCollection(db: Database; coll: string; wt = bsonNull(); comment = bsonNull()): Future[
-    WriteResult]">dropCollection,<wbr>Database,<wbr>string</a></li>
+    WriteResult]">dropCollection,Database,string<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">dropDatabase
       <li><a class="reference" href="#dropDatabase%2CDatabase"
     title="dropDatabase(db: Database; wt = bsonNull(); comment = bsonNull()): Future[
-    WriteResult]">dropDatabase,<wbr>Database</a></li>
+    WriteResult]">dropDatabase,Database<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">killCursors
       <li><a class="reference" href="#killCursors%2CDatabase%2Cstring%2Cseq%5Bint64%5D"
     title="killCursors(db: Database; collname: string; cursorIds: seq[int64]): Future[
-    BsonDocument]">killCursors,<wbr>Database,<wbr>string,<wbr>seq[int64]</a></li>
+    BsonDocument]">killCursors,Database,string,seq[int64]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">currentOp
       <li><a class="reference" href="#currentOp%2CDatabase"
-    title="currentOp(db: Database; opt = bson()): Future[BsonDocument]">currentOp,<wbr>Database</a></li>
+    title="currentOp(db: Database; opt = bson()): Future[BsonDocument]">currentOp,Database<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">listCollections
       <li><a class="reference" href="#listCollections%2CDatabase%2Cstring"
     title="listCollections(db: Database; dbname = &quot;&quot;; filter = bsonNull();
                 nameonly = false; authorizedCollections = false;
-                comment = bsonNull()): Future[seq[BsonBase]]">listCollections,<wbr>Database,<wbr>string</a></li>
+                comment = bsonNull()): Future[seq[BsonBase]]">listCollections,Database,string<span class="attachedType"></span></a></li>
 
   </ul>
 
@@ -473,7 +473,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:42 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:49 UTC</small>
       </div>
     </div>
   </div>

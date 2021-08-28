@@ -155,6 +155,7 @@ body {
 
 .three.columns {
   width: 22%;
+  line-break: anywhere;
 }
 
 .nine.columns {
@@ -410,7 +411,7 @@ ol ul {
   margin-bottom: 0;
   margin-left: 1.25em; }
 
-ul.simple > li {
+li {
     list-style-type: circle;
 }
 
