@@ -67,7 +67,7 @@ type
     ## connection.
     keyfile*: string  ## Key file path
     certfile*: string ## Certificate file path
-    when defined(ssl):
+    when defined(ssl) or defined(nimdoc):
       protocol*: SslProtVersion ## The SSL/TLS protocol
 
   Database* = ref object of RootObj
