@@ -86,8 +86,8 @@ jobs:
       - name: Generate docs
         run: |
           nim doc --project --index:on --git.url:https://github.com/mashingan/anonimongo --outdir:src/htmldocs src/anonimongo.nim
-      - uses: JamesIves/github-pages-deploy-action@4.1.4
       - name: Deploy docs
+        uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages
           folder: src/htmldocs
