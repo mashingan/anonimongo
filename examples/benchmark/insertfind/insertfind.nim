@@ -12,7 +12,7 @@ let
   ## add import std/oids if we want to supply object id
   # curroid = genOid()
 
-let mongo = newMongo(poolconn = 1)
+let mongo = newMongo()
 if not waitfor mongo.connect:
     quit "cannot connect, quit"
 let

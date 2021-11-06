@@ -73,5 +73,5 @@ func BenchmarkInsert100FindLast(b *testing.B) {
 		r, _ = insert100FindLast()
 	}
 	res = r
-	b.Logf("%#v", *res)
+	b.Log("res:", res)
 }
