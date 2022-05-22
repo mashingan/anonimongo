@@ -69,20 +69,9 @@ proc forEach*(c: Cursor[AsyncSocket], cb: proc(b: ChangeStream),
       c.firstBatch = cdoc["firstBatch"].ofArray.map ofEmbedded
       c.nextBatch = cdoc["nextBatch"].ofArray.map ofEmbedded
       c.ns = cdoc["ns"]
-#[
-  Cursor* {.multisock.} = object
-    ## An object that will short-lived in a handle to fetch more data
-    ## with the same identifier. Usually used for find queries variant.
-    id*: int64
-    firstBatch*: seq[BsonDocument]
-    nextBatch*: seq[BsonDocument]
-    db*: Database[AsyncSocket]
-    ns*: string
 
-]#
-
-proc watch*(coll: Collection, pipelines: seq[BsonDocument] = @[],
-  options = bson()): Future[Cursor] {.async.} =
+proc watch*(coll: Collection[AsyncSocket], pipelines: seq[BsonDocument] = @[],
+  options = bson()): Future[Cursor[AsyncSocket]] {.multisock.} =
   var queries = newseq[BsonDocument](pipelines.len+1)
   queries[0] = bson { "$changeStream": options }
   queries = concat(queries, pipelines)
@@ -90,6 +79,14 @@ proc watch*(coll: Collection, pipelines: seq[BsonDocument] = @[],
   let reply = await coll.db.aggregate(coll.name, queries, maxTimeMS = 0)
   if not reply.ok:
     raise newException(MongoError, getCurrentExceptionMsg())
-  result = reply["cursor"].to Cursor
-  result.db = coll.db
+  let cdoc = reply["cursor"]
+  # result = reply["cursor"].to Cursor
+  # result.db = coll.db
+  result = Cursor[AsyncSocket](
+    id: cdoc["id"],
+    firstBatch: cdoc["firstBatch"].ofArray.map ofEmbedded,
+    nextBatch: cdoc["nextBatch"].ofArray.map ofEmbedded,
+    ns: cdoc["ns"],
+    db: coll.db,
+  )
   when csVerbose: dump result

@@ -77,7 +77,7 @@ proc all*(q: Query[AsyncSocket]): Future[seq[BsonDocument]] {.multisock.} =
       break
     result = concat(result, cursor.nextBatch)
 
-iterator items*(cur: Cursor): BsonDocument =
+iterator items*(cur: Cursor[AsyncSocket]): BsonDocument {.multisock.} =
   for b in cur.firstBatch:
     yield b
   let batchSize = if cur.firstBatch.len != 0: cur.firstBatch.len
@@ -87,9 +87,16 @@ iterator items*(cur: Cursor): BsonDocument =
   let collname = newcur.collname
   var db = cur.db
   while newcur.id != 0:
-    #doc = await cur.db.getMore(cur.id, collname, batchSize)
-    doc = waitfor db.getMore(newcur.id, collname, batchSize)
-    newcur = doc["cursor"].ofEmbedded.to Cursor
+    doc = await cur.db.getMore(cur.id, collname, batchSize)
+    # doc = waitfor db.getMore(newcur.id, collname, batchSize)
+    # newcur = doc["cursor"].ofEmbedded.to Cursor
+    let cd = doc["cursor"].ofEmbedded
+    newcur = Cursor[AsyncSocket](
+      id: cd["id"],
+      firstBatch: cd["firstBatch"].ofArray.map ofEmbedded,
+      nextBatch: cd["nextBatch"].ofArray.map ofEmbedded,
+      ns: cd["ns"],
+    )
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
@@ -120,16 +127,8 @@ proc iter*(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]] {.multisock.} =
   result.db = q.collection.db
 
 proc find*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull()): Future[Query[AsyncSocket]] {.multisock.} =
-  result = await initQuery[AsyncSocket](query, c)
+  result = initQuery[AsyncSocket](query, c)
   result.projection = projection
-
-# proc find*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull()): Query[AsyncSocket] =
-#   result = initQuery[AsyncSocket](query, c)
-#   result.projection = projection
-
-# proc find*(c: Collection[Socket], query = bson(), projection = bsonNull()): Query[Socket] =
-#   result = initQuery[Socket](query, c)
-#   result.projection = projection
 
 proc findOne*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(),
   sort = bsonNull()): Future[BsonDocument] {.multisock.} =
@@ -145,8 +144,8 @@ proc findAll*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(
   result = await q.all
 
 proc findIter*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(),
-  sort = bsonNull()): Future[Cursor] {.multisock.} =
-  var q = c.find(query, projection)
+  sort = bsonNull()): Future[Cursor[AsyncSocket]] {.multisock.} =
+  var q = await c.find(query, projection)
   q.sort = sort
   result = await q.iter
 
@@ -293,7 +292,8 @@ proc createIndex*(c: Collection[AsyncSocket], key: BsonDocument, opt = bson()):
   result = await c.db.createIndexes(c.name, qarr, wt)
 
 proc listIndexes*(c: Collection[AsyncSocket]): Future[seq[BsonDocument]]{.multisock.} =
-  result = (await c.db.listIndexes(c.name)).map ofEmbedded
+  let indexes = await c.db.listIndexes(c.name)
+  result = indexes.map ofEmbedded
 
 proc `distinct`*(c: Collection[AsyncSocket], field: string, query = bson(),
   opt = bson()): Future[seq[BsonBase]] {.multisock.} =

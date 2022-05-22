@@ -16,19 +16,27 @@ template inspect(n: untyped) =
   dump `n`.repr
   echo "========="
 
+template nodeIs(n: NimNode, str: string): bool =
+  n.kind == nnkIdent and $n == str
 template nodeIsAsyncSocket(n: NimNode): bool =
-  n.kind == nnkIdent and $n == "AsyncSocket"
+  n.nodeIs "AsyncSocket"
 
 
-proc recReplaceForBracket(n: NimNode, newident = "TheSocket") =
+proc recReplaceForBracket(n: var NimNode, newident = "TheSocket") =
   if n.kind == nnkBracketExpr:
     # inspect n
-    for i in 1 ..< n.len:
+    var start = 1
+    if n[0].nodeIs("Future"):
+      n = n[1]
+      start = 0
+    for i in start ..< n.len:
       if n[i].kind == nnkEmpty: continue
       if n[i].nodeIsAsyncSocket:
         n[i] = ident newident
       else:
-        n[i].recReplaceForBracket newident
+        var nn = n[i]
+        nn.recReplaceForBracket newident
+        n[i] = nn
 
 template removeAndAssign(n: untyped) =
   var nn = `n`
@@ -45,14 +53,23 @@ proc removeAwaitAsyncCheck(n: var NimNode) =
   of nnkCommand:
     if n[0].kind notin [nnkCall, nnkDotExpr, nnkEmpty] and $n[0] in ["await", "asyncCheck"]:
       n = newStmtList(n[1..^1])
-      # n.recReplaceForBracket "Socket"
       n.removeAwaitAsyncCheck
+    else:
+      for i in 0..<n.len:
+        removeAndAssign n[i]
   of nnkAsgn:
     removeAndAssign n[1]
   of nnkOfBranch, nnkElse:
     removeAndAssign n[^1]
   of nnkBracketExpr:
     n.recReplaceForBracket "Socket"
+  of nnkCall:
+    if n[0].nodeIs("all") and n.len == 2: # removing the call of all in: `await all(op)`
+      n = n[1]
+      n.removeAwaitAsyncCheck
+    else:
+      for i in 0..<n.len:
+        removeAndAssign n[i]
   else:
     for i in 0..<n.len:
       removeAndAssign n[i]
@@ -75,15 +92,17 @@ proc multiproc(prc: NimNode): NimNode =
       if socksync[1].nodeIsAsyncSocket:
         socksync[1] = ident "Socket"
       else:
-        socksync[1].recReplaceForBracket "Socket"
+        var ss1 = socksync[1]
+        ss1.recReplaceForBracket "Socket"
+        socksync[1] = ss1
   var prcbody = prcsync[^1]
   prcbody.removeAwaitAsyncCheck
   if prc[^3].kind != nnkEmpty:
     prc[^3].add(ident "async")
   else:
     prc[^3] = quote do: {.async.}
-  inspect prcsync
-  inspect prc
+  # inspect prcsync
+  # inspect prc
   result = quote do:
     `prcsync`
     `prc`
@@ -105,6 +124,9 @@ proc multitype(ty: NimNode): NimNode =
   if ty[2].kind == nnkRefTy:
     obj = obj[0]
   # inspect obj
+  if obj[^1].kind == nnkEmpty:
+    inspect obj[^1]
+    return
   for i in 0 ..< obj[^1].len:
     # let identdef = ty[2][2][i]
     let identdef = obj[2][i]
@@ -115,7 +137,9 @@ proc multitype(ty: NimNode): NimNode =
     if identdef[1].nodeIsAsyncSocket:
       identdef[1] = ident "TheSocket"
     else:
-      identdef[1].recReplaceForBracket
+      var idf = identdef[1]
+      idf.recReplaceForBracket
+      identdef[1] = idf
 
 
 macro multisock*(def: untyped): untyped =

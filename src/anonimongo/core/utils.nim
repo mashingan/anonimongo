@@ -76,8 +76,7 @@ proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
   true
 
 proc proceed*(db: Database[AsyncSocket], q: BsonDocument, dbname = "", cmd = ckRead,
-  needCompress = true):
-  Future[WriteResult] {.multisock.} =
+  needCompress = true): Future[WriteResult] {.multisock.} =
   ## Helper utility that basically utilize another two main operations
   ## ``sendops`` and ``epilogueCheck``.
   #let reply = await sendops(q, db, dbname, cmd, compress)

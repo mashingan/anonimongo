@@ -130,7 +130,7 @@ type
     nInserted*, nModified*, nRemoved*: int
     writeErrors*: seq[string]
   
-  GridFS* = ref object
+  GridFS*{.multisock.} = ref object
     ## GridFS is basically just a object that represents two different
     ## collections: i.e.
     ##
@@ -141,8 +141,8 @@ type
     ## bucket.chunks stores the actual binary information for the
     ## related files.
     name*: string
-    files*: Collection
-    chunks*: Collection
+    files*: Collection[AsyncSocket]
+    chunks*: Collection[AsyncSocket]
     chunkSize*: int32
 
   CommandKind* = enum
@@ -591,33 +591,12 @@ proc close*(m: Mongo) =
   for _, serv in m.servers:
     close serv.pool
 
-#[
-proc initQuery*(query = bson(), collection: Collection[AsyncSocket] = nil,
-  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Future[Query] {.multisock.} =
+proc initQuery*[T: Multisock](query = bson(), collection: Collection[T] = nil,
+  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query[T] =
   ## Init `query<#Query>`_ to be used for next find.
   ## Apparently this should be used for Query Plan Cache
   ## however currently the lib still hasn't support that feature yet.
-  result = Query[AsyncSocket](
-    query: query,
-    collection: collection,
-    skip: skip,
-    limit: limit,
-    batchSize: batchSize)
-
-]#
-
-proc initQuery*(query = bson(), collection: Collection[AsyncSocket] = nil,
-  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query[AsyncSocket] =
-  result = Query[AsyncSocket](
-    query: query,
-    collection: collection,
-    skip: skip,
-    limit: limit,
-    batchSize: batchSize)
-
-proc initQuery*(query = bson(), collection: Collection[Socket] = nil,
-  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query[Socket] =
-  result = Query[Socket](
+  result = Query[T](
     query: query,
     collection: collection,
     skip: skip,
