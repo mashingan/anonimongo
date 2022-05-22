@@ -77,7 +77,7 @@ proc getConn*(p: Pool[Socket]): (int, Connection[Socket]) =
     let id = p.available.popLast
     result = (id, p[id])
     return
-  (-1, Connection[Socket]())
+  result = (-1, Connection[Socket]())
 
 proc connect*(p: Pool[AsyncSocket], address: string, port: int): Future[void] {.multisock.} =
   ## Connect all connection to specified address and port.
