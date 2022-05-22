@@ -20,11 +20,11 @@ template nodeIs(n: NimNode, str: string): bool =
   n.kind == nnkIdent and $n == str
 template nodeIsAsyncSocket(n: NimNode): bool =
   n.nodeIs "AsyncSocket"
+template nodeIsEmpty(n: NimNode): bool = n.kind == nnkEmpty
 
 
 proc recReplaceForBracket(n: var NimNode, newident = "TheSocket") =
   if n.kind == nnkBracketExpr:
-    # inspect n
     var start = 1
     if n[0].nodeIs("Future"):
       n = n[1]
@@ -123,8 +123,10 @@ proc multitype(ty: NimNode): NimNode =
   var obj = ty[2]
   if ty[2].kind == nnkRefTy:
     obj = obj[0]
-  # inspect obj
-  if obj[^1].kind == nnkEmpty:
+  if obj.nodeIsEmpty:
+    inspect obj
+    return
+  if obj[^1].nodeIsEmpty:
     inspect obj[^1]
     return
   for i in 0 ..< obj[^1].len:
@@ -147,15 +149,11 @@ macro multisock*(def: untyped): untyped =
   ## with first param is AsyncSocket and returns Future
   ## which then creating the sync version of the function
   ## overload by removing `await` and `asyncCheck`
-  if def.kind == nnkProcDef:
+  case def.kind
+  of nnkProcDef:
     result = def.multiproc
+  of nnkIteratorDef:
+    result = def
   else:
-    # inspect def
-    #echo "inspect type def body"
-    #for n in def:
-    #  inspect n
     let defg = def.multitype
-    #result = quote do:
-    #  type `defg`
     result = defg
-    # inspect result

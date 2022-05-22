@@ -77,7 +77,7 @@ proc all*(q: Query[AsyncSocket]): Future[seq[BsonDocument]] {.multisock.} =
       break
     result = concat(result, cursor.nextBatch)
 
-iterator items*(cur: Cursor[AsyncSocket]): BsonDocument {.multisock.} =
+iterator items*[S: MultiSock](cur: Cursor[S]): BsonDocument {.multisock.} =
   for b in cur.firstBatch:
     yield b
   let batchSize = if cur.firstBatch.len != 0: cur.firstBatch.len
@@ -87,11 +87,14 @@ iterator items*(cur: Cursor[AsyncSocket]): BsonDocument {.multisock.} =
   let collname = newcur.collname
   var db = cur.db
   while newcur.id != 0:
-    doc = await cur.db.getMore(cur.id, collname, batchSize)
-    # doc = waitfor db.getMore(newcur.id, collname, batchSize)
+    # doc = await cur.db.getMore(cur.id, collname, batchSize)
+    when S is AsyncSocket:
+      doc = waitfor db.getMore(newcur.id, collname, batchSize)
+    else:
+      doc = db.getMore(newcur.id, collname, batchSize)
     # newcur = doc["cursor"].ofEmbedded.to Cursor
     let cd = doc["cursor"].ofEmbedded
-    newcur = Cursor[AsyncSocket](
+    newcur = Cursor[S](
       id: cd["id"],
       firstBatch: cd["firstBatch"].ofArray.map ofEmbedded,
       nextBatch: cd["nextBatch"].ofArray.map ofEmbedded,
