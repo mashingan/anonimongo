@@ -1,5 +1,5 @@
 import uri, tables, strutils, net, strformat, sequtils, unicode
-import deques
+import deques, sugar
 from asyncdispatch import Port
 from math import nextPowerOfTwo
 
@@ -9,7 +9,7 @@ when defined(ssl):
 import sha1, nimSHA2
 import dnsclient
 
-import pool, wire, bson
+import pool, wire, bson, multisock
 
 export SHA1Digest, SHA256Digest
 
@@ -25,17 +25,17 @@ when verbose:
   import sugar
 
 type
-  MongoConn* = ref object of RootObj
+  MongoConn* {.multisock.} = ref object of RootObj
     ## Actual ref object that handles the connection to the intended server
     isMaster*: bool
     host: string
     port: Port
     username: string
     password: string
-    pool*: Pool
+    pool*: Pool[AsyncSocket]
     authenticated: bool
 
-  Mongo* = ref object of RootObj
+  Mongo* {.multisock.} = ref object of RootObj
     ## An ref object that will handle any necessary information
     ## as Mongo client. Since Mongo expected to live as long as
     ## the program alive, it can be expected to be a singleton
@@ -44,7 +44,7 @@ type
     ## of costly invocation of Mongo.
     hosts*: seq[string]
     primary*: string
-    servers*: TableRef[string, MongoConn]
+    servers*: TableRef[string, MongoConn[AsyncSocket]]
     tls: bool
     authenticated: bool
     db*: string
@@ -70,28 +70,28 @@ type
     when defined(ssl) or defined(nimdoc):
       protocol*: SslProtVersion ## The SSL/TLS protocol
 
-  Database* = ref object of RootObj
+  Database* {.multisock.} = ref object of RootObj
     ## Database holds the `Mongo<#Mongo>`_ data as ``db`` field.
     name*: string
-    db*: Mongo
+    db*: Mongo[AsyncSocket]
 
-  Collection* = ref object
+  Collection* {.multisock.} = ref object
     ## Collection holds the `Database<#Database>`_
     ## data as ``db`` field.
     name*: string ## Collection name
     dbname: string ## Database name, easier than ``coll.db.name``
-    db*: Database
+    db*: Database[AsyncSocket]
 
-  Cursor* = object
+  Cursor* {.multisock.} = object
     ## An object that will short-lived in a handle to fetch more data
     ## with the same identifier. Usually used for find queries variant.
     id*: int64
     firstBatch*: seq[BsonDocument]
     nextBatch*: seq[BsonDocument]
-    db*: Database
+    db*: Database[AsyncSocket]
     ns*: string
 
-  Query* = object
+  Query* {.multisock.} = object
     ## Query is basically any options that will be used when calling dbcommand
     ## find and others related commands. Must of these values are left to be
     ## default with only exception of query field.
@@ -104,7 +104,7 @@ type
     sort*: BsonBase
     projection*: BsonBase
     writeConcern*: BsonBase
-    collection*: Collection
+    collection*: Collection[AsyncSocket]
     skip*, limit*, batchSize*: int32
     readConcern*, max*, min*: BsonBase
 
@@ -449,50 +449,57 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
-template pickAnyServer(m: Mongo, test: untyped): MongoConn =
-  var res: MongoConn
+#[
+template pickAnyServer[T: MultiSock](m: Mongo[T], test: untyped): MongoConn[T] =
+  var res: MongoConn[T]
   for host{.inject.}, server{.inject.} in m.servers:
     if `test`:
       res = server
       break
   res
+]#
+proc pickAnyServer[T: MultiSock](m: Mongo[T], test: (string, int) -> bool = nil): MongoConn[T] =
+  var res: MongoConn[T]
+  for host{.inject.}, server{.inject.} in m.servers:
+    #if `test`:
+    if test == nil or (test != nil and test(host, server.pool.available.len)):
+      res = server
+  res
 
-proc main*(m: Mongo): MongoConn =
+proc main*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer true
+    #result = m.pickAnyServer true
+    result = m.pickAnyServer
   else:
     result = m.servers[m.primary]
 
-proc mainPreferred*(m: Mongo): MongoConn =
+proc mainPreferred*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer true
+    result = m.pickAnyServer
   elif m.servers[m.primary].pool.available.len > 0:
     result = m.servers[m.primary]
   else:
-    result = m.pickAnyServer:
-      host != m.primary
+    result = m.pickAnyServer((host: string, num: int) => host != m.primary)
 
-proc secondary*(m: Mongo): MongoConn =
+proc secondary*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer true
+    result = m.pickAnyServer
   else:
-    result = m.pickAnyServer:
-      host != m.primary
+    result = m.pickAnyServer((host: string, num: int) => host != m.primary)
 
-proc secondaryPreferred*(m: Mongo): MongoConn =
+proc secondaryPreferred*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer true
+    result = m.pickAnyServer
   else:
-    result = m.pickAnyServer:
-      host != m.primary and server.pool.available.len > 0
+    result = m.pickAnyServer((host: string, num: int) => host != m.primary and num > 0)
     if result == nil:
       result = m.servers[m.primary]
 
 proc hasUserAuth*(m: Mongo): bool =
   m.main.username != "" and m.main.password != ""
 
-proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn],
-  user, pass, dbname: string): Future[bool]{.async.} =
+proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn[AsyncSocket]],
+  user, pass, dbname: string): Future[bool]{.multisock.} =
   if bulk.len == 0: return true
   for conn in bulk:
     var user = user
@@ -508,16 +515,16 @@ proc bulkAuthenticate[T: SHA1Digest | SHA256Digest](bulk: seq[MongoConn],
       echo &"Connection on {conn.host}:{conn.port.int} cannot authenticate"
       result = false
 
-proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo, user, pass: string):
-  Future[bool] {.async.} =
+proc authenticate*[T: SHA1Digest | Sha256Digest](m: Mongo[AsyncSocket], user, pass: string):
+  Future[bool] {.multisock.} =
   ## Authenticate Mongo with given username and password and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
   let adm = if m.db != "": (m.db & ".$cmd") else: "admin.$cmd"
   result = await toSeq(m.servers.values).bulkAuthenticate[:T](user, pass, adm)
   m.authenticated = result
 
-proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo):
-  Future[bool] {.async.} =
+proc authenticate*[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]):
+  Future[bool] {.multisock.} =
   ## Authenticate Mongo with available username and password from
   ## `Mongo<#Mongo>`_ object and delegate it to
   ## `pool.authenticate<pool.html#authenticate,Pool,string,string,typedesc,string>`_.
@@ -560,14 +567,14 @@ proc noSlave*(m: Mongo) =
   ## Set `Mongo<#Mongo>`_ to not support SlaveOk flag
   m.flags.excl Flags.SlaveOk
 
-proc `[]`*(m: Mongo, name: string): Database =
+proc `[]`*[T: Multisock](m: Mongo[T], name: string): Database[T] =
   ## Give new Database from `Mongo<#Mongo>`_,
   ## expected to long-live object.
   new result
   result.db = m
   result.name = name
 
-proc `[]`*(dbase: Database, name: string): Collection =
+proc `[]`*[T: Multisock](dbase: Database[T], name: string): Collection[T] =
   ## Give new `Collection<#Collection>`_ from
   ## `Database<#Database>`_, expected to long-live object.
   new result
@@ -584,12 +591,33 @@ proc close*(m: Mongo) =
   for _, serv in m.servers:
     close serv.pool
 
-proc initQuery*(query = bson(), collection: Collection = nil,
-  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query =
+#[
+proc initQuery*(query = bson(), collection: Collection[AsyncSocket] = nil,
+  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Future[Query] {.multisock.} =
   ## Init `query<#Query>`_ to be used for next find.
   ## Apparently this should be used for Query Plan Cache
   ## however currently the lib still hasn't support that feature yet.
-  result = Query(
+  result = Query[AsyncSocket](
+    query: query,
+    collection: collection,
+    skip: skip,
+    limit: limit,
+    batchSize: batchSize)
+
+]#
+
+proc initQuery*(query = bson(), collection: Collection[AsyncSocket] = nil,
+  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query[AsyncSocket] =
+  result = Query[AsyncSocket](
+    query: query,
+    collection: collection,
+    skip: skip,
+    limit: limit,
+    batchSize: batchSize)
+
+proc initQuery*(query = bson(), collection: Collection[Socket] = nil,
+  skip = 0'i32, limit = 0'i32, batchSize = 101'i32): Query[Socket] =
+  result = Query[Socket](
     query: query,
     collection: collection,
     skip: skip,

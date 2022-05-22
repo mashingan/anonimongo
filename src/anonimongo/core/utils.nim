@@ -1,5 +1,5 @@
-import strformat
-import wire, bson, types, pool
+import strformat, net
+import wire, bson, types, pool, multisock
 
 const verbose {.booldefine.} = false
 
@@ -12,14 +12,14 @@ func cmd*(name: string): string = name & ".$cmd"
 func flags*(d: Database): int32 = d.db.flags as int32
   ## Get Mongo available ``wire.QueryFlags`` as int32 bitfield
 
-proc sendOps*(q: BsonDocument, db: Database, name = "", cmd = ckRead,
+proc sendOps*(q: BsonDocument, db: Database[AsyncSocket], name = "", cmd = ckRead,
   compression = cidNoop):
-  Future[ReplyFormat]{.async.} =
+  Future[ReplyFormat]{.multisock.} =
   ## A helper utility which greatly simplify actual Database command
   ## queries. Any new command implementation usually use this
   ## helper proc. Cmd argument is needed to recognize what kind
   ## of command operation to be sent.
-  var dbconn: MongoConn
+  var dbconn: MongoConn[AsyncSocket]
   if cmd == ckWrite:
     dbconn = db.db.main
   else:
@@ -75,9 +75,9 @@ proc epilogueCheck*(reply: ReplyFormat, target: var string): bool =
     return false
   true
 
-proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead,
+proc proceed*(db: Database[AsyncSocket], q: BsonDocument, dbname = "", cmd = ckRead,
   needCompress = true):
-  Future[WriteResult] {.async.} =
+  Future[WriteResult] {.multisock.} =
   ## Helper utility that basically utilize another two main operations
   ## ``sendops`` and ``epilogueCheck``.
   #let reply = await sendops(q, db, dbname, cmd, compress)
@@ -92,9 +92,9 @@ proc proceed*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead,
   result = WriteResult(kind: wkSingle)
   result.success = epilogueCheck(reply, result.reason)
 
-#template crudops(db: Database, q: BsonDocument): untyped {.async.} =
-proc crudops*(db: Database, q: BsonDocument, dbname = "", cmd = ckRead):
-  Future[BsonDocument]{.async.} =
+#template crudops(db: Database, q: BsonDocument): untyped {.multisock.} =
+proc crudops*(db: Database[AsyncSocket], q: BsonDocument, dbname = "", cmd = ckRead):
+  Future[BsonDocument]{.multisock.} =
   ## About the same as ``proceed`` but this will return a BsonDocument
   ## compared to ``proceed`` that return ``WriteResult``.
   let compressions = db.db.compressions
