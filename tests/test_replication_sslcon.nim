@@ -47,18 +47,18 @@ when testReplication and defined(ssl):
       require processes.allIt( it != nil )
       require processes.all running
 
-    var mongo: Mongo
-    var db: Database
+    var mongo: Mongo[AsyncSocket]
+    var db: Database[AsyncSocket]
     test "Catch error without SSL for SSL/TLS required connection":
       expect(IOError):
-        var m = newMongo(
+        var m = newMongo[AsyncSocket](
           MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
           poolconn = utils_test.poolconn)
         check waitfor m.connect()
         m.close()
 
     test "Connect single uri":
-      mongo = newMongo(MongoUri uriSettingRepl,
+      mongo = newMongo[AsyncSocket](MongoUri uriSettingRepl,
         poolconn = utils_test.poolconn,
         dnsserver = mongoServer,
         dnsport = dnsport)
@@ -96,7 +96,7 @@ when testReplication and defined(ssl):
     sleep 15_000 # waiting the replica set to elect primary
 
     test "Connect with manual multi uri connections":
-      mongo = newMongo(
+      mongo = newMongo[AsyncSocket](
         MongoUri uriMultiManual,
         poolconn = utils_test.poolconn
       )
@@ -112,7 +112,7 @@ when testReplication and defined(ssl):
     spawn fakeDnsServer()
     test "Check newMongo mongodb+srv scheme connection":
       try:
-        mongo = newMongo(
+        mongo = newMongo[AsyncSocket](
           MongoUri uriSrv,
           poolconn = utils_test.poolconn,
           dnsserver = mongoServer,

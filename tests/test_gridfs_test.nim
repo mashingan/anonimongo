@@ -34,9 +34,9 @@ if filename != "" and saveas != "":
       else:
         skip()
 
-    var mongo: Mongo
-    var grid: GridFS
-    var db: Database
+    var mongo: Mongo[AsyncSocket]
+    var grid: GridFS[AsyncSocket]
+    var db: Database[AsyncSocket]
     var wr: WriteResult
     let dbname = "newtemptest"
     let (_, fname, ext) = splitFile filename

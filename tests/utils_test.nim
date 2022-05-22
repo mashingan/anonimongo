@@ -59,15 +59,15 @@ proc startmongo*: Process =
 proc withAuth*(m: Mongo): bool =
   (user != "" and pass != "") or m.hasUserAuth
 
-proc testsetup*: Mongo =
+proc testsetup*: Mongo[AsyncSocket] =
   when defined(ssl):
     let sslinfo {.used.} = initSSLInfo(key, cert)
   else:
     let sslinfo {.used.} = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
   when not defined(uri):
-    let mongo = newMongo(host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
+    let mongo = newMongo[AsyncSocket](host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
   else:
-    let mongo = newMongo(MongoUri mongourl, poolconn = poolconn)
+    let mongo = newMongo[AsyncSocket](MongoUri mongourl, poolconn = poolconn)
 
   mongo.retryableWrites = true
   when defined(uri):

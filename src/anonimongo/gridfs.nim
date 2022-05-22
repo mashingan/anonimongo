@@ -414,7 +414,7 @@ proc readAll*(gs: GridStream[AsyncSocket]): Future[string] {.multisock.} =
   result = await gs.read(length)
 
 proc getStream*(g: GridFS[AsyncSocket], matcher: BsonBase, sort = bson(),
-  buffered = false): Future[GridStream]{.multisock.} =
+  buffered = false): Future[GridStream[AsyncSocket]]{.multisock.} =
   new result
   result.grid = g
   result.buffered = buffered

@@ -15,8 +15,8 @@ suite "Client connection and user management tests":
     else:
       check true
 
-  var mongo: Mongo
-  var db: Database
+  var mongo: Mongo[AsyncSocket]
+  var db: Database[AsyncSocket]
   var wr: WriteResult
 
   let existingDb = "temptest"

@@ -173,10 +173,6 @@ proc shutdown*(db: Database[AsyncSocket], force = false, timeout = 10,
   comment = bsonNull()): Future[WriteResult] {.multisock.} =
   var q = bson({ shutdown: 1, force: force, timeoutSecs: timeout })
   q.addOptional("comment", comment)
-  # when db is Mongo:
-  #   let mdb = db["admin"]
-  # else:
-  #   let mdb = db
   let mdb = db
   try:
     result = await mdb.proceed(q, "admin", cmd = ckWrite)
@@ -186,6 +182,11 @@ proc shutdown*(db: Database[AsyncSocket], force = false, timeout = 10,
       reason: getCurrentExceptionMsg(),
       kind: wkSingle
     )
+
+proc shutdown*(m: Mongo[AsyncSocket], force = false, timeout = 10,
+  comment = bsonNull()): Future[WriteResult] {.multisock.} =
+  let db = m["admin"]
+  result = await db.shutdown(force, timeout, comment)
 
 proc currentOp*(db: Database[AsyncSocket], opt = bson()): Future[BsonDocument]{.multisock.} =
   var q = bson({ currentOp: 1})

@@ -19,8 +19,8 @@ suite "Administration APIs tests":
   let targetColl = "testtemptest"
   let newtgcoll = "newtemptest"
   let newdb = "newtemptest"
-  var mongo: Mongo
-  var db: Database
+  var mongo: Mongo[AsyncSocket]
+  var db: Database[AsyncSocket]
   var dbs: seq[string]
   var colls: seq[string]
   var wr: WriteResult

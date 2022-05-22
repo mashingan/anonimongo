@@ -1,4 +1,4 @@
-import unittest, os, osproc, times, strformat, sequtils
+import unittest, os, osproc, times, strformat, sequtils, net
 import sugar
 
 import utils_test
@@ -11,6 +11,14 @@ if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
+proc toCursor[S: AsyncSocket|Socket](b: BsonDocument): Cursor[S] =
+  Cursor[S](
+    id: b["id"],
+    firstBatch: if "firstBatch" in b: b["firstBatch"].ofArray.map(ofEmbedded) else: @[],
+    nextBatch: if "nextBatch" in b: b["nextBatch"].ofArray.map(ofEmbedded) else: @[],
+    ns: b["ns"]
+  )
+
 suite "CRUD tests":
   test "Mongo server is running":
     if runlocal:
@@ -19,8 +27,8 @@ suite "CRUD tests":
       check true
 
   var
-    mongo: Mongo
-    db: Database
+    mongo: Mongo[AsyncSocket]
+    db: Database[AsyncSocket]
     insertDocs = newseq[BsonDocument](10)
     testdb = "newtemptest"
     collname = "temptestcoll"
@@ -158,11 +166,12 @@ suite "CRUD tests":
     require db != nil
     resfind = waitFor db.find(collname, batchSize = 1)
     resfind.reasonedCheck "find error"
-    var cursor = (resfind["cursor"].ofEmbedded).to Cursor
+    # var cursor = (resfind["cursor"].ofEmbedded).to Cursor
+    var cursor = resfind["cursor"].ofEmbedded.toCursor[:AsyncSocket]
     var count = cursor.firstBatch.len
     while true:
       resfind = waitfor db.getMore(cursor.id, collname, 1)
-      cursor = (resfind["cursor"].ofEmbedded).to Cursor
+      cursor = resfind["cursor"].ofEmbedded.toCursor[:AsyncSocket]
       if cursor.nextBatch.len == 0:
         break
       if not (count == 8 or count == 9):

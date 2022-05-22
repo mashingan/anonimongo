@@ -59,7 +59,7 @@ proc all*(q: Query[AsyncSocket]): Future[seq[BsonDocument]] {.multisock.} =
   var cursor: Cursor[AsyncSocket]
   cursor.id = cdoc["id"]
   cursor.firstBatch = cdoc["firstBatch"].ofArray.map ofEmbedded
-  cursor.nextBatch = cdoc["nextBatch"].ofArray.map ofEmbedded
+  cursor.nextBatch = if "nextBatch" in cdoc: cdoc["nextBatch"].ofArray.map(ofEmbedded) else: @[]
   cursor.ns = cdoc["ns"]
   result = cursor.firstBatch
   if result.len >= q.limit:
@@ -71,7 +71,7 @@ proc all*(q: Query[AsyncSocket]): Future[seq[BsonDocument]] {.multisock.} =
     cdoc = doc["cursor"].ofEmbedded
     cursor.id = cdoc["id"]
     cursor.firstBatch = cdoc["firstBatch"].ofArray.map ofEmbedded
-    cursor.nextBatch = cdoc["nextBatch"].ofArray.map ofEmbedded
+    cursor.nextBatch = if "nextBatch" in cdoc: cdoc["nextBatch"].ofArray.map(ofEmbedded) else: @[]
     cursor.ns = cdoc["ns"]
     if cursor.nextBatch.len == 0:
       break
@@ -97,7 +97,7 @@ iterator items*[S: MultiSock](cur: Cursor[S]): BsonDocument {.multisock.} =
     newcur = Cursor[S](
       id: cd["id"],
       firstBatch: cd["firstBatch"].ofArray.map ofEmbedded,
-      nextBatch: cd["nextBatch"].ofArray.map ofEmbedded,
+      nextBatch: if "nextBatch" in cd: cd["nextBatch"].ofArray.map(ofEmbedded) else: @[],
       ns: cd["ns"],
     )
     if newcur.nextBatch.len <= 0:
@@ -111,11 +111,6 @@ iterator pairs*(cur: Cursor): (int, BsonDocument) =
     yield (count, doc)
     inc count
 
-    # id*: int64
-    # firstBatch*: seq[BsonDocument]
-    # nextBatch*: seq[BsonDocument]
-    # db*: Database[AsyncSocket]
-    # ns*: string
 proc iter*(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]] {.multisock.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
@@ -124,7 +119,7 @@ proc iter*(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]] {.multisock.} =
   result = Cursor[AsyncSocket](
     id: curdoc["id"],
     firstBatch: curdoc["firstBatch"].ofArray.map ofEmbedded,
-    nextBatch: curdoc["nextBatch"].ofArray.map ofEmbedded,
+    nextBatch: if "nextBatch" in curdoc: curdoc["nextBatch"].ofArray.map(ofEmbedded) else: @[],
     ns: curdoc["ns"],
   )
   result.db = q.collection.db

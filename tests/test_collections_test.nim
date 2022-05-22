@@ -17,9 +17,9 @@ suite "Collections APIs tests":
     else:
       check true
 
-  var mongo: Mongo
+  var mongo: Mongo[AsyncSocket]
   let targetColl = "testtemptest"
-  var coll: Collection
+  var coll: Collection[AsyncSocket]
   let newdb = "newtemptest"
   var namespace: string
   var wr: WriteResult
