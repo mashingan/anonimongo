@@ -1,6 +1,6 @@
 import wire, bson, multisock
 import scram/client
-import md5, strformat
+import std/[md5, strformat, net]
 
 const verbose {.booldefine.} = false
 

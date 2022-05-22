@@ -272,19 +272,19 @@ proc checkTlsValidity(m: Mongo[Multisock]) =
     raise newException(MongoError,
       &"""Can't have {tlsHostInval.join(" and ")}""")
 
-proc newMongo*(host = "localhost", port = 27017, master = true,
-  poolconn = poolconn, sslinfo = SslInfo(), ssl = defined(ssl)): Mongo[Multisock] =
+proc newMongo*[S: Multisock](host = "localhost", port = 27017, master = true,
+  poolconn = poolconn, sslinfo = SslInfo(), ssl = defined(ssl)): Mongo[S] =
   ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
-  result = Mongo(
-    servers: newTable[string, MongoConn](1),
+  result = Mongo[S](
+    servers: newTable[string, MongoConn[S]](1),
     query: newTable[string, seq[string]](),
     readPreference: ReadPreference.primary
   )
-  result.servers[&"{host}:{port}"] = MongoConn(
+  result.servers[&"{host}:{port}"] = MongoConn[S](
     isMaster: master,
     host: host,
     port: Port port,
-    pool: initPool(poolconn)
+    pool: initPool[S](poolconn)
   )
   if ssl:
     var sslinfo = sslinfo
@@ -292,9 +292,9 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
       sslinfo.protocol = protSSLv23
     result.setSsl sslInfo
 
-proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
-proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
-  dnsport = 53): Mongo[Multisock] =
+proc newMongo[S: Multisock](uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo[S]
+proc newMongo*[S: Multisock](muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
+  dnsport = 53): Mongo[S] =
   ## Overload the newMongo for accepting raw uri string as MongoUri.
   # This is actually needed because Mongodb specify custom
   # definition by supporting multiple user:pass@host:port
@@ -337,7 +337,7 @@ proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
           query: uriobj.query,
           path: uriobj.path
         )
-      result = newMongo(uris, poolconn, isTls = true)
+      result = newMongo[S](uris, poolconn, isTls = true)
       return
     except TimeoutError:
       let msg = &"Dns timeout when sending query to {uriobj.hostname} " &
@@ -376,16 +376,16 @@ proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
       query: uriobj.query,
       path: uriobj.path
     )
-  result = newMongo(uris, poolconn)
+  result = newMongo[S](uris, poolconn)
 
-proc newMongo*(uri: Uri, poolconn = poolconn): Mongo =
+proc newMongo*[S: MultiSock](uri: Uri, poolconn = poolconn): Mongo[S] =
   ## Give a new `Mongo<#Mongo>`_ instance based on URI.
-  result = newMongo(@[uri], poolconn)
+  result = newMongo[S](@[uri], poolconn)
 
-proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
-  result = Mongo(
+proc newMongo[S: Multisock](uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo[S] =
+  result = Mongo[S](
     tls: isTls,
-    servers: newTable[string, MongoConn](uri.len.nextPowerOfTwo),
+    servers: newTable[string, MongoConn[S]](uri.len.nextPowerOfTwo),
     query: decodeQuery(uri[0].query),
     readPreference: ReadPreference.primary
   )
@@ -401,12 +401,12 @@ proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo =
     when verbose:
       dump port
     var hostport = &"{u.hostname}:{u.port}"
-    result.servers[hostport] = MongoConn(
+    result.servers[hostport] = MongoConn[S](
       host: u.hostname,
       port: Port port,
       username: u.username,
       password: u.password,
-      pool: initPool(poolconn)
+      pool: initPool[S](poolconn)
     )
   #if result.main.host == "": result.main.host = "localhost"
 
