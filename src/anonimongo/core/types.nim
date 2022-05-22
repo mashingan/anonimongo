@@ -188,7 +188,7 @@ when defined(ssl) or defined(nimdoc):
       protocol: prot
     )
 
-proc setSsl(m: Mongo, sslinfo: SslInfo) =
+proc setSsl(m: Mongo[Multisock], sslinfo: SslInfo) =
   when defined(ssl):
     let mode = when verifypeer: CVerifyPeer
                else: CVerifyNone
@@ -212,7 +212,7 @@ template raiseEnableSsl: untyped =
   raise newException(MongoError,
     "Need to enable SSL/TLS ('-d:ssl')")
 
-proc handleSsl(m: Mongo) =
+proc handleSsl(m: Mongo[Multisock]) =
   var tbl = m.query
   proc setCertKey (s: var SslInfo, vals: seq[string]) =
     for kv in vals:
@@ -247,7 +247,7 @@ proc handleSsl(m: Mongo) =
     newsslinfo.setCertKey tbl["tlsCertificatekeyFile".toLower]
     m.setSsl newsslinfo
 
-proc handleWriteConcern(m: Mongo) =
+proc handleWriteConcern(m: Mongo[Multisock]) =
   var w = bson()
   if "w" in m.query and m.query["w"].len > 0:
     # "w" here can be a number or a string.
@@ -262,7 +262,7 @@ proc handleWriteConcern(m: Mongo) =
   if w != nil:
     m.writeConcern = w
 
-proc checkTlsValidity(m: Mongo) =
+proc checkTlsValidity(m: Mongo[Multisock]) =
   let tlsCertInval = ["tlsInsecure", "tlsAllowInvalidCertificates"]
   let tlsHostInval = ["tlsInsecure", "tlsAllowInvalidHostnames"]
   if tlsCertInval.allIt(it.toLower in m.query):
@@ -273,7 +273,7 @@ proc checkTlsValidity(m: Mongo) =
       &"""Can't have {tlsHostInval.join(" and ")}""")
 
 proc newMongo*(host = "localhost", port = 27017, master = true,
-  poolconn = poolconn, sslinfo = SslInfo(), ssl = defined(ssl)): Mongo =
+  poolconn = poolconn, sslinfo = SslInfo(), ssl = defined(ssl)): Mongo[Multisock] =
   ## Give a new `Mongo<#Mongo>`_ instance manually from given parameters.
   result = Mongo(
     servers: newTable[string, MongoConn](1),
@@ -294,7 +294,7 @@ proc newMongo*(host = "localhost", port = 27017, master = true,
 
 proc newMongo(uri: seq[Uri], poolconn = poolconn, isTls = false): Mongo
 proc newMongo*(muri: MongoUri, poolconn = poolconn, dnsserver = "8.8.8.8",
-  dnsport = 53): Mongo =
+  dnsport = 53): Mongo[Multisock] =
   ## Overload the newMongo for accepting raw uri string as MongoUri.
   # This is actually needed because Mongodb specify custom
   # definition by supporting multiple user:pass@host:port
@@ -449,15 +449,6 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
-#[
-template pickAnyServer[T: MultiSock](m: Mongo[T], test: untyped): MongoConn[T] =
-  var res: MongoConn[T]
-  for host{.inject.}, server{.inject.} in m.servers:
-    if `test`:
-      res = server
-      break
-  res
-]#
 proc pickAnyServer[T: MultiSock](m: Mongo[T], test: (string, int) -> bool = nil): MongoConn[T] =
   var res: MongoConn[T]
   for host{.inject.}, server{.inject.} in m.servers:
