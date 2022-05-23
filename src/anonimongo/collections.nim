@@ -96,7 +96,7 @@ iterator items*[S: MultiSock](cur: Cursor[S]): BsonDocument {.multisock.} =
     let cd = doc["cursor"].ofEmbedded
     newcur = Cursor[S](
       id: cd["id"],
-      firstBatch: cd["firstBatch"].ofArray.map ofEmbedded,
+      firstBatch: if "firstBatch" in cd: cd["firstBatch"].ofArray.map(ofEmbedded) else: @[],
       nextBatch: if "nextBatch" in cd: cd["nextBatch"].ofArray.map(ofEmbedded) else: @[],
       ns: cd["ns"],
     )
