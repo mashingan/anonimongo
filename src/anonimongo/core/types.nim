@@ -575,8 +575,11 @@ proc `[]`*[T: Multisock](dbase: Database[T], name: string): Collection[T] =
 
 proc dbname*(cur: Cursor): string = cur.ns.split('.', 1)[0]
   ## Get `Database<#Database>`_, name from Cursor.
-proc collname*(cur: Cursor): string = cur.ns.split('.', 1)[1]
+proc collname*(cur: Cursor): string =
   ## Get `Collection<#Collection>`_ name from Cursor.
+  let nssplit = cur.ns.split('.', 1)
+  if nssplit.len > 1:
+    result = nssplit[1]
 
 proc close*(m: Mongo) =
   for _, serv in m.servers:
@@ -593,3 +596,11 @@ proc initQuery*[T: Multisock](query = bson(), collection: Collection[T] = nil,
     skip: skip,
     limit: limit,
     batchSize: batchSize)
+
+proc toCursor*[S: MultiSock](b: BsonDocument): Cursor[S] =
+  Cursor[S](
+    id: b["id"],
+    firstBatch: if "firstBatch" in b: b["firstBatch"].ofArray.map(ofEmbedded) else: @[],
+    nextBatch: if "nextBatch" in b: b["nextBatch"].ofArray.map(ofEmbedded) else: @[],
+    ns: b["ns"],
+  )

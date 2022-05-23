@@ -63,12 +63,7 @@ proc forEach*(c: Cursor[AsyncSocket], cb: proc(b: ChangeStream),
       when csVerbose: dump forEachReply
       if not forEachReply.ok:
         break always
-      # c = forEachReply["cursor"].to Cursor
-      let cdoc = forEachReply["cursor"]
-      c.id = cdoc["id"]
-      c.firstBatch = cdoc["firstBatch"].ofArray.map ofEmbedded
-      c.nextBatch = cdoc["nextBatch"].ofArray.map ofEmbedded
-      c.ns = cdoc["ns"]
+      c = forEachReply["cursor"].ofEmbedded.toCursor[:AsyncSocket]
 
 proc watch*(coll: Collection[AsyncSocket], pipelines: seq[BsonDocument] = @[],
   options = bson()): Future[Cursor[AsyncSocket]] {.multisock.} =
@@ -79,14 +74,6 @@ proc watch*(coll: Collection[AsyncSocket], pipelines: seq[BsonDocument] = @[],
   let reply = await coll.db.aggregate(coll.name, queries, maxTimeMS = 0)
   if not reply.ok:
     raise newException(MongoError, getCurrentExceptionMsg())
-  let cdoc = reply["cursor"]
-  # result = reply["cursor"].to Cursor
-  # result.db = coll.db
-  result = Cursor[AsyncSocket](
-    id: cdoc["id"],
-    firstBatch: cdoc["firstBatch"].ofArray.map ofEmbedded,
-    nextBatch: cdoc["nextBatch"].ofArray.map ofEmbedded,
-    ns: cdoc["ns"],
-    db: coll.db,
-  )
+  result = reply["cursor"].ofEmbedded.toCursor[:AsyncSocket]
+  result.db = coll.db
   when csVerbose: dump result

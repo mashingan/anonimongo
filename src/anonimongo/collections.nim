@@ -54,25 +54,14 @@ proc one*(q: Query[AsyncSocket]): Future[BsonDocument] {.multisock.} =
 proc all*(q: Query[AsyncSocket]): Future[seq[BsonDocument]] {.multisock.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
-  # var cdoc = doc["cursor"].ofEmbedded.to Cursor
-  var cdoc = doc["cursor"].ofEmbedded
-  var cursor: Cursor[AsyncSocket]
-  cursor.id = cdoc["id"]
-  cursor.firstBatch = cdoc["firstBatch"].ofArray.map ofEmbedded
-  cursor.nextBatch = if "nextBatch" in cdoc: cdoc["nextBatch"].ofArray.map(ofEmbedded) else: @[]
-  cursor.ns = cdoc["ns"]
+  var cursor = doc["cursor"].ofEmbedded.toCursor[:AsyncSocket]
   result = cursor.firstBatch
   if result.len >= q.limit:
     return
   while cursor.id > 0:
     doc = await q.collection.db.getMore(cursor.id, q.collection.name,
       batchSize = q.batchSize)
-    # cursor = doc["cursor"].ofEmbedded.to Cursor
-    cdoc = doc["cursor"].ofEmbedded
-    cursor.id = cdoc["id"]
-    cursor.firstBatch = cdoc["firstBatch"].ofArray.map ofEmbedded
-    cursor.nextBatch = if "nextBatch" in cdoc: cdoc["nextBatch"].ofArray.map(ofEmbedded) else: @[]
-    cursor.ns = cdoc["ns"]
+    cursor = doc["cursor"].ofEmbedded.toCursor[:AsyncSocket]
     if cursor.nextBatch.len == 0:
       break
     result = concat(result, cursor.nextBatch)
@@ -92,14 +81,7 @@ iterator items*[S: MultiSock](cur: Cursor[S]): BsonDocument {.multisock.} =
       doc = waitfor db.getMore(newcur.id, collname, batchSize)
     else:
       doc = db.getMore(newcur.id, collname, batchSize)
-    # newcur = doc["cursor"].ofEmbedded.to Cursor
-    let cd = doc["cursor"].ofEmbedded
-    newcur = Cursor[S](
-      id: cd["id"],
-      firstBatch: if "firstBatch" in cd: cd["firstBatch"].ofArray.map(ofEmbedded) else: @[],
-      nextBatch: if "nextBatch" in cd: cd["nextBatch"].ofArray.map(ofEmbedded) else: @[],
-      ns: cd["ns"],
-    )
+    newcur = doc["cursor"].ofEmbedded.toCursor[:S]
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
@@ -114,14 +96,7 @@ iterator pairs*(cur: Cursor): (int, BsonDocument) =
 proc iter*(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]] {.multisock.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
-  #result = doc["cursor"].ofEmbedded.to Cursor
-  let curdoc = doc["cursor"].ofEmbedded
-  result = Cursor[AsyncSocket](
-    id: curdoc["id"],
-    firstBatch: curdoc["firstBatch"].ofArray.map ofEmbedded,
-    nextBatch: if "nextBatch" in curdoc: curdoc["nextBatch"].ofArray.map(ofEmbedded) else: @[],
-    ns: curdoc["ns"],
-  )
+  result = doc["cursor"].ofEmbedded.toCursor[:AsyncSocket]
   result.db = q.collection.db
 
 proc find*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull()): Future[Query[AsyncSocket]] {.multisock.} =
