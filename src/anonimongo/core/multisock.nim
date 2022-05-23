@@ -4,6 +4,7 @@
 import macros, sugar
 from asyncnet import AsyncSocket
 from net import Socket
+from std/strutils import toLowerAscii
 
 export Socket
 
@@ -17,7 +18,7 @@ template inspect(n: untyped) =
   echo "========="
 
 template nodeIs(n: NimNode, str: string): bool =
-  n.kind == nnkIdent and $n == str
+  n.kind == nnkIdent and ($n).toLowerAscii == str.toLowerAscii
 template nodeIsAsyncSocket(n: NimNode): bool =
   n.nodeIs "AsyncSocket"
 template nodeIsEmpty(n: NimNode): bool = n.kind == nnkEmpty
@@ -74,6 +75,23 @@ proc removeAwaitAsyncCheck(n: var NimNode) =
     for i in 0..<n.len:
       removeAndAssign n[i]
 
+template replaceWaitforNode(n: untyped) =
+  var nn = `n`
+  nn.replaceWaitfor
+  `n` = nn
+
+proc replaceWaitfor(n: var NimNode) =
+  case n.kind
+  of nnkEmpty: return
+  of nnkCall, nnkCommand:
+    if n[0].nodeIs "waitfor":
+      n[0] = ident "await"
+      for i in 1 ..< n.len:
+        replaceWaitforNode n[i]
+  else:
+    for i in 0 ..< n.len:
+      replaceWaitforNode n[i]
+
 
 type MultiSock* = AsyncSocket | Socket
 
@@ -101,6 +119,7 @@ proc multiproc(prc: NimNode): NimNode =
     prc[^3].add(ident "async")
   else:
     prc[^3] = quote do: {.async.}
+  replaceWaitforNode prc[^1]
   # inspect prcsync
   # inspect prc
   result = quote do:
