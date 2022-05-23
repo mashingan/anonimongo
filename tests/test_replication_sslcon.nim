@@ -47,23 +47,29 @@ when testReplication and defined(ssl):
       require processes.allIt( it != nil )
       require processes.all running
 
-    var mongo: Mongo[AsyncSocket]
-    var db: Database[AsyncSocket]
+    var mongo: Mongo[TheSock]
+    var db: Database[TheSock]
     test "Catch error without SSL for SSL/TLS required connection":
       expect(IOError):
-        var m = newMongo[AsyncSocket](
+        var m = newMongo[TheSock](
           MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
           poolconn = utils_test.poolconn)
-        check waitfor m.connect()
+        when anoSocketSync:
+          check m.connect()
+        else:
+          check waitfor m.connect()
         m.close()
 
     test "Connect single uri":
-      mongo = newMongo[AsyncSocket](MongoUri uriSettingRepl,
+      mongo = newMongo[TheSock](MongoUri uriSettingRepl,
         poolconn = utils_test.poolconn,
         dnsserver = mongoServer,
         dnsport = dnsport)
       require mongo != nil
-      require waitfor mongo.connect()
+      when anoSocketSync:
+        require mongo.connect()
+      else:
+        require waitfor mongo.connect()
       db = mongo["admin"]
       require db != nil
 
@@ -78,13 +84,19 @@ when testReplication and defined(ssl):
       })
       var reply: BsonDocument
       try:
-        reply = waitfor db.replSetInitiate(config)
+        when anoSocketSync:
+          reply = db.replSetInitiate(config)
+        else:
+          reply = waitfor db.replSetInitiate(config)
       except MongoError:
         checkpoint(getCurrentExceptionMsg())
         fail()
       reply.reasonedCheck("replSetInitiate")
       try:
-        reply = waitfor db.replSetGetStatus
+        when anoSocketSync:
+          reply = db.replSetGetStatus
+        else:
+          reply = waitfor db.replSetGetStatus
       except MongoError:
         checkpoint(getCurrentExceptionMsg())
         fail()
@@ -96,14 +108,20 @@ when testReplication and defined(ssl):
     sleep 15_000 # waiting the replica set to elect primary
 
     test "Connect with manual multi uri connections":
-      mongo = newMongo[AsyncSocket](
+      mongo = newMongo[TheSock](
         MongoUri uriMultiManual,
         poolconn = utils_test.poolconn
       )
       require mongo != nil
-      check waitfor mongo.connect
+      when anoSocketSync:
+        check mongo.connect
+      else:
+        check waitfor mongo.connect
       db = mongo["admin"]
-      let cfg = waitfor db.replSetGetStatus
+      when anoSocketSync:
+        let cfg = db.replSetGetStatus
+      else:
+        let cfg = waitfor db.replSetGetStatus
       let members = cfg["members"].ofArray
       check members.len == 3
       check members.anyIt( it["stateStr"] == "PRIMARY" )
@@ -112,7 +130,7 @@ when testReplication and defined(ssl):
     spawn fakeDnsServer()
     test "Check newMongo mongodb+srv scheme connection":
       try:
-        mongo = newMongo[AsyncSocket](
+        mongo = newMongo[TheSock](
           MongoUri uriSrv,
           poolconn = utils_test.poolconn,
           dnsserver = mongoServer,
@@ -122,7 +140,10 @@ when testReplication and defined(ssl):
         checkpoint(getCurrentExceptionMsg())
         fail()
       require mongo != nil
-      require waitfor mongo.connect
+      when anoSocketSync:
+        require mongo.connect
+      else:
+        require waitfor mongo.connect
       db = mongo["temptest"]
       require db != nil
     sync()
@@ -157,13 +178,19 @@ when testReplication and defined(ssl):
         truthness: truthy,
         embedded: embedobj,
       })
-      let wr = waitfor tempcoll.insert(@[b])
+      when anoSocketSync:
+        let wr = tempcoll.insert(@[b])
+      else:
+        let wr = waitfor tempcoll.insert(@[b])
       wr.success.reasonedCheck("Retry tempcoll.insert", wr.reason)
 
     # apparently in some mongodb version, there's this problem
     # https://dba.stackexchange.com/questions/179616/mongodb-hangs-up-on-shutdown
     # if the problem persists, this replication action test would be disabled.
-    discard waitfor mongo.shutdown(timeout = 10, force = true)
+    when anoSocketSync:
+      discard mongo.shutdown(timeout = 10, force = true)
+    else:
+      discard waitfor mongo.shutdown(timeout = 10, force = true)
     mongo.close
     processes.cleanup
     sleep 3000

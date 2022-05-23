@@ -89,10 +89,13 @@ proc connect*(p: Pool[AsyncSocket], address: string, port: int): Future[void] {.
 proc close*[T: MultiSock](p: Pool[T]) =
   ## Close all connections in a pool.
   for _, c in p.connections:
-      if not c.socket.isClosed:
-        close c.socket
-        when verbose:
-          echo "connection: ", c.id, " is closed"
+      when T is AsyncSocket:
+        if not c.socket.isClosed:
+          close c.socket
+          when verbose:
+            echo "connection: ", c.id, " is closed"
+      else:
+          close c.socket
 
 proc endConn*(p: Pool, i: Positive) =
   ## End a connection and return back the id to available queues.
