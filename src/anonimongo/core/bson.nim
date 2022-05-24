@@ -261,7 +261,7 @@ iterator mpairs*(b: BsonDocument): (unown string, var BsonBase) =
   for k, v in b.table.mpairs:
     yield (k, v)
 
-proc `$`*(v: BsonBase): string
+proc `$`*(v: BsonBase): string {.gcsafe.}
 
 proc ms*(a: Time): int64 =
   ## Unix epoch in milliseconds.
@@ -590,13 +590,13 @@ iterator keys*(b: BsonDocument): string =
 proc quote(key: string): string =
   result = '"' & key & '"'
 
-proc `$`*(doc: BsonDocument): string
+proc `$`*(doc: BsonDocument): string {.gcsafe.}
 
 proc `$`(doc: BsonBinary): string =
   ## Stringified BsonBinary.
   result = fmt"binary({quote($doc.subtype)}, {quote(doc.value.stringbytes)})"
 
-proc `$`*(v: BsonBase): string =
+proc `$`*(v: BsonBase): string {.gcsafe.} =
   ## Stringified BsonBase.
   runnableExamples:
     import times
@@ -638,7 +638,7 @@ proc `$`*(v: BsonBase): string =
   else:
     result = ""
 
-proc `$`*(doc: BsonDocument): string =
+proc `$`*(doc: BsonDocument): string {.gcsafe.} =
   ## Stringified BsonDocument.
   runnableExamples:
     let bsonempty = bson({})
