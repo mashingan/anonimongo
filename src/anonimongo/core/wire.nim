@@ -1,8 +1,9 @@
 import streams, strformat
-import asyncdispatch, asyncnet
+import asyncdispatch, asyncnet, net
 from sugar import dump
 import bson
 import streamable
+import multisock
 
 import supersnappy, zippy
 
@@ -210,7 +211,7 @@ proc look*(reply: ReplyFormat) =
     for d in reply.documents:
       dump d
     
-proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.async.} =
+proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
   ## Get data from socket and apply the replyParse into the result.
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead

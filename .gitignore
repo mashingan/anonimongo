@@ -21,3 +21,5 @@ nimcache/
 
 config.nims
 *.settings
+
+*.pem

@@ -1,7 +1,7 @@
 import strformat
-import ../core/[types, bson, wire, utils]
+import ../core/[types, bson, wire, utils, multisock]
 
-proc isMaster*(db: Database, cmd = bson()): Future[BsonDocument]{.async.} =
+proc isMaster*(db: Database[AsyncSocket], cmd = bson()): Future[BsonDocument]{.multisock.} =
   var q = bson({
     isMaster: 1,
   })
@@ -12,14 +12,14 @@ proc isMaster*(db: Database, cmd = bson()): Future[BsonDocument]{.async.} =
     q["any"] = cmd["any"]
   result = await db.crudops(q)
 
-proc replSetAbortPrimaryCatchUp*(db: Database): Future[BsonDocument]{.async.} =
+proc replSetAbortPrimaryCatchUp*(db: Database[AsyncSocket]): Future[BsonDocument]{.multisock.} =
   result = await db.crudops(bson({replSetAbortPrimaryCatchUp: 1}), cmd = ckWrite)
 
-proc replSetFreeze*(db: Database, seconds: int): Future[BsonDocument]{.async.} =
+proc replSetFreeze*(db: Database[AsyncSocket], seconds: int): Future[BsonDocument]{.multisock.} =
   result = await db.crudops(bson({replSetFreeze: seconds}), cmd = ckWrite)
 
-proc replSetGetConfig*(db: Database, commitmentStatus: bool, comment = bsonNull()):
-  Future[BsonDocument]{.async.} =
+proc replSetGetConfig*(db: Database[AsyncSocket], commitmentStatus: bool, comment = bsonNull()):
+  Future[BsonDocument]{.multisock.} =
   var q = bson({
     replSetGetConfig: 1,
     commitmentStatus: commitmentStatus,
@@ -28,24 +28,24 @@ proc replSetGetConfig*(db: Database, commitmentStatus: bool, comment = bsonNull(
     q["comment"] = comment
   result = await db.crudops(q)
 
-proc replSetGetStatus*(db: Database): Future[BsonDocument]{.async.} =
+proc replSetGetStatus*(db: Database[AsyncSocket]): Future[BsonDocument]{.multisock.} =
   var q = bson({
     replSetGetStatus: 1,
   })
   result = await db.crudops(q, "admin")
 
-proc replSetInitiate*(db: Database, config: BsonDocument):
-  Future[BsonDocument]{.async.} =
+proc replSetInitiate*(db: Database[AsyncSocket], config: BsonDocument):
+  Future[BsonDocument]{.multisock.} =
   result = await db.crudops(bson({
     replSetInitiate: config
   }))
 
-proc replSetMaintenance*(db: Database, enable: bool):
-  Future[BsonDocument]{.async.} =
+proc replSetMaintenance*(db: Database[AsyncSocket], enable: bool):
+  Future[BsonDocument]{.multisock.} =
   result = await db.crudops(bson({ replSetMaintenance: enable}), "admin", cmd = ckWrite)
 
-proc replSetReconfig*(db: Database, newconfig: BsonDocument, force: bool,
-  maxTimeMS: int = -1): Future[BsonDocument]{.async.} =
+proc replSetReconfig*(db: Database[AsyncSocket], newconfig: BsonDocument, force: bool,
+  maxTimeMS: int = -1): Future[BsonDocument]{.multisock.} =
   var q = bson({
     replSetReconfig: newconfig,
     force: force,
@@ -54,8 +54,8 @@ proc replSetReconfig*(db: Database, newconfig: BsonDocument, force: bool,
     q["maxTimeMS"] = maxTimeMS
   result = await db.crudops(q, "admin", cmd = ckWrite)
 
-proc replSetResizeOplog*(db: Database; size: float; minRetentionHours = 0.0):
-  Future[BsonDocument]{.async.} =
+proc replSetResizeOplog*(db: Database[AsyncSocket]; size: float; minRetentionHours = 0.0):
+  Future[BsonDocument]{.multisock.} =
   var q = bson({
     replSetResizeOplog: 1,
     size: size,
@@ -63,8 +63,8 @@ proc replSetResizeOplog*(db: Database; size: float; minRetentionHours = 0.0):
   })
   result = await db.crudops(q, "admin", cmd = ckWrite)
 
-proc replSetStepDown*(db: Database, stepDown: int, catchup = 10, force  = false):
-  Future[BsonDocument]{.async.} =
+proc replSetStepDown*(db: Database[AsyncSocket], stepDown: int, catchup = 10, force  = false):
+  Future[BsonDocument]{.multisock.} =
   var q = bson({
     replSetStepDown: stepDown
   })
@@ -77,5 +77,5 @@ proc replSetStepDown*(db: Database, stepDown: int, catchup = 10, force  = false)
   q["force"] = force
   result = await db.crudops(q, "admin", cmd = ckWrite)
 
-proc replSetSyncFrom*(db: Database, hostport: string): Future[BsonDocument]{.async.} =
+proc replSetSyncFrom*(db: Database[AsyncSocket], hostport: string): Future[BsonDocument]{.multisock.} =
   result = await db.crudops(bson({replSetSyncFrom: hostport}), cmd = ckWrite)

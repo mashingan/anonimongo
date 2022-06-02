@@ -2,7 +2,7 @@ import sequtils, strformat
 import sugar
 
 import dbops/[admmgmt, aggregation, crud]
-import core/[bson, types, utils, wire]
+import core/[bson, types, utils, wire, multisock]
 
 {.warning[UnusedImport]: off.}
 
@@ -42,7 +42,7 @@ import core/[bson, types, utils, wire]
 ## .. _items: #items.i,Cursor
 ## .. _getMore: dbops/crud.html#getMore,Database,int64,string,int
 
-proc one*(q: Query): Future[BsonDocument] {.async.} =
+proc one*(q: Query[AsyncSocket]): Future[BsonDocument] {.multisock.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = 1, singleBatch = true)
   let batch = doc["cursor"]["firstBatch"].ofArray
@@ -51,22 +51,22 @@ proc one*(q: Query): Future[BsonDocument] {.async.} =
   else:
     result = bson()
 
-proc all*(q: Query): Future[seq[BsonDocument]] {.async.} =
+proc all*(q: Query[AsyncSocket]): Future[seq[BsonDocument]] {.multisock.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
-  var cursor = doc["cursor"].ofEmbedded.to Cursor
+  var cursor = doc["cursor"].ofEmbedded.toCursor[:AsyncSocket]
   result = cursor.firstBatch
   if result.len >= q.limit:
     return
   while cursor.id > 0:
     doc = await q.collection.db.getMore(cursor.id, q.collection.name,
       batchSize = q.batchSize)
-    cursor = doc["cursor"].ofEmbedded.to Cursor
+    cursor = doc["cursor"].ofEmbedded.toCursor[:AsyncSocket]
     if cursor.nextBatch.len == 0:
       break
     result = concat(result, cursor.nextBatch)
 
-iterator items*(cur: Cursor): BsonDocument =
+iterator items*[S: MultiSock](cur: Cursor[S]): BsonDocument {.multisock.} =
   for b in cur.firstBatch:
     yield b
   let batchSize = if cur.firstBatch.len != 0: cur.firstBatch.len
@@ -76,9 +76,12 @@ iterator items*(cur: Cursor): BsonDocument =
   let collname = newcur.collname
   var db = cur.db
   while newcur.id != 0:
-    #doc = await cur.db.getMore(cur.id, collname, batchSize)
-    doc = waitfor db.getMore(newcur.id, collname, batchSize)
-    newcur = doc["cursor"].ofEmbedded.to Cursor
+    # doc = await cur.db.getMore(cur.id, collname, batchSize)
+    when S is AsyncSocket:
+      doc = waitfor db.getMore(newcur.id, collname, batchSize)
+    else:
+      doc = db.getMore(newcur.id, collname, batchSize)
+    newcur = doc["cursor"].ofEmbedded.toCursor[:S]
     if newcur.nextBatch.len <= 0:
       break
     for b in newcur.nextBatch:
@@ -90,39 +93,39 @@ iterator pairs*(cur: Cursor): (int, BsonDocument) =
     yield (count, doc)
     inc count
 
-proc iter*(q: Query): Future[Cursor] {.async.} =
+proc iter*(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]] {.multisock.} =
   var doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = q.limit)
-  result = doc["cursor"].ofEmbedded.to Cursor
+  result = doc["cursor"].ofEmbedded.toCursor[:AsyncSocket]
   result.db = q.collection.db
 
-proc find*(c: Collection, query = bson(), projection = bsonNull()): Query =
-  result = initQuery(query, c)
+proc find*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull()): Future[Query[AsyncSocket]] {.multisock.} =
+  result = initQuery[AsyncSocket](query, c)
   result.projection = projection
 
-proc findOne*(c: Collection, query = bson(), projection = bsonNull(),
-  sort = bsonNull()): Future[BsonDocument] {.async.} =
-  var q = c.find(query, projection)
+proc findOne*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(),
+  sort = bsonNull()): Future[BsonDocument] {.multisock.} =
+  var q = await c.find(query, projection)
   q.sort = sort
   result = await q.one
 
-proc findAll*(c: Collection, query = bson(), projection = bsonNull(),
-  sort = bsonNull(), limit = 0): Future[seq[BsonDocument]] {.async.} =
-  var q = c.find(query, projection)
+proc findAll*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(),
+  sort = bsonNull(), limit = 0): Future[seq[BsonDocument]] {.multisock.} =
+  var q = await c.find(query, projection)
   q.sort = sort
   q.limit = int32 limit
   result = await q.all
 
-proc findIter*(c: Collection, query = bson(), projection = bsonNull(),
-  sort = bsonNull()): Future[Cursor] {.async.} =
-  var q = c.find(query, projection)
+proc findIter*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(),
+  sort = bsonNull()): Future[Cursor[AsyncSocket]] {.multisock.} =
+  var q = await c.find(query, projection)
   q.sort = sort
   result = await q.iter
 
-proc findAndModify*(c: Collection, query = bson(), sort = bsonNull(),
+proc findAndModify*(c: Collection[AsyncSocket], query = bson(), sort = bsonNull(),
   remove = false, update = bsonNull(), `new` = false, fields = bsonNull(),
   upsert = false, bypass = false, wt = bsonNull(), collation = bsonNull(),
-  arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]{.async.} =
+  arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]{.multisock.} =
   let doc = await c.db.findAndModify(c.name, query, sort, remove, update, `new`,
     fields, upsert, bypass, wt, collation, arrayFilters)
   result = doc["value"].ofEmbedded
@@ -140,8 +143,8 @@ template operationFor(doIt: bool, label: string, op: untyped): untyped =
   else:
     `op`
 
-proc update*(c: Collection, query = bson(), updates = bsonNull(),
-  opt = bson()): Future[WriteResult] {.async.} =
+proc update*(c: Collection[AsyncSocket], query = bson(), updates = bsonNull(),
+  opt = bson()): Future[WriteResult] {.multisock.} =
   var q = bson({
     q: query,
     u: updates,
@@ -164,8 +167,8 @@ proc update*(c: Collection, query = bson(), updates = bsonNull(),
     let doc = await c.db.update(c.name, @[q], ordered = ordered)
     result = doc.getWResult
       
-proc remove*(c: Collection, query: BsonDocument, justone = false):
-    Future[WriteResult] {.async.} =
+proc remove*(c: Collection[AsyncSocket], query: BsonDocument, justone = false):
+    Future[WriteResult] {.multisock.} =
   let limit = if justone: 1 else: 0
   var delq = bson({
     q: query,
@@ -176,8 +179,8 @@ proc remove*(c: Collection, query: BsonDocument, justone = false):
     let doc = await c.db.delete(c.name, @[delq])
     result = doc.getWResult
 
-proc remove*(c: Collection, query, opt: BsonDocument):
-  Future[WriteResult] {.async.} =
+proc remove*(c: Collection[AsyncSocket], query, opt: BsonDocument):
+  Future[WriteResult] {.multisock.} =
   var delq = bson({ query: query })
   var wt: BsonBase
   var retryable = true
@@ -196,8 +199,8 @@ proc remove*(c: Collection, query, opt: BsonDocument):
     let doc = await c.db.delete(c.name, @[delq], wt = wt)
     result = doc.getWResult
 
-proc remove*(c: Collection, query: seq[BsonDocument]):
-  Future[WriteResult]{.async.} =
+proc remove*(c: Collection[AsyncSocket], query: seq[BsonDocument]):
+  Future[WriteResult]{.multisock.} =
   var q = newseq[BsonDocument](query.len)
   for i, que in query:
     var ii = i
@@ -208,8 +211,8 @@ proc remove*(c: Collection, query: seq[BsonDocument]):
 
   result = (await c.db.delete(c.name, q)).getWResult
 
-proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
-  Future[WriteResult] {.async.} =
+proc insert*(c: Collection[AsyncSocket], docs: seq[BsonDocument], opt = bson()):
+  Future[WriteResult] {.multisock.} =
   var retryable = false
   let wt =
     if "writeConcern" in opt:
@@ -225,11 +228,11 @@ proc insert*(c: Collection, docs: seq[BsonDocument], opt = bson()):
     let doc = await c.db.insert(c.name, docs, ordered, wt)
     result = doc.getWResult
 
-proc drop*(c: Collection, wt = bsonNull()): Future[WriteResult] {.async.} =
+proc drop*(c: Collection[AsyncSocket], wt = bsonNull()): Future[WriteResult] {.multisock.} =
   result = await c.db.dropCollection(c.name, wt)
 
-proc count*(c: Collection, query = bson(), opt = bson()):
-  Future[int] {.async.} =
+proc count*(c: Collection[AsyncSocket], query = bson(), opt = bson()):
+  Future[int] {.multisock.} =
   var
     hint, readConcern, collation: BsonBase
     limit = 0
@@ -245,8 +248,8 @@ proc count*(c: Collection, query = bson(), opt = bson()):
     readConcern, collation)
   result = doc["n"]
 
-proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
-  Future[WriteResult] {.async.} =
+proc createIndex*(c: Collection[AsyncSocket], key: BsonDocument, opt = bson()):
+  Future[WriteResult] {.multisock.} =
   let wt = if "writeConcern" in opt: opt["writeConcern"]
            else: bsonNull()
   var q = bson({ key: key })
@@ -261,27 +264,28 @@ proc createIndex*(c: Collection, key: BsonDocument, opt = bson()):
   let qarr = bsonArray q.toBson
   result = await c.db.createIndexes(c.name, qarr, wt)
 
-proc listIndexes*(c: Collection): Future[seq[BsonDocument]]{.async.} =
-  result = (await c.db.listIndexes(c.name)).map ofEmbedded
+proc listIndexes*(c: Collection[AsyncSocket]): Future[seq[BsonDocument]]{.multisock.} =
+  let indexes = await c.db.listIndexes(c.name)
+  result = indexes.map ofEmbedded
 
-proc `distinct`*(c: Collection, field: string, query = bson(),
-  opt = bson()): Future[seq[BsonBase]] {.async.} =
+proc `distinct`*(c: Collection[AsyncSocket], field: string, query = bson(),
+  opt = bson()): Future[seq[BsonBase]] {.multisock.} =
   var readConcern, collation: BsonBase
   if "readConcern" in opt: readConcern = opt["readConcern"]
   if "collation" in opt: collation = opt["collation"]
   let doc = await c.db.`distinct`(c.name, field, query, readConcern, collation)
   result = doc["values"].ofArray
 
-proc dropIndex*(c: Collection, indexes: BsonBase):
-  Future[WriteResult] {.async.} =
+proc dropIndex*(c: Collection[AsyncSocket], indexes: BsonBase):
+  Future[WriteResult] {.multisock.} =
   result = await c.db.dropIndexes(c.name, indexes)
 
-proc dropIndexes*(c: Collection, indexes: seq[string]):
-  Future[WriteResult] {.async.} =
+proc dropIndexes*(c: Collection[AsyncSocket], indexes: seq[string]):
+  Future[WriteResult] {.multisock.} =
   result = await c.db.dropIndexes(c.name, indexes.map toBson)
 
-proc aggregate*(c: Collection, pipeline: seq[BsonDocument], opt = bson()):
-  Future[seq[BsonDocument]]{.async.} =
+proc aggregate*(c: Collection[AsyncSocket], pipeline: seq[BsonDocument], opt = bson()):
+  Future[seq[BsonDocument]]{.multisock.} =
   type tempopt = object
     explain {.bsonExport.}: bool
     diskuse {.bsonExport, bsonKey: "allowDiskUse".}: bool
@@ -314,8 +318,8 @@ proc preparebulkUpdate(op: BsonDocument, wt: BsonBase, ordered: bool,
     result[2]["ordered"] = false
   result[2].addWriteConcern(db, wt)
 
-proc bulkWrite*(c: Collection, operations: seq[BsonDocument],
-  wt = bsonNull(), ordered = true): Future[BulkResult] {.async.} =
+proc bulkWrite*(c: Collection[AsyncSocket], operations: seq[BsonDocument],
+  wt = bsonNull(), ordered = true): Future[BulkResult] {.multisock.} =
   var wr: WriteResult
   let opt = bson({ writeConcern: wt, ordered: ordered })
   var futbulk = newseq[Future[WriteResult]](operations.len)

@@ -1,5 +1,5 @@
 import sequtils
-import ../core/[bson, types, wire, utils]
+import ../core/[bson, types, wire, utils, multisock]
 
 ## Role Management Methods
 ## ***********************
@@ -14,9 +14,9 @@ import ../core/[bson, types, wire, utils]
 ## .. _here: https://docs.mongodb.com/manual/reference/method/js-role-management/
 ## __ here_
 
-proc createRole*(db: Database, name: string, privileges, roles: seq[BsonDocument],
+proc createRole*(db: Database[AsyncSocket], name: string, privileges, roles: seq[BsonDocument],
   authRestrict: seq[BsonDocument] = @[], wt = bsonNull()):
-  Future[WriteResult]{.async.} =
+  Future[WriteResult]{.multisock.} =
   var q = bson({
     createRole: name,
     privileges: privileges.map toBson,
@@ -27,11 +27,11 @@ proc createRole*(db: Database, name: string, privileges, roles: seq[BsonDocument
   q.addWriteConcern(db, wt)
   result = await db.proceed(q, "admin")
 
-proc updateRole*(db: Database, name: string,
+proc updateRole*(db: Database[AsyncSocket], name: string,
   privileges: seq[BsonDocument] = @[],
   roles: seq[BsonDocument] = @[],
   authRestrict: seq[BsonDocument] = @[], wt = bsonNull()):
-  Future[WriteResult]{.async.} =
+  Future[WriteResult]{.multisock.} =
   let privlen = privileges.len
   let rolelen = roles.len
   if privlen == 0 and rolelen == 0:
@@ -49,19 +49,19 @@ proc updateRole*(db: Database, name: string,
   q.addWriteConcern(db, wt)
   result = await db.proceed(q, "admin")
 
-proc dropRole*(db: Database, role: string, wt = bsonNull()):
-  Future[WriteResult]{.async.} =
+proc dropRole*(db: Database[AsyncSocket], role: string, wt = bsonNull()):
+  Future[WriteResult]{.multisock.} =
   var q = bson({ dropRole: role })
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
-proc dropAllRolesFromDatabase*(db: Database, wt = bsonNull()):
-    Future[WriteResult] {.async.} =
+proc dropAllRolesFromDatabase*(db: Database[AsyncSocket], wt = bsonNull()):
+    Future[WriteResult] {.multisock.} =
   var q = bson({ dropAllRolesFromDatabase: 1 })
   q.addWriteConcern(db, wt)
   result = await db.proceed(q)
 
-template grantRevoke(db: Database, grname, val, privrole: string,
+template grantRevoke(db: Database[MultiSock], grname, val, privrole: string,
   wt: BsonBase, prval: untyped): untyped =
   var q = bson()
   q[grname] = val
@@ -69,31 +69,31 @@ template grantRevoke(db: Database, grname, val, privrole: string,
   q.addWriteConcern(db, wt)
   unown(q)
 
-proc grantPrivilegesToRole*(db: Database, role: string, privileges: seq[BsonDocument],
-  wt = bsonNull()): Future[WriteResult] {.async.} =
+proc grantPrivilegesToRole*(db: Database[AsyncSocket], role: string, privileges: seq[BsonDocument],
+  wt = bsonNull()): Future[WriteResult] {.multisock.} =
   let q = db.grantRevoke("grantPrivileges", role, "privileges", wt, privileges)
   result = await db.proceed(q)
 
-proc grantRolesToRole*(db: Database, role: string, roles: seq[BsonDocument],
-  wt = bsonNull()): Future[WriteResult] {.async.} =
+proc grantRolesToRole*(db: Database[AsyncSocket], role: string, roles: seq[BsonDocument],
+  wt = bsonNull()): Future[WriteResult] {.multisock.} =
   let q = db.grantRevoke("grantRolesToRole", role, "roles", wt, roles)
   result = await db.proceed(q)
 
-proc invalidateUserCache*(db: Database): Future[WriteResult] {.async.} =
+proc invalidateUserCache*(db: Database[AsyncSocket]): Future[WriteResult] {.multisock.} =
   result = await db.proceed(bson({ invalidateUserCache: 1 }))
 
-proc revokePrivilegesFromRole*(db: Database, role: string, privileges: seq[BsonDocument],
-  wt = bsonNull()): Future[WriteResult] {.async.} =
+proc revokePrivilegesFromRole*(db: Database[AsyncSocket], role: string, privileges: seq[BsonDocument],
+  wt = bsonNull()): Future[WriteResult] {.multisock.} =
   let q = db.grantRevoke("revokePrivilegesFromRole", role, "privileges", wt, privileges)
   result = await db.proceed(q)
 
-proc revokeRolesFromRole*(db: Database, role: string, roles: seq[BsonDocument],
-  wt = bsonNull()): Future[WriteResult] {.async.} =
+proc revokeRolesFromRole*(db: Database[AsyncSocket], role: string, roles: seq[BsonDocument],
+  wt = bsonNull()): Future[WriteResult] {.multisock.} =
   let q = db.grantRevoke("revokeRolesFromRole", role, "roles", wt, roles)
   result = await db.proceed(q)
 
-proc rolesInfo*(db: Database, info: BsonBase, showPriv = false,
-  showBuiltin = false): Future[ReplyFormat] {.async.} =
+proc rolesInfo*(db: Database[AsyncSocket], info: BsonBase, showPriv = false,
+  showBuiltin = false): Future[ReplyFormat] {.multisock.} =
   let q = bson({
     rolesInfo: info,
     showPrivileges: showPriv,
