@@ -17,9 +17,9 @@ suite "Collections APIs tests":
     else:
       check true
 
-  var mongo: Mongo
+  var mongo: Mongo[TheSock]
   let targetColl = "testtemptest"
-  var coll: Collection
+  var coll: Collection[TheSock]
   let newdb = "newtemptest"
   var namespace: string
   var wr: WriteResult
@@ -65,26 +65,43 @@ suite "Collections APIs tests":
 
   test &"Insert documents on {namespace}":
     require coll != nil
-    wr = waitfor coll.insert(insertDocs)
+    when anoSocketSync:
+      wr = coll.insert(insertDocs)
+    else:
+      wr = waitfor coll.insert(insertDocs)
     check wr.success
     check wr.n == insertDocs.len
 
   test &"Create index on {namespace}":
-    wr = waitfor coll.createIndex(bson({
-      countId: 1, addedTime: 1
-    }))
+    when anoSocketSync:
+      wr = coll.createIndex(bson({
+        countId: 1, addedTime: 1
+      }))
+    else:
+      wr = waitfor coll.createIndex(bson({
+        countId: 1, addedTime: 1
+      }))
     wr.success.reasonedCheck("Create index error", wr.reason)
 
   test &"List indexes on {namespace}":
-    let indexes = waitfor coll.listIndexes
+    when anoSocketSync:
+      let indexes = coll.listIndexes
+    else:
+      let indexes = waitfor coll.listIndexes
     check indexes.len > 1
 
   test &"Count documents on {namespace}":
-    check insertDocs.len == waitfor coll.count()
+    when anoSocketSync:
+      check insertDocs.len == coll.count()
+    else:
+      check insertDocs.len == waitfor coll.count()
 
   test &"Distinct documents on {namespace}":
     require coll != nil
-    let values = waitFor coll.`distinct`("type")
+    when anoSocketSync:
+      let values = coll.`distinct`("type")
+    else:
+      let values = waitFor coll.`distinct`("type")
     check values.len == 1
     check values[0].kind == bkString
 
@@ -105,37 +122,59 @@ suite "Collections APIs tests":
       maxTimeMS: 100,
       readConcern: { level: "majority" },
     }
-    let aggfind = waitfor coll.aggregate(pipeline, opt)
+    when anoSocketSync:
+      let aggfind = coll.aggregate(pipeline, opt)
+    else:
+      let aggfind = waitfor coll.aggregate(pipeline, opt)
     check aggfind.len == tensOfMinutes
 
   test &"Find one query on {namespace}":
-    let doc = waitfor coll.findOne(bson({ countId: 5 }))
+    when anoSocketSync:
+      let doc = coll.findOne(bson({ countId: 5 }))
+    else:
+      let doc = waitfor coll.findOne(bson({ countId: 5 }))
     check doc["countId"] == 5
     check doc["type"] == "insertTest"
     check doc["addedTime"] == (currtime + initDuration(minutes = 5 * 10))
 
   test &"Find all on {namespace}":
-    var docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
+    when anoSocketSync:
+      var docs = coll.findAll(sort = bson({ countId: -1 }))
+    else:
+      var docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
     let dlen = docs.len
     check dlen == insertDocs.len
     for i in 0 .. docs.high:
       check docs[i]["countId"] == dlen-i-1
 
     let limit = 5
-    docs = waitfor coll.findAll(bson(), limit = 5)
+    when anoSocketSync:
+      docs = coll.findAll(bson(), limit = 5)
+    else:
+      docs = waitfor coll.findAll(bson(), limit = 5)
     check docs.len == limit
 
   test &"Find iterate on {namespace}":
     var count = 0
-    for d in waitfor coll.findIter():
-      check d["countId"] == count
-      inc count
+    when anoSocketSync:
+      for d in coll.findIter():
+        check d["countId"] == count
+        inc count
+    else:
+      for d in waitfor coll.findIter():
+        check d["countId"] == count
+        inc count
 
   test &"Remove countId 1 and 5 on {namespace}":
     let toremove = [1, 5]
-    wr = waitfor coll.remove(bson({
-      countId: { "$in": toremove.map toBson },
-    }))
+    when anoSocketSync:
+      wr = coll.remove(bson({
+        countId: { "$in": toremove.map toBson },
+      }))
+    else:
+      wr = waitfor coll.remove(bson({
+        countId: { "$in": toremove.map toBson },
+      }))
     check wr.success
     check toremove.len == wr.n
 
@@ -143,81 +182,144 @@ suite "Collections APIs tests":
     require coll != nil
     let oldcount = 8
     let newcount = 80
-    let olddoc = waitfor coll.findAndModify(query = bson({
-      countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
+    when anoSocketSync:
+      let olddoc = coll.findAndModify(query = bson({
+        countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
+    else:
+      let olddoc = waitfor coll.findAndModify(query = bson({
+        countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
     check olddoc["countId"] == oldcount
-    let newdoc = waitFor coll.findOne(bson({ countId: newcount }))
+    when anoSocketSync:
+      let newdoc = coll.findOne(bson({ countId: newcount }))
+    else:
+      let newdoc = waitFor coll.findOne(bson({ countId: newcount }))
     check newdoc["countId"] == newcount
 
   test &"Update countId 9 $inc by 90 on {namespace}":
     let addcount = 90
     let oldcount = 9
     let newtype = "異世界召喚"
-    let olddoc = waitFor coll.findOne(bson({ countId: oldcount }))
-    wr = waitfor coll.update(
-      bson({ countId: oldcount }),
-      bson({ "$set": { "type": newtype }, "$inc": { countId: addcount }}),
-      bson({ upsert: false, multi: true}))
+    when anoSocketSync:
+      let olddoc = coll.findOne(bson({ countId: oldcount }))
+    else:
+      let olddoc = waitFor coll.findOne(bson({ countId: oldcount }))
+    when anoSocketSync:
+      wr = coll.update(
+        bson({ countId: oldcount }),
+        bson({ "$set": { "type": newtype }, "$inc": { countId: addcount }}),
+        bson({ upsert: false, multi: true}))
+    else:
+      wr = waitfor coll.update(
+        bson({ countId: oldcount }),
+        bson({ "$set": { "type": newtype }, "$inc": { countId: addcount }}),
+        bson({ upsert: false, multi: true}))
     check wr.success
     check wr.n == 1
-    let newdoc = waitFor coll.findOne(bson({ countId: oldcount + addcount }))
+    when anoSocketSync:
+      let newdoc = coll.findOne(bson({ countId: oldcount + addcount }))
+    else:
+      let newdoc = waitFor coll.findOne(bson({ countId: oldcount + addcount }))
     check newdoc["countId"] == olddoc["countId"] + addcount
     check newdoc["type"] == newtype
     check newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
   test &"Drop index collection of {namespace}":
-    wr = waitfor coll.dropIndex("countId_1_addedTime_1_")
+    when anoSocketSync:
+      wr = coll.dropIndex("countId_1_addedTime_1_")
+    else:
+      wr = waitfor coll.dropIndex("countId_1_addedTime_1_")
     wr.success.reasonedCheck("Drop index name error", wr.reason)
     # this time removing using index specification document
-    discard waitfor coll.createIndex(bson({
-      countId: 1, addedTime: 1
-    }))
-    wr = waitfor coll.dropIndex(bson({
-      countId: 1, addedTime: 1
-    }))
+    when anoSocketSync:
+      discard coll.createIndex(bson({
+        countId: 1, addedTime: 1
+      }))
+      wr = coll.dropIndex(bson({
+        countId: 1, addedTime: 1
+      }))
+    else:
+      discard waitfor coll.createIndex(bson({
+        countId: 1, addedTime: 1
+      }))
+      wr = waitfor coll.dropIndex(bson({
+        countId: 1, addedTime: 1
+      }))
     wr.success.reasonedCheck("Drop index keys error", wr.reason)
 
   test &"Bulk write ordered collection of {namespace}":
     expect MongoError:
-      discard waitfor coll.bulkWrite(@[
-        bson({ invalidCommandField: bson() })
-      ])
-    wr = waitfor coll.insert(newdocs)
+      when anoSocketSync:
+        discard coll.bulkWrite(@[
+          bson({ invalidCommandField: bson() })
+        ])
+      else:
+        discard waitfor coll.bulkWrite(@[
+          bson({ invalidCommandField: bson() })
+        ])
+    
+    when anoSocketSync:
+      wr = coll.insert(newdocs)
+    else:
+      wr = waitfor coll.insert(newdocs)
     wr.success.reasonedCheck("insert newdocs", wr.reason)
 
-    var bulkres = waitfor coll.bulkWrite(ops)
+    when anoSocketSync:
+      var bulkres = coll.bulkWrite(ops)
+    else:
+      var bulkres = waitfor coll.bulkWrite(ops)
     check bulkres.nInserted == 2
     check bulkres.nRemoved == 1
     check bulkres.nModified == 2
     check bulkres.writeErrors.len == 0
 
     # will error and stop in 2nd ops since it's ordered
-    let _ = waitfor coll.remove(bson({ "_id": 4 }))
-    bulkres = waitfor coll.bulkWrite(ops)
+    when anoSocketSync:
+      let _ = coll.remove(bson({ "_id": 4 }))
+      bulkres = coll.bulkWrite(ops)
+    else:
+      let _ = waitfor coll.remove(bson({ "_id": 4 }))
+      bulkres = waitfor coll.bulkWrite(ops)
     check bulkres.nInserted == 1
     check bulkres.writeErrors.len == 1
 
   test &"Bulk write unordered collection of {namespace}":
     # clean up from previous input
-    discard waitfor coll.remove(bson({
-      "char": { "$ne": bsonNull() }
-    }))
-    check (waitfor coll.count()) == 8
-    discard waitfor coll.insert(newdocs)
-    var bulkres = waitfor coll.bulkWrite(ops, ordered = false)
+    when anoSocketSync:
+      discard coll.remove(bson({
+        "char": { "$ne": bsonNull() }
+      }))
+      check coll.count() == 8
+      discard coll.insert(newdocs)
+      var bulkres = coll.bulkWrite(ops, ordered = false)
+    else:
+      discard waitfor coll.remove(bson({
+        "char": { "$ne": bsonNull() }
+      }))
+      check (waitfor coll.count()) == 8
+      discard waitfor coll.insert(newdocs)
+      var bulkres = waitfor coll.bulkWrite(ops, ordered = false)
     check bulkres.nInserted == 2
     check bulkres.nRemoved == 1
     check bulkres.nModified == 2
     check bulkres.writeErrors.len == 0
 
     # will give error at 2nd op but continue with other ops because ordered false
-    discard waitfor coll.remove(bson({
-      "char": { "$ne": bsonNull() }
-    }))
-    check (waitfor coll.count()) == 8
-    discard waitfor coll.insert(newdocs)
-    discard waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
-    bulkres = waitfor coll.bulkWrite(ops, ordered = false)
+    when anoSocketSync:
+      discard coll.remove(bson({
+        "char": { "$ne": bsonNull() }
+      }))
+      check coll.count() == 8
+      discard coll.insert(newdocs)
+      discard coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
+      bulkres = coll.bulkWrite(ops, ordered = false)
+    else:
+      discard waitfor coll.remove(bson({
+        "char": { "$ne": bsonNull() }
+      }))
+      check (waitfor coll.count()) == 8
+      discard waitfor coll.insert(newdocs)
+      discard waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
+      bulkres = waitfor coll.bulkWrite(ops, ordered = false)
     check bulkres.nInserted == 1
     check bulkres.nRemoved == 1
     check bulkres.nModified == 2
@@ -225,18 +327,27 @@ suite "Collections APIs tests":
 
   test &"Drop collection {coll.db.name}.{targetColl}":
     require coll != nil
-    wr = waitFor coll.drop
+    when anoSocketSync:
+      wr = coll.drop
+    else:
+      wr = waitFor coll.drop
     wr.success.reasonedCheck("collections.drop error", wr.reason)
 
   test &"Drop database {coll.db.name}":
     require coll != nil
-    wr = waitFor coll.db.dropDatabase
+    when anoSocketSync:
+      wr = coll.db.dropDatabase
+    else:
+      wr = waitFor coll.db.dropDatabase
     wr.success.reasonedCheck("dropDatabase", wr.reason)
 
   test "Shutdown mongo":
     if runlocal:
       require mongo != nil
-      wr = waitFor mongo.shutdown(timeout = 10)
+      when anoSocketSync:
+        wr = mongo.shutdown(timeout = 10)
+      else:
+        wr = waitFor mongo.shutdown(timeout = 10)
       check wr.success
     else:
       skip()

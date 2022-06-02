@@ -12,7 +12,7 @@ when testChangeStreams:
     cleanMongoTemp()
     cleanupSSL()
 
-  proc setReplica(m: Mongo): bool =
+  proc setReplica(m: Mongo[AsyncSocket]): bool =
     var config = bson({
       "_id": rsetName,
       members: [
@@ -31,7 +31,7 @@ when testChangeStreams:
     result = reply.ok
     close m
 
-  proc inserting(c: Collection, cursorId: int64) {.async.} =
+  proc inserting(c: Collection[AsyncSocket], cursorId: int64) {.async.} =
     #defer: dump await c.db.killCursors(c.name, @[cursorId])
     let insertlen = 100
     var insertops = newseq[Future[WriteResult]](insertlen)
@@ -61,14 +61,14 @@ when testChangeStreams:
     spawn fakeDnsServer()
     test "Setting up replica set":
       p = setupMongoReplication()
-      var m = newMongo(
+      var m = newMongo[AsyncSocket](
         MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin?ssl=true",
         poolconn = 1)
       require waitfor m.connect()
       check m.setReplica()
       sleep 15_000 # to ensure replica sets has enough time to elect primary
 
-    var mongo = newMongo(
+    var mongo = newMongo[AsyncSocket](
       MongoUri "mongodb+srv://localhost/",
       dnsport = dnsport,
       dnsserver = "localhost",
@@ -77,10 +77,10 @@ when testChangeStreams:
     test "Reconnect for replica set clients":
       require waitfor mongo.connect()
 
-    var coll: Collection
+    var coll: Collection[AsyncSocket]
     test "Watch collection temptest.templog":
       coll = mongo["temptest"]["templog"]
-      var cWatch: Cursor
+      var cWatch: Cursor[AsyncSocket]
       try:
         cWatch = waitfor coll.watch()
       except:

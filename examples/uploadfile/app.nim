@@ -3,13 +3,13 @@ from std/sugar import dump
 from std/strutils import parseInt
 from std/uri import decodeUrl
 import jester, ws, ws/jester_extra
-import anonimongo, anonimongo/core/pool
+import anonimongo, anonimongo/core/[pool, multisock]
 import karax/[karaxdsl, vdom]
 
 let
   appName = getEnv("appName", "Upload Grid FS")
   portApp = Port(try: parseInt(getEnv("port", "3000")) except: 3000)
-  mongo = newMongo(
+  mongo = newMongo[Socket](
     MongoUri fmt"mongodb://rootuser:rootpass@mongodb:27017/admin?appName={appName}",
     # MongoUri fmt"mongodb://localhost:27017/admin?appName={appName}",
     poolconn = 8,
@@ -22,10 +22,10 @@ var connectSuccess = false
 block tryconnect:
   for _ in 1..3:
     try:
-      if not waitFor mongo.connect:
+      if not mongo.connect:
         echo "cannot connect to mongo"
         continue
-      if not waitfor mongo.authenticate[:SHA1Digest]:
+      if not mongo.authenticate[:SHA1Digest]:
         echo "cannot authenticate"
         continue
       connectSuccess = true
@@ -38,7 +38,7 @@ if not connectSuccess:
   quit "Cannot connect mongo, quit!", QuitFailure
 
 #var grid = waitfor mongo["newtemptest"].createBucket()
-var grid = waitfor mongo["temptest"].getBucket()
+var grid = mongo["temptest"].getBucket()
 #var wr = waitfor grid.uploadFile(filename)
 
 template kxi: int = 0
@@ -49,7 +49,7 @@ proc generateList: Future[VNode] {.async.} =
   result = buildHtml(tdiv):
     script(src="/js/appjs.js")
     ul(id="list-file"):
-      for i, fname in await grid.listFileNames:
+      for i, fname in grid.listFileNames:
         let linkhref = fmt"""http://localhost:{$portApp.int}/play/{fname}"""
         let idnum = fmt"id-{$i}"
         li(id=fmt"{idnum}"):
@@ -61,9 +61,9 @@ proc generateList: Future[VNode] {.async.} =
 # proc generatePlayer(fname: string): VNode =
 #   discard
 
-proc recheckAndReconnect(g: GridFS): Future[void] {.async.} =
-  let _ = await mongo.connect
-  let _ = await mongo.authenticate[:SHA1Digest]
+proc recheckAndReconnect(g: GridFS[AsyncSocket]): Future[void] {.multisock.} =
+  let _ = mongo.connect
+  let _ = mongo.authenticate[:SHA1Digest]
   # for k, mongoconn in g.files.db.mongo.servers.mpairs:
   # for k, mongoconn in g.files.db.db.servers.mpairs:
   #   for id, conn in mongoconn.pool.connections.mpairs:
@@ -104,9 +104,9 @@ routes:
 
   get "/play/@sendfile":
     enableRawMode()
-    var gs: GridStream
+    var gs: GridStream[Socket]
     try:
-      gs = await grid.getStream(decodeUrl @"sendfile")
+      gs = grid.getStream(decodeUrl @"sendfile")
       dump gs.fileSize
       var curread = 0
       let metadata = gs.metadata
@@ -119,16 +119,17 @@ routes:
         ("Content-Length", &"{gs.fileSize}")
       ])
       while curread < gs.fileSize:
-        var data = await gs.read(1500.kilobytes)
+        var data = gs.read(1500.kilobytes)
         # dump gs.getPosition
         curread += data.len
         # dump curread
         request.send(data)
-        await sleepAsync(100)
+        #await sleepAsync(100)
 
     except IOError:
       let ioerrmsg = getCurrentExceptionMsg()
-      asyncCheck(recheckAndReconnect grid)
+      # asyncCheck(recheckAndReconnect grid)
+      recheckAndReconnect grid
       dump ioerrmsg
     except:
       let excmsg = getCurrentExceptionMsg()
@@ -178,7 +179,8 @@ routes:
 
       # wsconn.close()
       f.close()
-      discard await grid.uploadFile(fname)
+      # discard await grid.uploadFile(fname)
+      discard grid.uploadFile(fname)
       removeFile fname
     except:
       await wsconn.send("error")
@@ -187,7 +189,7 @@ routes:
   delete "/delete/@filename":
     let fname = decodeUrl @"filename"
     let matcher = bson { filename: fname }
-    let wr = await grid.removeFile(matcher, one = true)
+    let wr = grid.removeFile(matcher, one = true)
     if not wr.success:
       resp Http500, wr.reason
       return
