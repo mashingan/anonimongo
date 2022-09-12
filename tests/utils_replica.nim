@@ -19,6 +19,9 @@ const
     "/admin?ssl=true"
   rsetName* = "repltemp"
 
+when verbose:
+  import sugar
+
 proc writeName(s: StringStream, srv: SRVRecord, server: string) =
   for sdot in server.split('.'):
     s.write sdot.len.byte

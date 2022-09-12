@@ -1,4 +1,3 @@
-# python result is quite dubious as it's failed to find `lasto` object
 import asyncio
 import datetime as dt
 from datetime import time
@@ -24,6 +23,7 @@ async def pyinsert():
       "now": currtime,
     }, bypass_document_validation=True)
   await asyncio.gather(*ops)
+  global lasto
   lasto = await coll.find_one({ "oneHundred": insertnum-1 }, limit=1)
 
 if __name__ == "__main__":

@@ -11,5 +11,7 @@ ChangeStreamId	anonimongo/changestreams.html#ChangeStreamId	changestreams: Chang
 Namespace	anonimongo/changestreams.html#Namespace	changestreams: Namespace	
 DocumentKey	anonimongo/changestreams.html#DocumentKey	changestreams: DocumentKey	
 ChangeStream	anonimongo/changestreams.html#ChangeStream	changestreams: ChangeStream	
-forEach	anonimongo/changestreams.html#forEach,Cursor,proc(ChangeStream),set[ChangeStreamEvent]	changestreams: forEach(c: Cursor; cb: proc (b: ChangeStream); stopWhen: set[ChangeStreamEvent]): owned(\n    Future[void])	
-watch	anonimongo/changestreams.html#watch,Collection,seq[BsonDocument]	changestreams: watch(coll: Collection; pipelines: seq[BsonDocument] = @[]; options = bson()): Future[\n    Cursor]	
+forEach	anonimongo/changestreams.html#forEach,Cursor[Socket],proc(ChangeStream),set[ChangeStreamEvent]	changestreams: forEach(c: Cursor[Socket]; cb: proc (b: ChangeStream);\n        stopWhen: set[ChangeStreamEvent]): void	
+forEach	anonimongo/changestreams.html#forEach,Cursor[AsyncSocket],proc(ChangeStream),set[ChangeStreamEvent]	changestreams: forEach(c: Cursor[AsyncSocket]; cb: proc (b: ChangeStream);\n        stopWhen: set[ChangeStreamEvent]): Future[void]	
+watch	anonimongo/changestreams.html#watch,Collection[Socket],seq[BsonDocument]	changestreams: watch(coll: Collection[Socket]; pipelines: seq[BsonDocument] = @[];\n      options = bson()): Cursor[Socket]	
+watch	anonimongo/changestreams.html#watch,Collection[AsyncSocket],seq[BsonDocument]	changestreams: watch(coll: Collection[AsyncSocket]; pipelines: seq[BsonDocument] = @[];\n      options = bson()): Future[Cursor[AsyncSocket]]	

@@ -6,3 +6,4 @@
 go.sum
 *.exe
 pyvenv.cfg
+*/config.nims

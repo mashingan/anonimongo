@@ -19,8 +19,8 @@ suite "Administration APIs tests":
   let targetColl = "testtemptest"
   let newtgcoll = "newtemptest"
   let newdb = "newtemptest"
-  var mongo: Mongo
-  var db: Database
+  var mongo: Mongo[TheSock]
+  var db: Database[TheSock]
   var dbs: seq[string]
   var colls: seq[string]
   var wr: WriteResult
@@ -37,12 +37,18 @@ suite "Administration APIs tests":
 
   test "List databases in BsonBase":
     require db != nil
-    let dbs = waitFor db.listDatabases
+    when anoSocketSync:
+      let dbs = db.listDatabases
+    else:
+      let dbs = waitFor db.listDatabases
     check(dbs.len > 0)
 
   test "List database names":
     require db != nil
-    dbs = waitFor db.listDatabaseNames
+    when anoSocketSync:
+      dbs = db.listDatabaseNames
+    else:
+      dbs = waitFor db.listDatabaseNames
     check dbs.len > 0
     check db.name in dbs
 
@@ -53,12 +59,18 @@ suite "Administration APIs tests":
 
   test &"List collections name on {db.name}":
     require db != nil
-    colls = waitFor db.listCollectionNames
+    when anoSocketSync:
+      colls = db.listCollectionNames
+    else:
+      colls = waitFor db.listCollectionNames
     check colls.len == 0
 
   test &"Create collection {targetColl} on {db.name}":
     require db != nil
-    wr = waitFor db.create(targetColl)
+    when anoSocketSync:
+      wr = db.create(targetColl)
+    else:
+      wr = waitFor db.create(targetColl)
     wr.success.reasonedCheck("create error", wr.reason)
     check targetColl notin colls
     colls.add targetColl
@@ -70,28 +82,46 @@ suite "Administration APIs tests":
     skip()
   test &"Rename collection {targetColl} to {newtgcoll}":
     require db != nil
-    wr = waitFor db.renameCollection("notexists", newtgcoll)
+    when anoSocketSync:
+      wr = db.renameCollection("notexists", newtgcoll)
+    else:
+      wr = waitFor db.renameCollection("notexists", newtgcoll)
     check not wr.success
-    wr = waitFor db.renameCollection(targetColl, newtgcoll)
+    when anoSocketSync:
+      wr = db.renameCollection(targetColl, newtgcoll)
+    else:
+      wr = waitFor db.renameCollection(targetColl, newtgcoll)
     require wr.success
     if not wr.success:
       "rename collection failed: ".tell wr.reason
     check newtgcoll notin colls
   test &"Drop collection {db.name}.{newtgcoll}":
-    wr = waitFor db.dropCollection(targetColl)
+    when anoSocketSync:
+      wr = db.dropCollection(targetColl)
+    else:
+      wr = waitFor db.dropCollection(targetColl)
     check not wr.success # already renamed to newgtcoll
-    wr = waitFor db.dropCollection(newtgcoll)
+    when anoSocketSync:
+      wr = db.dropCollection(newtgcoll)
+    else:
+      wr = waitFor db.dropCollection(newtgcoll)
     wr.success.reasonedCheck("dropCollection error", wr.reason)
 
   test &"Drop database {db.name}":
     require db != nil
-    wr = waitFor db.dropDatabase
+    when anoSocketSync:
+      wr = db.dropDatabase
+    else:
+      wr = waitFor db.dropDatabase
     wr.success.reasonedCheck("dropDatabase", wr.reason)
 
   test "Shutdown mongo":
     if runlocal:
       require mongo != nil
-      wr = waitFor mongo.shutdown(timeout = 10)
+      when anoSocketSync:
+        wr = mongo.shutdown(timeout = 10)
+      else:
+        wr = waitFor mongo.shutdown(timeout = 10)
       check wr.success
     else:
       skip()

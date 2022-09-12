@@ -1,0 +1,3 @@
+to	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/macroto_v2.html#to.m,untyped,typed	macroto_v2: to(b: untyped; t: typed): untyped	
+bsonExport	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/macroto_v2.html#bsonExport.t	macroto_v2: bsonExport()	
+bsonKey	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/macroto_v2.html#bsonKey.t,string	macroto_v2: bsonKey(key: string)	

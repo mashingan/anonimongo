@@ -1,5 +1,33 @@
 # Anonimongo - Another pure Nim Mongo driver
 
+---
+**NOTE:**
+
+Starting from v0.6.0, All objects are defined in generic which accept `net.Socket` 
+or `asyncnet.AsyncSocket` only. All APIs are following this change and also defined as generic too.  
+For users, the only things that they have to change is the adding the type `Mongo`, `Database`, `Query`, `Cursor`,
+`Collection` which socket type it'd be working. E.g.
+
+```nim
+
+# Previous
+var m: Mongo
+
+#or
+var m = newMongo(urlconn)
+
+# to be
+var m: Mongo[AsyncSocket] # or Mongo[Socket] for using net.Socket
+
+# or
+var m = newMongo[AsyncSocket](urlconn)
+
+```
+
+Other than those, any other APIs should work the same since all work for both Socket and AsyncSocket.
+
+---
+
 ## Table of content
 
 1. [Introduction](#Introduction)
@@ -41,8 +69,9 @@ command for `explain` added optional string value to indicate the verbosity of `
 By default, it's empty string which also indicate the command operations working without the need to
 `explain` the queries. For others detailed caveats can be found [here](#caveats).
 
-Almost all of the APIs are in asynchronous so the user must `await` or use `waitfor` if the
-scope where it's called not an asynchronous function.  
+All APIs are generic which work asynchronous by using AsyncSocket or synchronously using Socket.  
+In case of using AsyncSocket, the user must `await` or `waitfor` depend on scope. When using Socket, it's not
+needed.  
 Any API that insert/update/delete will return [WriteResult][wr-doc]. So the user can check
 whether the write operation is successful or not with its field boolean `success` and the field
 string `reason` to know what's the error message returned. However it's still throwing any other
@@ -91,7 +120,7 @@ Mongodb server is not accepting case-insensitive values.
 import times
 import anonimongo
 
-var mongo = newMongo(poolconn = 16) # default is 64
+var mongo = newMongo[AsyncSocket](poolconn = 16) # default is 64
 if not waitFor mongo.connect:
   # default is localhost:27017
   quit "Cannot connect to localhost:27017"
@@ -165,13 +194,17 @@ doAssert currNDoc == (idoc.len - delStat.n)
 close mongo
 ```
 
+[TOC](#table-of-content)
+
 ### Authenticate
 
 ```nim
+import std/net
 import anonimongo
 
-var mongo = newMongo()
-if not waitfor mongo.connect:
+# note in this example we're using net.Socket instead of AsyncSocket
+var mongo = newMongo[Socket]()
+if not mongo.connect:
   quit "Cannot connect to localhost:27017"
 
 # change to :SHA1Digest for SCRAM-SHA-1 mechanism
@@ -180,13 +213,15 @@ if not mongo.authenticate[:SHA256Digest](username, password):
 close mongo
 
 # Authenticating using URI
-mongo = newMongo(MongoUri("mongodb://username:password@domain-host/admin"))
+mongo = newMongo[Socket](MongoUri("mongodb://username:password@domain-host/admin"))
 if not waitfor mongo.connect:
   quit "Cannot connect to domain-host"
-if not waitfor mongo.authenticate[:SHA256Digest]():
+if not mongo.authenticate[:SHA256Digest]():
   quit "Cannot login to domain-host"
 close mongo
 ```
+
+[TOC](#table-of-content)
 
 ### SSL URI connect
 
@@ -203,11 +238,11 @@ let connectToAtlast = "mongo+srv://username:password@atlas-domain/admin"
 let multipleHostUri = "mongo://uname:passwd@domain-1,uname:passwd@domain-2,uname:passwd@domain-3/admin"
 
 # uri ssl connection
-var mongo = newMongo(MongoUri urissl)
+var mongo = newMongo[AsyncSocket](MongoUri urissl)
 close mongo
 
 # or for `mongo+srv` connection scheme
-mongo = newMongo(MongoUri connectToAtlas)
+mongo = newMongo[AsyncSocket](MongoUri connectToAtlas)
 close mongo
 
 # for multipleHostUri
@@ -216,7 +251,7 @@ close mongo
 
 # custom DNS server and its port
 # by default it's: `dnsserver = "8.8.8.8"` and `dnsport = 53`
-mongo = newMongo(
+mongo = newMongo[AsyncSocket](
   MongoUri connectToAtlas,
   dnsserver = "1.1.1.1",
   dnssport = 5000)
@@ -228,26 +263,31 @@ In the [test_replication_sslcon.nim](tests/test_replication_sslcon.nim), there's
 of DNS seedlist lookup. So the URI to connect is `localhost:5000` which in return replying with
 `localhost:27018`, `localhost:27019` and `localhost:27020` as domain of replication set.
 
+[TOC](#table-of-content)
+
 ### Upload file to GridFS
 
 ```nim
 # this time the server doesn't need SSL/TLS or authentication
 # gridfs is useful when the file bigger than a document capsize 16 megabytes
+import std/net
 import anonimongo
 
-var mongo = newMongo()
-doAssert waitfor mongo.connect
+var mongo = newMongo[Socket]()
+doAssert mongo.connect
 var grid = mongo["target-db"].createBucket() # by default, the bucket name is "fs"
-let res = waitfor grid.uploadFile("/path/to/our/file")
+let res = grid.uploadFile("/path/to/our/file")
 if not res.success:
   echo "some error happened: ", res.reason
 
-var gstream = waitfor grid.getStream("our-available-file")
-let data = waitfor gstream.read(5.megabytes) # reading 5 megabytes of binary data
+var gstream = grid.getStream("our-available-file")
+let data = gstream.read(5.megabytes) # reading 5 megabytes of binary data
 doAssert data.len == 5.megabytes
 close gstream
 close mongo
 ```
+
+[TOC](#table-of-content)
 
 ### Bson examples
 
@@ -290,6 +330,8 @@ let ourObj = bintstr.to IntString
 doAssert ourObj.field1 == 1000
 doAssert ourObj.field2 == "power-level"
 ```
+
+[TOC](#table-of-content)
 
 ### Convert object to BsonDocument
 
@@ -351,6 +393,8 @@ proc toBson[T: tuple | object](o: T): BsonDocument:
 
 Check [tests](tests/) for more examples of detailed usages.  
 Elaborate Bson examples and cases are covered in [bson_test.nim](tests/test_bson_test.nim)
+
+[TOC](#table-of-content)
 
 ### Convert from Bson to object variant
 
@@ -440,6 +484,8 @@ doAssert objnone.kind == ovNone
 doAssert outer.variant.kind == ovNone
 ```
 
+[TOC](#table-of-content)
+
 ### Convert with Custom Key Bson
 
 ```nim
@@ -487,6 +533,8 @@ doAssert $cobj.id == cobj.idStr
 doAssert cobj.sis.strfield == bobj["sisEmbed"]["strfield"]
 doAssert cobj.currentTime == bobj["now"]
 ```
+
+[TOC](#table-of-content)
 
 ### Convert Json Bson
 It's often so handy to work directly between Json and Bson. As currently, there's no direct support for
@@ -568,6 +616,8 @@ Above example we convert the `jsonobj` (`JsonNode`) to `bobj` (`BsonDocument`)
 and convert again from `bobj` to `jobj` (`JsonNode`). This should be useful
 for most cases of working with Bson and Json.
 
+[TOC](#table-of-content)
+
 ### Watching a collection
 This example is the example of changeStream operation. In this example we will
 watch a collection and print the change to the console. It will stop when
@@ -581,7 +631,7 @@ import anonimongo
 ## need to run the available replica set first
 
 proc main =
-  var mongo = newMongo(
+  var mongo = newMongo[AsyncSocket](
     MongoUri "mongodb://localhost:27018,localhost:27019,localhost27020/admin"
     poolconn = 2)
   defer: close mongo
@@ -634,6 +684,8 @@ proc main =
 main()
 ```
 
+[TOC](#table-of-content)
+
 ### Todolist App
 
 Head over to [Todolist Example](examples/todolist).
@@ -644,7 +696,7 @@ Check [Upload-file Example](examples/uploadfile).
 
 ### Benchmark Examples
 
-Various examples while benchmarking [here](examples/benchmark).
+Various examples while measuring [here](examples/benchmark).
 
 
 [TOC](#table-of-content)

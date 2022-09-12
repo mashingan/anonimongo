@@ -1,4 +1,4 @@
-import asyncdispatch, tables, uri
+import asyncdispatch, net, tables, uri
 import osproc, sugar, unittest
 import strformat
 
@@ -24,6 +24,7 @@ const
   localhost* = host == "localhost"
   nomongod* = not defined(nomongod)
   runlocal* = localhost and nomongod
+  anoSocketSync* = defined(anoSocketSync)
 
   mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
     "?tlscertificateKeyfile=" &
@@ -33,6 +34,11 @@ const
 
 when verbose:
   import times, strformat
+
+when not anoSocketSync:
+  type TheSock* = AsyncSocket
+else:
+  type TheSock* = Socket
 
 proc startmongo*: Process =
   var args = @[
@@ -59,28 +65,36 @@ proc startmongo*: Process =
 proc withAuth*(m: Mongo): bool =
   (user != "" and pass != "") or m.hasUserAuth
 
-proc testsetup*: Mongo =
+proc testsetup*: Mongo[TheSock] =
   when defined(ssl):
     let sslinfo {.used.} = initSSLInfo(key, cert)
   else:
     let sslinfo {.used.} = SSLInfo(keyfile: "dummykey", certfile: "dummycert")
   when not defined(uri):
-    let mongo = newMongo(host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
+    let mongo = newMongo[TheSock](host = host, port = port, poolconn = poolconn, sslinfo = sslinfo)
   else:
-    let mongo = newMongo(MongoUri mongourl, poolconn = poolconn)
+    let mongo = newMongo[TheSock](MongoUri mongourl, poolconn = poolconn)
 
   mongo.retryableWrites = true
   when defined(uri):
     doAssert mongo.db == "admin"
 
   mongo.appname = "Test driver"
-  if not waitFor mongo.connect:
-    echo "error connecting, quit"
+  when anoSocketSync:
+    if not mongo.connect:
+      echo "error connecting, quit"
+  else:
+    if not waitFor mongo.connect:
+      echo "error connecting, quit"
   #echo &"current available conns: {mongo.pool.available.len}"
   when verbose:
     let start = cpuTime()
-  if mongo.withAuth and not waitFor mongo.authenticate[:SHA256Digest](user, pass):
-    echo "cannot authenticate the connection"
+  when anoSocketSync:
+    if mongo.withAuth and not mongo.authenticate[:SHA256Digest](user, pass):
+      echo "cannot authenticate the connection"
+  else:
+    if mongo.withAuth and not waitFor mongo.authenticate[:SHA256Digest](user, pass):
+      echo "cannot authenticate the connection"
   #echo &"is mongo authenticated: {mongo.authenticated}"
   when verbose:
     echo &"auth ended taking {cpuTime() - start} for poolconn {poolconn}"

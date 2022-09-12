@@ -101,19 +101,19 @@ function main() {
   <a class="reference reference-toplevel" href="#7" id="57">Types</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#MongoConn"
-    title="MongoConn = ref object of RootObj
+    title="MongoConn[TheSocket] {..} = ref object of RootObj
   isMaster*: bool
   host: string
   port: Port
   username: string
   password: string
-  pool*: Pool
+  pool*: Pool[TheSocket]
   authenticated: bool"><wbr />Mongo<wbr />Conn<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Mongo"
-    title="Mongo = ref object of RootObj
+    title="Mongo[TheSocket] {..} = ref object of RootObj
   hosts*: seq[string]
   primary*: string
-  servers*: TableRef[string, MongoConn]
+  servers*: TableRef[string, MongoConn[TheSocket]]
   tls: bool
   authenticated: bool
   db*: string
@@ -135,28 +135,28 @@ function main() {
   when false or true:
       protocol*: SslProtVersion ## The SSL/TLS protocol"><wbr />Ssl<wbr />Info<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Database"
-    title="Database = ref object of RootObj
+    title="Database[TheSocket] {..} = ref object of RootObj
   name*: string
-  db*: Mongo"><wbr />Database<span class="attachedType"></span></a></li>
+  db*: Mongo[TheSocket]"><wbr />Database<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Collection"
-    title="Collection = ref object
+    title="Collection[TheSocket] {..} = ref object
   name*: string              ## Collection name
   dbname: string             ## Database name, easier than ``coll.db.name``
-  db*: Database"><wbr />Collection<span class="attachedType"></span></a></li>
+  db*: Database[TheSocket]"><wbr />Collection<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Cursor"
-    title="Cursor = object
+    title="Cursor[TheSocket] {..} = object
   id*: int64
   firstBatch*: seq[BsonDocument]
   nextBatch*: seq[BsonDocument]
-  db*: Database
+  db*: Database[TheSocket]
   ns*: string"><wbr />Cursor<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Query"
-    title="Query = object
+    title="Query[TheSocket] {..} = object
   query*: BsonDocument
   sort*: BsonBase
   projection*: BsonBase
   writeConcern*: BsonBase
-  collection*: Collection
+  collection*: Collection[TheSocket]
   skip*, limit*, batchSize*: int32
   readConcern*, max*, min*: BsonBase"><wbr />Query<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#WriteKind"
@@ -178,10 +178,10 @@ function main() {
   nInserted*, nModified*, nRemoved*: int
   writeErrors*: seq[string]"><wbr />Bulk<wbr />Result<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#GridFS"
-    title="GridFS = ref object
+    title="GridFS[TheSocket] {..} = ref object
   name*: string
-  files*: Collection
-  chunks*: Collection
+  files*: Collection[TheSocket]
+  chunks*: Collection[TheSocket]
   chunkSize*: int32"><wbr />Grid<wbr />FS<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#CommandKind"
     title="CommandKind = enum
@@ -214,68 +214,69 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">appname
       <li><a class="reference" href="#appname%2CMongo"
-    title="appname(m: Mongo): string">appname,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="appname(m: Mongo): string">appname,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">close
       <li><a class="reference" href="#close%2CMongo"
-    title="close(m: Mongo)">close,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="close(m: Mongo)">close,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">hasUserAuth
       <li><a class="reference" href="#hasUserAuth%2CMongo"
-    title="hasUserAuth(m: Mongo): bool">hasUserAuth,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="hasUserAuth(m: Mongo): bool">hasUserAuth,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">query
       <li><a class="reference" href="#query%2CMongo"
-    title="query(m: Mongo): lent TableRef[string, seq[string]]">query,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="query(m: Mongo): lent TableRef[string, seq[string]]">query,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">tls
       <li><a class="reference" href="#tls%2CMongo"
-    title="tls(m: Mongo): bool">tls,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="tls(m: Mongo): bool">tls,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">main
-      <li><a class="reference" href="#main%2CMongo"
-    title="main(m: Mongo): MongoConn">main,Mongo<span class="attachedType">Mongo</span></a></li>
+      <li><a class="reference" href="#main%2CMongo%5BT%3A+MultiSock%5D"
+    title="main[T: MultiSock](m: Mongo[T]): MongoConn[T]">main,Mongo[T: MultiSock]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">secondaryPreferred
-      <li><a class="reference" href="#secondaryPreferred%2CMongo"
-    title="secondaryPreferred(m: Mongo): MongoConn">secondaryPreferred,Mongo<span class="attachedType">Mongo</span></a></li>
+      <li><a class="reference" href="#secondaryPreferred%2CMongo%5BT%3A+MultiSock%5D"
+    title="secondaryPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]">secondaryPreferred,Mongo[T: MultiSock]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">mainPreferred
-      <li><a class="reference" href="#mainPreferred%2CMongo"
-    title="mainPreferred(m: Mongo): MongoConn">mainPreferred,Mongo<span class="attachedType">Mongo</span></a></li>
+      <li><a class="reference" href="#mainPreferred%2CMongo%5BT%3A+MultiSock%5D"
+    title="mainPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]">mainPreferred,Mongo[T: MultiSock]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">secondary
-      <li><a class="reference" href="#secondary%2CMongo"
-    title="secondary(m: Mongo): MongoConn">secondary,Mongo<span class="attachedType">Mongo</span></a></li>
+      <li><a class="reference" href="#secondary%2CMongo%5BT%3A+MultiSock%5D"
+    title="secondary[T: MultiSock](m: Mongo[T]): MongoConn[T]">secondary,Mongo[T: MultiSock]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">newMongo
       <li><a class="reference" href="#newMongo%2Cstring%2Cint"
-    title="newMongo(host = &quot;localhost&quot;; port = 27017; master = true; poolconn = poolconn;
-         sslinfo = SslInfo(); ssl = defined(ssl)): Mongo">newMongo,string,int<span class="attachedType">Mongo</span></a></li>
+    title="newMongo[S: MultiSock](host = &quot;localhost&quot;; port = 27017; master = true;
+                       poolconn = poolconn; sslinfo = SslInfo();
+                       ssl = defined(ssl)): Mongo[S]">newMongo,string,int<span class="attachedType">SslInfo</span></a></li>
   <li><a class="reference" href="#newMongo%2CMongoUri%2Cstring%2Cint"
-    title="newMongo(muri: MongoUri; poolconn = poolconn; dnsserver = &quot;8.8.8.8&quot;;
-         dnsport = 53): Mongo">newMongo,MongoUri,string,int<span class="attachedType">MongoUri</span></a></li>
+    title="newMongo[S: MultiSock](muri: MongoUri; poolconn = poolconn;
+                       dnsserver = &quot;8.8.8.8&quot;; dnsport = 53): Mongo[S]">newMongo,MongoUri,string,int<span class="attachedType">MongoUri</span></a></li>
   <li><a class="reference" href="#newMongo%2CUri"
-    title="newMongo(uri: Uri; poolconn = poolconn): Mongo">newMongo,Uri<span class="attachedType">Mongo</span></a></li>
+    title="newMongo[S: MultiSock](uri: Uri; poolconn = poolconn): Mongo[S]">newMongo,Uri<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">tailableCursor
       <li><a class="reference" href="#tailableCursor%2CMongo"
-    title="tailableCursor(m: Mongo)">tailableCursor,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="tailableCursor(m: Mongo)">tailableCursor,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">flags
       <li><a class="reference" href="#flags%2CMongo"
-    title="flags(m: Mongo): QueryFlags">flags,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="flags(m: Mongo): QueryFlags">flags,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">initSslInfo
@@ -285,70 +286,80 @@ function main() {
   </ul>
   <ul class="simple nested-toc-section">port
       <li><a class="reference" href="#port%2CMongoConn"
-    title="port(m: MongoConn): Port">port,MongoConn<span class="attachedType">MongoConn</span></a></li>
+    title="port(m: MongoConn): Port">port,MongoConn<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">slaveOk
       <li><a class="reference" href="#slaveOk%2CMongo"
-    title="slaveOk(m: Mongo)">slaveOk,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="slaveOk(m: Mongo)">slaveOk,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">noSlave
       <li><a class="reference" href="#noSlave%2CMongo"
-    title="noSlave(m: Mongo)">noSlave,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="noSlave(m: Mongo)">noSlave,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">collname
       <li><a class="reference" href="#collname%2CCursor"
-    title="collname(cur: Cursor): string">collname,Cursor<span class="attachedType">Cursor</span></a></li>
+    title="collname(cur: Cursor): string">collname,Cursor<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">host
       <li><a class="reference" href="#host%2CMongoConn"
-    title="host(m: MongoConn): string">host,MongoConn<span class="attachedType">MongoConn</span></a></li>
+    title="host(m: MongoConn): string">host,MongoConn<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">appname=
       <li><a class="reference" href="#appname%3D%2CMongo%2Cstring"
-    title="appname=(m: Mongo; name: string)">appname=,Mongo,string<span class="attachedType">Mongo</span></a></li>
+    title="appname=(m: Mongo; name: string)">appname=,Mongo,string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">toCursor
+      <li><a class="reference" href="#toCursor%2CBsonDocument"
+    title="toCursor[S: MultiSock](b: BsonDocument): Cursor[S]">toCursor,BsonDocument<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">initQuery
-      <li><a class="reference" href="#initQuery%2CCollection%2Cint32%2Cint32%2Cint32"
-    title="initQuery(query = bson(); collection: Collection = nil; skip = 0&apos;i32;
-          limit = 0&apos;i32; batchSize = 101&apos;i32): Query">initQuery,Collection,int32,int32,int32<span class="attachedType">Query</span></a></li>
+      <li><a class="reference" href="#initQuery%2CCollection%5BT%3A+MultiSock%5D%2Cint32%2Cint32%2Cint32"
+    title="initQuery[T: MultiSock](query = bson(); collection: Collection[T] = nil;
+                        skip = 0&apos;i32; limit = 0&apos;i32; batchSize = 101&apos;i32): Query[
+    T]">initQuery,Collection[T: MultiSock],int32,int32,int32<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">authenticate
-      <li><a class="reference" href="#authenticate%2CMongo%2Cstring%2Cstring"
-    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo; user, pass: string): Future[
-    bool]">authenticate,Mongo,string,string<span class="attachedType">Mongo</span></a></li>
-  <li><a class="reference" href="#authenticate%2CMongo"
-    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo): Future[bool]">authenticate,Mongo<span class="attachedType">Mongo</span></a></li>
+      <li><a class="reference" href="#authenticate%2CMongo%5BSocket%5D%2Cstring%2Cstring"
+    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool">authenticate,Mongo[Socket],string,string<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#authenticate%2CMongo%5BAsyncSocket%5D%2Cstring%2Cstring"
+    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket];
+    user, pass: string): Future[bool]">authenticate,Mongo[AsyncSocket],string,string<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#authenticate%2CMongo%5BSocket%5D"
+    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]): bool">authenticate,Mongo[Socket]<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#authenticate%2CMongo%5BAsyncSocket%5D"
+    title="authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]">authenticate,Mongo[AsyncSocket]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">dbname
       <li><a class="reference" href="#dbname%2CCursor"
-    title="dbname(cur: Cursor): string">dbname,Cursor<span class="attachedType">Cursor</span></a></li>
+    title="dbname(cur: Cursor): string">dbname,Cursor<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">noTailable
       <li><a class="reference" href="#noTailable%2CMongo"
-    title="noTailable(m: Mongo)">noTailable,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="noTailable(m: Mongo)">noTailable,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">authenticated
       <li><a class="reference" href="#authenticated%2CMongo"
-    title="authenticated(m: Mongo): bool">authenticated,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="authenticated(m: Mongo): bool">authenticated,Mongo<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#authenticated%2CMongoConn"
-    title="authenticated(m: MongoConn): bool">authenticated,MongoConn<span class="attachedType">MongoConn</span></a></li>
+    title="authenticated(m: MongoConn): bool">authenticated,MongoConn<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">[]
-      <li><a class="reference" href="#%5B%5D%2CMongo%2Cstring"
-    title="`[]`(m: Mongo; name: string): Database">[],Mongo,string<span class="attachedType">Mongo</span></a></li>
-  <li><a class="reference" href="#%5B%5D%2CDatabase%2Cstring"
-    title="`[]`(dbase: Database; name: string): Collection">[],Database,string<span class="attachedType">Database</span></a></li>
+      <li><a class="reference" href="#%5B%5D%2CMongo%5BT%3A+MultiSock%5D%2Cstring"
+    title="`[]`[T: MultiSock](m: Mongo[T]; name: string): Database[T]">[],Mongo[T: MultiSock],string<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#%5B%5D%2CDatabase%5BT%3A+MultiSock%5D%2Cstring"
+    title="`[]`[T: MultiSock](dbase: Database[T]; name: string): Collection[T]">[],Database[T: MultiSock],string<span class="attachedType"></span></a></li>
 
   </ul>
 
@@ -359,12 +370,12 @@ function main() {
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">username
       <li><a class="reference" href="#username%2CMongo"
-    title="username(m: Mongo): string">username,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="username(m: Mongo): string">username,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">isTailable
       <li><a class="reference" href="#isTailable%2CMongo"
-    title="isTailable(m: Mongo): bool">isTailable,Mongo<span class="attachedType">Mongo</span></a></li>
+    title="isTailable(m: Mongo): bool">isTailable,Mongo<span class="attachedType"></span></a></li>
 
   </ul>
 
@@ -381,19 +392,19 @@ function main() {
   <div class="section" id="6">
 <h1><a class="toc-backref" href="#6">Imports</a></h1>
 <dl class="item">
-<a class="reference external" href="pool.html">pool</a>, <a class="reference external" href="wire.html">wire</a>, <a class="reference external" href="bson.html">bson</a>
+<a class="reference external" href="pool.html">pool</a>, <a class="reference external" href="wire.html">wire</a>, <a class="reference external" href="bson.html">bson</a>, <a class="reference external" href="multisock.html">multisock</a>
 </dl></div>
 <div class="section" id="7">
 <h1><a class="toc-backref" href="#7">Types</a></h1>
 <dl class="item">
 <a id="MongoConn"></a>
-<dt><pre><a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
+<dt><pre><a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
   <span class="Identifier">isMaster</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">host</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">port</span><span class="Other">:</span> <span class="Identifier">Port</span>
   <span class="Identifier">username</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">password</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">pool</span><span class="Operator">*</span><span class="Other">:</span> <a href="pool.html#Pool"><span class="Identifier">Pool</span></a>
+  <span class="Identifier">pool</span><span class="Operator">*</span><span class="Other">:</span> <a href="pool.html#Pool"><span class="Identifier">Pool</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
   <span class="Identifier">authenticated</span><span class="Other">:</span> <span class="Identifier">bool</span>
 </pre></dt>
 <dd>
@@ -406,10 +417,10 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="Mongo"></a>
-<dt><pre><a href="types.html#Mongo"><span class="Identifier">Mongo</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
+<dt><pre><a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
   <span class="Identifier">hosts</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span>
   <span class="Identifier">primary</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">servers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">]</span>
+  <span class="Identifier">servers</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span><span class="Other">]</span>
   <span class="Identifier">tls</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">authenticated</span><span class="Other">:</span> <span class="Identifier">bool</span>
   <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
@@ -461,9 +472,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="Database"></a>
-<dt><pre><a href="types.html#Database"><span class="Identifier">Database</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
+<dt><pre><a href="types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a>
+  <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
 </pre></dt>
 <dd>
 
@@ -475,10 +486,10 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="Collection"></a>
-<dt><pre><a href="types.html#Collection"><span class="Identifier">Collection</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+<dt><pre><a href="types.html#Collection"><span class="Identifier">Collection</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>              <span class="Comment">## Collection name</span>
   <span class="Identifier">dbname</span><span class="Other">:</span> <span class="Identifier">string</span>             <span class="Comment">## Database name, easier than ``coll.db.name``</span>
-  <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a>
+  <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
 </pre></dt>
 <dd>
 
@@ -490,11 +501,11 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="Cursor"></a>
-<dt><pre><a href="types.html#Cursor"><span class="Identifier">Cursor</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+<dt><pre><a href="types.html#Cursor"><span class="Identifier">Cursor</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">id</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int64</span>
   <span class="Identifier">firstBatch</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span>
   <span class="Identifier">nextBatch</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span>
-  <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a>
+  <span class="Identifier">db</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
   <span class="Identifier">ns</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
 </pre></dt>
 <dd>
@@ -507,12 +518,12 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="Query"></a>
-<dt><pre><a href="types.html#Query"><span class="Identifier">Query</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+<dt><pre><a href="types.html#Query"><span class="Identifier">Query</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">query</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a>
   <span class="Identifier">sort</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
   <span class="Identifier">projection</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
   <span class="Identifier">writeConcern</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
-  <span class="Identifier">collection</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a>
+  <span class="Identifier">collection</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
   <span class="Identifier">skip</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">limit</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">batchSize</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int32</span>
   <span class="Identifier">readConcern</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">max</span><span class="Operator">*</span><span class="Other">,</span> <span class="Identifier">min</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
 </pre></dt>
@@ -574,10 +585,10 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="GridFS"></a>
-<dt><pre><a href="types.html#GridFS"><span class="Identifier">GridFS</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
+<dt><pre><a href="types.html#GridFS"><span class="Identifier">GridFS</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"></span><span class="Other">.}</span></span> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">name</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>
-  <span class="Identifier">files</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a>
-  <span class="Identifier">chunks</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a>
+  <span class="Identifier">files</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
+  <span class="Identifier">chunks</span><span class="Operator">*</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a><span class="Other">[</span><span class="Identifier">TheSocket</span><span class="Other">]</span>
   <span class="Identifier">chunkSize</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int32</span>
 </pre></dt>
 <dd>
@@ -705,9 +716,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="newMongo,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newMongo%2Cstring%2Cint"><span class="Identifier">newMongo</span></a><span class="Other">(</span><span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;localhost&quot;</span><span class="Other">;</span> <span class="Identifier">port</span> <span class="Other">=</span> <span class="DecNumber">27017</span><span class="Other">;</span> <span class="Identifier">master</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
-              <span class="Identifier">poolconn</span> <span class="Other">=</span> <span class="Identifier">poolconn</span><span class="Other">;</span> <span class="Identifier">sslinfo</span> <span class="Other">=</span> <a href="types.html#SslInfo"><span class="Identifier">SslInfo</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">ssl</span> <span class="Other">=</span> <span class="Identifier">defined</span><span class="Other">(</span><span class="Identifier">ssl</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newMongo%2Cstring%2Cint"><span class="Identifier">newMongo</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">host</span> <span class="Other">=</span> <span class="StringLit">&quot;localhost&quot;</span><span class="Other">;</span> <span class="Identifier">port</span> <span class="Other">=</span> <span class="DecNumber">27017</span><span class="Other">;</span> <span class="Identifier">master</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span>
+                            <span class="Identifier">poolconn</span> <span class="Other">=</span> <span class="Identifier">poolconn</span><span class="Other">;</span> <span class="Identifier">sslinfo</span> <span class="Other">=</span> <a href="types.html#SslInfo"><span class="Identifier">SslInfo</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+                            <span class="Identifier">ssl</span> <span class="Other">=</span> <span class="Identifier">defined</span><span class="Other">(</span><span class="Identifier">ssl</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">]</span></pre></dt>
 <dd>
 
 Give a new <a class="reference external" href="#Mongo">Mongo</a> instance manually from given parameters.
@@ -718,10 +729,8 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="newMongo,MongoUri,string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newMongo%2CMongoUri%2Cstring%2Cint"><span class="Identifier">newMongo</span></a><span class="Other">(</span><span class="Identifier">muri</span><span class="Other">:</span> <a href="types.html#MongoUri"><span class="Identifier">MongoUri</span></a><span class="Other">;</span> <span class="Identifier">poolconn</span> <span class="Other">=</span> <span class="Identifier">poolconn</span><span class="Other">;</span> <span class="Identifier">dnsserver</span> <span class="Other">=</span> <span class="StringLit">&quot;8.8.8.8&quot;</span><span class="Other">;</span>
-              <span class="Identifier">dnsport</span> <span class="Other">=</span> <span class="DecNumber">53</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
-    <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newMongo%2CMongoUri%2Cstring%2Cint"><span class="Identifier">newMongo</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">muri</span><span class="Other">:</span> <a href="types.html#MongoUri"><span class="Identifier">MongoUri</span></a><span class="Other">;</span> <span class="Identifier">poolconn</span> <span class="Other">=</span> <span class="Identifier">poolconn</span><span class="Other">;</span>
+                            <span class="Identifier">dnsserver</span> <span class="Other">=</span> <span class="StringLit">&quot;8.8.8.8&quot;</span><span class="Other">;</span> <span class="Identifier">dnsport</span> <span class="Other">=</span> <span class="DecNumber">53</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">]</span></pre></dt>
 <dd>
 
 Overload the newMongo for accepting raw uri string as MongoUri.
@@ -732,8 +741,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="newMongo,Uri"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#newMongo%2CUri"><span class="Identifier">newMongo</span></a><span class="Other">(</span><span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span><span class="Other">;</span> <span class="Identifier">poolconn</span> <span class="Other">=</span> <span class="Identifier">poolconn</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#newMongo%2CUri"><span class="Identifier">newMongo</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">uri</span><span class="Other">:</span> <span class="Identifier">Uri</span><span class="Other">;</span> <span class="Identifier">poolconn</span> <span class="Other">=</span> <span class="Identifier">poolconn</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">]</span></pre></dt>
 <dd>
 
 Give a new <a class="reference external" href="#Mongo">Mongo</a> instance based on URI.
@@ -744,7 +752,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="tls,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#tls%2CMongo"><span class="Identifier">tls</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#tls%2CMongo"><span class="Identifier">tls</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 
@@ -755,7 +763,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="authenticated,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#authenticated%2CMongo"><span class="Identifier">authenticated</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#authenticated%2CMongo"><span class="Identifier">authenticated</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 
@@ -766,7 +774,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="authenticated,MongoConn"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#authenticated%2CMongoConn"><span class="Identifier">authenticated</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#authenticated%2CMongoConn"><span class="Identifier">authenticated</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 
@@ -777,7 +785,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="host,MongoConn"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#host%2CMongoConn"><span class="Identifier">host</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#host%2CMongoConn"><span class="Identifier">host</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
 <dd>
 
 
@@ -788,7 +796,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="port,MongoConn"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#port%2CMongoConn"><span class="Identifier">port</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Port</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#port%2CMongoConn"><span class="Identifier">port</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Port</span></pre></dt>
 <dd>
 
 
@@ -799,7 +807,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="query,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#query%2CMongo"><span class="Identifier">query</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#query%2CMongo"><span class="Identifier">query</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">lent</span> <span class="Identifier">TableRef</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span></pre></dt>
 <dd>
 
 
@@ -810,7 +818,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 </dd>
 <a id="flags,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#flags%2CMongo"><span class="Identifier">flags</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="wire.html#QueryFlags"><span class="Identifier">QueryFlags</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#flags%2CMongo"><span class="Identifier">flags</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="wire.html#QueryFlags"><span class="Identifier">QueryFlags</span></a></pre></dt>
 <dd>
 
 
@@ -820,8 +828,8 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L450" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="main,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#main%2CMongo"><span class="Identifier">main</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="main,Mongo[T: MultiSock]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#main%2CMongo%5BT%3A+MultiSock%5D"><span class="Identifier">main</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 
@@ -831,19 +839,19 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L460" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="mainPreferred,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#mainPreferred%2CMongo"><span class="Identifier">mainPreferred</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="mainPreferred,Mongo[T: MultiSock]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#mainPreferred%2CMongo%5BT%3A+MultiSock%5D"><span class="Identifier">mainPreferred</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L466"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L467"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L466" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L467" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="secondary,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#secondary%2CMongo"><span class="Identifier">secondary</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="secondary,Mongo[T: MultiSock]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#secondary%2CMongo%5BT%3A+MultiSock%5D"><span class="Identifier">secondary</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 
@@ -853,183 +861,218 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L475" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="secondaryPreferred,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#secondaryPreferred%2CMongo"><span class="Identifier">secondaryPreferred</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="secondaryPreferred,Mongo[T: MultiSock]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#secondaryPreferred%2CMongo%5BT%3A+MultiSock%5D"><span class="Identifier">secondaryPreferred</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#MongoConn"><span class="Identifier">MongoConn</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L482"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L481"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L482" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L481" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="hasUserAuth,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#hasUserAuth%2CMongo"><span class="Identifier">hasUserAuth</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#hasUserAuth%2CMongo"><span class="Identifier">hasUserAuth</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L491"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L489"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L491" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L489" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="authenticate,Mongo,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#authenticate%2CMongo%2Cstring%2Cstring"><span class="Identifier">authenticate</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">SHA1Digest</span> <span class="Operator">|</span> <span class="Identifier">SHA256Digest</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">;</span> <span class="Identifier">user</span><span class="Other">,</span> <span class="Identifier">pass</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <span class="Identifier">bool</span><span class="Other">]</span></pre></dt>
+<a id="authenticate,Mongo[Socket],string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#authenticate%2CMongo%5BSocket%5D%2Cstring%2Cstring"><span class="Identifier">authenticate</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">SHA1Digest</span> <span class="Operator">|</span> <span class="Identifier">SHA256Digest</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span>
+    <span class="Identifier">user</span><span class="Other">,</span> <span class="Identifier">pass</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 Authenticate Mongo with given username and password and delegate it to <a class="reference external" href="pool.html#authenticate,Pool,string,string,typedesc,string">pool.authenticate</a>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L512"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L512" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="authenticate,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#authenticate%2CMongo"><span class="Identifier">authenticate</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">SHA1Digest</span> <span class="Operator">|</span> <span class="Identifier">SHA256Digest</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">bool</span><span class="Other">]</span></pre></dt>
+<a id="authenticate,Mongo[AsyncSocket],string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#authenticate%2CMongo%5BAsyncSocket%5D%2Cstring%2Cstring"><span class="Identifier">authenticate</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">SHA1Digest</span> <span class="Operator">|</span> <span class="Identifier">SHA256Digest</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span>
+    <span class="Identifier">user</span><span class="Other">,</span> <span class="Identifier">pass</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">bool</span><span class="Other">]</span></pre></dt>
+<dd>
+
+Authenticate Mongo with given username and password and delegate it to <a class="reference external" href="pool.html#authenticate,Pool,string,string,typedesc,string">pool.authenticate</a>.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L510"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L510" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="authenticate,Mongo[Socket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#authenticate%2CMongo%5BSocket%5D"><span class="Identifier">authenticate</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">SHA1Digest</span> <span class="Operator">|</span> <span class="Identifier">SHA256Digest</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 Authenticate Mongo with available username and password from <a class="reference external" href="#Mongo">Mongo</a> object and delegate it to <a class="reference external" href="pool.html#authenticate,Pool,string,string,typedesc,string">pool.authenticate</a>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L520"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L520" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="authenticate,Mongo[AsyncSocket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#authenticate%2CMongo%5BAsyncSocket%5D"><span class="Identifier">authenticate</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">SHA1Digest</span> <span class="Operator">|</span> <span class="Identifier">SHA256Digest</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
+    <span class="Identifier">bool</span><span class="Other">]</span></pre></dt>
+<dd>
+
+Authenticate Mongo with available username and password from <a class="reference external" href="#Mongo">Mongo</a> object and delegate it to <a class="reference external" href="pool.html#authenticate,Pool,string,string,typedesc,string">pool.authenticate</a>.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L518"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L518" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="appname=,Mongo,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#appname%3D%2CMongo%2Cstring"><span class="Identifier">appname=</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#appname%3D%2CMongo%2Cstring"><span class="Identifier">appname=</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span></pre></dt>
 <dd>
 
 Set appname for <a class="reference external" href="#Mongo">Mongo</a> client instance.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L528"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L526"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L528" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L526" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="appname,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#appname%2CMongo"><span class="Identifier">appname</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#appname%2CMongo"><span class="Identifier">appname</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
 <dd>
 
 Get appname from <a class="reference external" href="#Mongo">Mongo</a> client instance.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L532"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L530"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L532" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L530" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="tailableCursor,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#tailableCursor%2CMongo"><span class="Identifier">tailableCursor</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#tailableCursor%2CMongo"><span class="Identifier">tailableCursor</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span></pre></dt>
 <dd>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to support TailableCursor
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L543"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L541"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L543" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L541" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="noTailable,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#noTailable%2CMongo"><span class="Identifier">noTailable</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#noTailable%2CMongo"><span class="Identifier">noTailable</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span></pre></dt>
 <dd>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to not support TailableCursor
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L547"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L545"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L547" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L545" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="slaveOk,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#slaveOk%2CMongo"><span class="Identifier">slaveOk</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#slaveOk%2CMongo"><span class="Identifier">slaveOk</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span></pre></dt>
 <dd>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to support SlaveOk flag
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L555"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L553"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L555" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L553" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="noSlave,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#noSlave%2CMongo"><span class="Identifier">noSlave</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#noSlave%2CMongo"><span class="Identifier">noSlave</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span></pre></dt>
 <dd>
 
 Set <a class="reference external" href="#Mongo">Mongo</a> to not support SlaveOk flag
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L559"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L557"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L559" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L557" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="[],Mongo,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%2CMongo%2Cstring"><span class="Identifier">`[]`</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="[],Mongo[T: MultiSock],string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%2CMongo%5BT%3A+MultiSock%5D%2Cstring"><span class="Identifier">`[]`</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 Give new Database from <a class="reference external" href="#Mongo">Mongo</a>, expected to long-live object.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L563"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L561"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L563" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L561" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="[],Database,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%2CDatabase%2Cstring"><span class="Identifier">`[]`</span></a><span class="Other">(</span><span class="Identifier">dbase</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="[],Database[T: MultiSock],string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%5B%5D%2CDatabase%5BT%3A+MultiSock%5D%2Cstring"><span class="Identifier">`[]`</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">dbase</span><span class="Other">:</span> <a href="types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 Give new <a class="reference external" href="#Collection">Collection</a> from <a class="reference external" href="#Database">Database</a>, expected to long-live object.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L570"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L568"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L570" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L568" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="dbname,Cursor"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dbname%2CCursor"><span class="Identifier">dbname</span></a><span class="Other">(</span><span class="Identifier">cur</span><span class="Other">:</span> <a href="types.html#Cursor"><span class="Identifier">Cursor</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#dbname%2CCursor"><span class="Identifier">dbname</span></a><span class="Other">(</span><span class="Identifier">cur</span><span class="Other">:</span> <a href="types.html#Cursor"><span class="Identifier">Cursor</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
 <dd>
 
 Get <a class="reference external" href="#Database">Database</a>, name from Cursor.
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L576"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L576" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="collname,Cursor"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#collname%2CCursor"><span class="Identifier">collname</span></a><span class="Other">(</span><span class="Identifier">cur</span><span class="Other">:</span> <a href="types.html#Cursor"><span class="Identifier">Cursor</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
+<dd>
+
+Get <a class="reference external" href="#Collection">Collection</a> name from Cursor.
 &nbsp;&nbsp;<a
 href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L578"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L578" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="collname,Cursor"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#collname%2CCursor"><span class="Identifier">collname</span></a><span class="Other">(</span><span class="Identifier">cur</span><span class="Other">:</span> <a href="types.html#Cursor"><span class="Identifier">Cursor</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-Get <a class="reference external" href="#Collection">Collection</a> name from Cursor.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L580"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L580" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
 <a id="close,Mongo"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#close%2CMongo"><span class="Identifier">close</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">LibraryError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">]</span><span class="Other">,</span>
-                       <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#close%2CMongo"><span class="Identifier">close</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L583"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L584"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L583" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L584" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="initQuery,Collection,int32,int32,int32"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#initQuery%2CCollection%2Cint32%2Cint32%2Cint32"><span class="Identifier">initQuery</span></a><span class="Other">(</span><span class="Identifier">query</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">collection</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span> <span class="Identifier">skip</span> <span class="Other">=</span> <span class="DecNumber">0'i32</span><span class="Other">;</span>
-               <span class="Identifier">limit</span> <span class="Other">=</span> <span class="DecNumber">0'i32</span><span class="Other">;</span> <span class="Identifier">batchSize</span> <span class="Other">=</span> <span class="DecNumber">101'i32</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Query"><span class="Identifier">Query</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="initQuery,Collection[T: MultiSock],int32,int32,int32"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#initQuery%2CCollection%5BT%3A+MultiSock%5D%2Cint32%2Cint32%2Cint32"><span class="Identifier">initQuery</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">query</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">collection</span><span class="Other">:</span> <a href="types.html#Collection"><span class="Identifier">Collection</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span> <span class="Other">=</span> <span class="Keyword">nil</span><span class="Other">;</span>
+                             <span class="Identifier">skip</span> <span class="Other">=</span> <span class="DecNumber">0'i32</span><span class="Other">;</span> <span class="Identifier">limit</span> <span class="Other">=</span> <span class="DecNumber">0'i32</span><span class="Other">;</span> <span class="Identifier">batchSize</span> <span class="Other">=</span> <span class="DecNumber">101'i32</span><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Query"><span class="Identifier">Query</span></a><span class="Other">[</span>
+    <span class="Identifier">T</span><span class="Other">]</span></pre></dt>
 <dd>
 
 Init <a class="reference external" href="#Query">query</a> to be used for next find. Apparently this should be used for Query Plan Cache however currently the lib still hasn't support that feature yet.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L587"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L588"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L587" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L588" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="toCursor,BsonDocument"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#toCursor%2CBsonDocument"><span class="Identifier">toCursor</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">:</span> <a href="multisock.html#MultiSock"><span class="Identifier">MultiSock</span></a><span class="Other">]</span><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <a href="types.html#Cursor"><span class="Identifier">Cursor</span></a><span class="Other">[</span><span class="Identifier">S</span><span class="Other">]</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L600"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L600" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1038,25 +1081,25 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" href="#13">Funcs</a></h1>
 <dl class="item">
 <a id="username,Mongo"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#username%2CMongo"><span class="Identifier">username</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#username%2CMongo"><span class="Identifier">username</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L540"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L538"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L540" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L538" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="isTailable,Mongo"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#isTailable%2CMongo"><span class="Identifier">isTailable</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#isTailable%2CMongo"><span class="Identifier">isTailable</span></a><span class="Other">(</span><span class="Identifier">m</span><span class="Other">:</span> <a href="types.html#Mongo"><span class="Identifier">Mongo</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
 <dd>
 
 Check whether <a class="reference external" href="#Mongo">Mongo</a> is tailable set
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L551"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/types.nim#L549"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L551" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/types.nim#L549" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1069,7 +1112,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2021-08-28 18:52:49 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-09-12 22:00:45 UTC</small>
       </div>
     </div>
   </div>

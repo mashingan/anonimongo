@@ -1,5 +1,5 @@
 import tables, sequtils
-import ../core/[bson, types, wire, utils]
+import ../core/[bson, types, wire, utils, multisock]
 import diagnostic
 
 ## Aggregation commands (and a Geospatial command)
@@ -13,11 +13,11 @@ import diagnostic
 ## .. _Mongo command: https://docs.mongodb.com/manual/reference/command/nav-aggregation/
 ## .. _here: https://docs.mongodb.com/manual/reference/command/geoSearch/#dbcmd.geoSearch
 
-proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
+proc aggregate*(db: Database[AsyncSocket], coll: string, pipeline: seq[BsonDocument],
   explain = false, diskuse = false, cursor = bson(), maxTimeMS = 0,
   bypass = false, readConcern = bsonNull(), collation = bsonNull(),
   hint = bsonNull(), comment = "", wt = bsonNull(), explainVerbosity = ""):
-  Future[BsonDocument]{.async.} =
+  Future[BsonDocument]{.multisock.} =
   var q = bson({
     aggregate: coll,
     pipeline: pipeline.map toBson,
@@ -41,9 +41,9 @@ proc aggregate*(db: Database, coll: string, pipeline: seq[BsonDocument],
   if explainVerbosity != "": result = await db.explain(q, explainVerbosity)
   else: result = await db.crudops(q)
 
-proc count*(db: Database, coll: string, query = bson(),
+proc count*(db: Database[AsyncSocket], coll: string, query = bson(),
   limit = 0, skip = 0, hint = bsonNull(), readConcern = bsonNull(),
-  collation = bsonNull(), explain = ""): Future[BsonDocument] {.async.} =
+  collation = bsonNull(), explain = ""): Future[BsonDocument] {.multisock.} =
   var q = bson({
     count: coll,
     query: query,
@@ -60,9 +60,9 @@ proc count*(db: Database, coll: string, query = bson(),
   if explain != "": result = await db.explain(q, explain)
   else: result = await db.crudops(q)
 
-proc `distinct`*(db: Database, coll, key: string, query = bson(),
+proc `distinct`*(db: Database[AsyncSocket], coll, key: string, query = bson(),
   readConcern = bsonNull(), collation = bsonNull(), explain = ""):
-  Future[BsonDocument]{.async.} =
+  Future[BsonDocument]{.multisock.} =
   var q = bson({
     `distinct`: coll,
     key: key,
@@ -77,11 +77,11 @@ proc `distinct`*(db: Database, coll, key: string, query = bson(),
   if explain != "": result = await db.explain(q, explain)
   else: result = await db.crudops(q)
 
-proc mapReduce*(db: Database, coll: string, map, reduce: BsonJs,
+proc mapReduce*(db: Database[AsyncSocket], coll: string, map, reduce: BsonJs,
   `out`: BsonBase, query = bson(), sort = bsonNull(), limit = 0,
   finalize = bsonNull(), scope = bsonNull(), jsMode = false, verbose = false,
   bypass = false, collation = bsonNull(), wt = bsonNull()):
-  Future[BsonDocument]{.async.} =
+  Future[BsonDocument]{.multisock.} =
   var q = bson({
     mapReduce: coll,
     map: map,
@@ -106,9 +106,9 @@ proc mapReduce*(db: Database, coll: string, map, reduce: BsonJs,
   q.addWriteConcern(db, q)
   result = await db.crudops(q)
 
-proc geoSearch*(db: Database, coll: string, search: BsonDocument,
+proc geoSearch*(db: Database[AsyncSocket], coll: string, search: BsonDocument,
   near: seq[BsonDocument], maxDistance = 0, limit = 0,
-  readConcern = bsonNull()): Future[BsonDocument]{.async.} =
+  readConcern = bsonNull()): Future[BsonDocument]{.multisock.} =
   var q = bson({
     geoSearch: coll,
     search: search,

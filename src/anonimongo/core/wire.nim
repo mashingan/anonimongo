@@ -1,8 +1,9 @@
-import streams, strformat
-import asyncdispatch, asyncnet
+import streams, strformat, strutils
+import asyncdispatch, asyncnet, net
 from sugar import dump
 import bson
 import streamable
+import multisock
 
 import supersnappy, zippy
 
@@ -63,6 +64,19 @@ type
   ResponseFlags* = set[RFlags]
     ## The actual available ResponseFlags.
 
+  MsgBitFlags* {.size: sizeof(int32), pure.} = enum
+    ## The OP_MESSAGE bit flag definition
+    ChecksumPresent
+    MoreToCome
+    BfUnused1, BfUnused2, BfUnused3, BfUnused4, BfUnused5
+    BfUnused6, BfUnused7, BfUnused8, BfUnused9, BfUnused10 
+    BfUnused11, BfUnused12, BfUnused13, BfUnused14          # All BfUnused is unused bit in flags.
+    ExhaustAllowed
+  MsgFlags* = set[MsgBitFlags]
+    ## The actual bitfield value for message flags.
+
+const msgDefaultFlags = 0
+
 proc serialize(s: var Streamable, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
   result = doclen
@@ -97,23 +111,45 @@ proc replyParse*(s: var Streamable): ReplyFormat =
     result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
+proc msgParse*(s: var Streamable, rest = 0): ReplyFormat =
+  ## Get the message in the ReplyFormat from given data stream.
+  ## This is adapted to older type ReplyFormat from newer wire
+  ## protocol OP_MSG.
+  result = ReplyFormat(
+    numberReturned: 1,
+  )
+  var restlen = rest
+  let respflags {.used.} = cast[MsgBitFlags](s.readIntLE int32)
+  restlen -= sizeof int32
+  when verbose:
+    dump respflags
+  let sectionkind {.used.} = s.readUint8
+  restlen -= sizeof byte
+  when verbose:
+    dump sectionkind
+  let doclen = s.peekInt32LE
+  restlen -= doclen
+  result.documents = @[s.readStr(doclen).decode]
+
 proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
     query = newbson(), selector = newbson(), compression = cidNoop): int =
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
-  template writeStream(s: untyped): int =
-    var length = 0
-    `s`.writeLE flags;                       length += 4
-    `s`.write collname; `s`.write 0x00.byte; length += collname.len + 1
-    `s`.writeLE nskip;  `s`.writeLE nreturn; length += 2 * 4
+  var query = query
+  query["$db"] = collname.split(".")[0]
 
-    length += `s`.serialize query
-    if not selector.isNil:
-      length += `s`.serialize selector
+  when verbose:
+    dump query
+
+  template writeStream(s: untyped): int =
+    `s`.writeLE msgDefaultFlags.int32
+    `s`.write 0.byte # kind 0: body
+    var length = `s`.serialize(query) + sizeof(byte) + sizeof(int32)
     length
 
   if compression == cidNoop:
+    let opcode = opMsg.int32
     result = s.msgHeader(reqId, target, opcode)
     result += s.writeStream
 
@@ -121,6 +157,7 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
     result = s.msgHeader(reqId, target, opCompressed.int32)
     var ss = newStringStream()
     let length = ss.writeStream
+    let opcode = opMsg.int32
     s.writeLE opcode
     s.writeLE length.int32
     s.write compression.uint8
@@ -210,7 +247,7 @@ proc look*(reply: ReplyFormat) =
     for d in reply.documents:
       dump d
     
-proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.async.} =
+proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
   ## Get data from socket and apply the replyParse into the result.
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
@@ -219,22 +256,26 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.async.} =
   let bytelen = msghdr.messageLength
   var rest = await socket.recv(size = bytelen-16)
   var restStream = newStringStream move(rest)
-  if msghdr.opCode != opCompressed.int32:
+  if msghdr.opCode == opReply.int32:
     result = replyParse restStream
+  elif msghdr.opCode == opMsg.int32:
+    result = msgParse(restStream, bytelen-16)
   else:
-    discard restStream.readIntLE int32
-    discard restStream.readIntLE int32
+    let oriopcode = restStream.readIntLE int32
+    let orirest = restStream.readIntLE int32
+    var origmsg: string
     let compression = restStream.readInt8.CompressorId
     case compression
     of cidSnappy:
-      let origmsg = supersnappy.uncompress(restStream.readAll)
-      var msg = newStream origmsg
-      result = replyParse msg
+      origmsg = supersnappy.uncompress(restStream.readAll)
     of cidZlib:
-      let origmsg = zippy.uncompress(restStream.readAll.bytes).stringbytes
-      var msg = newStream origmsg
-      result = replyParse msg
+      origmsg = zippy.uncompress(restStream.readAll.bytes).stringbytes
     else:
-      discard
+      return # do nothing
+    var msg = newStream origmsg
+    if oriopcode == opReply.int32:
+      result = replyParse msg
+    elif oriopcode == opMsg.int32:
+      result = msgParse(msg, orirest)
   when verbose:
     look result

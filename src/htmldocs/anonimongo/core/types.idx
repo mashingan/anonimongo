@@ -23,9 +23,9 @@ MongoError	anonimongo/core/types.html#MongoError	types: MongoError
 MultiUri	anonimongo/core/types.html#MultiUri	types: MultiUri	
 MongoUri	anonimongo/core/types.html#MongoUri	types: MongoUri	
 initSslInfo	anonimongo/core/types.html#initSslInfo,string,string	types: initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo	
-newMongo	anonimongo/core/types.html#newMongo,string,int	types: newMongo(host = &quot;localhost&quot;; port = 27017; master = true; poolconn = poolconn;\n         sslinfo = SslInfo(); ssl = defined(ssl)): Mongo	
-newMongo	anonimongo/core/types.html#newMongo,MongoUri,string,int	types: newMongo(muri: MongoUri; poolconn = poolconn; dnsserver = &quot;8.8.8.8&quot;;\n         dnsport = 53): Mongo	
-newMongo	anonimongo/core/types.html#newMongo,Uri	types: newMongo(uri: Uri; poolconn = poolconn): Mongo	
+newMongo	anonimongo/core/types.html#newMongo,string,int	types: newMongo[S: MultiSock](host = &quot;localhost&quot;; port = 27017; master = true;\n                       poolconn = poolconn; sslinfo = SslInfo();\n                       ssl = defined(ssl)): Mongo[S]	
+newMongo	anonimongo/core/types.html#newMongo,MongoUri,string,int	types: newMongo[S: MultiSock](muri: MongoUri; poolconn = poolconn;\n                       dnsserver = &quot;8.8.8.8&quot;; dnsport = 53): Mongo[S]	
+newMongo	anonimongo/core/types.html#newMongo,Uri	types: newMongo[S: MultiSock](uri: Uri; poolconn = poolconn): Mongo[S]	
 tls	anonimongo/core/types.html#tls,Mongo	types: tls(m: Mongo): bool	
 authenticated	anonimongo/core/types.html#authenticated,Mongo	types: authenticated(m: Mongo): bool	
 authenticated	anonimongo/core/types.html#authenticated,MongoConn	types: authenticated(m: MongoConn): bool	
@@ -33,13 +33,15 @@ host	anonimongo/core/types.html#host,MongoConn	types: host(m: MongoConn): string
 port	anonimongo/core/types.html#port,MongoConn	types: port(m: MongoConn): Port	
 query	anonimongo/core/types.html#query,Mongo	types: query(m: Mongo): lent TableRef[string, seq[string]]	
 flags	anonimongo/core/types.html#flags,Mongo	types: flags(m: Mongo): QueryFlags	
-main	anonimongo/core/types.html#main,Mongo	types: main(m: Mongo): MongoConn	
-mainPreferred	anonimongo/core/types.html#mainPreferred,Mongo	types: mainPreferred(m: Mongo): MongoConn	
-secondary	anonimongo/core/types.html#secondary,Mongo	types: secondary(m: Mongo): MongoConn	
-secondaryPreferred	anonimongo/core/types.html#secondaryPreferred,Mongo	types: secondaryPreferred(m: Mongo): MongoConn	
+main	anonimongo/core/types.html#main,Mongo[T: MultiSock]	types: main[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+mainPreferred	anonimongo/core/types.html#mainPreferred,Mongo[T: MultiSock]	types: mainPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+secondary	anonimongo/core/types.html#secondary,Mongo[T: MultiSock]	types: secondary[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+secondaryPreferred	anonimongo/core/types.html#secondaryPreferred,Mongo[T: MultiSock]	types: secondaryPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]	
 hasUserAuth	anonimongo/core/types.html#hasUserAuth,Mongo	types: hasUserAuth(m: Mongo): bool	
-authenticate	anonimongo/core/types.html#authenticate,Mongo,string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo; user, pass: string): Future[\n    bool]	
-authenticate	anonimongo/core/types.html#authenticate,Mongo	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo): Future[bool]	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket],string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket],string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket];\n    user, pass: string): Future[bool]	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket]	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket]	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]	
 appname=	anonimongo/core/types.html#appname=,Mongo,string	types: appname=(m: Mongo; name: string)	
 appname	anonimongo/core/types.html#appname,Mongo	types: appname(m: Mongo): string	
 username	anonimongo/core/types.html#username,Mongo	types: username(m: Mongo): string	
@@ -48,9 +50,10 @@ noTailable	anonimongo/core/types.html#noTailable,Mongo	types: noTailable(m: Mong
 isTailable	anonimongo/core/types.html#isTailable,Mongo	types: isTailable(m: Mongo): bool	
 slaveOk	anonimongo/core/types.html#slaveOk,Mongo	types: slaveOk(m: Mongo)	
 noSlave	anonimongo/core/types.html#noSlave,Mongo	types: noSlave(m: Mongo)	
-`[]`	anonimongo/core/types.html#[],Mongo,string	types: `[]`(m: Mongo; name: string): Database	
-`[]`	anonimongo/core/types.html#[],Database,string	types: `[]`(dbase: Database; name: string): Collection	
+`[]`	anonimongo/core/types.html#[],Mongo[T: MultiSock],string	types: `[]`[T: MultiSock](m: Mongo[T]; name: string): Database[T]	
+`[]`	anonimongo/core/types.html#[],Database[T: MultiSock],string	types: `[]`[T: MultiSock](dbase: Database[T]; name: string): Collection[T]	
 dbname	anonimongo/core/types.html#dbname,Cursor	types: dbname(cur: Cursor): string	
 collname	anonimongo/core/types.html#collname,Cursor	types: collname(cur: Cursor): string	
 close	anonimongo/core/types.html#close,Mongo	types: close(m: Mongo)	
-initQuery	anonimongo/core/types.html#initQuery,Collection,int32,int32,int32	types: initQuery(query = bson(); collection: Collection = nil; skip = 0&apos;i32;\n          limit = 0&apos;i32; batchSize = 101&apos;i32): Query	
+initQuery	anonimongo/core/types.html#initQuery,Collection[T: MultiSock],int32,int32,int32	types: initQuery[T: MultiSock](query = bson(); collection: Collection[T] = nil;\n                        skip = 0&apos;i32; limit = 0&apos;i32; batchSize = 101&apos;i32): Query[\n    T]	
+toCursor	anonimongo/core/types.html#toCursor,BsonDocument	types: toCursor[S: MultiSock](b: BsonDocument): Cursor[S]	

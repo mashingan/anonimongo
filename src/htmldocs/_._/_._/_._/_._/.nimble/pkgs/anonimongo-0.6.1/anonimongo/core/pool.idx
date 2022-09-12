@@ -1,0 +1,16 @@
+Connection	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#Connection	pool: Connection	
+Pool	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#Pool	pool: Pool	
+connections	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#connections,Pool[T: MultiSock]	pool: connections[T: MultiSock](p: Pool[T]): lent TableRef[int, Connection[T]]	
+initConnection	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#initConnection,int	pool: initConnection[T: MultiSock](id = 0): Connection[T]	
+contains	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#contains,Pool,int	pool: contains[T: MultiSock](p: Pool; i: int): bool	
+`[]`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#[],Pool[T: MultiSock],int	pool: `[]`[T: MultiSock](p: Pool[T]; i: int): lent Connection[T]	
+`[]=`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#[]=,Pool,int,Connection[T: MultiSock]	pool: `[]=`[T: MultiSock](p: Pool; i: int; c: Connection[T])	
+initPool	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#initPool,int	pool: initPool[T: MultiSock](size = 16): Pool[T]	
+getConn	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#getConn,Pool[AsyncSocket]	pool: getConn(p: Pool[AsyncSocket]): Future[(int, Connection[AsyncSocket])]	
+getConn	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#getConn,Pool[Socket]	pool: getConn(p: Pool[Socket]): (int, Connection[Socket])	
+connect	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#connect,Pool[Socket],string,int	pool: connect(p: Pool[Socket]; address: string; port: int): void	
+connect	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#connect,Pool[AsyncSocket],string,int	pool: connect(p: Pool[AsyncSocket]; address: string; port: int): Future[void]	
+close	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#close,Pool[T: MultiSock]	pool: close[T: MultiSock](p: Pool[T])	
+endConn	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#endConn,Pool,Positive	pool: endConn(p: Pool; i: Positive)	
+authenticate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#authenticate,Pool[AsyncSocket],string,string,typedesc,string	pool: authenticate(p: Pool[AsyncSocket]; user, pass: string;\n             T: typedesc = Sha256Digest; dbname = &quot;admin.$cmd&quot;): Future[bool]	
+authenticate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/pool.html#authenticate,Pool[Socket],string,string,typedesc,string	pool: authenticate(p: Pool[Socket]; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): bool	

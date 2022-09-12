@@ -5,4 +5,4 @@
 # patchFile("stdlib", "asyncmacro", "./asyncmacro")
 switch("define", "nimblePath=./nimbledeps")
 switch("nimcache", "buildcache")
-switch("threadAnalysis", "off")
+#switch("threadAnalysis", "off")

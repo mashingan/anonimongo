@@ -1,11 +1,22 @@
-isMaster	anonimongo/dbops/replication.html#isMaster,Database	replication: isMaster(db: Database; cmd = bson()): Future[BsonDocument]	
-replSetAbortPrimaryCatchUp	anonimongo/dbops/replication.html#replSetAbortPrimaryCatchUp,Database	replication: replSetAbortPrimaryCatchUp(db: Database): Future[BsonDocument]	
-replSetFreeze	anonimongo/dbops/replication.html#replSetFreeze,Database,int	replication: replSetFreeze(db: Database; seconds: int): Future[BsonDocument]	
-replSetGetConfig	anonimongo/dbops/replication.html#replSetGetConfig,Database,bool	replication: replSetGetConfig(db: Database; commitmentStatus: bool; comment = bsonNull()): Future[\n    BsonDocument]	
-replSetGetStatus	anonimongo/dbops/replication.html#replSetGetStatus,Database	replication: replSetGetStatus(db: Database): Future[BsonDocument]	
-replSetInitiate	anonimongo/dbops/replication.html#replSetInitiate,Database,BsonDocument	replication: replSetInitiate(db: Database; config: BsonDocument): Future[BsonDocument]	
-replSetMaintenance	anonimongo/dbops/replication.html#replSetMaintenance,Database,bool	replication: replSetMaintenance(db: Database; enable: bool): Future[BsonDocument]	
-replSetReconfig	anonimongo/dbops/replication.html#replSetReconfig,Database,BsonDocument,bool,int	replication: replSetReconfig(db: Database; newconfig: BsonDocument; force: bool;\n                maxTimeMS: int = -1): Future[BsonDocument]	
-replSetResizeOplog	anonimongo/dbops/replication.html#replSetResizeOplog,Database,float,float	replication: replSetResizeOplog(db: Database; size: float; minRetentionHours = 0.0): Future[\n    BsonDocument]	
-replSetStepDown	anonimongo/dbops/replication.html#replSetStepDown,Database,int,int	replication: replSetStepDown(db: Database; stepDown: int; catchup = 10; force = false): Future[\n    BsonDocument]	
-replSetSyncFrom	anonimongo/dbops/replication.html#replSetSyncFrom,Database,string	replication: replSetSyncFrom(db: Database; hostport: string): Future[BsonDocument]	
+isMaster	anonimongo/dbops/replication.html#isMaster,Database[Socket]	replication: isMaster(db: Database[Socket]; cmd = bson()): BsonDocument	
+isMaster	anonimongo/dbops/replication.html#isMaster,Database[AsyncSocket]	replication: isMaster(db: Database[AsyncSocket]; cmd = bson()): Future[BsonDocument]	
+replSetAbortPrimaryCatchUp	anonimongo/dbops/replication.html#replSetAbortPrimaryCatchUp,Database[Socket]	replication: replSetAbortPrimaryCatchUp(db: Database[Socket]): BsonDocument	
+replSetAbortPrimaryCatchUp	anonimongo/dbops/replication.html#replSetAbortPrimaryCatchUp,Database[AsyncSocket]	replication: replSetAbortPrimaryCatchUp(db: Database[AsyncSocket]): Future[BsonDocument]	
+replSetFreeze	anonimongo/dbops/replication.html#replSetFreeze,Database[Socket],int	replication: replSetFreeze(db: Database[Socket]; seconds: int): BsonDocument	
+replSetFreeze	anonimongo/dbops/replication.html#replSetFreeze,Database[AsyncSocket],int	replication: replSetFreeze(db: Database[AsyncSocket]; seconds: int): Future[BsonDocument]	
+replSetGetConfig	anonimongo/dbops/replication.html#replSetGetConfig,Database[Socket],bool	replication: replSetGetConfig(db: Database[Socket]; commitmentStatus: bool;\n                 comment = bsonNull()): BsonDocument	
+replSetGetConfig	anonimongo/dbops/replication.html#replSetGetConfig,Database[AsyncSocket],bool	replication: replSetGetConfig(db: Database[AsyncSocket]; commitmentStatus: bool;\n                 comment = bsonNull()): Future[BsonDocument]	
+replSetGetStatus	anonimongo/dbops/replication.html#replSetGetStatus,Database[Socket]	replication: replSetGetStatus(db: Database[Socket]): BsonDocument	
+replSetGetStatus	anonimongo/dbops/replication.html#replSetGetStatus,Database[AsyncSocket]	replication: replSetGetStatus(db: Database[AsyncSocket]): Future[BsonDocument]	
+replSetInitiate	anonimongo/dbops/replication.html#replSetInitiate,Database[Socket],BsonDocument	replication: replSetInitiate(db: Database[Socket]; config: BsonDocument): BsonDocument	
+replSetInitiate	anonimongo/dbops/replication.html#replSetInitiate,Database[AsyncSocket],BsonDocument	replication: replSetInitiate(db: Database[AsyncSocket]; config: BsonDocument): Future[\n    BsonDocument]	
+replSetMaintenance	anonimongo/dbops/replication.html#replSetMaintenance,Database[Socket],bool	replication: replSetMaintenance(db: Database[Socket]; enable: bool): BsonDocument	
+replSetMaintenance	anonimongo/dbops/replication.html#replSetMaintenance,Database[AsyncSocket],bool	replication: replSetMaintenance(db: Database[AsyncSocket]; enable: bool): Future[BsonDocument]	
+replSetReconfig	anonimongo/dbops/replication.html#replSetReconfig,Database[Socket],BsonDocument,bool,int	replication: replSetReconfig(db: Database[Socket]; newconfig: BsonDocument; force: bool;\n                maxTimeMS: int = -1): BsonDocument	
+replSetReconfig	anonimongo/dbops/replication.html#replSetReconfig,Database[AsyncSocket],BsonDocument,bool,int	replication: replSetReconfig(db: Database[AsyncSocket]; newconfig: BsonDocument; force: bool;\n                maxTimeMS: int = -1): Future[BsonDocument]	
+replSetResizeOplog	anonimongo/dbops/replication.html#replSetResizeOplog,Database[Socket],float,float	replication: replSetResizeOplog(db: Database[Socket]; size: float; minRetentionHours = 0.0): BsonDocument	
+replSetResizeOplog	anonimongo/dbops/replication.html#replSetResizeOplog,Database[AsyncSocket],float,float	replication: replSetResizeOplog(db: Database[AsyncSocket]; size: float;\n                   minRetentionHours = 0.0): Future[BsonDocument]	
+replSetStepDown	anonimongo/dbops/replication.html#replSetStepDown,Database[Socket],int,int	replication: replSetStepDown(db: Database[Socket]; stepDown: int; catchup = 10; force = false): BsonDocument	
+replSetStepDown	anonimongo/dbops/replication.html#replSetStepDown,Database[AsyncSocket],int,int	replication: replSetStepDown(db: Database[AsyncSocket]; stepDown: int; catchup = 10;\n                force = false): Future[BsonDocument]	
+replSetSyncFrom	anonimongo/dbops/replication.html#replSetSyncFrom,Database[Socket],string	replication: replSetSyncFrom(db: Database[Socket]; hostport: string): BsonDocument	
+replSetSyncFrom	anonimongo/dbops/replication.html#replSetSyncFrom,Database[AsyncSocket],string	replication: replSetSyncFrom(db: Database[AsyncSocket]; hostport: string): Future[\n    BsonDocument]	
