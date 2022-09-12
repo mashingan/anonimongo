@@ -73,7 +73,7 @@ type
     BfUnused11, BfUnused12, BfUnused13, BfUnused14          # All BfUnused is unused bit in flags.
     ExhaustAllowed
   MsgFlags* = set[MsgBitFlags]
-    # The actual bitfield value for message flags.
+    ## The actual bitfield value for message flags.
 
 const msgDefaultFlags = 0
 
