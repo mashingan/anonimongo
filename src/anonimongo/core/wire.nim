@@ -111,18 +111,24 @@ proc replyParse*(s: var Streamable): ReplyFormat =
     result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
-proc msgParse*(s: var Streamable): ReplyFormat =
+proc msgParse*(s: var Streamable, rest = 0): ReplyFormat =
   ## Get the message in the ReplyFormat from given data stream.
   ## This is adapted to older type ReplyFormat from newer wire
   ## protocol OP_MSG.
   result = ReplyFormat(
     numberReturned: 1,
   )
-  let respflags {.used.} = cast[MsgBitFlags](s.readInt32)
+  var restlen = rest
+  let respflags {.used.} = cast[MsgBitFlags](s.readIntLE int32)
+  restlen -= sizeof int32
   when verbose:
     dump respflags
-  discard s.readUint8
+  let sectionkind {.used.} = s.readUint8
+  restlen -= sizeof byte
+  when verbose:
+    dump sectionkind
   let doclen = s.peekInt32LE
+  restlen -= doclen
   result.documents = @[s.readStr(doclen).decode]
 
 proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
@@ -151,6 +157,7 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
     result = s.msgHeader(reqId, target, opCompressed.int32)
     var ss = newStringStream()
     let length = ss.writeStream
+    let opcode = opMsg.int32
     s.writeLE opcode
     s.writeLE length.int32
     s.write compression.uint8
@@ -252,21 +259,23 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
   if msghdr.opCode == opReply.int32:
     result = replyParse restStream
   elif msghdr.opCode == opMsg.int32:
-    result = msgParse restStream
+    result = msgParse(restStream, bytelen-16)
   else:
-    discard restStream.readIntLE int32
-    discard restStream.readIntLE int32
+    let oriopcode = restStream.readIntLE int32
+    let orirest = restStream.readIntLE int32
+    var origmsg: string
     let compression = restStream.readInt8.CompressorId
     case compression
     of cidSnappy:
-      let origmsg = supersnappy.uncompress(restStream.readAll)
-      var msg = newStream origmsg
-      result = replyParse msg
+      origmsg = supersnappy.uncompress(restStream.readAll)
     of cidZlib:
-      let origmsg = zippy.uncompress(restStream.readAll.bytes).stringbytes
-      var msg = newStream origmsg
-      result = replyParse msg
+      origmsg = zippy.uncompress(restStream.readAll.bytes).stringbytes
     else:
-      discard
+      return # do nothing
+    var msg = newStream origmsg
+    if oriopcode == opReply.int32:
+      result = replyParse msg
+    elif oriopcode == opMsg.int32:
+      result = msgParse(msg, orirest)
   when verbose:
     look result
