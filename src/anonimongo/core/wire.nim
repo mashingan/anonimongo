@@ -64,6 +64,19 @@ type
   ResponseFlags* = set[RFlags]
     ## The actual available ResponseFlags.
 
+  MsgBitFlags* {.size: sizeof(int32), pure.} = enum
+    ## The OP_MESSAGE bit flag definition
+    ChecksumPresent
+    MoreToCome
+    BfUnused1, BfUnused2, BfUnused3, BfUnused4, BfUnused5
+    BfUnused6, BfUnused7, BfUnused8, BfUnused9, BfUnused10 
+    BfUnused11, BfUnused12, BfUnused13, BfUnused14          # All BfUnused is unused bit in flags.
+    ExhaustAllowed
+  MsgFlags* = set[MsgBitFlags]
+    # The actual bitfield value for message flags.
+
+const msgDefaultFlags = 0
+
 proc serialize(s: var Streamable, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
   result = doclen
@@ -104,17 +117,20 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
   template writeStream(s: untyped): int =
-    var length = 0
-    `s`.writeLE flags;                       length += 4
-    `s`.write collname; `s`.write 0x00.byte; length += collname.len + 1
-    `s`.writeLE nskip;  `s`.writeLE nreturn; length += 2 * 4
+    var length = 0'i32
 
+    `s`.writeLE length
+    `s`.writeLE 0x00.byte
+    length += int32.size + byte.size
     length += `s`.serialize query
-    if not selector.isNil:
-      length += `s`.serialize selector
+    `s`.writeLE msgDefaultFlags.int32
+    length += int32.size
+    `s`.setPosition 0
+    `s`.writeLE length.int32
     length
 
   if compression == cidNoop:
+    opcode = opMsg
     result = s.msgHeader(reqId, target, opcode)
     result += s.writeStream
 
@@ -220,8 +236,10 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
   let bytelen = msghdr.messageLength
   var rest = await socket.recv(size = bytelen-16)
   var restStream = newStringStream move(rest)
-  if msghdr.opCode != opCompressed.int32:
+  if msghdr.opCode == opReply.int32:
     result = replyParse restStream
+  elif msghdr.opCode == opMsg.int32:
+    discard # TODO implement reading opMsg
   else:
     discard restStream.readIntLE int32
     discard restStream.readIntLE int32
