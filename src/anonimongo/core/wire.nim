@@ -1,4 +1,4 @@
-import streams, strformat
+import streams, strformat, strutils
 import asyncdispatch, asyncnet, net
 from sugar import dump
 import bson
@@ -118,7 +118,10 @@ proc msgParse*(s: var Streamable): ReplyFormat =
   result = ReplyFormat(
     numberReturned: 1,
   )
-  discard s.readChar
+  let respflags {.used.} = cast[MsgBitFlags](s.readInt32)
+  when verbose:
+    dump respflags
+  discard s.readUint8
   let doclen = s.peekInt32LE
   result.documents = @[s.readStr(doclen).decode]
 
@@ -128,7 +131,7 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
   var query = query
-  query["$db"] = collname
+  query["$db"] = collname.split(".")[0]
 
   when verbose:
     dump query
@@ -136,14 +139,7 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
   template writeStream(s: untyped): int =
     `s`.writeLE msgDefaultFlags.int32
     `s`.write 0.byte # kind 0: body
-    let length = `s`.serialize query
-    when verbose:
-      dump length
-      `s`.setPosition 0
-      let body = `s`.readAll
-      dump body.len == length
-      dump body
-      dump body.len
+    var length = `s`.serialize(query) + sizeof(byte) + sizeof(int32)
     length
 
   if compression == cidNoop:
