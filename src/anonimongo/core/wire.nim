@@ -111,26 +111,43 @@ proc replyParse*(s: var Streamable): ReplyFormat =
     result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
+proc msgParse*(s: var Streamable): ReplyFormat =
+  ## Get the message in the ReplyFormat from given data stream.
+  ## This is adapted to older type ReplyFormat from newer wire
+  ## protocol OP_MSG.
+  result = ReplyFormat(
+    numberReturned: 1,
+  )
+  discard s.readChar
+  let doclen = s.peekInt32LE
+  result.documents = @[s.readStr(doclen).decode]
+
 proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
     query = newbson(), selector = newbson(), compression = cidNoop): int =
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
-  template writeStream(s: untyped): int =
-    var length = 0'i32
+  var query = query
+  query["$db"] = collname
 
-    `s`.writeLE length
-    `s`.writeLE 0x00.byte
-    length += int32.size + byte.size
-    length += `s`.serialize query
+  when verbose:
+    dump query
+
+  template writeStream(s: untyped): int =
     `s`.writeLE msgDefaultFlags.int32
-    length += int32.size
-    `s`.setPosition 0
-    `s`.writeLE length.int32
+    `s`.write 0.byte # kind 0: body
+    let length = `s`.serialize query
+    when verbose:
+      dump length
+      `s`.setPosition 0
+      let body = `s`.readAll
+      dump body.len == length
+      dump body
+      dump body.len
     length
 
   if compression == cidNoop:
-    opcode = opMsg
+    let opcode = opMsg.int32
     result = s.msgHeader(reqId, target, opcode)
     result += s.writeStream
 
@@ -239,7 +256,7 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
   if msghdr.opCode == opReply.int32:
     result = replyParse restStream
   elif msghdr.opCode == opMsg.int32:
-    discard # TODO implement reading opMsg
+    result = msgParse restStream
   else:
     discard restStream.readIntLE int32
     discard restStream.readIntLE int32
