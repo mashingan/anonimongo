@@ -1,4 +1,3 @@
-Diagnostics Commands	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#diagnostics-commands	 Diagnostics Commands	
 buildInfo	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#buildInfo,Database[Socket]	diagnostic: buildInfo(db: Database[Socket]): BsonDocument	
 buildInfo	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#buildInfo,Database[AsyncSocket]	diagnostic: buildInfo(db: Database[AsyncSocket]): Future[BsonDocument]	
 collStats	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#collStats,Database[Socket],string,int	diagnostic: collStats(db: Database[Socket]; coll: string; scale = 1024): BsonDocument	
@@ -37,3 +36,4 @@ top	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.ht
 top	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#top,Database[AsyncSocket]	diagnostic: top(db: Database[AsyncSocket]): Future[BsonDocument]	
 validate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#validate,Database[Socket],string	diagnostic: validate(db: Database[Socket]; coll: string; full = false): BsonDocument	
 validate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#validate,Database[AsyncSocket],string	diagnostic: validate(db: Database[AsyncSocket]; coll: string; full = false): Future[\n    BsonDocument]	
+Diagnostics Commands	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/dbops/diagnostic.html#diagnostics-commands	 Diagnostics Commands	

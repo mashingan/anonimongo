@@ -1,5 +1,4 @@
-Bson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#bson	 Bson	
-writeLE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#writeLE.t,Streamable,T	bson: writeLE[T; ](s: var Streamable; val: T): untyped	
+writeLE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#writeLE.t,Streamable,T	bson: writeLE[T](s: var Streamable; val: T): untyped	
 readIntLE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#readIntLE.t,Streamable,typedesc	bson: readIntLE(s: var Streamable; which: typedesc): untyped	
 peekInt32LE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#peekInt32LE.t,Streamable	bson: peekInt32LE(s: var Streamable): untyped	
 bytes	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#bytes,string	bson: bytes(s: string): seq[byte]	
@@ -113,3 +112,4 @@ ofEmbedded	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.ht
 ofBinary	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#ofBinary.c,BsonBase	bson: ofBinary(b: BsonBase): seq[byte]	
 ofTimestamp	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#ofTimestamp.c,BsonBase	bson: ofTimestamp(b: BsonBase): TimestampInternal	
 bson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#bson.t	bson: bson(): untyped	
+Bson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/bson.html#bson	 Bson	

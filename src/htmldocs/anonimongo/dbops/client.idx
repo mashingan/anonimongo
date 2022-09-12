@@ -1,4 +1,3 @@
-Client module and User Management Commands	anonimongo/dbops/client.html#client-module-and-user-management-commands	 Client module and User Management Commands	
 anonimongoVersion	anonimongo/dbops/client.html#anonimongoVersion	client: anonimongoVersion	
 connect	anonimongo/dbops/client.html#connect,Mongo[Socket]	client: connect(m: Mongo[Socket]): bool	
 connect	anonimongo/dbops/client.html#connect,Mongo[AsyncSocket]	client: connect(m: Mongo[AsyncSocket]): Future[bool]	
@@ -16,3 +15,4 @@ grantRolesToUser	anonimongo/dbops/client.html#grantRolesToUser,Database[Socket],
 grantRolesToUser	anonimongo/dbops/client.html#grantRolesToUser,Database[AsyncSocket],string	client: grantRolesToUser(db: Database[AsyncSocket]; user: string; roles = bsonArray();\n                 writeConcern = bsonNull()): Future[WriteResult]	
 revokeRolesFromUser	anonimongo/dbops/client.html#revokeRolesFromUser,Database[Socket],string	client: revokeRolesFromUser(db: Database[Socket]; user: string; roles = bsonArray();\n                    writeConcern = bsonNull()): WriteResult	
 revokeRolesFromUser	anonimongo/dbops/client.html#revokeRolesFromUser,Database[AsyncSocket],string	client: revokeRolesFromUser(db: Database[AsyncSocket]; user: string;\n                    roles = bsonArray(); writeConcern = bsonNull()): Future[\n    WriteResult]	
+Client module and User Management Commands	anonimongo/dbops/client.html#client-module-and-user-management-commands	 Client module and User Management Commands	
