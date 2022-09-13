@@ -119,9 +119,7 @@ window.addEventListener('DOMContentLoaded', main);
   Exhaust, Partial           ## get partial data instead of error when some shards are down">Flags</a></li>
   <li><a class="reference" href="#MsgBitFlags"
     title="MsgBitFlags {.size: 4, pure.} = enum
-  ChecksumPresent, MoreToCome, BfUnused1, BfUnused2, BfUnused3, BfUnused4,
-  BfUnused5, BfUnused6, BfUnused7, BfUnused8, BfUnused9, BfUnused10, BfUnused11,
-  BfUnused12, BfUnused13, BfUnused14, ExhaustAllowed">MsgBitFlags</a></li>
+  ChecksumPresent, MoreToCome, ExhaustAllowed = 16">MsgBitFlags</a></li>
   <li><a class="reference" href="#MsgFlags"
     title="MsgFlags = set[MsgBitFlags]">MsgFlags</a></li>
   <li><a class="reference" href="#MsgHeader"
@@ -272,9 +270,7 @@ class="link-seesrc" target="_blank">Source</a>
 </div>
 <div id="MsgBitFlags">
 <dt><pre><a href="wire.html#MsgBitFlags"><span class="Identifier">MsgBitFlags</span></a> {.<span class="Identifier">size</span><span class="Other">:</span> <span class="DecNumber">4</span><span class="Other">,</span> <span class="Identifier">pure</span>.} <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">ChecksumPresent</span><span class="Other">,</span> <span class="Identifier">MoreToCome</span><span class="Other">,</span> <span class="Identifier">BfUnused1</span><span class="Other">,</span> <span class="Identifier">BfUnused2</span><span class="Other">,</span> <span class="Identifier">BfUnused3</span><span class="Other">,</span> <span class="Identifier">BfUnused4</span><span class="Other">,</span>
-  <span class="Identifier">BfUnused5</span><span class="Other">,</span> <span class="Identifier">BfUnused6</span><span class="Other">,</span> <span class="Identifier">BfUnused7</span><span class="Other">,</span> <span class="Identifier">BfUnused8</span><span class="Other">,</span> <span class="Identifier">BfUnused9</span><span class="Other">,</span> <span class="Identifier">BfUnused10</span><span class="Other">,</span> <span class="Identifier">BfUnused11</span><span class="Other">,</span>
-  <span class="Identifier">BfUnused12</span><span class="Other">,</span> <span class="Identifier">BfUnused13</span><span class="Other">,</span> <span class="Identifier">BfUnused14</span><span class="Other">,</span> <span class="Identifier">ExhaustAllowed</span></pre></dt>
+  <span class="Identifier">ChecksumPresent</span><span class="Other">,</span> <span class="Identifier">MoreToCome</span><span class="Other">,</span> <span class="Identifier">ExhaustAllowed</span> <span class="Other">=</span> <span class="DecNumber">16</span></pre></dt>
 <dd>
 
 The OP_MESSAGE bit flag definition
@@ -291,9 +287,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The actual bitfield value for message flags.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L75"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L72"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L75" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L72" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -393,9 +389,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Fetch (error?) code from BsonDocument.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L210"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L207"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L210" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L207" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -406,9 +402,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Helper to fetch error message from BsonDocument.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L205"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L202"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L205" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L202" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -419,9 +415,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get data from socket and apply the replyParse into the result.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L250"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L247"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L250" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L247" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -446,9 +442,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Helper for easier debugging and checking the returned ReplyFormat.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L235"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L235" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -458,9 +454,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get the message in the ReplyFormat from given data stream. This is adapted to older type ReplyFormat from newer wire protocol OP_MSG.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L114"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L111"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L114" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L111" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -471,9 +467,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Check whether BsonDocument is <tt class="docutils literal"><span class="pre">ok</span></tt>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L195"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L192"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L195" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L192" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -485,9 +481,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Convert and encode the query into stream to be ready for sending onto TCP wire socket.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L134"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L131"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L134" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L131" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -497,9 +493,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Get the ReplyFormat from given data stream.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L100"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L97"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L100" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L97" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -514,9 +510,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Utility that will check whether the ReplyFormat is successful failed and return it as tuple of bool and string.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L215"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L212"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L215" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L212" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -527,9 +523,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L188"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/wire.nim#L185"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L188" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/wire.nim#L185" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -543,7 +539,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2022-09-12 22:01:50 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2022-09-13 16:05:47 UTC</small>
       </div>
     </div>
   </div>

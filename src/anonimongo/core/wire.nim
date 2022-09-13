@@ -68,10 +68,7 @@ type
     ## The OP_MESSAGE bit flag definition
     ChecksumPresent
     MoreToCome
-    BfUnused1, BfUnused2, BfUnused3, BfUnused4, BfUnused5
-    BfUnused6, BfUnused7, BfUnused8, BfUnused9, BfUnused10 
-    BfUnused11, BfUnused12, BfUnused13, BfUnused14          # All BfUnused is unused bit in flags.
-    ExhaustAllowed
+    ExhaustAllowed = 16
   MsgFlags* = set[MsgBitFlags]
     ## The actual bitfield value for message flags.
 
