@@ -17,7 +17,7 @@
 <link href='https://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600' rel='stylesheet' type='text/css'/>
 
 <!-- CSS -->
-<title>../../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify</title>
+<title>anonimongo/core/bsonify</title>
 <link rel="stylesheet" type="text/css" href="../../../../../../../../../nimdoc.out.css">
 
 <script type="text/javascript" src="../../../../../../../../../dochack.js"></script>
@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,24 +44,32 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
-    <h1 class="title">../../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify</h1>
+    <h1 class="title">anonimongo/core/bsonify</h1>
     <div class="row">
   <div class="three columns">
   <div class="theme-switch-wrapper">
@@ -94,8 +101,11 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#17" id="67">Macros</a>
   <ul class="simple simple-toc-section">
+      <ul class="simple nested-toc-section">bson
       <li><a class="reference" href="#bson.m%2Cuntyped"
-    title="bson(p: untyped): untyped"><wbr />bson<span class="attachedType"></span></a></li>
+    title="bson(p: untyped): untyped">bson(p: untyped): untyped</a></li>
+
+  </ul>
 
   </ul>
 </li>
@@ -103,6 +113,11 @@ function main() {
 </ul>
 
   </div>
+  &nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify.nim#L1"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify.nim#L1" class="link-seesrc" target="_blank" >Edit</a>
+
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
@@ -110,17 +125,18 @@ function main() {
   <div class="section" id="17">
 <h1><a class="toc-backref" href="#17">Macros</a></h1>
 <dl class="item">
-<a id="bson.m,untyped"></a>
+<div id="bson.m,untyped">
 <dt><pre><span class="Keyword">macro</span> <a href="#bson.m%2Cuntyped"><span class="Identifier">bson</span></a><span class="Other">(</span><span class="Identifier">p</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
 <dd>
 
 Macro for defining BsonDocument seamless as if it's an immediate object syntax supported by Nim.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify.nim#L40"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify.nim#L40"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bsonify.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+</div>
 
 </dl></div>
 
@@ -131,7 +147,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-03-12 07:59:11 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-03-12 07:59:25 UTC</small>
       </div>
     </div>
   </div>
