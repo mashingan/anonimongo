@@ -1,0 +1,115 @@
+Bson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bson	 Bson	
+writeLE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#writeLE.t,Streamable,T	bson: writeLE[T; ](s: var Streamable; val: T): untyped	
+readIntLE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#readIntLE.t,Streamable,typedesc	bson: readIntLE(s: var Streamable; which: typedesc): untyped	
+peekInt32LE	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#peekInt32LE.t,Streamable	bson: peekInt32LE(s: var Streamable): untyped	
+bytes	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bytes,string	bson: bytes(s: string): seq[byte]	
+bytes	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bytes,Oid	bson: bytes(o: Oid): seq[byte]	
+stringbytes	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stringbytes,seq[byte]	bson: stringbytes(s: seq[byte]): string	
+`as`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#as.t,untyped,untyped	bson: `as`(a, b: untyped): untyped	
+BsonBase	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonBase	bson: BsonBase	
+BsonInt32	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonInt32	bson: BsonInt32	
+BsonInt64	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonInt64	bson: BsonInt64	
+BsonTimestamp	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonTimestamp	bson: BsonTimestamp	
+BsonDouble	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonDouble	bson: BsonDouble	
+BsonNull	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonNull	bson: BsonNull	
+BsonBool	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonBool	bson: BsonBool	
+BsonTime	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonTime	bson: BsonTime	
+BsonArray	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonArray	bson: BsonArray	
+BsonString	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonString	bson: BsonString	
+BsonJs	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonJs	bson: BsonJs	
+BsonEmbed	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonEmbed	bson: BsonEmbed	
+BsonObjectId	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonObjectId	bson: BsonObjectId	
+BsonBinary	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonBinary	bson: BsonBinary	
+BsonDocument	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonDocument	bson: BsonDocument	
+bkEmptyArray	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkEmptyArray	BsonKind.bkEmptyArray	
+bkDouble	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkDouble	BsonKind.bkDouble	
+bkString	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkString	BsonKind.bkString	
+bkEmbed	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkEmbed	BsonKind.bkEmbed	
+bkArray	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkArray	BsonKind.bkArray	
+bkBinary	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkBinary	BsonKind.bkBinary	
+bkUndefined	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkUndefined	BsonKind.bkUndefined	
+bkObjectId	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkObjectId	BsonKind.bkObjectId	
+bkBool	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkBool	BsonKind.bkBool	
+bkTime	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkTime	BsonKind.bkTime	
+bkNull	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkNull	BsonKind.bkNull	
+bkRegex	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkRegex	BsonKind.bkRegex	
+bkDbPointer	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkDbPointer	BsonKind.bkDbPointer	
+bkJs	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkJs	BsonKind.bkJs	
+bkSymbol	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkSymbol	BsonKind.bkSymbol	
+bkJsScope	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkJsScope	BsonKind.bkJsScope	
+bkInt32	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkInt32	BsonKind.bkInt32	
+bkTimestamp	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkTimestamp	BsonKind.bkTimestamp	
+bkInt64	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkInt64	BsonKind.bkInt64	
+bkDecimal	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkDecimal	BsonKind.bkDecimal	
+bkMaxKey	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkMaxKey	BsonKind.bkMaxKey	
+bkMinKey	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bkMinKey	BsonKind.bkMinKey	
+BsonKind	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonKind	bson: BsonKind	
+stGeneric	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stGeneric	BsonSubtype.stGeneric	
+stFunction	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stFunction	BsonSubtype.stFunction	
+stBinaryOld	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stBinaryOld	BsonSubtype.stBinaryOld	
+stUuidOld	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stUuidOld	BsonSubtype.stUuidOld	
+stUuid	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stUuid	BsonSubtype.stUuid	
+stMd5	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#stMd5	BsonSubtype.stMd5	
+BsonSubtype	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonSubtype	bson: BsonSubtype	
+BsonFetchError	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#BsonFetchError	bson: BsonFetchError	
+pairs	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#pairs.i,BsonDocument	bson: pairs(b: BsonDocument): (string, BsonBase)	
+mpairs	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#mpairs.i,BsonDocument	bson: mpairs(b: BsonDocument): (unown string, var BsonBase)	
+ms	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ms,Time	bson: ms(a: Time): int64	
+`==`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#==,BsonBase,Time	bson: `==`(b: BsonBase; t: Time): bool	
+`==`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#==,Time,BsonBase	bson: `==`(t: Time; b: BsonBase): bool	
+contains	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#contains,BsonDocument,string	bson: contains(b: BsonDocument; key: string): bool	
+contains	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#contains,BsonBase,string	bson: contains(b: BsonBase; key: string): bool	
+`[]`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#[],BsonDocument,sinkstring	bson: `[]`(b: BsonDocument; key: sink string): BsonBase	
+`[]`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#[],BsonBase,sinkstring	bson: `[]`(b: BsonBase; key: sink string): BsonBase	
+`[]`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#[],BsonBase,sinkint	bson: `[]`(b: BsonBase; idx: sink int): BsonBase	
+`[]`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#[],BsonBase,sinkT	bson: `[]`[T: int | string](b: BsonBase; key: sink T): BsonBase	
+`[]=`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#[]=,BsonDocument,sinkstring,BsonBase	bson: `[]=`(b: var BsonDocument; key: sink string; val: BsonBase)	
+mget	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#mget,BsonDocument,sinkstring	bson: mget(b: var BsonDocument; key: sink string): var BsonBase	
+mget	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#mget,BsonBase,sinkstring	bson: mget(b: var BsonBase; key: sink string): var BsonBase	
+mget	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#mget,BsonBase,sinkint	bson: mget(b: var BsonBase; index: sink int): var BsonBase	
+`[]=`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#[]=,BsonBase,sinkstring,BsonBase	bson: `[]=`(b: var BsonBase; key: sink string; val: BsonBase)	
+add	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#add,BsonArray,BsonBase	bson: add(b: var BsonArray; v: BsonBase)	
+add	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#add,BsonBase,BsonBase	bson: add(b: var BsonBase; v: BsonBase)	
+del	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#del,BsonDocument,string	bson: del(b: var BsonDocument; key: string)	
+len	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#len,BsonDocument	bson: len(b: BsonDocument): int	
+len	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#len,BsonArray	bson: len(b: BsonArray): int	
+len	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#len,BsonBase	bson: len(b: BsonBase): int	
+keys	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#keys.i,BsonDocument	bson: keys(b: BsonDocument): string	
+`$`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#$,BsonBase	bson: `$`(v: BsonBase): string	
+`$`	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#$,BsonDocument	bson: `$`(doc: BsonDocument): string	
+encode	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#encode,BsonDocument	bson: encode(doc: BsonDocument): (int, string)	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,BsonBase	bson: toBson(v: BsonBase): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c	bson: toBson(value: int | int32): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,int64	bson: toBson(value: int64): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c_2	bson: toBson(values: string | seq[Rune]): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,SomeFloat	bson: toBson(value: SomeFloat): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,seq[BsonBase]	bson: toBson(value: seq[BsonBase]): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,bool	bson: toBson(value: bool): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,Time	bson: toBson(value: Time): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,Oid	bson: toBson(value: Oid): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,BsonDocument	bson: toBson(value: BsonDocument): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,openArray[byte]	bson: toBson(value: openArray[byte]): BsonBase	
+toBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#toBson.c,TimestampInternal	bson: toBson(value: TimestampInternal): BsonBase	
+bsonNull	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bsonNull_2	bson: bsonNull(): BsonBase	
+isNil	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#isNil,BsonBase	bson: isNil(b: BsonBase): bool	
+isNil	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#isNil,BsonDocument	bson: isNil(b: BsonDocument): bool	
+bsonArray	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bsonArray,varargs[BsonBase,toBson]	bson: bsonArray(args: varargs[BsonBase, toBson]): BsonBase	
+bsonBinary	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bsonBinary,string	bson: bsonBinary(binstr: string; subtype = stGeneric): BsonBase	
+bsonBinary	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bsonBinary,seq[byte]	bson: bsonBinary(binseq: seq[byte]; subtype = stGeneric): BsonBase	
+bsonJs	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bsonJs_2	bson: bsonJs(code: string | seq[Rune]): BsonBase	
+newBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#newBson,Streamable,string	bson: newBson(table = newOrderedTable[string, BsonBase]();\n        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument	
+decode	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#decode,string	bson: decode(strbytes: string): BsonDocument	
+newBson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#newBson,varargs[]	bson: newBson(table: varargs[(string, BsonBase)]): BsonDocument	
+ofInt32	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofInt32.c,BsonBase	bson: ofInt32(b: BsonBase): int32	
+ofInt64	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofInt64.c,BsonBase	bson: ofInt64(b: BsonBase): int64	
+ofInt	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofInt.c,BsonBase	bson: ofInt(b: BsonBase): int	
+ofDouble	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofDouble.c,BsonBase	bson: ofDouble(b: BsonBase): float64	
+ofString	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofString.c,BsonBase	bson: ofString(b: BsonBase): string	
+ofTime	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofTime.c,BsonBase	bson: ofTime(b: BsonBase): Time	
+ofObjectId	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofObjectId.c,BsonBase	bson: ofObjectId(b: BsonBase): Oid	
+ofArray	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofArray.c,BsonBase	bson: ofArray(b: BsonBase): seq[BsonBase]	
+ofBool	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofBool.c,BsonBase	bson: ofBool(b: BsonBase): bool	
+ofEmbedded	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofEmbedded.c,BsonBase	bson: ofEmbedded(b: BsonBase): BsonDocument	
+ofBinary	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofBinary.c,BsonBase	bson: ofBinary(b: BsonBase): seq[byte]	
+ofTimestamp	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#ofTimestamp.c,BsonBase	bson: ofTimestamp(b: BsonBase): TimestampInternal	
+bson	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.2/anonimongo/core/bson.html#bson.t	bson: bson(): untyped	

@@ -54,7 +54,7 @@ proc serialize(s: StringStream, srvs: seq[SRVRecord], server: string) =
     s.serialize srv, server
 
 proc serialize(data: string): StringStream =
-  var req = data.newStringStream.parseResponse
+  var req = parseResponse data
   req.header.qr = QR_RESPONSE
   req.header.ancount = 3
   req.header.rcode = 0

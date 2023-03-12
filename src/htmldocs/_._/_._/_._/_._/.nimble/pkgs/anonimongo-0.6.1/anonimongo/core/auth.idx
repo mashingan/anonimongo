@@ -1,2 +1,0 @@
-authenticate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/auth.html#authenticate,Socket,string,string,typedesc,string	auth: authenticate(sock: Socket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): bool	
-authenticate	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.1/anonimongo/core/auth.html#authenticate,AsyncSocket,string,string,typedesc,string	auth: authenticate(sock: AsyncSocket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): Future[bool]	
