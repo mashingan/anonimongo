@@ -1146,6 +1146,14 @@ it hasn't been undergone extensive testing. As it's almost no different with nor
 user can retry by themselves to increase of the retrying. Bulk write is reusing the previous
 mentioned operations so it's supported too.
 
+## Support
+
+If this library is useful for you and you can spare some, any donation would be appreciated.
+[Paypal](https://paypal.me/rahshingan?country.x=ID&locale.x=en_US).
+
+If you want to have particular features to be implemented and would like to have a commercial support,
+you can email to [rahmatullah21@proton.me](rahmatullah21@proton.me) for reaching out.
+
 
 [TOC](#table-of-content)
 ## License
