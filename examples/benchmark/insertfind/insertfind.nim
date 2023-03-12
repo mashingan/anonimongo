@@ -12,7 +12,7 @@ let
   ## add import std/oids if we want to supply object id
   # curroid = genOid()
 
-let mongo = newMongo()
+let mongo = newMongo[AsyncSocket]()
 if not waitfor mongo.connect:
     quit "cannot connect, quit"
 let
