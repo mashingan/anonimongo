@@ -69,6 +69,7 @@ func insert100FindLast() (res *mongo.SingleResult, err error) {
 
 func BenchmarkInsert100FindLast(b *testing.B) {
 	var r *mongo.SingleResult
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		r, _ = insert100FindLast()
 	}
