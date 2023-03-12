@@ -1,3 +1,4 @@
+Collection Methods	anonimongo/collections.html#collection-methods	 Collection Methods	
 one	anonimongo/collections.html#one,Query[Socket]	collections: one(q: Query[Socket]): BsonDocument	
 one	anonimongo/collections.html#one,Query[AsyncSocket]	collections: one(q: Query[AsyncSocket]): Future[BsonDocument]	
 all	anonimongo/collections.html#all,Query[Socket]	collections: all(q: Query[Socket]): seq[BsonDocument]	
@@ -44,4 +45,3 @@ aggregate	anonimongo/collections.html#aggregate,Collection[Socket],seq[BsonDocum
 aggregate	anonimongo/collections.html#aggregate,Collection[AsyncSocket],seq[BsonDocument]	collections: aggregate(c: Collection[AsyncSocket]; pipeline: seq[BsonDocument]; opt = bson()): Future[\n    seq[BsonDocument]]	
 bulkWrite	anonimongo/collections.html#bulkWrite,Collection[Socket],seq[BsonDocument]	collections: bulkWrite(c: Collection[Socket]; operations: seq[BsonDocument]; wt = bsonNull();\n          ordered = true): BulkResult	
 bulkWrite	anonimongo/collections.html#bulkWrite,Collection[AsyncSocket],seq[BsonDocument]	collections: bulkWrite(c: Collection[AsyncSocket]; operations: seq[BsonDocument];\n          wt = bsonNull(); ordered = true): Future[BulkResult]	
-Collection Methods	anonimongo/collections.html#collection-methods	 Collection Methods	

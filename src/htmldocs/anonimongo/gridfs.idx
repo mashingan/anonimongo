@@ -30,8 +30,8 @@ GridStream	anonimongo/gridfs.html#GridStream	gridfs: GridStream
 fileSize	anonimongo/gridfs.html#fileSize,GridStream	gridfs: fileSize(gs: GridStream): int64	
 metadata	anonimongo/gridfs.html#metadata,GridStream	gridfs: metadata(gs: GridStream): BsonDocument	
 close	anonimongo/gridfs.html#close,GridStream	gridfs: close(gs: GridStream)	
-setPosition	anonimongo/gridfs.html#setPosition,GridStream[Socket],int64,int	gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)	
-setPosition	anonimongo/gridfs.html#setPosition,GridStream[AsyncSocket],int64,int	gridfs: setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(\n    Future[void])	
+setPosition	anonimongo/gridfs.html#setPosition,GridStream[Socket],int64	gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)	
+setPosition	anonimongo/gridfs.html#setPosition,GridStream[AsyncSocket],int64	gridfs: setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(\n    Future[void])	
 getPosition	anonimongo/gridfs.html#getPosition,GridStream	gridfs: getPosition(gs: GridStream): int64	
 read	anonimongo/gridfs.html#read,GridStream[Socket],int64	gridfs: read(gs: GridStream[Socket]; length = 0&apos;i64): string	
 read	anonimongo/gridfs.html#read,GridStream[AsyncSocket],int64	gridfs: read(gs: GridStream[AsyncSocket]; length = 0&apos;i64): Future[string]	
