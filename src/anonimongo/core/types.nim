@@ -227,7 +227,7 @@ proc handleSsl(m: Mongo[Multisock]) =
   var connectSSL = if isSsl == "": false
                   else:
                     try: parseBool tbl[isSsl][0]
-                    except: false
+                    except ValueError: false
 
   if (m.tls or connectSsl) and not withSsl: raiseEnableSsl()
   when defined(ssl):
@@ -254,7 +254,7 @@ proc handleWriteConcern(m: Mongo[Multisock]) =
     let val = m.query["w"][0]
     if val.all isDigit:
       w["w"] = try: (parseInt val).toBson
-                          except: 1.toBson
+               except ValueError: 1.toBson
     else:
       w["w"] = val
   if "j" in m.query and m.query["j"].len > 0:
@@ -429,7 +429,7 @@ proc newMongo[S: Multisock](uri: seq[Uri], poolconn = poolconn, isTls = false): 
 
   if "retryablewrites" in result.query and result.query["retryablewrites"].len > 0:
     result.retryableWrites = try: parseBool result.query["retryablewrites"][0]
-                             except: false
+                             except ValueError: false
 
   if "compressors" in result.query and result.query["compressors"].len > 0:
     when verbose: dump result.query["compressors"]

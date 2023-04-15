@@ -9,7 +9,7 @@ proc insert5files(g: GridFS[TheSock], fname: string): bool =
   var f: AsyncFile
   try:
     f = openAsync(fname)
-  except:
+  except CatchableError:
     echo getCurrentExceptionMsg()
     return
   defer: close f

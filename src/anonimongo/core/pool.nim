@@ -162,7 +162,7 @@ when isMainModule:
       ops[count] = pool.dummy(count)
     try:
       await all(ops)
-    except:
+    except CatchableError:
       echo getCurrentExceptionMsg()
     when not defined(release):
       dump pool.available
