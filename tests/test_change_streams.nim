@@ -83,7 +83,7 @@ when testChangeStreams:
       var cWatch: Cursor[AsyncSocket]
       try:
         cWatch = waitfor coll.watch()
-      except:
+      except CatchableError:
         echo getCurrentExceptionMsg()
         fail()
 

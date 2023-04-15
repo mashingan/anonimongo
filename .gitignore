@@ -5,6 +5,7 @@
 
 nimcache/
 .vscode/
+buildcache/
 
 # Vim backup file
 *.swp
