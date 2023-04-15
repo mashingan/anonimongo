@@ -55,7 +55,7 @@ proc forEach*(c: Cursor[AsyncSocket], cb: proc(b: ChangeStream),
       var forEachReply: BsonDocument
       try:
         forEachReply = await db.getMore(c.id, collname, 101)
-      except:
+      except CatchableError:
         echo getCurrentExceptionMsg()
         break always
 

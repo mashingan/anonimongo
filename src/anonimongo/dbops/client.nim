@@ -27,9 +27,9 @@ const
   drivername = "anonimongo"
   description = "nim mongo driver"
 when not defined(anostreamable):
-  const anonimongoVersion* = "0.6.2"
+  const anonimongoVersion* = "0.6.3"
 else:
-  const anonimongoVersion* = "0.6.2-stream"
+  const anonimongoVersion* = "0.6.3-stream"
 
 proc handshake(m: Mongo[AsyncSocket], isMaster: bool, s: AsyncSocket, db: string, id: int32,
   appname = "Anonimongo client apps"):Future[ReplyFormat] {.multisock.} =
@@ -68,7 +68,7 @@ proc connectEach(m: Mongo[AsyncSocket]): Future[bool] {.async.} =
     for _, server in m.servers:
       connectops.add server.pool.connect(server.host, server.port.int)
     await all(connectops)
-  except:
+  except CatchableError:
     echo getCurrentExceptionMsg()
     result = false
     return
@@ -78,7 +78,7 @@ proc connectEach(m: Mongo[Socket]): bool =
   try:
     for _, server in m.servers:
       server.pool.connect(server.host, server.port.int)
-  except:
+  except CatchableError:
     echo getCurrentExceptionMsg()
     result = false
     return
