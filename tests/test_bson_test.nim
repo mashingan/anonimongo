@@ -35,7 +35,7 @@ suite "Bson operations tests":
     removeFile bsonFilename
     when not defined(anostreamable):
       newdoc = newBson(
-        table = newOrderedTable([
+        table = toOrderedTable([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -92,7 +92,7 @@ suite "Bson operations tests":
 
     expect(BsonFetchError):
       discard arrayembed["objects"]["hello"]
-    expect(IndexError):
+    expect(IndexDefect):
       discard arrayembed["objects"][4]
     expect(BsonFetchError):
       discard arrayembed["objects"][1]["q"]["hello"]
@@ -102,7 +102,7 @@ suite "Bson operations tests":
   test "Bson binary operations":
     require(fileExists "tests/qrcode-me.png")
     let stringbin = "MwahahaBinaryGotoki"
-    let testbinary = bson({
+    var testbinary = bson({
       dummy_binary: bsonBinary stringbin
     })
     let (_, tbencoded) = encode testbinary
@@ -110,7 +110,7 @@ suite "Bson operations tests":
     check dectestbin["dummy_binary"].
       ofBinary.stringbytes == stringbin
 
-    let pngbin = bson({
+    var pngbin = bson({
       "qr-me": bsonBinary qrimg
     })
     let (_, pngbinencode) = encode pngbin
@@ -119,7 +119,7 @@ suite "Bson operations tests":
 
   test "Bson timestamp codec operations":
     let currtime = getTime().toUnix.uint32
-    let timestampdoc = bson({
+    var timestampdoc = bson({
       timestamp: (0'u32, currtime)
     })
     let (_, timestampstr) = encode timestampdoc
@@ -129,8 +129,8 @@ suite "Bson operations tests":
 
   when not defined(anostreamable):
     test "Empty bson array codec and write to file":
-      let emptyarr = newBson(
-        table = newOrderedTable([
+      var emptyarr = newBson(
+        table = toOrderedTable([
           ("emptyarr", bsonArray())]),
         stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
       let (_, empstr) = encode emptyarr
@@ -151,7 +151,7 @@ suite "Bson operations tests":
     #test js code
     let jscode = "function double(x) { return x*2; }"
     let jsbson = bsonJs jscode
-    let bjs = bson({
+    var bjs = bson({
       js: jsbson,
     })
     check bjs["js"] == jscode
@@ -173,7 +173,7 @@ suite "Bson operations tests":
       bsonInt.add newobj
 
   test "Clear stream when Bson is modified":
-    let baseCompare = bson {
+    var baseCompare = bson {
       arr: [42, 42.0, true, "nanana"],
     }
     let (baseN, baseStr) = encode baseCompare
@@ -221,7 +221,7 @@ suite "Bson operations tests":
       check itemN == itemN
 
   test "Clear stream for BsonDocument when fetched with mget":
-    let baseObjCompare = bson {
+    var baseObjCompare = bson {
       base: {
         field1: 42,
         field2: 42.0,
