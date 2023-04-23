@@ -492,7 +492,7 @@ proc mget*(b: var BsonDocument, key: sink string): var BsonBase =
     doAssert not bsonobj.encoded
   
   b.clearStream
-  b.table[key]
+  unown b.table.mgetOrPut(key, BsonBase(kind: bkUndefined))
 
 proc mget*(b: var BsonBase, key: sink string): var BsonBase =
   ## Actual a mutable accessor for string key BsonEmbed.
@@ -526,9 +526,8 @@ proc `[]=`*(b: var BsonBase, key: sink string, val: BsonBase) =
   if b.kind != bkEmbed:
     raise newException(BsonFetchError,
       fmt"Invalid Bson kind key retrieval of {b}, get {b.kind}")
-  var bdoc = b as BsonEmbed
-  bdoc.value.clearStream
-  bdoc.value.table[key] = val
+  b.valueEmbed.clearStream
+  b.valueEmbed.table[key] = val
 
 proc add*(b: var BsonArray, v: BsonBase) =
   ## Add element to BsonArray
@@ -547,8 +546,7 @@ proc add*(b: var BsonBase, v: BsonBase) =
   if b.kind != bkArray:
     raise newException(BsonFetchError,
       fmt"Invalid Bson kind add value of {b}, get {b.kind}")
-  var barray = b as BsonArray
-  barray.value.add v
+  b.valueArray.add v
 
 proc del*(b: var BsonDocument, key: string) =
   ## Delete a field given from string key. Do nothing when there's no
@@ -851,7 +849,7 @@ proc bsonNull*: BsonBase =
 
 proc isNil*(b: BsonBase): bool =
   ## Check whether BsonBase is literally nil or it's BsonNull.
-  b.kind == bkNull
+  b.kind == bkNull or b.kind == bkEmptyArray
 
 proc isNil*(b: BsonDocument): bool =
   ## Check whether BsonDocument is literally nil or it's empty.

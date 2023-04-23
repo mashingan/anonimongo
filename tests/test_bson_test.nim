@@ -3,30 +3,22 @@ discard """
   action: "run"
   exitcode: 0
   
-  output: ""
-  outputsub: ""
-  
-  sortoutput: true
-  
-  timeout: 1.5
-  
   targets: "c cpp"
   
   # flags with which to run the test, delimited by `;`
   matrix: "; -d:anostreamable; -d:release; -d:anostreamable -d:release"
 """
-import unittest, times, oids, streams, tables, os, options
-import anonimongo/core/bson
-import sugar
+import std/[times, oids, streams, tables, os, options]
+from std/strformat import `&`
 
-{.warning[UnusedImport]: off.}
+import anonimongo/core/bson
 
 const qrimg = readFile "tests/qrcode-me.png"
 
-template errcatch(excpt: typedesc, body: untyped): untyped =
+proc errcatch(excpt: typedesc, body: proc()) =
   var errorCatched = false
   try:
-    `body`
+    body()
   except excpt:
     errorCatched = true
   assert errorCatched
@@ -72,7 +64,7 @@ block: # "Bson operations tests":
         stream = newFileStream(bsonFilename, mode = fmReadWrite))
     else:
       newdoc = newBson(
-        table = newOrderedTable([
+        table = toOrderedTable([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -105,24 +97,24 @@ block: # "Bson operations tests":
     assert nnewdoc["now"].ofTime == newdoc["now"]
 
   block: # "Throw incorrect conversion value and accessing field":
-    errcatch(BsonFetchError):
+    errcatch(BsonFetchError) do:
       discard nnewdoc["hello"].ofDouble
-    errcatch(KeyError):
+    errcatch(KeyError) do:
       discard nnewdoc["nonexistent-field"]
 
   block: # "Embedded bson document":
-    assert arrayembed["objects"][2]["u"]["$set"]["truth"].ofInt32 == 42
+    assert arrayembed["objects"][2]["u"]["$set"]["truth"] == 42
     let q2: int = arrayembed["objects"][1]["q"]
     assert q2 == 2
 
-    errcatch(BsonFetchError):
+    errcatch(BsonFetchError) do:
       discard arrayembed["objects"]["hello"]
-    errcatch(IndexDefect):
+    errcatch(IndexDefect) do:
       discard arrayembed["objects"][4]
 
-    errcatch(BsonFetchError):
+    errcatch(BsonFetchError) do:
       discard arrayembed["objects"][1]["q"]["hello"]
-    errcatch(BsonFetchError):
+    errcatch(BsonFetchError) do:
       discard arrayembed["objects"][0][3]
 
   block: # "Bson binary operations":
@@ -193,11 +185,12 @@ block: # "Bson operations tests":
       q: 4, u: { "$set": { role_name: "add" }},
     })
     arrayembed.mget("objects").add newobj
-    assert arrayembed["objects"].len == 4
-    assert arrayembed["objects"][3]["q"].ofInt == newobj["q"]
-    assert arrayembed["objects"][3]["u"]["$set"]["role_name"] == "add"
+    let arrobj = arrayembed["objects"]
+    assert arrobj.len == 4, &"array embed object len is {arrobj.len}"
+    assert arrobj[3]["q"].ofInt == newobj["q"]
+    assert arrobj[3]["u"]["$set"]["role_name"] == "add"
 
-    expect BsonFetchError:
+    errcatch(BsonFetchError) do:
       var bsonInt = 4.toBson
       bsonInt.add newobj
 
@@ -269,10 +262,10 @@ block: # "Bson operations tests":
     assert mutStr != baseObjStr
     mutObj.mget("base")["field2"] = 42.0
     (mutN, mutStr) = encode mutObj
-    assert mutN == baseObjN
+    assert mutN == baseObjN, &"expected mutN: {mutN} got baseObjN: {baseObjN}"
     assert mutStr == baseObjStr
 
-suite "Macro to object conversion tests":
+block: # "Macro to object conversion tests":
   type
     Bar = string
     BarDistrict = distinct string
@@ -421,7 +414,7 @@ suite "Macro to object conversion tests":
     NotHomogenousSeq = object
       theseq*: seq[string]
   block: # "Handle error when convert non homogenous seq/array":
-    expect BsonFetchError:
+    errcatch BsonFetchError:
       discard bson({
         theseq: ["異世界", "hello", 4.2, 10]
       }).to NotHomogenousSeq
@@ -825,7 +818,7 @@ suite "Macro to object conversion tests":
     flex = b3.to Flexible
     assert flex.field1.isNil
     assert flex.field2 == nao
-    assert flex.field3.isNil
+    assert flex.field3.isNil, &"flex.field3 is not nil, it is '{flex.field3}'"
 
   block: # "Enum conversion":
     type
