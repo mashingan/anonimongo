@@ -1,12 +1,19 @@
-import uri, tables, strutils, net, strformat, sequtils, unicode
-import deques, sugar
-from asyncdispatch import Port
-from math import nextPowerOfTwo
+from std/net import Socket
+from std/strformat import `&`, fmt
+from std/asyncdispatch import Port
+from std/math import nextPowerOfTwo
+from std/sugar import `=>`, `->`
+from std/unicode import toLower
+from std/sequtils import mapIt, allIt, toSeq
+from std/strutils import split
+from std/tables import TableRef, newTable, `[]=`, `[]`, contains
+from std/uri import Uri, parseUri, decodeUrl
 
 when defined(ssl):
   import openssl
 
-import sha1, nimSHA2
+from std/sha1 import Sha1Digest
+from nimSHA2 import SHA256Digest
 import dnsclient
 
 import pool, wire, bson, multisock
@@ -22,7 +29,7 @@ const
   sslProtVersion {.strdefine, used.} = ""
 
 when verbose:
-  import sugar
+  from std/sugar import dump
 
 type
   MongoConn* {.multisock.} = ref object of RootObj

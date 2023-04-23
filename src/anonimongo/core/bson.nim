@@ -803,9 +803,9 @@ proc encode*(doc: var BsonDocument): (int, string) =
   doc.encoded = true
   result = (length, buff)
 
-proc encode*(doc: sink BsonDocument): (int, string) =
-  var newdoc = move doc
-  result = encode newdoc
+# proc encode*(doc: sink BsonDocument): (int, string) =
+#   var newdoc = move doc
+#   result = encode newdoc
 
 converter toBson*(v: BsonBase): BsonBase = v
   ## Id conversion BsonBase to itself. For `bson macro<#bson.m,untyped>`_.

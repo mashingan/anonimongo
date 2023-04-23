@@ -117,3 +117,11 @@ proc require*(success: bool, msg = "") =
     quit msg, QuitFailure
 
 proc skip*() = discard
+
+proc errcatch*(excpt: typedesc, body: proc()) =
+  var errorCatched = false
+  try:
+    body()
+  except excpt:
+    errorCatched = true
+  assert errorCatched

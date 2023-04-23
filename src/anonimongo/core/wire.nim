@@ -74,7 +74,7 @@ type
 
 const msgDefaultFlags = 0
 
-proc serialize(s: var Streamable, doc: BsonDocument): int =
+proc serialize(s: var Streamable, doc: var BsonDocument): int =
   let (doclen, docstr) = encode doc
   result = doclen
   s.write docstr
@@ -139,10 +139,10 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
   when verbose:
     dump query
 
-  template writeStream(s: untyped): int =
-    `s`.writeLE msgDefaultFlags.int32
-    `s`.write 0.byte # kind 0: body
-    var length = `s`.serialize(query) + sizeof(byte) + sizeof(int32)
+  template writeStream(ss: Stream): int =
+    ss.writeLE msgDefaultFlags.int32
+    ss.write 0.byte # kind 0: body
+    var length = ss.serialize(query) + sizeof(byte) + sizeof(int32)
     length
 
   if compression == cidNoop:

@@ -15,14 +15,6 @@ import anonimongo/core/bson
 
 const qrimg = readFile "tests/qrcode-me.png"
 
-proc errcatch(excpt: typedesc, body: proc()) =
-  var errorCatched = false
-  try:
-    body()
-  except excpt:
-    errorCatched = true
-  assert errorCatched
-
 block: # "Bson operations tests":
   let isekai = "hello, 異世界"
   let currtime = now().toTime
