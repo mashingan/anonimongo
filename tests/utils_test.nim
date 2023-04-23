@@ -106,8 +106,14 @@ proc tell*(label, reason: string) =
 
 template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
   when b is BsonDocument:
-    check b.ok
+    assert b.ok
     if not b.ok: (label & ": ").tell b.errmsg
   else:
-    check b
+    assert b
     if not b: (label & ": ").tell reason
+
+proc require*(success: bool, msg = "") =
+  if not success:
+    quit msg, QuitFailure
+
+proc skip*() = discard

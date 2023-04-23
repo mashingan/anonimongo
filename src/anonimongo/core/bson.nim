@@ -213,19 +213,25 @@ type
     else:
       discard
 
-  BsonInt32{.borrow: `.`.} =  distinct BsonBase
-  BsonInt64{.borrow: `.`.} =  distinct BsonBase
-  BsonDouble{.borrow: `.`.} =  distinct BsonBase
-  BsonTime{.borrow: `.`.} =  distinct BsonBase
-  BsonTimestamp{.borrow: `.`.} =  distinct BsonBase
-  BsonString{.borrow: `.`.} =  distinct BsonBase
-  BsonJs{.borrow: `.`.} =  distinct BsonBase
-  BsonEmbed{.borrow: `.`.} =  distinct BsonBase
-  BsonBinary{.borrow: `.`.} =  distinct BsonBase
-  BsonObjectId{.borrow: `.`.} =  distinct BsonBase
-  BsonArray{.borrow: `.`.} =  distinct BsonBase
-  BsonBool{.borrow: `.`.} =  distinct BsonBase
-  BsonNull{.borrow: `.`.} =  distinct BsonBase
+  BsonInt32* {.borrow: `.`.} =  distinct BsonBase
+  BsonInt64* {.borrow: `.`.} =  distinct BsonBase
+  BsonDouble* {.borrow: `.`.} =  distinct BsonBase
+  BsonTime* {.borrow: `.`.} =  distinct BsonBase
+  BsonTimestamp* {.borrow: `.`.} =  distinct BsonBase
+  BsonString* {.borrow: `.`.} =  distinct BsonBase
+  BsonJs* {.borrow: `.`.} =  distinct BsonBase
+  BsonEmbed* {.borrow: `.`.} =  distinct BsonBase
+  BsonBinary* {.borrow: `.`.} =  distinct BsonBase
+  BsonObjectId* {.borrow: `.`.} =  distinct BsonBase
+  BsonArray* {.borrow: `.`.} =  distinct BsonBase
+  BsonBool* {.borrow: `.`.} =  distinct BsonBase
+  BsonNull* {.borrow: `.`.} =  distinct BsonBase
+
+  BsonBaseInherit = BsonInt32 | BsonInt64 | BsonDouble |
+    BsonTime | BsonTimestamp |
+    BsonString | BsonJs |
+    BsonEmbed |
+    BsonBinary | BsonObjectId | BsonArray | BsonBool | BsonNull
 
   # issue 13046: type decl needs re-ordering
   BsonInternal = OrderedTable[string, BsonBase]
@@ -797,8 +803,15 @@ proc encode*(doc: var BsonDocument): (int, string) =
   doc.encoded = true
   result = (length, buff)
 
+proc encode*(doc: sink BsonDocument): (int, string) =
+  var newdoc = move doc
+  result = encode newdoc
+
 converter toBson*(v: BsonBase): BsonBase = v
   ## Id conversion BsonBase to itself. For `bson macro<#bson.m,untyped>`_.
+
+converter toBson*[T: BsonBaseInherit](v: T): BsonBase = v.BsonBase
+  ## Id conversion to itself as BsonBase. For `bson macro<#bson.m,untyped>`_.
 
 converter toBson*(value: int|int32): BsonBase =
   ## Convert int or int32 to BsonBase automatically.

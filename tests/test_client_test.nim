@@ -1,5 +1,15 @@
-import unittest, osproc, os, strformat
+discard """
+  
+  action: "run"
+  exitcode: 0
+  
+  # flags with which to run the test, delimited by `;`
+  #matrix: "; -d:anostreamable; -d:release; -d:anostreamable -d:release"
+  matrix: "-d:release"
+"""
 
+from std/osproc import Process, running, close, kill
+from std/os import sleep
 import utils_test
 import anonimongo
 
@@ -8,12 +18,12 @@ if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
-suite "Client connection and user management tests":
-  test "Required mongo is running":
+block: # "Client connection and user management tests":
+  block: #"Required mongo is running":
     if runlocal:
       require mongorun.running
     else:
-      check true
+      assert true
 
   var mongo: Mongo[TheSock]
   var db: Database[TheSock]
@@ -25,21 +35,21 @@ suite "Client connection and user management tests":
   }
   let newuser = "temptest-user"
 
-  test "Connected mongo and authenticated":
+  block: #"Connected mongo and authenticated":
     mongo = testsetup()
     if mongo.withAuth:
       require mongo.authenticated
 
-  test "Look users info":
+  block: #"Look users info":
     require mongo != nil
     db = mongo[existingDb]
-    # test looking for not existing user
+    # block: #looking for not existing user
     when anoSocketSync:
       var reply = db.usersInfo("not-exists0user")
     else:
       var reply = waitFor db.usersInfo("not-exists0user")
-    check reply.ok
-    check reply["users"].len == 0
+    assert reply.ok
+    assert reply["users"].len == 0
 
     when anoSocketSync:
       reply = db.usersInfo(existingUser)
@@ -47,13 +57,13 @@ suite "Client connection and user management tests":
       reply = waitFor db.usersInfo(existingUser)
     let users = reply["users"]
     when defined(existingMongoSetup):
-      check users.len == 1
+      assert users.len == 1
       let theuser = users[0]
-      check theuser["user"] == user
+      assert theuser["user"] == user
     else:
-      check users.len == 0
+      assert users.len == 0
 
-  test &"Create new user: {newuser}":
+  block: #&"Create new user: {newuser}":
     when anoSocketSync:
       wr = db.createUser(newuser, newuser,
         roles = bsonArray("read"), customData = bson({ role: "testing"}))
@@ -66,22 +76,22 @@ suite "Client connection and user management tests":
       var reply = db.usersInfo(newuser)
     else:
       var reply = waitFor db.usersInfo(newuser)
-    check reply.ok
+    assert reply.ok
     let users = reply["users"]
-    check users.len == 1
+    assert users.len == 1
     let newdoc = users[0].ofEmbedded
-    check newdoc["user"] == newuser
-    check newdoc["customData"]["role"] == "testing"
+    assert newdoc["user"] == newuser
+    assert newdoc["customData"]["role"] == "testing"
 
-  test &"Look for all users in {existingDb}":
+  block: #&"Look for all users in {existingDb}":
     when anoSocketSync:
       let reply = db.usersInfo(1)
     else:
       let reply = waitFor db.usersInfo(1)
-    check reply.ok
-    check reply["users"].len == 1
+    assert reply.ok
+    assert reply["users"].len == 1
 
-  test &"No added {newuser} to admin database":
+  block: #&"No added {newuser} to admin database":
     when anoSocketSync:
       let reply = db.usersInfo(bson {
         user: newuser, db: "admin",
@@ -90,10 +100,10 @@ suite "Client connection and user management tests":
       let reply = waitFor db.usersInfo(bson {
         user: newuser, db: "admin",
       })
-    check reply.ok
-    check reply["users"].len == 0
+    assert reply.ok
+    assert reply["users"].len == 0
 
-  test &"Check info of the connected user {db.db.username}":
+  block: #&"assert info of the connected user {db.db.username}":
     when anoSocketSync:
       let reply = db.usersInfo(bson {
         user: db.db.username, db: "admin"
@@ -102,7 +112,7 @@ suite "Client connection and user management tests":
       let reply = waitFor db.usersInfo(bson {
         user: db.db.username, db: "admin"
       })
-    check reply.ok
+    assert reply.ok
     let users = reply["users"]
 
     # This is needed to avoid the tripping of number users in admin when
@@ -111,11 +121,11 @@ suite "Client connection and user management tests":
     # there's no user created for it hence it's always returning zero
     # when checking the users in admin databaes.
     when defined(existingMongoSetup):
-      check users.len == 1
+      assert users.len == 1
     else:
-      check users.len == 0
+      assert users.len == 0
 
-  test &"Grant roles to {newuser}":
+  block: #&"Grant roles to {newuser}":
     when anoSocketSync:
       wr = db.grantRolesToUser(newuser,
         roles = bsonArray("readWrite"))
@@ -129,19 +139,19 @@ suite "Client connection and user management tests":
       var reply = db.usersInfo(newuser)
     else:
       var reply = waitFor db.usersInfo(newuser)
-    check reply.ok
+    assert reply.ok
     let users = reply["users"]
-    check users.len == 1
+    assert users.len == 1
     for udoc in users.ofArray:
       let roles = udoc["roles"].ofArray
-      check roles.len == checkRoles.len
+      assert roles.len == checkRoles.len
       for role in roles.ofArray:
-        check role["role"] in checkRoles
+        assert role["role"] in checkRoles
 
-  test &"Check newly granted roles to {newuser}":
+  block: #&"assert newly granted roles to {newuser}":
     checkUserRoles @["read", "readWrite"]
 
-  test &"Revoke roles to {newuser}":
+  block: #&"Revoke roles to {newuser}":
     when anoSocketSync:
       wr = db.revokeRolesFromUser(newuser,
         roles = bsonArray("read", "readWrite"))
@@ -150,10 +160,10 @@ suite "Client connection and user management tests":
         roles = bsonArray("read", "readWrite"))
     wr.success.reasonedCheck("revokeRolesFromUser error", wr.reason)
 
-  test &"Check newly revoked roles to {newuser}":
+  block: #&"assert newly revoked roles to {newuser}":
     checkUserRoles @[]
 
-  test &"Update {newuser}":
+  block: #&"Update {newuser}":
     when anoSocketSync:
       wr = db.updateUser(newuser, newuser,
         roles = bsonArray("read"))
@@ -162,24 +172,24 @@ suite "Client connection and user management tests":
         roles = bsonArray("read"))
     wr.success.reasonedCheck("updateUser error", wr.reason)
 
-  test &"Check newly updated roles to {newuser}":
+  block: #&"assert newly updated roles to {newuser}":
     checkUserRoles @["read"]
 
-  test &"Delete/drop the {newuser}":
+  block: #&"Delete/drop the {newuser}":
     when anoSocketSync:
       wr = db.dropUser(newuser)
     else:
       wr = waitFor db.dropUser(newuser)
     wr.success.reasonedCheck("dropUser error", wr.reason)
 
-  test "Shutdown mongo":
+  block: #"Shutdown mongo":
     if runlocal:
       require mongo != nil
       when anoSocketSync:
         wr = mongo.shutdown(timeout = 10)
       else:
         wr = waitFor mongo.shutdown(timeout = 10)
-      check wr.success
+      assert wr.success
     else:
       skip()
 

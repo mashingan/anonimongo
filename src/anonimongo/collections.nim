@@ -237,13 +237,13 @@ proc count*(c: Collection[AsyncSocket], query = bson(), opt = bson()):
     hint, readConcern, collation: BsonBase
     limit = 0
     skip = 0
-  for k, v in opt.mpairs:
+  for k, v in opt.pairs:
     case k
-    of "hint": hint = move v
-    of "readConcern": readConcern = move v
-    of "collation": collation = move v
-    of "limit": limit = move v
-    of "skip": skip = move v
+    of "hint": hint = v
+    of "readConcern": readConcern = v
+    of "collation": collation = v
+    of "limit": limit = v
+    of "skip": skip = v
   let doc = await c.db.count(c.name, query, limit, skip, hint,
     readConcern, collation)
   result = doc["n"]

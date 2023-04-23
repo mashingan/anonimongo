@@ -259,7 +259,7 @@ proc handleWriteConcern(m: Mongo[Multisock]) =
       w["w"] = val
   if "j" in m.query and m.query["j"].len > 0:
     w["j"] = m.query["j"][0]
-  if w != nil:
+  if not w.isNil:
     m.writeConcern = w
 
 proc checkTlsValidity(m: Mongo[Multisock]) =
