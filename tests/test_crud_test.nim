@@ -8,15 +8,12 @@ discard """
   matrix: "-d:release"
 """
 
-import times, strformat
 from std/osproc import Process, kill, running, close
 from std/os import sleep
 from std/sequtils import map, allIt
 from std/net import Socket
-
-const nim1612up = (NimMajor, NimMinor, NimPatch) >= (1, 16, 12)
-when nim1612up:
-  from std/exitprocs import addExitProc
+from std/strformat import `&`
+from std/times import now, toTime, initDuration, `+`
 
 import utils_test
 import anonimongo
@@ -26,7 +23,8 @@ if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
-when nim1612up:
+when (NimMajor, NimMinor, NimPatch) >= (1, 6, 4):
+  from std/exitprocs import addExitProc
   addExitProc proc() {.noconv.} =
     if runlocal:
       if mongorun.running: kill mongorun
@@ -81,10 +79,15 @@ block: # "CRUD tests":
   block: # &"Find documents on {namespace}":
     # find all documents
     require db != nil
-    when anoSocketSync: resfind = db.find(collname)
-    else: resfind = waitfor db.find(collname)
+    when anoSocketSync:
+      discard db.dropCollection(collname) # need to cleanup previous documents
+      resfind = db.find(collname)
+    else:
+      discard waitFor db.dropCollection(collname)
+      resfind = waitfor db.find(collname)
     resfind.reasonedCheck "find error"
-    assert resfind["cursor"]["firstBatch"].ofArray.len == 0
+    assert resfind["cursor"]["firstBatch"].ofArray.len == 0,
+      &"""expected 0 len, got {resfind["cursor"]["firstBatch"].ofArray.len}"""
     when anoSocketSync:
       resfind = db.find(collname, bson(), batchSize = 1,
         singleBatch = true)
@@ -96,12 +99,35 @@ block: # "CRUD tests":
 
   block: # &"Insert documents on {namespace}":
     require db != nil
+
+    # insert twice to check whether stream is reset
+    # when used for the 2nd time
+    for _ in 1 .. 2:
+      when anoSocketSync:
+        resfind = db.insert(collname, insertDocs)
+      else:
+        resfind = waitfor db.insert(collname, insertDocs)
+      resfind.reasonedCheck "Insert documents error"
+      assert resfind["n"] == insertDocs.len
+
+    # to delete excess insertion
+    let todeleteq = block:
+      var res = newseq[BsonDocument](insertDocs.len)
+      for i, doc in res.mpairs:
+        doc = bson {
+          q: { countId: insertDocs[i]["countId"] },
+          limit: 1,
+          collation: {
+            locale: "en_US_POSIX",
+            caseLevel: false,
+          }
+        }
+      res
     when anoSocketSync:
-      resfind = db.insert(collname, insertDocs)
+      resfind = db.delete(collname, todeleteq)
     else:
-      resfind = waitfor db.insert(collname, insertDocs)
-    resfind.reasonedCheck "Insert documents error"
-    assert resfind["n"] == insertDocs.len
+      resfind = waitfor db.delete(collname, todeleteq)
+    resfind.reasonedCheck "find error"
     
     when anoSocketSync:
       resfind = db.find(collname, singleBatch = true)
@@ -176,7 +202,6 @@ block: # "CRUD tests":
     resfind.reasonedCheck "find error"
     assert resfind["cursor"]["id"] == 0
     var docs = resfind["cursor"]["firstBatch"].ofArray
-    #let docs = resfind["cursor"]["firstBatch"].ofArray
     assert docs.len == 0
 
     when anoSocketSync:

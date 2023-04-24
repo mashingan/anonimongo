@@ -1,10 +1,7 @@
 import sequtils, strformat
-import sugar
 
 import dbops/[admmgmt, aggregation, crud]
 import core/[bson, types, utils, wire, multisock]
-
-{.warning[UnusedImport]: off.}
 
 ## Collection Methods
 ## ******************
@@ -41,6 +38,11 @@ import core/[bson, types, utils, wire, multisock]
 ##
 ## .. _items: #items.i,Cursor
 ## .. _getMore: dbops/crud.html#getMore,Database,int64,string,int
+
+const anoverbose {.booldefine.} = false
+
+when anoverbose:
+  from std/sugar import dump
 
 proc one*(q: Query[AsyncSocket]): Future[BsonDocument] {.multisock.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,

@@ -9,7 +9,7 @@ import supersnappy, zippy
 
 export streams, asyncnet, asyncdispatch
 
-const verbose {.booldefine.} = false
+const anoverbose {.booldefine.} = false
 
 type
   OpCode* = enum
@@ -74,7 +74,7 @@ type
 
 const msgDefaultFlags = 0
 
-proc serialize(s: var Streamable, doc: var BsonDocument): int =
+proc serialize(s: var Streamable, doc: BsonDocument): int =
   let (doclen, docstr) = encode doc
   result = doclen
   s.write docstr
@@ -116,13 +116,13 @@ proc msgParse*(s: var Streamable, rest = 0): ReplyFormat =
     numberReturned: 1,
   )
   var restlen = rest
-  let respflags {.used.} = cast[MsgBitFlags](s.readIntLE int32)
+  let respflags {.used.} = (s.readIntLE int32) as MsgBitFlags
   restlen -= sizeof int32
-  when verbose:
+  when anoverbose:
     dump respflags
   let sectionkind {.used.} = s.readUint8
   restlen -= sizeof byte
-  when verbose:
+  when anoverbose:
     dump sectionkind
   let doclen = s.peekInt32LE
   restlen -= doclen
@@ -136,7 +136,7 @@ proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
   var query = query
   query["$db"] = collname.split(".")[0]
 
-  when verbose:
+  when anoverbose:
     dump query
 
   template writeStream(ss: Stream): int =
@@ -211,7 +211,7 @@ proc code*(b: BsonDocument): int =
 
 template check*(r: ReplyFormat): (bool, string) =
   ## Utility that will check whether the ReplyFormat is successful
-  ## failed and return it as tuple of bool and string.
+  ## or failed and return it as tuple of bool and string.
   var res = (false, "")
   let rflags = r.responseFlags as ResponseFlags
   if r.numberReturned <= 0:
@@ -231,7 +231,7 @@ template check*(r: ReplyFormat): (bool, string) =
 
 proc look*(reply: ReplyFormat) =
   ## Helper for easier debugging and checking the returned ReplyFormat.
-  when verbose:
+  when anoverbose:
     dump reply.numberReturned
   if reply.numberReturned > 0 and
      "cursor" in reply.documents[0] and
@@ -248,7 +248,7 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
   ## Get data from socket and apply the replyParse into the result.
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
-  when verbose:
+  when anoverbose:
     dump msghdr
   let bytelen = msghdr.messageLength
   var rest = await socket.recv(size = bytelen-16)
@@ -274,5 +274,5 @@ proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
       result = replyParse msg
     elif oriopcode == opMsg.int32:
       result = msgParse(msg, orirest)
-  when verbose:
+  when anoverbose:
     look result

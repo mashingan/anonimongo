@@ -4,10 +4,11 @@ from std/asyncdispatch import Port
 from std/math import nextPowerOfTwo
 from std/sugar import `=>`, `->`
 from std/unicode import toLower
-from std/sequtils import mapIt, allIt, toSeq
+from std/sequtils import mapIt, allIt, toSeq, all
 from std/strutils import split
 from std/tables import TableRef, newTable, `[]=`, `[]`, contains
 from std/uri import Uri, parseUri, decodeUrl
+from std/deques import len
 
 when defined(ssl):
   import openssl
