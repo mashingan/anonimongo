@@ -24,7 +24,7 @@ for i in 0 .. bsonbody.high:
     }
     bsonbody[i] = move b
 
-let mongo = newMongo()
+let mongo = newMongo[AsyncSocket]()
 if not waitfor mongo.connect:
     quit "cannot connect, quit"
 let
