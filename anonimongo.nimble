@@ -27,10 +27,11 @@ const
       "test_client_test",
       "test_collections_test",
       "test_crud_test",
-      # "test_gridfs_test",
+      "test_gridfs_test",
       "test_replication_sslcon",
     ]
   testsdir = "./tests"
+
 task clean, "Clean up generated exe":
   for fname in fileToTest:
     rmFile fmt"./tests/{fname}".toExe
@@ -41,7 +42,7 @@ task clean, "Clean up generated exe":
     rmFile fmt"./tests/{fname}".toExe
 
 task test, "Run testament":
-  for filename in listFiles("./tests"):
+  for filename in listFiles(testsdir):
     if "test_" in filename and
       filename.endsWith(".nim"):
       exec fmt"testament p {filename}"

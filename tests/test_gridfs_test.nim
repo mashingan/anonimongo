@@ -1,9 +1,27 @@
-import unittest, os, osproc, strformat, sequtils, asyncfile
-import sugar
-import anonimongo
+discard """
+  
+  action: "run"
+  exitcode: 0
+  
+  # flags with which to run the test, delimited by `;`
+  matrix: "-d:anostreamable -d:danger"
+"""
+
+from std/os import sleep, splitFile, removeFile, fileExists
+from std/osproc import Process, kill, running, close
+from std/strformat import `&`, fmt
+from std/asyncfile import AsyncFile, close, openAsync, write,
+  getFilePos, getFileSize, read, setFilePos
+from std/sugar import dump
+from std/sequtils import allIt
+
 import utils_test
 
-{.warning[UnusedImport]: off.}
+import anonimongo
+
+const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
+when nim164up:
+  from std/exitprocs import addExitProc
 
 proc insert5files(g: GridFS[TheSock], fname: string): bool =
   var f: AsyncFile
@@ -34,8 +52,18 @@ if filename != "" and saveas != "":
     mongorun = startmongo()
     sleep 3000 # waiting for mongod to be ready
 
-  suite "GridFS implementation tests":
-    test "Mongo server is running":
+  proc processKiller {.noconv.} =
+    if runlocal:
+      if mongorun.running: kill mongorun
+      close mongorun
+
+  when nim164up:
+    addExitProc processKiller
+  else:
+    addQuitProc processKiller
+
+  block: # "GridFS implementation tests":
+    block: # "Mongo server is running":
       if runlocal:
         require mongorun.running
       else:
@@ -49,14 +77,14 @@ if filename != "" and saveas != "":
     let (_, fname, ext) = splitFile filename
     let dwfile = fname & ext
 
-    test "Connect to localhost and authentication":
+    block: # "Connect to localhost and authentication":
       mongo = testsetup()
       require(mongo != nil)
       if mongo.withAuth:
         require(mongo.authenticated)
       db = mongo[dbname]
 
-    test "Drop database first in case of error in previous test":
+    block: # "Drop database first in case of error in previous test":
       require db != nil
       when anoSocketSync:
         wr = db.dropDatabase
@@ -64,7 +92,7 @@ if filename != "" and saveas != "":
         wr = waitFor db.dropDatabase
       wr.success.reasonedCheck("dropDatabase error", wr.reason)
 
-    test "Create default bucket":
+    block: # "Create default bucket":
       require db != nil
       when anoSocketSync:
         grid = db.createBucket(chunkSize = 1.megabytes.int32)
@@ -72,42 +100,42 @@ if filename != "" and saveas != "":
         grid = waitfor db.createBucket(chunkSize = 1.megabytes.int32)
       require grid != nil
 
-    test "Upload file":
+    block: # "Upload file":
       when anoSocketSync:
         wr = grid.uploadFile(filename)
       else:
         wr = waitfor grid.uploadFile(filename)
       wr.success.reasonedCheck("Grid upload file", wr.reason)
 
-    test "Download file":
+    block: # "Download file":
       removeFile dwfile
       removeFile saveas
       when anoSocketSync:
         wr = grid.downloadFile(saveas)
       else:
         wr = waitfor grid.downloadFile(saveas)
-      check not wr.success # because no such file uploaded
+      assert not wr.success # because no such file uploaded
       when anoSocketSync:
         wr = grid.downloadFile(dwfile)
       else:
         wr = waitfor grid.downloadFile(dwfile)
       wr.success.reasonedCheck("Grid download file", wr.reason)
-      check fileExists(dwfile)
+      assert fileExists(dwfile)
       when anoSocketSync:
         wr = grid.downloadAs(dwfile, saveas)
       else:
         wr = waitfor grid.downloadAs(dwfile, saveas)
       wr.success.reasonedCheck("Grid download as", wr.reason)
-      check fileExists(saveas)
+      assert fileExists(saveas)
 
-    test "GridStream operations":
+    block: # "GridStream operations":
       var f = openAsync(saveas)
       when anoSocketSync:
         var gf = grid.getStream(bson({filename: dwfile}), buffered = true)
       else:
         var gf = waitfor grid.getStream(bson({filename: dwfile}), buffered = true)
-      check f.getFileSize == gf.fileSize
-      check f.getFilePos == gf.getPosition
+      assert f.getFileSize == gf.fileSize
+      assert f.getFilePos == gf.getPosition
 
       let threekb = 3.kilobytes
       when anoSocketSync:
@@ -115,8 +143,8 @@ if filename != "" and saveas != "":
       else:
         var binread = waitfor gf.read(threekb)
       var bufread = waitfor f.read(threekb)
-      check bufread == binread
-      check f.getFilePos == gf.getPosition
+      assert bufread == binread
+      assert f.getFilePos == gf.getPosition
 
       let fivemb = 5.megabytes
       f.setFilePos fivemb
@@ -124,21 +152,21 @@ if filename != "" and saveas != "":
         gf.setPosition fivemb
       else:
         waitfor gf.setPosition fivemb
-      check f.getFilePos == gf.getPosition
+      assert f.getFilePos == gf.getPosition
 
       when anoSocketSync:
         binread = gf.read(fivemb)
       else:
         binread = waitfor gf.read(fivemb)
       bufread = waitfor f.read(fivemb)
-      check bufread.len == binread.len
-      check bufread == binread 
-      check f.getFilePos == gf.getPosition
+      assert bufread.len == binread.len
+      assert bufread == binread 
+      assert f.getFilePos == gf.getPosition
 
       close f
       close gf
 
-    test "Gridstream read chunked size":
+    block: # "Gridstream read chunked size":
       let chunkfile = "gs_chunks.mkv"
       when anoSocketSync:
         var gf = grid.getStream(bson({filename: dwfile}))
@@ -153,20 +181,20 @@ if filename != "" and saveas != "":
           var data = waitfor gf.read(1500.kilobytes)
         curread += data.len
         waitfor f.write(data)
-      check f.getFileSize == gf.fileSize
-      check gf.getPosition == gf.fileSize-1
+      assert f.getFileSize == gf.fileSize
+      assert gf.getPosition == gf.fileSize-1
       close gf
       close f
       removeFile chunkfile
 
-    test "List files":
-      check insert5files(grid, filename)
+    block: # "List files":
+      assert insert5files(grid, filename)
       when anoSocketSync:
         let filenames = grid.listFileNames()
       else:
         let filenames = waitfor grid.listFileNames()
-      check filenames.len == 6
-      check dwfile in filenames
+      assert filenames.len == 6
+      assert dwfile in filenames
       let (_, _, fileext) = splitFile filename
       when anoSocketSync:
         let newinserts = grid.listFileNames(matcher = bson({
@@ -176,21 +204,21 @@ if filename != "" and saveas != "":
         let newinserts = waitfor grid.listFileNames(matcher = bson({
           filename: { "$regex": fmt"""_\d\{fileext}$""" }
         }).toBson)
-      check newinserts.len == 5
-      check dwfile notin newinserts
+      assert newinserts.len == 5
+      assert dwfile notin newinserts
 
-    test "Remove file(s)":
+    block: # "Remove file(s)":
       # remove all files
       when anoSocketSync:
         wr = grid.removeFile()
-        check grid.availableFiles == 0
-        check grid.chunks.count() == 0
+        assert grid.availableFiles == 0
+        assert grid.chunks.count() == 0
       else:
         wr = waitfor grid.removeFile()
-        check (waitfor grid.availableFiles) == 0
-        check (waitfor grid.chunks.count()) == 0
+        assert (waitfor grid.availableFiles) == 0
+        assert (waitfor grid.chunks.count()) == 0
       wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
-      check insert5files(grid, filename)
+      assert insert5files(grid, filename)
 
       # removing using regex
       let (_, _, ext) = splitFile filename
@@ -199,32 +227,32 @@ if filename != "" and saveas != "":
           filename: { "$regex": fmt"""_[23]\{ext}$""" }
         }).toBson)
         wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
-        check grid.availableFiles == 3
+        assert grid.availableFiles == 3
 
         # removing not available file
         wr = grid.removeFile("there's no this file")
         wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
-        check grid.availableFiles == 3
+        assert grid.availableFiles == 3
       else:
         wr = waitfor grid.removeFile(bson({
           filename: { "$regex": fmt"""_[23]\{ext}$""" }
         }).toBson)
         wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
-        check (waitfor grid.availableFiles) == 3
+        assert (waitfor grid.availableFiles) == 3
 
         # removing not available file
         wr = waitfor grid.removeFile("there's no this file")
         wr.success.reasonedCheck("gridfs.removeFile error", wr.reason)
-        check (waitfor grid.availableFiles) == 3
+        assert (waitfor grid.availableFiles) == 3
 
-    test "Drop bucket":
+    block: # "Drop bucket":
       when anoSocketSync:
         wr = grid.drop()
       else:
         wr = waitfor grid.drop()
       wr.success.reasonedCheck("gridfs.drop error", wr.reason)
 
-    test "Teardown db":
+    block: # "Teardown db":
       require db != nil
       when anoSocketSync:
         wr = db.dropDatabase
@@ -232,18 +260,15 @@ if filename != "" and saveas != "":
         wr = waitFor db.dropDatabase
       wr.success.reasonedCheck("dropDatabase error", wr.reason)
 
-    test "Shutdown mongo":
+    block: # "Shutdown mongo":
       if runlocal:
         require mongo != nil
         when anoSocketSync:
           wr = mongo.shutdown(timeout = 10)
         else:
           wr = waitFor mongo.shutdown(timeout = 10)
-        check wr.success
+        assert wr.success
       else:
         skip()
 
     close mongo
-    if runlocal:
-      if mongorun != nil and mongorun.running: kill mongorun
-      close mongorun

@@ -6,7 +6,7 @@ discard """
   targets: "c cpp"
   
   # flags with which to run the test, delimited by `;`
-  matrix: "; -d:anostreamable; -d:release; -d:anostreamable -d:release"
+  matrix: "; -d:anostreamable; -d:danger; -d:anostreamable -d:danger"
 """
 import std/[times, oids, streams, tables, os, options]
 from std/strformat import `&`

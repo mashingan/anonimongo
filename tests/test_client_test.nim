@@ -4,8 +4,7 @@ discard """
   exitcode: 0
   
   # flags with which to run the test, delimited by `;`
-  #matrix: "; -d:anostreamable; -d:release; -d:anostreamable -d:release"
-  matrix: "-d:release"
+  matrix: "-d:anostreamable -d:danger"
 """
 
 from std/osproc import Process, running, close, kill

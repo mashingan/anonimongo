@@ -4,7 +4,7 @@ discard """
   exitcode: 0
   
   # flags with which to run the test, delimited by `;`
-  matrix: "-d:release"
+  matrix: "-d:anostreamable -d:release"
 """
 
 const testChangeStreams {.booldefine.} = false
