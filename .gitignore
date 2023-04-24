@@ -24,3 +24,6 @@ config.nims
 *.settings
 
 *.pem
+
+testresults/
+scratchpad/

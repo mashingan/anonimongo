@@ -38,10 +38,10 @@ mainPreferred	anonimongo/core/types.html#mainPreferred,Mongo[T: MultiSock]	types
 secondary	anonimongo/core/types.html#secondary,Mongo[T: MultiSock]	types: secondary[T: MultiSock](m: Mongo[T]): MongoConn[T]	
 secondaryPreferred	anonimongo/core/types.html#secondaryPreferred,Mongo[T: MultiSock]	types: secondaryPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]	
 hasUserAuth	anonimongo/core/types.html#hasUserAuth,Mongo	types: hasUserAuth(m: Mongo): bool	
-authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket],string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool	
-authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket],string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket];\n    user, pass: string): Future[bool]	
-authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket]	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]): bool	
-authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket]	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket],string,string	types: authenticate[T: Sha1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket],string,string	types: authenticate[T: Sha1Digest | SHA256Digest](m: Mongo[AsyncSocket];\n    user, pass: string): Future[bool]	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket]	types: authenticate[T: Sha1Digest | SHA256Digest](m: Mongo[Socket]): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket]	types: authenticate[T: Sha1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]	
 appname=	anonimongo/core/types.html#appname=,Mongo,string	types: appname=(m: Mongo; name: string)	
 appname	anonimongo/core/types.html#appname,Mongo	types: appname(m: Mongo): string	
 username	anonimongo/core/types.html#username,Mongo	types: username(m: Mongo): string	

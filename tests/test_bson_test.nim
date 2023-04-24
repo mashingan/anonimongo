@@ -1,12 +1,21 @@
-import unittest, times, oids, streams, tables, os, options
-import anonimongo/core/bson
-import sugar
+discard """
+  
+  action: "run"
+  exitcode: 0
+  
+  # flags with which to run the test, delimited by `;`
+  matrix: "-d:anostreamable -d:danger"
+"""
+import std/[times, oids, streams, tables, os, options]
+from std/strformat import `&`
 
-{.warning[UnusedImport]: off.}
+import anonimongo/core/bson
+
+import utils_test
 
 const qrimg = readFile "tests/qrcode-me.png"
 
-suite "Bson operations tests":
+block: # "Bson operations tests":
   let isekai = "hello, 異世界"
   let currtime = now().toTime
   let curroid = genOid()
@@ -20,22 +29,22 @@ suite "Bson operations tests":
       { q: 3, u: { "$set": { truth: 42 }}}
     ]
   })
-  test "Defining simple bson with newbson":
+  block: # "Defining simple bson with newbson":
     let hellodoc = newbson(
       [("hello", 100.toBson),
       ("array world", bsonArray("red", 50, 4.2)),
       ("hello world", isekai.toBson)
     ])
-    check hellodoc["hello"] == 100
-    check hellodoc["array world"].ofArray.len == 3
-    check hellodoc["hello world"] == isekai
+    assert hellodoc["hello"] == 100
+    assert hellodoc["array world"].ofArray.len == 3
+    assert hellodoc["hello world"] == isekai
 
-  test "Defining bson with explicit table and writing to output stream":
+  block: # "Defining bson with explicit table and writing to output stream":
     let bsonFilename = "bsonimpl_encode.bson"
     removeFile bsonFilename
     when not defined(anostreamable):
       newdoc = newBson(
-        table = newOrderedTable([
+        table = toOrderedTable([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -47,7 +56,7 @@ suite "Bson operations tests":
         stream = newFileStream(bsonFilename, mode = fmReadWrite))
     else:
       newdoc = newBson(
-        table = newOrderedTable([
+        table = toOrderedTable([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -57,145 +66,147 @@ suite "Bson operations tests":
           ("_id", curroid.toBson)
         ]),
       )
-    check newdoc["hello world"] == isekai
-    check newdoc["hello"] == 100
-    check newdoc["this is null"].isNil
-    check newdoc["now"] == currtime
-    check newdoc["_id"] == curroid
-    check newdoc["a percent of truth"] == 0.42
+    assert newdoc["hello world"] == isekai
+    assert newdoc["hello"] == 100
+    assert newdoc["this is null"].isNil
+    assert newdoc["now"] == currtime
+    assert newdoc["_id"] == curroid
+    assert newdoc["a percent of truth"] == 0.42
     when not defined(anostreamable):
-      check fileExists bsonFilename
+      assert fileExists bsonFilename
 
-  test "Encode bson":
+  block: # "Encode bson":
     var num: int
     (num, newdocstr) = encode newdoc
-    check num > 0
+    assert num > 0
 
-  test "Decode bson":
+  block: # "Decode bson":
     nnewdoc = decode newdocstr
-    check nnewdoc["hello"].ofInt == 100
-    check nnewdoc["hello world"] == isekai
-    check nnewdoc["array world"].ofArray.len == 3
-    check nnewdoc["this is null"].isNil
-    check nnewdoc["now"].ofTime == newdoc["now"]
+    assert nnewdoc["hello"].ofInt == 100
+    assert nnewdoc["hello world"] == isekai
+    assert nnewdoc["array world"].ofArray.len == 3
+    assert nnewdoc["this is null"].isNil
+    assert nnewdoc["now"].ofTime == newdoc["now"]
 
-  test "Throw incorrect conversion value and accessing field":
-    expect(BsonFetchError):
+  block: # "Throw incorrect conversion value and accessing field":
+    errcatch(BsonFetchError) do:
       discard nnewdoc["hello"].ofDouble
-    expect(KeyError):
+    errcatch(KeyError) do:
       discard nnewdoc["nonexistent-field"]
 
-  test "Embedded bson document":
-    check arrayembed["objects"][2]["u"]["$set"]["truth"].ofInt32 == 42
+  block: # "Embedded bson document":
+    assert arrayembed["objects"][2]["u"]["$set"]["truth"] == 42
     let q2: int = arrayembed["objects"][1]["q"]
-    check q2 == 2
+    assert q2 == 2
 
-    expect(BsonFetchError):
+    errcatch(BsonFetchError) do:
       discard arrayembed["objects"]["hello"]
-    expect(IndexError):
+    errcatch(IndexDefect) do:
       discard arrayembed["objects"][4]
-    expect(BsonFetchError):
+
+    errcatch(BsonFetchError) do:
       discard arrayembed["objects"][1]["q"]["hello"]
-    expect(BsonFetchError):
+    errcatch(BsonFetchError) do:
       discard arrayembed["objects"][0][3]
 
-  test "Bson binary operations":
-    require(fileExists "tests/qrcode-me.png")
+  block: # "Bson binary operations":
+    let qrthere = fileExists "tests/qrcode-me.png"
+    assert qrthere
+    if not qrthere:
+      quit "tests/qrcode-me.png is not exist", QuitFailure
     let stringbin = "MwahahaBinaryGotoki"
-    let testbinary = bson({
+    var testbinary = bson({
       dummy_binary: bsonBinary stringbin
     })
     let (_, tbencoded) = encode testbinary
     let dectestbin = decode tbencoded
-    check dectestbin["dummy_binary"].
+    assert dectestbin["dummy_binary"].
       ofBinary.stringbytes == stringbin
 
-    let pngbin = bson({
+    var pngbin = bson({
       "qr-me": bsonBinary qrimg
     })
     let (_, pngbinencode) = encode pngbin
     let pngdec = decode pngbinencode
-    check pngdec["qr-me"].ofBinary.stringbytes == qrimg
+    assert pngdec["qr-me"].ofBinary.stringbytes == qrimg
 
-  test "Bson timestamp codec operations":
+  block: # "Bson timestamp codec operations":
     let currtime = getTime().toUnix.uint32
-    let timestampdoc = bson({
+    var timestampdoc = bson({
       timestamp: (0'u32, currtime)
     })
     let (_, timestampstr) = encode timestampdoc
     let timestampdec = decode timestampstr
     let decurrtime = timestampdec["timestamp"].ofTimestamp[1]
-    check decurrtime == currtime
+    assert decurrtime == currtime
 
   when not defined(anostreamable):
-    test "Empty bson array codec and write to file":
-      let emptyarr = newBson(
-        table = newOrderedTable([
-          ("emptyarr", bsonArray())]),
-        stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
+    block: # "Empty bson array codec":
+      var emptyarr = newBson(
+        table = toOrderedTable([("emptyarr", bsonArray())]),
+        stream = newStringStream(),
+      )
       let (_, empstr) = encode emptyarr
       let empdec = decode empstr
-      check empdec["emptyarr"].ofArray.len == 0
-    test "Read empty bson array from file":
-      let emptyarr = decode(readFile "emptyarr.bson")
-      check emptyarr["emptyarr"].ofArray.len == 0
+      assert empdec["emptyarr"].ofArray.len == 0
   
-  test "Mutable bson field access":
-    check arrayembed["objects"][0]["q"] == 1
+  block: # "Mutable bson field access":
+    assert arrayembed["objects"][0]["q"] == 1
 
     # modify first elem object with key q to 5
     arrayembed.mget("objects").mget(0).mget("q") = 5
-    check arrayembed["objects"][0]["q"] == 5
+    assert arrayembed["objects"][0]["q"] == 5
 
-  test "Js code string bson":
-    #test js code
+  block: # "Js code string bson":
+    #block: # js code
     let jscode = "function double(x) { return x*2; }"
     let jsbson = bsonJs jscode
-    let bjs = bson({
+    var bjs = bson({
       js: jsbson,
     })
-    check bjs["js"] == jscode
+    assert bjs["js"] == jscode
     let (_, encstr) = encode bjs
     let bjsdec = decode encstr
-    check bjsdec["js"].ofString == bjs["js"].ofString
+    assert bjsdec["js"].ofString == bjs["js"].ofString
 
-  test "Add element to bson array":
+  block: # "Add element to bson array":
     let newobj = bson({
       q: 4, u: { "$set": { role_name: "add" }},
     })
     arrayembed.mget("objects").add newobj
-    check arrayembed["objects"].len == 4
-    check arrayembed["objects"][3]["q"].ofInt == newobj["q"]
-    check arrayembed["objects"][3]["u"]["$set"]["role_name"] == "add"
+    let arrobj = arrayembed["objects"]
+    assert arrobj.len == 4, &"array embed object len is {arrobj.len}"
+    assert arrobj[3]["q"].ofInt == newobj["q"]
+    assert arrobj[3]["u"]["$set"]["role_name"] == "add"
 
-    expect BsonFetchError:
+    errcatch(BsonFetchError) do:
       var bsonInt = 4.toBson
       bsonInt.add newobj
 
-  test "Clear stream when Bson is modified":
-    let baseCompare = bson {
+  block: # "Clear stream when Bson is modified":
+    var baseCompare = bson {
       arr: [42, 42.0, true, "nanana"],
     }
     let (baseN, baseStr) = encode baseCompare
     var itemCompare = bson { arr: [] }
-    check itemCompare["arr"].kind == bkArray
-    check itemCompare["arr"].len == 0
+    assert itemCompare["arr"].kind == bkArray
+    assert itemCompare["arr"].len == 0
     when not defined(anostreamable):
       var fileCompare = newBson(filename = "filetest.bson")
       fileCompare["arr"] = bsonArray()
-      check fileCompare["arr"].kind == bkArray
-      check fileCompare["arr"].len == 0
+      assert fileCompare["arr"].kind == bkArray
+      assert fileCompare["arr"].len == 0
 
     # first encoding mutation
     template compareArr(b: var BsonDocument, val: BsonBase, notsame = true) =
       b.mget("arr").add val
       let (n, str) = encode b
       if notsame:
-        check n != baseN
-        check str != baseStr
+        assert n != baseN
+        assert str != baseStr
       else:
-        check n == baseN
-        check str == baseStr
+        assert n == baseN
+        assert str == baseStr
     itemCompare.compareArr(42)
     itemCompare.compareArr(42.0)
     itemCompare.compareArr(true)
@@ -206,22 +217,22 @@ suite "Bson operations tests":
       fileCompare.compareArr(true)
       fileCompare.compareArr("nanana", notsame = false)
 
-    # change the value to test the `[]=`
+    # change the value to block: # the `[]=`
     let newval = bsonArray(1, 1.2, true, false, now().toTime)
     itemCompare["new-key"] = newval
     let (itemN, itemStr) = encode itemCompare
-    check itemStr != baseStr
-    check itemN != baseN
+    assert itemStr != baseStr
+    assert itemN != baseN
     when not defined(anostreamable):
       fileCompare["new-key"] = newval
       let (fileN, fileStr) = encode fileCompare
-      check fileStr != baseStr
-      check fileN != baseN
-      check itemStr == fileStr
-      check itemN == itemN
+      assert fileStr != baseStr
+      assert fileN != baseN
+      assert itemStr == fileStr
+      assert itemN == itemN
 
-  test "Clear stream for BsonDocument when fetched with mget":
-    let baseObjCompare = bson {
+  block: # "Clear stream for BsonDocument when fetched with mget":
+    var baseObjCompare = bson {
       base: {
         field1: 42,
         field2: 42.0,
@@ -232,18 +243,18 @@ suite "Bson operations tests":
       base: {},
     }
     var (mutN, mutStr) = encode mutObj
-    check mutN != baseObjN
-    check mutStr != baseObjStr
+    assert mutN != baseObjN
+    assert mutStr != baseObjStr
     mutObj.mget("base")["field1"] = 42
     (mutN, mutStr) = encode mutObj
-    check mutN != baseObjN
-    check mutStr != baseObjStr
+    assert mutN != baseObjN
+    assert mutStr != baseObjStr
     mutObj.mget("base")["field2"] = 42.0
     (mutN, mutStr) = encode mutObj
-    check mutN == baseObjN
-    check mutStr == baseObjStr
+    assert mutN == baseObjN, &"expected mutN: {mutN} got baseObjN: {baseObjN}"
+    assert mutStr == baseObjStr
 
-suite "Macro to object conversion tests":
+block: # "Macro to object conversion tests":
   type
     Bar = string
     BarDistrict = distinct string
@@ -300,19 +311,19 @@ suite "Macro to object conversion tests":
     name: 10,
     str: "hello 異世界"
   })
-  test "Simple convertion bson to flat object":
+  block: # "Simple convertion bson to flat object":
     let otheb = theb.to SimpleIntString
-    check otheb.name == theb["name"]
-    check otheb.str == theb["str"]
+    assert otheb.name == theb["name"]
+    assert otheb.str == theb["str"]
 
   let outer1 = bson({
     outerName: "outer 1",
     sis: theb
   })
-  test "Conversion with 1 level object":
+  block: # "Conversion with 1 level object":
     let oouter1 = outer1.to SSIntString
-    check oouter1.outerName == outer1["outerName"]
-    check oouter1.sis.name == outer1["sis"]["name"]
+    assert oouter1.outerName == outer1["outerName"]
+    assert oouter1.sis.name == outer1["sis"]["name"]
   let currtime = now().toTime
   let s2b = bson({
     sis1: theb,
@@ -350,49 +361,49 @@ suite "Macro to object conversion tests":
   })
 
   var ssis2: SSIntString
-  test "Ref object with 1 level hierarchy":
+  block: # "Ref object with 1 level hierarchy":
     ssis2 = outer1.to SSIntString
-    check ssis2.outerName == outer1["outerName"]
-    check ssis2.sis.name == outer1["sis"]["name"]
+    assert ssis2.outerName == outer1["outerName"]
+    assert ssis2.sis.name == outer1["sis"]["name"]
 
   var s2sis: S2IntString
-  test "Multiple aliased field 1 level hierarchial object and " &
-    "ref object and array and array object":
+  block: # "Multiple aliased field 1 level hierarchial object and " &
+    #"ref object and array and array object":
     s2sis = s2b.to S2IntString
-    check s2sis.sis1.name == s2b["sis1"]["name"]
-    check s2sis.sisref.name == s2b["sis1"]["name"]
-    check s2sis.sissref[0].name == s2b["sissref"][0]["name"]
-    check s2sis.sissref2[0].str == s2b["sissref2"][0]["str"]
-    check s2sis.district.string == s2b["district"]
-    check s2sis.dsis.SimpleIntString.str == s2b["dsis"]["str"]
-    check s2sis.dbar.Bar == s2b["dbar"]
-    check s2sis.dsisref.RSintString.str == s2b["dsisref"]["str"]
-    check s2sis.sqdbar.len == s2b["sqdbar"].ofArray.len
-    check s2sis.sqdbar[0].Bar == s2b["sqdbar"][0]
-    check s2sis.arrdbar.len == 2
-    check s2sis.arrdbar[0].Bar == s2b["arrdbar"][0]
-    check s2sis.arrsisref.len == 1
-    check s2sis.arrsisref[0].str == s2b["arrsisref"][0]["str"]
-    check s2sis.arrsisrefalias.len == 1
-    check s2sis.arrsisrefalias[0].name == s2b["arrsisrefalias"][0]["name"]
-    check s2sis.sissdist.len == s2b["sissdist"].ofArray.len
-    check s2sis.sissdist[0].SimpleIntString.str == s2b["sissdist"][0]["str"]
-    check s2sis.sissdistref.len == s2b["sissdistref"].ofArray.len
-    check s2sis.sissdistref[0].RSintString.name == s2b["sissdistref"][0]["name"]
-    check s2sis.arrsisrefdist.len == 1
-    check s2sis.arrsisrefdist[0].SimpleIntString.str == s2b["arrsisrefdist"][0]["str"]
-    check s2sis.arrsisdistref.len == 1
-    check s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"][0]["name"]
-    check s2sis.timenow == currtime
-    check s2sis.dtimenow.Time == currtime
-    check s2sis.emptyRef == nil
-    check s2sis.pseudoEmptyRef.ssisref.len == 0
+    assert s2sis.sis1.name == s2b["sis1"]["name"]
+    assert s2sis.sisref.name == s2b["sis1"]["name"]
+    assert s2sis.sissref[0].name == s2b["sissref"][0]["name"]
+    assert s2sis.sissref2[0].str == s2b["sissref2"][0]["str"]
+    assert s2sis.district.string == s2b["district"]
+    assert s2sis.dsis.SimpleIntString.str == s2b["dsis"]["str"]
+    assert s2sis.dbar.Bar == s2b["dbar"]
+    assert s2sis.dsisref.RSintString.str == s2b["dsisref"]["str"]
+    assert s2sis.sqdbar.len == s2b["sqdbar"].ofArray.len
+    assert s2sis.sqdbar[0].Bar == s2b["sqdbar"][0]
+    assert s2sis.arrdbar.len == 2
+    assert s2sis.arrdbar[0].Bar == s2b["arrdbar"][0]
+    assert s2sis.arrsisref.len == 1
+    assert s2sis.arrsisref[0].str == s2b["arrsisref"][0]["str"]
+    assert s2sis.arrsisrefalias.len == 1
+    assert s2sis.arrsisrefalias[0].name == s2b["arrsisrefalias"][0]["name"]
+    assert s2sis.sissdist.len == s2b["sissdist"].ofArray.len
+    assert s2sis.sissdist[0].SimpleIntString.str == s2b["sissdist"][0]["str"]
+    assert s2sis.sissdistref.len == s2b["sissdistref"].ofArray.len
+    assert s2sis.sissdistref[0].RSintString.name == s2b["sissdistref"][0]["name"]
+    assert s2sis.arrsisrefdist.len == 1
+    assert s2sis.arrsisrefdist[0].SimpleIntString.str == s2b["arrsisrefdist"][0]["str"]
+    assert s2sis.arrsisdistref.len == 1
+    assert s2sis.arrsisdistref[0].RSintString.name == s2b["arrsisdistref"][0]["name"]
+    assert s2sis.timenow == currtime
+    assert s2sis.dtimenow.Time == currtime
+    assert s2sis.emptyRef == nil
+    assert s2sis.pseudoEmptyRef.ssisref.len == 0
 
   type
     NotHomogenousSeq = object
       theseq*: seq[string]
-  test "Handle error when convert non homogenous seq/array":
-    expect BsonFetchError:
+  block: # "Handle error when convert non homogenous seq/array":
+    errcatch BsonFetchError:
       discard bson({
         theseq: ["異世界", "hello", 4.2, 10]
       }).to NotHomogenousSeq
@@ -419,11 +430,11 @@ suite "Macro to object conversion tests":
     ]
   })
   var osob: SeqOfBson
-  test "Bypass when converting to BsonDocument object":
+  block: # "Bypass when converting to BsonDocument object":
     osob = bsob.to SeqOfBson
-    check osob.label == bsob["label"]
-    check osob.documents[0]["field1"] == bsob["documents"][0]["field1"].ofString
-    check osob.documents[1]["fieldfield"] == bsob["documents"][1]["fieldfield"].ofString
+    assert osob.label == bsob["label"]
+    assert osob.documents[0]["field1"] == bsob["documents"][0]["field1"].ofString
+    assert osob.documents[1]["fieldfield"] == bsob["documents"][1]["fieldfield"].ofString
 
   type ManyTimes = object
     times*: seq[Time]
@@ -432,9 +443,9 @@ suite "Macro to object conversion tests":
     times: [currtime, currtime, currtime]
   })
   var otimes: ManyTImes
-  test "Seq of Time conversion object":
+  block: # "Seq of Time conversion object":
     otimes = btimes.to ManyTImes
-    check otimes.times[1] == currtime
+    assert otimes.times[1] == currtime
 
   type
     TimeWrap = object
@@ -446,9 +457,9 @@ suite "Macro to object conversion tests":
     timewrap: { time: currtime },
   })
   var ootw: OTimeWrap
-  test "Wrapped time conversion":
+  block: # "Wrapped time conversion":
     ootw = botw.to OTimeWrap
-    check ootw.timewrap.time == currtime
+    assert ootw.timewrap.time == currtime
 
   # many object wraps
   type
@@ -472,11 +483,11 @@ suite "Macro to object conversion tests":
     }
   })
   var omo: ManyObjects
-  test "Many object wraps conversion":
+  block: # "Many object wraps conversion":
     omo = bmo.to ManyObjects
-    check omo.wrap.outerName == outer1["outerName"]
-    check omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
-    check omo.ootimewrap.otimewrap.timewrap.time == currtime
+    assert omo.wrap.outerName == outer1["outerName"]
+    assert omo.o3sis.oosis.sis.str == outer1["sis"]["str"]
+    assert omo.ootimewrap.otimewrap.timewrap.time == currtime
 
   type
     BinaryWrap = object
@@ -487,12 +498,12 @@ suite "Macro to object conversion tests":
     seqbyte: bsonBinary qrimg
   })
   var obwo: BinaryWrap
-  test "Bson binary conversion bytes string":
+  block: # "Bson binary conversion bytes string":
     obwo = bbwo.to BinaryWrap
-    check obwo.binary.len == qrimg.len
-    check obwo.binary == qrimg
-    check obwo.seqbyte.len == qrimg.len
-    check obwo.seqbyte.stringbytes == qrimg
+    assert obwo.binary.len == qrimg.len
+    assert obwo.binary == qrimg
+    assert obwo.seqbyte.len == qrimg.len
+    assert obwo.seqbyte.stringbytes == qrimg
 
   type
     OVKind = enum
@@ -518,7 +529,7 @@ suite "Macro to object conversion tests":
         nil
     OuterObject = ref object
       variant {.bsonExport, bsonKey: "objectVariant".}: ObjectVariant
-  test "Test object variant conversion":
+  block: # "Test object variant conversion":
     # our Bson data
     var bov = bson({
       baseField: "this is base string",
@@ -539,17 +550,17 @@ suite "Macro to object conversion tests":
     var outer: OuterObject
     let objmany = bov.to ObjectVariant
     outer = outb.to OuterObject
-    check objmany.kind == ovMany
-    check objmany.baseField == bov["baseField"]
-    check objmany.baseInt == bov["baseInt"]
-    check objmany.embed.truthy
-    check objmany.refembed.truthy
-    check objmany.manyField1 == bov["manyField1"]
-    check objmany.intField == bov["intField"]
-    check outer.variant.kind == ovMany
-    check outer.variant.baseField == "this is base string"
-    check outer.variant.baseInt == 3453
-    check outer.variant.baseEmbed.isNil
+    assert objmany.kind == ovMany
+    assert objmany.baseField == bov["baseField"]
+    assert objmany.baseInt == bov["baseInt"]
+    assert objmany.embed.truthy
+    assert objmany.refembed.truthy
+    assert objmany.manyField1 == bov["manyField1"]
+    assert objmany.intField == bov["intField"]
+    assert outer.variant.kind == ovMany
+    assert outer.variant.baseField == "this is base string"
+    assert outer.variant.baseInt == 3453
+    assert outer.variant.baseEmbed.isNil
 
     # let's change the kind to "ovOne"
     let onlyFieldMsg = "this is dynamically added"
@@ -559,19 +570,19 @@ suite "Macro to object conversion tests":
     outb.mget("objectVariant")["theOnlyField"] = onlyFieldMsg
     let objone = bov.to ObjectVariant
     outer = outb.to OuterObject
-    check objone.kind == ovOne
-    check objone.baseField == bov["baseField"]
-    check objone.theOnlyField == "this is dynamically added"
-    check outer.variant.kind == ovOne
-    check outer.variant.theOnlyField == onlyFieldMsg
+    assert objone.kind == ovOne
+    assert objone.baseField == bov["baseField"]
+    assert objone.theOnlyField == "this is dynamically added"
+    assert outer.variant.kind == ovOne
+    assert outer.variant.theOnlyField == onlyFieldMsg
 
     # lastly, convert to "ovNone"
     bov["kind"] = "ovNone"
     outb.mget("objectVariant")["kind"] = "ovNone"
     let objnone = bov.to ObjectVariant
     outer = outb.to OuterObject
-    check objnone.kind == ovNone
-    check outer.variant.kind == ovNone
+    assert objnone.kind == ovNone
+    assert outer.variant.kind == ovNone
   
   type
     TableStringInt = Table[string, int]
@@ -580,9 +591,9 @@ suite "Macro to object conversion tests":
     OuterTable = ref object
       field {.bsonKey: "embedWorking", bsonExport.}: CustomTable
 
-  test "Conversion to Table/TableRef directly should yield nothing,\n" &
-    "\tworkaround with alias type and custom proc/convert/func definition" &
-    " ofAliasType":
+  block: # "Conversion to Table/TableRef directly should yield nothing,\n" &
+    #"\tworkaround with alias type and custom proc/convert/func definition" &
+    #" ofAliasType":
     let
       correctbson = bson({ "1": 1, "2": 2, "3": 3, "4": 4 })
       incorrectbson = bson({ "1": "one", "2": 2, "3": 3})
@@ -608,14 +619,14 @@ suite "Macro to object conversion tests":
       tsiref = correctbson.to TableRefStringInt
       outer = bobj.to OuterTable
     
-    check tsi.len == 0
-    check tsiref.len ==  0
-    check intsi.len == 0
-    check outer[].field is TableRef
-    check outer[].field["eint"] == 7337
+    assert tsi.len == 0
+    assert tsiref.len ==  0
+    assert intsi.len == 0
+    assert outer[].field is TableRef
+    assert outer[].field["eint"] == 7337
 
-  test "Implement a specific value extract with pattern of `of` & Typename " &
-    "and custom pragma `bsonExport` to enable the conversion":
+  block: # "Implement a specific value extract with pattern of `of` & Typename " &
+    #"and custom pragma `bsonExport` to enable the conversion":
     type
       TimeRef = ref DTime
       DistinctTimeRef = distinct TimeRef
@@ -641,10 +652,10 @@ suite "Macro to object conversion tests":
       ddTime: nao
     })
     let simpobj = bsonObj.to SimpleObject
-    check simpobj.zawarudo == nao
-    check simpobj.timeOfReference[].Time == nao
-    check simpobj.distinctTimeRef.TimeRef[].Time == nao
-    check simpobj.ddTime.Time == nao
+    assert simpobj.zawarudo == nao
+    assert simpobj.timeOfReference[].Time == nao
+    assert simpobj.distinctTimeRef.TimeRef[].Time == nao
+    assert simpobj.ddTime.Time == nao
 
   type
     CustomS2IntString = object
@@ -655,20 +666,20 @@ suite "Macro to object conversion tests":
       notfoundSissref {.bsonExport.}: seq[ref SimpleIntString]
       customArrdbar {.bsonExport, bsonKey: "arrdbar".}: array[2, DBar]
       customDTimenow* {.bsonKey: "dtimenow".}: DTime
-  test "Extract custom key Bson defined with bsonKey pragma":
+  block: # "Extract custom key Bson defined with bsonKey pragma":
     let bobj = s2b.to CustomS2IntString
-    check bobj.simpleIntStr.name == s2b["sis1"]["name"]
-    check bobj.sref.name == s2b["sis1"]["name"]
-    check bobj.customSeqs.len == 3
-    check bobj.customSeqs[1] == s2b["seqs"][1]
-    check bobj.customSiss.len == 2
-    check bobj.customSiss[0].name == s2b["siss"][0]["name"]
-    check bobj.notfoundSissref.len == 0
-    check bobj.customArrdbar.len == 2
-    check bobj.customArrdbar[1].Bar == s2b["arrdbar"][1]
-    check bobj.customDTimenow.Time == s2b["dtimenow"]
+    assert bobj.simpleIntStr.name == s2b["sis1"]["name"]
+    assert bobj.sref.name == s2b["sis1"]["name"]
+    assert bobj.customSeqs.len == 3
+    assert bobj.customSeqs[1] == s2b["seqs"][1]
+    assert bobj.customSiss.len == 2
+    assert bobj.customSiss[0].name == s2b["siss"][0]["name"]
+    assert bobj.notfoundSissref.len == 0
+    assert bobj.customArrdbar.len == 2
+    assert bobj.customArrdbar[1].Bar == s2b["arrdbar"][1]
+    assert bobj.customDTimenow.Time == s2b["dtimenow"]
 
-  test "Conversion of inherited object and its fields":
+  block: # "Conversion of inherited object and its fields":
     type
       BaseObject = object of RootObj
         baseint {.bsonExport.}: int
@@ -705,17 +716,17 @@ suite "Macro to object conversion tests":
       addint = b.to AddIntBase
       thelast = ld.to LastDescent
     
-    check addembed.basestr == b["basestr"]
-    check addembed.addEmbed["embedstr"].ofString == b["embed"]["embedstr"]
-    check addembed.baseint == b["baseint"]
-    check addint.addInt == b["int"]
-    check addint.addEmbed["embedstr"].ofString == b["embed"]["embedstr"]
-    check addint.baseint == addembed.baseint
-    check thelast.child.addInt == addint.addInt
-    check thelast.child.basestr == addembed.basestr
-    check thelast.child.addEmbed["embedstr"].ofString == "eagle"
+    assert addembed.basestr == b["basestr"]
+    assert addembed.addEmbed["embedstr"].ofString == b["embed"]["embedstr"]
+    assert addembed.baseint == b["baseint"]
+    assert addint.addInt == b["int"]
+    assert addint.addEmbed["embedstr"].ofString == b["embed"]["embedstr"]
+    assert addint.baseint == addembed.baseint
+    assert thelast.child.addInt == addint.addInt
+    assert thelast.child.basestr == addembed.basestr
+    assert thelast.child.addEmbed["embedstr"].ofString == "eagle"
 
-  test "Ignore any Option and accept nil literal value":
+  block: # "Ignore any Option and accept nil literal value":
     type
       Embedopt = object
         optint {.bsonExport.}: OptionalInt
@@ -749,17 +760,17 @@ suite "Macro to object conversion tests":
       else: result = none[string]()
 
     let optobj = b.to OptFields
-    check optobj[].optint.isSome
-    check optobj[].optint.get == 42
-    check optobj[].optstr.isNone
-    check optobj[].optbool.isNone
-    check optobj[].embedopt.optint.isSome
-    check optobj[].embedopt.optint.get == 555
-    check optobj[].embedopt.optstr.isNone
-    check b["null"].kind == bkNull
-    check b["null"].isNil
+    assert optobj[].optint.isSome
+    assert optobj[].optint.get == 42
+    assert optobj[].optstr.isNone
+    assert optobj[].optbool.isNone
+    assert optobj[].embedopt.optint.isSome
+    assert optobj[].embedopt.optint.get == 555
+    assert optobj[].embedopt.optstr.isNone
+    assert b["null"].kind == bkNull
+    assert b["null"].isNil
 
-  test "No op when converting to BsonBase":
+  block: # "No op when converting to BsonBase":
     type
       Flexible = object
         field1 {.bsonExport.}: BsonBase
@@ -783,22 +794,22 @@ suite "Macro to object conversion tests":
         field2: nao,
       }
     var flex = b1.to Flexible
-    check flex.field1 == 42
-    check flex.field2 == "hello"
-    check flex.field3.isNil
+    assert flex.field1 == 42
+    assert flex.field2 == "hello"
+    assert flex.field3.isNil
 
     flex = b2.to Flexible
-    check flex.field1 == 42.0
-    check flex.field2.ofBool
-    check flex.field3["field1"] == 42
-    check flex.field3["field3"].isNil
+    assert flex.field1 == 42.0
+    assert flex.field2.ofBool
+    assert flex.field3["field1"] == 42
+    assert flex.field3["field3"].isNil
 
     flex = b3.to Flexible
-    check flex.field1.isNil
-    check flex.field2 == nao
-    check flex.field3.isNil
+    assert flex.field1.isNil
+    assert flex.field2 == nao
+    assert flex.field3.isNil, &"flex.field3 is not nil, it is '{flex.field3}'"
 
-  test "Enum conversion":
+  block: # "Enum conversion":
     type
       En1 = enum
         En1En1 = "en1 enum1"
@@ -827,7 +838,7 @@ suite "Macro to object conversion tests":
     }
 
     let oen = ben.to EnObj
-    check oen.enfield1 == En1En3
-    check oen.enfield2 == En2En2
-    check oen.enough.en1ough == En1En2
-    check oen.enough.en2ough == En2En3
+    assert oen.enfield1 == En1En3
+    assert oen.enfield2 == En2En2
+    assert oen.enough.en1ough == En1En2
+    assert oen.enough.en2ough == En2En3

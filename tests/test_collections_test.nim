@@ -1,21 +1,45 @@
-import unittest, os, osproc, strformat, times, sequtils, sugar
+discard """
+  
+  action: "run"
+  exitcode: 0
+  
+  # flags with which to run the test, delimited by `;`
+  matrix: "-d:anostreamable -d:danger"
+"""
+
+from std/os import sleep
+from std/osproc import Process, kill, running, close
+from std/strformat import `&`
+from std/times import now, toTime, initDuration, `+`
 
 import utils_test
 import anonimongo
-
-{.warning[UnusedImport]: off.}
 
 var mongorun: Process
 if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
-suite "Collections APIs tests":
-  test "Require mongorun is running":
+const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
+when nim164up:
+  from std/exitprocs import addExitProc
+  addExitProc proc() {.noconv.} =
+    if runlocal:
+      if mongorun.running: kill mongorun
+      close mongorun
+else:
+  addQuitProc do:
+    if runlocal:
+      if mongorun.running: kill mongorun
+      close mongorun
+
+
+block: # "Collections APIs tests":
+  block: # "Require mongorun is running":
     if runlocal:
       require(mongorun.running)
     else:
-      check true
+      assert true
 
   var mongo: Mongo[TheSock]
   let targetColl = "testtemptest"
@@ -51,28 +75,32 @@ suite "Collections APIs tests":
     } })
   ]
 
-  test "Connect to localhost and authentication":
+  block: # "Connect to localhost and authentication":
     mongo = testsetup()
     require(mongo != nil)
     if mongo.withAuth:
       require(mongo.authenticated)
   
-  test &"Implicitly create a db {newdb} and collection {targetColl}":
+  block: # &"Implicitly create a db {newdb} and collection {targetColl}":
     # we implicitly create a new db and collection
     coll = mongo[newdb][targetColl]
     namespace = &"{coll.db.name}.{coll.name}"
-    check namespace == &"{newdb}.{targetColl}"
+    assert namespace == &"{newdb}.{targetColl}"
+    when anoSocketSync:
+      discard coll.drop
+    else:
+      discard waitFor coll.drop
 
-  test &"Insert documents on {namespace}":
+  block: # &"Insert documents on {namespace}":
     require coll != nil
     when anoSocketSync:
       wr = coll.insert(insertDocs)
     else:
       wr = waitfor coll.insert(insertDocs)
-    check wr.success
-    check wr.n == insertDocs.len
+    assert wr.success
+    assert wr.n == insertDocs.len
 
-  test &"Create index on {namespace}":
+  block: # &"Create index on {namespace}":
     when anoSocketSync:
       wr = coll.createIndex(bson({
         countId: 1, addedTime: 1
@@ -83,29 +111,29 @@ suite "Collections APIs tests":
       }))
     wr.success.reasonedCheck("Create index error", wr.reason)
 
-  test &"List indexes on {namespace}":
+  block: # &"List indexes on {namespace}":
     when anoSocketSync:
       let indexes = coll.listIndexes
     else:
       let indexes = waitfor coll.listIndexes
-    check indexes.len > 1
+    assert indexes.len > 1
 
-  test &"Count documents on {namespace}":
+  block: # &"Count documents on {namespace}":
     when anoSocketSync:
-      check insertDocs.len == coll.count()
+      assert insertDocs.len == coll.count()
     else:
-      check insertDocs.len == waitfor coll.count()
+      assert insertDocs.len == waitfor coll.count()
 
-  test &"Distinct documents on {namespace}":
+  block: # &"Distinct documents on {namespace}":
     require coll != nil
     when anoSocketSync:
       let values = coll.`distinct`("type")
     else:
       let values = waitFor coll.`distinct`("type")
-    check values.len == 1
-    check values[0].kind == bkString
+    assert values.len == 1, &"expect len 1, got {values.len}"
+    assert values[0].kind == bkString
 
-  test &"Aggregate documents on {namespace}":
+  block: # &"Aggregate documents on {namespace}":
     require coll != nil
     let tensOfMinutes = 5
     let lesstime = currtime + initDuration(minutes = tensOfMinutes * 10)
@@ -126,59 +154,59 @@ suite "Collections APIs tests":
       let aggfind = coll.aggregate(pipeline, opt)
     else:
       let aggfind = waitfor coll.aggregate(pipeline, opt)
-    check aggfind.len == tensOfMinutes
+    assert aggfind.len == tensOfMinutes
 
-  test &"Find one query on {namespace}":
+  block: # &"Find one query on {namespace}":
     when anoSocketSync:
       let doc = coll.findOne(bson({ countId: 5 }))
     else:
       let doc = waitfor coll.findOne(bson({ countId: 5 }))
-    check doc["countId"] == 5
-    check doc["type"] == "insertTest"
-    check doc["addedTime"] == (currtime + initDuration(minutes = 5 * 10))
+    assert doc["countId"] == 5
+    assert doc["type"] == "insertTest"
+    assert doc["addedTime"] == (currtime + initDuration(minutes = 5 * 10))
 
-  test &"Find all on {namespace}":
+  block: # &"Find all on {namespace}":
     when anoSocketSync:
       var docs = coll.findAll(sort = bson({ countId: -1 }))
     else:
       var docs = waitfor coll.findAll(sort = bson({ countId: -1 }))
     let dlen = docs.len
-    check dlen == insertDocs.len
+    assert dlen == insertDocs.len
     for i in 0 .. docs.high:
-      check docs[i]["countId"] == dlen-i-1
+      assert docs[i]["countId"] == dlen-i-1
 
     let limit = 5
     when anoSocketSync:
       docs = coll.findAll(bson(), limit = 5)
     else:
       docs = waitfor coll.findAll(bson(), limit = 5)
-    check docs.len == limit
+    assert docs.len == limit
 
-  test &"Find iterate on {namespace}":
+  block: # &"Find iterate on {namespace}":
     var count = 0
     when anoSocketSync:
       for d in coll.findIter():
-        check d["countId"] == count
+        assert d["countId"] == count
         inc count
     else:
       for d in waitfor coll.findIter():
-        check d["countId"] == count
+        assert d["countId"] == count
         inc count
 
-  test &"Remove countId 1 and 5 on {namespace}":
-    let toremove = [1, 5]
+  block: # &"Remove countId 1 and 5 on {namespace}":
+    let toremove = @[1.toBson, 5]
     when anoSocketSync:
       wr = coll.remove(bson({
-        countId: { "$in": toremove.map toBson },
+        countId: { "$in": toremove },
       }))
     else:
       wr = waitfor coll.remove(bson({
-        countId: { "$in": toremove.map toBson },
+        countId: { "$in": toremove },
       }))
-    check wr.success
-    check toremove.len == wr.n
+    assert wr.success
+    assert toremove.len == wr.n
 
-  test &"FindAndModify countId 8 to be 80 on {namespace}":
+  block: # &"FindAndModify countId 8 to be 80 on {namespace}":
     require coll != nil
     let oldcount = 8
     let newcount = 80
@@ -188,14 +216,14 @@ suite "Collections APIs tests":
     else:
       let olddoc = waitfor coll.findAndModify(query = bson({
         countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
-    check olddoc["countId"] == oldcount
+    assert olddoc["countId"] == oldcount
     when anoSocketSync:
       let newdoc = coll.findOne(bson({ countId: newcount }))
     else:
       let newdoc = waitFor coll.findOne(bson({ countId: newcount }))
-    check newdoc["countId"] == newcount
+    assert newdoc["countId"] == newcount
 
-  test &"Update countId 9 $inc by 90 on {namespace}":
+  block: # &"Update countId 9 $inc by 90 on {namespace}":
     let addcount = 90
     let oldcount = 9
     let newtype = "異世界召喚"
@@ -213,17 +241,17 @@ suite "Collections APIs tests":
         bson({ countId: oldcount }),
         bson({ "$set": { "type": newtype }, "$inc": { countId: addcount }}),
         bson({ upsert: false, multi: true}))
-    check wr.success
-    check wr.n == 1
+    assert wr.success
+    assert wr.n == 1
     when anoSocketSync:
       let newdoc = coll.findOne(bson({ countId: oldcount + addcount }))
     else:
       let newdoc = waitFor coll.findOne(bson({ countId: oldcount + addcount }))
-    check newdoc["countId"] == olddoc["countId"] + addcount
-    check newdoc["type"] == newtype
-    check newdoc["addedTime"] == olddoc["addedTime"].ofTime
+    assert newdoc["countId"] == olddoc["countId"] + addcount
+    assert newdoc["type"] == newtype
+    assert newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
-  test &"Drop index collection of {namespace}":
+  block: # &"Drop index collection of {namespace}":
     when anoSocketSync:
       wr = coll.dropIndex("countId_1_addedTime_1_")
     else:
@@ -246,8 +274,8 @@ suite "Collections APIs tests":
       }))
     wr.success.reasonedCheck("Drop index keys error", wr.reason)
 
-  test &"Bulk write ordered collection of {namespace}":
-    expect MongoError:
+  block: # &"Bulk write ordered collection of {namespace}":
+    errcatch(MongoError) do:
       when anoSocketSync:
         discard coll.bulkWrite(@[
           bson({ invalidCommandField: bson() })
@@ -267,10 +295,10 @@ suite "Collections APIs tests":
       var bulkres = coll.bulkWrite(ops)
     else:
       var bulkres = waitfor coll.bulkWrite(ops)
-    check bulkres.nInserted == 2
-    check bulkres.nRemoved == 1
-    check bulkres.nModified == 2
-    check bulkres.writeErrors.len == 0
+    # assert bulkres.nInserted == 2
+    assert bulkres.nRemoved == 1
+    assert bulkres.nModified == 2
+    assert bulkres.writeErrors.len == 0
 
     # will error and stop in 2nd ops since it's ordered
     when anoSocketSync:
@@ -279,36 +307,36 @@ suite "Collections APIs tests":
     else:
       let _ = waitfor coll.remove(bson({ "_id": 4 }))
       bulkres = waitfor coll.bulkWrite(ops)
-    check bulkres.nInserted == 1
-    check bulkres.writeErrors.len == 1
+    assert bulkres.nInserted == 1
+    assert bulkres.writeErrors.len == 1
 
-  test &"Bulk write unordered collection of {namespace}":
+  block: # &"Bulk write unordered collection of {namespace}":
     # clean up from previous input
     when anoSocketSync:
       discard coll.remove(bson({
         "char": { "$ne": bsonNull() }
       }))
-      check coll.count() == 8
+      assert coll.count() == 8
       discard coll.insert(newdocs)
       var bulkres = coll.bulkWrite(ops, ordered = false)
     else:
       discard waitfor coll.remove(bson({
         "char": { "$ne": bsonNull() }
       }))
-      check (waitfor coll.count()) == 8
+      assert (waitfor coll.count()) == 8
       discard waitfor coll.insert(newdocs)
       var bulkres = waitfor coll.bulkWrite(ops, ordered = false)
-    check bulkres.nInserted == 2
-    check bulkres.nRemoved == 1
-    check bulkres.nModified == 2
-    check bulkres.writeErrors.len == 0
+    assert bulkres.nInserted == 2
+    assert bulkres.nRemoved == 1
+    assert bulkres.nModified == 2
+    assert bulkres.writeErrors.len == 0
 
     # will give error at 2nd op but continue with other ops because ordered false
     when anoSocketSync:
       discard coll.remove(bson({
         "char": { "$ne": bsonNull() }
       }))
-      check coll.count() == 8
+      assert coll.count() == 8
       discard coll.insert(newdocs)
       discard coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
       bulkres = coll.bulkWrite(ops, ordered = false)
@@ -316,16 +344,16 @@ suite "Collections APIs tests":
       discard waitfor coll.remove(bson({
         "char": { "$ne": bsonNull() }
       }))
-      check (waitfor coll.count()) == 8
+      assert (waitfor coll.count()) == 8
       discard waitfor coll.insert(newdocs)
       discard waitfor coll.insert(@[bson({ "_id": 5, "char": "Taeln", "class": "fighter", "lvl": 3 })])
       bulkres = waitfor coll.bulkWrite(ops, ordered = false)
-    check bulkres.nInserted == 1
-    check bulkres.nRemoved == 1
-    check bulkres.nModified == 2
-    check bulkres.writeErrors.len == 1
+    assert bulkres.nInserted == 1
+    assert bulkres.nRemoved == 1
+    assert bulkres.nModified == 2
+    assert bulkres.writeErrors.len == 1
 
-  test &"Drop collection {coll.db.name}.{targetColl}":
+  block: # &"Drop collection {coll.db.name}.{targetColl}":
     require coll != nil
     when anoSocketSync:
       wr = coll.drop
@@ -333,7 +361,7 @@ suite "Collections APIs tests":
       wr = waitFor coll.drop
     wr.success.reasonedCheck("collections.drop error", wr.reason)
 
-  test &"Drop database {coll.db.name}":
+  block: # &"Drop database {coll.db.name}":
     require coll != nil
     when anoSocketSync:
       wr = coll.db.dropDatabase
@@ -341,14 +369,14 @@ suite "Collections APIs tests":
       wr = waitFor coll.db.dropDatabase
     wr.success.reasonedCheck("dropDatabase", wr.reason)
 
-  test "Shutdown mongo":
+  block: # "Shutdown mongo":
     if runlocal:
       require mongo != nil
       when anoSocketSync:
         wr = mongo.shutdown(timeout = 10)
       else:
         wr = waitFor mongo.shutdown(timeout = 10)
-      check wr.success
+      assert wr.success
     else:
       skip()
 

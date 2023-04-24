@@ -1,12 +1,20 @@
-import uri, tables, strutils, net, strformat, sequtils, unicode
-import deques, sugar
-from asyncdispatch import Port
-from math import nextPowerOfTwo
+import std/net
+from std/strformat import `&`, fmt
+from std/asyncdispatch import Port
+from std/math import nextPowerOfTwo
+from std/sugar import `=>`, `->`
+from std/unicode import toLower
+from std/sequtils import mapIt, allIt, toSeq, all
+from std/strutils import split
+from std/tables import TableRef, newTable, `[]=`, `[]`, contains
+from std/uri import Uri, parseUri, decodeUrl
+from std/deques import len
 
 when defined(ssl):
   import openssl
 
-import sha1, nimSHA2
+from std/sha1 import Sha1Digest
+from nimSHA2 import SHA256Digest
 import dnsclient
 
 import pool, wire, bson, multisock
@@ -22,7 +30,7 @@ const
   sslProtVersion {.strdefine, used.} = ""
 
 when verbose:
-  import sugar
+  from std/sugar import dump
 
 type
   MongoConn* {.multisock.} = ref object of RootObj
@@ -259,7 +267,7 @@ proc handleWriteConcern(m: Mongo[Multisock]) =
       w["w"] = val
   if "j" in m.query and m.query["j"].len > 0:
     w["j"] = m.query["j"][0]
-  if w != nil:
+  if not w.isNil:
     m.writeConcern = w
 
 proc checkTlsValidity(m: Mongo[Multisock]) =
