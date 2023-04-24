@@ -1,2 +1,2 @@
 --threads:on
---d:ssl
+--define:ssl
