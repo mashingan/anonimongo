@@ -3,8 +3,6 @@ discard """
   action: "run"
   exitcode: 0
   
-  targets: "c cpp"
-  
   # flags with which to run the test, delimited by `;`
   matrix: "-d:anostreamable -d:danger"
 """

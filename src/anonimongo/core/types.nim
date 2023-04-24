@@ -1,4 +1,4 @@
-from std/net import Socket
+import std/net
 from std/strformat import `&`, fmt
 from std/asyncdispatch import Port
 from std/math import nextPowerOfTwo
@@ -12,7 +12,6 @@ from std/deques import len
 
 when defined(ssl):
   import openssl
-  from std/net import SslProtVersion
 
 from std/sha1 import Sha1Digest
 from nimSHA2 import SHA256Digest
