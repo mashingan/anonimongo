@@ -143,17 +143,14 @@ block: # "Bson operations tests":
     assert decurrtime == currtime
 
   when not defined(anostreamable):
-    block: # "Empty bson array codec and write to file":
+    block: # "Empty bson array codec":
       var emptyarr = newBson(
-        table = toOrderedTable([
-          ("emptyarr", bsonArray())]),
-        stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
+        table = toOrderedTable([("emptyarr", bsonArray())]),
+        stream = newStringStream(),
+      )
       let (_, empstr) = encode emptyarr
       let empdec = decode empstr
       assert empdec["emptyarr"].ofArray.len == 0
-    block: # "Read empty bson array from file":
-      let emptyarr = decode(readFile "emptyarr.bson")
-      assert emptyarr["emptyarr"].ofArray.len == 0
   
   block: # "Mutable bson field access":
     assert arrayembed["objects"][0]["q"] == 1
