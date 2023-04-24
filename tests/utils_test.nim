@@ -33,7 +33,7 @@ const
   verbose* = defined(verbose)
 
 when verbose:
-  import times, strformat
+  import times
 
 when not anoSocketSync:
   type TheSock* = AsyncSocket
@@ -112,10 +112,6 @@ template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
     assert b
     if not b: (label & ": ").tell reason
 
-proc require*(success: bool, msg = "") =
-  if not success:
-    quit msg, QuitFailure
-
 proc skip*() = discard
 
 proc errcatch*(excpt: typedesc, body: proc()) =
@@ -125,3 +121,18 @@ proc errcatch*(excpt: typedesc, body: proc()) =
   except excpt:
     errorCatched = true
   assert errorCatched
+
+template fail*(msg = "", exitcode = QuitFailure) =
+  let info = instantiationInfo()
+  echo "fail at ", info.filename, ':', info.line
+  if msg != "":
+    quit msg, exitcode
+  else:
+    quit exitcode
+
+template checkpoint*(msg: string) =
+  echo msg
+
+proc require*(success: bool, msg = "") =
+  if not success:
+    fail(msg)

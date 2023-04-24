@@ -12,6 +12,7 @@ from std/deques import len
 
 when defined(ssl):
   import openssl
+  from std/net import SslProtVersion
 
 from std/sha1 import Sha1Digest
 from nimSHA2 import SHA256Digest
