@@ -751,13 +751,6 @@ proc encode(s: var Streamable, key: string, doc: BsonTimestamp): int =
 
 proc isNil*(b: BsonBase): bool
 
-proc assignNewStream(filename = ""): Streamable =
-  when not defined(anostreamable):
-    result = if filename == "": newStream()
-             else: newFileStream(filename, fmReadWrite)
-  else:
-    result = newStream()
-
 proc encode*(doc: var BsonDocument): (int, string) =
   ## Encode BsonDocument and return it into length of binary string
   ## and the binary string itself.
@@ -767,7 +760,7 @@ proc encode*(doc: var BsonDocument): (int, string) =
     return (docstr.len, docstr)
   var length = 4 + 1
   var buff = ""
-  doc.stream = assignNewStream(doc.filename)
+  doc.clearStream
   doc.stream.writeLE length.int32
   for k, v in doc:
     case v.kind
@@ -896,15 +889,21 @@ proc bsonJs*(code: string | seq[Rune]): BsonBase =
     let value = code
   BsonBase(valueStr: value, kind: bkJs)
 
+
 proc newBson*(table = initOrderedTable[string, BsonBase](),
     stream: Streamable = newStream(),
     filename = ""): BsonDocument =
   ## A primordial BsonDocument allocators. Preferably to use
   ## `bson macro<#bson.m,untyped>`_ instead, except the
   ## need to specify the stream used for the BsonDocument.
+  when not defined(anostreamable):
+    var thestream = if filename == "": newStream()
+             else: newFileStream(filename, fmReadWrite)
+  else:
+    var thestream = newStream()
   BsonDocument(
     table: table,
-    stream: assignNewStream(filename),
+    stream: thestream,
     filename: filename,
   )
 
