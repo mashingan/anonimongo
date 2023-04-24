@@ -4,7 +4,7 @@ discard """
   exitcode: 0
   
   # flags with which to run the test, delimited by `;`
-  matrix: "-d:anostreamable -d:release"
+  matrix: "--threads:on -d:anostreamable -d:release"
 """
 
 import utils_test
