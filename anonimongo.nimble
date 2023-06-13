@@ -5,7 +5,7 @@ author        = "Rahmatullah"
 description   = "Anonimongo - Another pure Nim Mongo driver"
 license       = "MIT"
 srcDir        = "src"
-skipDirs      = @["pkgs", "examples", "buildcache", "github/workflows"]
+#skipDirs      = @["pkgs", "examples", "buildcache", "github/workflows"]
 #installDirs   = @["cinclude"]
 
 # Dependencies
