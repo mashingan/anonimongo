@@ -9,7 +9,7 @@ discard """
 
 from std/osproc import Process, running, close, kill
 from std/os import sleep
-import ./utils_test
+import utils_test
 import anonimongo
 
 var mongorun: Process

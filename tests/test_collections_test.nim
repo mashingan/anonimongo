@@ -12,7 +12,7 @@ from std/osproc import Process, kill, running, close
 from std/strformat import `&`
 from std/times import now, toTime, initDuration, `+`
 
-import ./utils_test
+import utils_test
 import anonimongo
 
 var mongorun: Process

@@ -3,7 +3,7 @@ import dnsclient
 from dnsclientpkg/protocol as dnsprot import parseResponse, toStream
 from dnsclientpkg/utils as dnsutils import writeShort
 
-from ./utils_test import verbose, exe
+from utils_test import verbose, exe
 
 const
   dnsport* {.intdefine.} = 27016

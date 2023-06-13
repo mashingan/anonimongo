@@ -16,7 +16,7 @@ when testChangeStreams:
   from std/strformat import `&`
   from std/times import now, toTime
 
-  import ./[utils_test, utils_replica]
+  import utils_test, utils_replica
   import anonimongo
 
 

@@ -11,7 +11,7 @@ import asyncdispatch
 from std/osproc import Process, kill, close, running
 from std/os import sleep
 
-import ./utils_test
+import utils_test
 import anonimongo
 
 var mongorun: Process
