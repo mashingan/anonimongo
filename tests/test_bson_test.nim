@@ -11,7 +11,7 @@ from std/strformat import `&`
 
 import anonimongo/core/bson
 
-import utils_test
+import ./utils_test
 
 const qrimg = readFile "tests/qrcode-me.png"
 

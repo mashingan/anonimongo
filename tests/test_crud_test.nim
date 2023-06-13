@@ -14,7 +14,7 @@ from std/net import Socket
 from std/strformat import `&`
 from std/times import now, toTime, initDuration, `+`
 
-import utils_test
+import ./utils_test
 import anonimongo
 
 var mongorun: Process

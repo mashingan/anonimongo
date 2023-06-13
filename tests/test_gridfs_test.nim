@@ -15,7 +15,7 @@ from std/asyncfile import AsyncFile, close, openAsync, write,
 from std/sugar import dump
 from std/sequtils import allIt
 
-import utils_test
+import ./utils_test
 
 import anonimongo
 

@@ -7,7 +7,7 @@ discard """
   matrix: "--threads:on -d:ssl -d:anostreamable -d:release"
 """
 
-import utils_test
+import ./utils_test
 
 const
   testReplication {.booldefine.} = false
@@ -20,7 +20,7 @@ when testReplication and defined(ssl):
   from osproc import Process, kill, running, close
   from sequtils import allIt, all, anyIt
 
-  import utils_replica
+  import ./utils_replica
 
   import anonimongo
 
