@@ -26,14 +26,14 @@ const
   runlocal* = localhost and nomongod
   anoSocketSync* = defined(anoSocketSync)
 
-  mongourl {.strdefine, used.} = &"mongo://{user}:{pass}@{host}:{port}/" &
+  mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
     "?tlscertificateKeyfile=" &
     &"certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin" &
     "&compressors=snappy,zlib"
   verbose* = defined(verbose)
 
 when verbose:
-  import times
+  import times, strformat
 
 when not anoSocketSync:
   type TheSock* = AsyncSocket
@@ -42,7 +42,7 @@ else:
 
 proc startmongo*: Process =
   var args = @[
-    "--port", $port,
+    "--port", "27017",
     "--dbpath", dbpath,
     "--bind_ip_all",
     "--networkMessageCompressors", "snappy,zlib",
@@ -106,33 +106,8 @@ proc tell*(label, reason: string) =
 
 template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
   when b is BsonDocument:
-    assert b.ok
+    check b.ok
     if not b.ok: (label & ": ").tell b.errmsg
   else:
-    assert b
+    check b
     if not b: (label & ": ").tell reason
-
-proc skip*() = discard
-
-proc errcatch*(excpt: typedesc, body: proc()) =
-  var errorCatched = false
-  try:
-    body()
-  except excpt:
-    errorCatched = true
-  assert errorCatched
-
-template fail*(msg = "", exitcode = QuitFailure) =
-  let info = instantiationInfo()
-  echo "fail at ", info.filename, ':', info.line
-  if msg != "":
-    quit msg, exitcode
-  else:
-    quit exitcode
-
-template checkpoint*(msg: string) =
-  echo msg
-
-proc require*(success: bool, msg = "") =
-  if not success:
-    fail(msg)
