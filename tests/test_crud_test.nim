@@ -11,18 +11,6 @@ if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
-when (NimMajor, NimMinor, NimPatch) >= (1, 6, 4):
-  from std/exitprocs import addExitProc
-  addExitProc proc() {.noconv.} =
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
-else:
-  addQuitProc do:
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
-
 proc toCursor[S: TheSock|Socket](b: BsonDocument): Cursor[S] =
   Cursor[S](
     id: b["id"],
@@ -293,4 +281,7 @@ suite "CRUD tests":
     else:
       skip()
 
+  if runlocal:
+    if mongorun.running: kill mongorun
+    close mongorun
   close mongo

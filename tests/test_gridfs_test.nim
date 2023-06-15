@@ -245,5 +245,5 @@ if filename != "" and saveas != "":
 
     close mongo
     if runlocal:
-      if mongorun.running: kill mongorun
+      if mongorun != nil and mongorun.running: kill mongorun
       close mongorun

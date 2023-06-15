@@ -29,34 +29,18 @@ when testReplication and defined(ssl):
   from strformat import `&`
   from osproc import Process, running
   from sequtils import allIt, all, anyIt
-  when utils_test.verbose:
-    from sugar import dump
+  from sugar import dump
 
   import utils_replica
 
   import anonimongo
-
-  const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
-  var processes: seq[Process]
-
-  proc processKiller() {.noconv.} =
-    processes.cleanup
-    sleep 3000
-    cleanupSSL()
-    cleanMongoTemp()
-
-  when nim164up:
-    from std/exitprocs import addExitProc
-    addExitProc processKiller
-  else:
-    addQuitProc processKiller
-
 
   suite "Replication, SSL, and SRV DNS seedlist lookup (mongodb+srv) tests":
     test "Initial test setup":
       require createMongoTemp()
     test "Create self-signing SSL key certificate":
       require createSSLCert()
+    var processes: seq[Process]
     test "Run the local replication set db":
       processes = setupMongoReplication()
       require processes.allIt( it != nil )
@@ -151,7 +135,7 @@ when testReplication and defined(ssl):
           dnsserver = mongoServer,
           dnsport = dnsport
         )
-      except RangeDefect:
+      except RangeError:
         checkpoint(getCurrentExceptionMsg())
         fail()
       require mongo != nil
@@ -207,3 +191,7 @@ when testReplication and defined(ssl):
     else:
       discard waitfor mongo.shutdown(timeout = 10, force = true)
     mongo.close
+    processes.cleanup
+    sleep 3000
+    cleanupSSL()
+    cleanMongoTemp()

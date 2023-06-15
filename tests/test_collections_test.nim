@@ -10,19 +10,6 @@ if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
 
-const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
-when nim164up:
-  from std/exitprocs import addExitProc
-  addExitProc proc() {.noconv.} =
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
-else:
-  addQuitProc do:
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
-
 suite "Collections APIs tests":
   test "Require mongorun is running":
     if runlocal:
@@ -366,3 +353,6 @@ suite "Collections APIs tests":
       skip()
 
   close mongo
+  if runlocal:
+    if mongorun.running: kill mongorun
+    close mongorun

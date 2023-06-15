@@ -35,7 +35,7 @@ suite "Bson operations tests":
     removeFile bsonFilename
     when false:
       newdoc = newBson(
-        table = ([
+        table = newOrderedTable([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -43,7 +43,7 @@ suite "Bson operations tests":
           ("this is null", bsonNull()),
           ("now", currtime.toBson),
           ("_id", curroid.toBson)
-        ]).toOrderedTable,
+        ]),
         stream = newFileStream(bsonFilename, mode = fmReadWrite))
     else:
       newdoc = newBson(
@@ -130,7 +130,7 @@ suite "Bson operations tests":
   when false:
     test "Empty bson array codec and write to file":
       let emptyarr = newBson(
-        table = toOrderedTable([
+        table = newOrderedTable([
           ("emptyarr", bsonArray())]),
         stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
       let (_, empstr) = encode emptyarr

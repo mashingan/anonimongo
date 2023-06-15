@@ -11,19 +11,6 @@ when testChangeStreams:
     cleanMongoTemp()
     cleanupSSL()
 
-  const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
-  var p: seq[Process]
-
-  proc processKiller() {.noconv.} =
-    cleanResources p
-
-  when nim164up:
-    from std/exitprocs import addExitProc
-    addExitProc processKiller
-  else:
-    addQuitProc processKiller
-
-
   proc setReplica(m: Mongo[AsyncSocket]): bool =
     var config = bson({
       "_id": rsetName,
@@ -113,3 +100,5 @@ when testChangeStreams:
     test "Cleanup the temptest.templog":
       var res = waitfor coll.drop
       res.success.reasonedCheck("drop collection", res.reason)
+
+    cleanResources p
