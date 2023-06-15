@@ -48,5 +48,5 @@ task test, "Run testament":
     if "test_" in filename and
       filename.endsWith(".nim"):
       exec fmt"testament p {filename}"
-    rmFile fmt"{filename}".toExe
+      rmFile fmt"{filename}".toExe
   cleanTask()
