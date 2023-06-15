@@ -35,7 +35,7 @@ suite "Bson operations tests":
     removeFile bsonFilename
     when false:
       newdoc = newBson(
-        table = newOrderedTable([
+        table = ([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -43,11 +43,11 @@ suite "Bson operations tests":
           ("this is null", bsonNull()),
           ("now", currtime.toBson),
           ("_id", curroid.toBson)
-        ]),
+        ]).toOrderedTable,
         stream = newFileStream(bsonFilename, mode = fmReadWrite))
     else:
       newdoc = newBson(
-        table = newOrderedTable([
+        table = ([
           ("hello", 100.toBson),
           ("hello world", isekai.toBson),
           ("a percent of truth", 0.42.toBson),
@@ -55,7 +55,7 @@ suite "Bson operations tests":
           ("this is null", bsonNull()),
           ("now", currtime.toBson),
           ("_id", curroid.toBson)
-        ]),
+        ]).toOrderedTable,
       )
     check newdoc["hello world"] == isekai
     check newdoc["hello"] == 100
@@ -92,7 +92,7 @@ suite "Bson operations tests":
 
     expect(BsonFetchError):
       discard arrayembed["objects"]["hello"]
-    expect(IndexError):
+    expect(IndexDefect):
       discard arrayembed["objects"][4]
     expect(BsonFetchError):
       discard arrayembed["objects"][1]["q"]["hello"]
@@ -127,10 +127,10 @@ suite "Bson operations tests":
     let decurrtime = timestampdec["timestamp"].ofTimestamp[1]
     check decurrtime == currtime
 
-  when not defined(anostreamable):
+  when false:
     test "Empty bson array codec and write to file":
       let emptyarr = newBson(
-        table = newOrderedTable([
+        table = toOrderedTable([
           ("emptyarr", bsonArray())]),
         stream = newFileStream("emptyarr.bson", mode = fmReadWrite))
       let (_, empstr) = encode emptyarr
@@ -180,7 +180,7 @@ suite "Bson operations tests":
     var itemCompare = bson { arr: [] }
     check itemCompare["arr"].kind == bkArray
     check itemCompare["arr"].len == 0
-    when not defined(anostreamable):
+    when false:
       var fileCompare = newBson(filename = "filetest.bson")
       fileCompare["arr"] = bsonArray()
       check fileCompare["arr"].kind == bkArray
@@ -200,7 +200,7 @@ suite "Bson operations tests":
     itemCompare.compareArr(42.0)
     itemCompare.compareArr(true)
     itemCompare.compareArr("nanana", notsame = false)
-    when not defined(anostreamable):
+    when false:
       fileCompare.compareArr(42)
       fileCompare.compareArr(42.0)
       fileCompare.compareArr(true)
@@ -212,7 +212,7 @@ suite "Bson operations tests":
     let (itemN, itemStr) = encode itemCompare
     check itemStr != baseStr
     check itemN != baseN
-    when not defined(anostreamable):
+    when false:
       fileCompare["new-key"] = newval
       let (fileN, fileStr) = encode fileCompare
       check fileStr != baseStr

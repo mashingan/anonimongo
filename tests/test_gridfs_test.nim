@@ -5,10 +5,6 @@ import utils_test
 
 {.warning[UnusedImport]: off.}
 
-const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
-when nim164up:
-  from std/exitprocs import addExitProc
-
 proc insert5files(g: GridFS[TheSock], fname: string): bool =
   var f: AsyncFile
   try:
@@ -37,16 +33,6 @@ if filename != "" and saveas != "":
   if runlocal:
     mongorun = startmongo()
     sleep 3000 # waiting for mongod to be ready
-
-  proc processKiller {.noconv.} =
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
-
-  when nim164up:
-    addExitProc processKiller
-  else:
-    addQuitProc processKiller
 
   suite "GridFS implementation tests":
     test "Mongo server is running":
@@ -258,3 +244,6 @@ if filename != "" and saveas != "":
         skip()
 
     close mongo
+    if runlocal:
+      if mongorun.running: kill mongorun
+      close mongorun

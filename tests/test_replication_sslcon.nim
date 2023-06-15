@@ -57,7 +57,6 @@ when testReplication and defined(ssl):
       require createMongoTemp()
     test "Create self-signing SSL key certificate":
       require createSSLCert()
-    var processes: seq[Process]
     test "Run the local replication set db":
       processes = setupMongoReplication()
       require processes.allIt( it != nil )
