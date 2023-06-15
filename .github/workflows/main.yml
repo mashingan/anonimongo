@@ -79,6 +79,7 @@ jobs:
             echo 'hint("ConvFromXToItSelfNotNeeded", off)' >> config.nims
             echo 'switch("define", "dbpath=/tmp/mongodbpath")' >> config.nims
             echo 'switch("define", "uri")' >> config.nims
+            cat config.nims
             nimble test -Y
 
       - uses: actions/checkout@v2.3.1
