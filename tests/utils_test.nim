@@ -46,7 +46,7 @@ proc startmongo*: Process =
     "--dbpath", dbpath,
     "--bind_ip_all",
     "--networkMessageCompressors", "snappy,zlib",
-    "--auth"]
+  ]
   when defined(ssl):
     args.add "--sslMode"
     args.add "requireSSL"
@@ -55,6 +55,8 @@ proc startmongo*: Process =
     if cert != "":
       args.add "--sslCAFile"
       args.add cert
+  if user != "" and pass != "":
+    args.add "--auth"
   when defined(windows):
     # the process cannot continue unless the stdout flushed
     let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
