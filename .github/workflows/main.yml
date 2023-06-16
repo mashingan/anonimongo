@@ -75,7 +75,7 @@ jobs:
             echo 'switch("define", "saveas=")' >> config.nims
             echo 'switch("define", "user=")' >> config.nims
             # echo 'switch("define", "testReplication=yes")' >> config.nims
-            # echo 'switch("define", "testChangeStreams=yes")' >> config.nims
+            echo 'switch("define", "testChangeStreams=yes")' >> config.nims
             echo 'hint("ConvFromXToItSelfNotNeeded", off)' >> config.nims
             echo 'switch("define", "dbpath=/tmp/mongodbpath")' >> config.nims
             echo 'switch("define", "uri")' >> config.nims
