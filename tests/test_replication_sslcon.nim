@@ -106,6 +106,7 @@ when testReplication and defined(ssl):
       check members.len == 3
     sleep 15_000 # waiting the replica set to elect primary
 
+    mongo.close
     test "Connect with manual multi uri connections":
       mongo = newMongo[TheSock](
         MongoUri uriMultiManual,
