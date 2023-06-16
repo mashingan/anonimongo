@@ -51,29 +51,29 @@ BsonBool	anonimongo/core/bson.html#BsonBool	bson: BsonBool
 BsonNull	anonimongo/core/bson.html#BsonNull	bson: BsonNull	
 BsonDocument	anonimongo/core/bson.html#BsonDocument	bson: BsonDocument	
 BsonFetchError	anonimongo/core/bson.html#BsonFetchError	bson: BsonFetchError	
-value	anonimongo/core/bson.html#value,BsonInt32	bson: value(b: BsonInt32): int32	
-value	anonimongo/core/bson.html#value,BsonInt64	bson: value(b: BsonInt64): int64	
-value	anonimongo/core/bson.html#value,BsonDouble	bson: value(b: BsonDouble): float64	
-value	anonimongo/core/bson.html#value,BsonTime	bson: value(b: BsonTime): Time	
-value	anonimongo/core/bson.html#value,BsonTimestamp	bson: value(b: BsonTimestamp): TimestampInternal	
-value	anonimongo/core/bson.html#value	bson: value(b: BsonString | BsonJs): seq[Rune]	
-value	anonimongo/core/bson.html#value,BsonEmbed	bson: value(b: BsonEmbed): BsonDocument	
-value	anonimongo/core/bson.html#value,BsonBinary	bson: value(b: BsonBinary): seq[byte]	
-value	anonimongo/core/bson.html#value,BsonObjectId	bson: value(b: BsonObjectId): Oid	
-value	anonimongo/core/bson.html#value,BsonArray	bson: value(b: BsonArray): seq[BsonBase]	
-value	anonimongo/core/bson.html#value,BsonBool	bson: value(b: BsonBool): bool	
-subtype	anonimongo/core/bson.html#subtype,BsonBinary	bson: subtype(b: BsonBinary): BsonSubtype	
-value	anonimongo/core/bson.html#value,BsonInt32_2	bson: value(b: var BsonInt32): var int32	
-value	anonimongo/core/bson.html#value,BsonInt64_2	bson: value(b: var BsonInt64): var int64	
-value	anonimongo/core/bson.html#value,BsonDouble_2	bson: value(b: var BsonDouble): var float64	
-value	anonimongo/core/bson.html#value,BsonTime_2	bson: value(b: var BsonTime): var Time	
-value	anonimongo/core/bson.html#value,BsonTimestamp_2	bson: value(b: var BsonTimestamp): var TimestampInternal	
-value	anonimongo/core/bson.html#value,BsonString	bson: value(b: var BsonString): var seq[Rune]	
-value	anonimongo/core/bson.html#value,BsonJs	bson: value(b: var BsonJs): var seq[Rune]	
-value	anonimongo/core/bson.html#value,BsonEmbed_2	bson: value(b: var BsonEmbed): var BsonDocument	
-value	anonimongo/core/bson.html#value,BsonBinary_2	bson: value(b: var BsonBinary): var seq[byte]	
-value	anonimongo/core/bson.html#value,BsonObjectId_2	bson: value(b: var BsonObjectId): var Oid	
-value	anonimongo/core/bson.html#value,BsonArray_2	bson: value(b: var BsonArray): var seq[BsonBase]	
+value	anonimongo/core/bson.html#value.t,BsonInt32	bson: value(b: BsonInt32): int32	
+value	anonimongo/core/bson.html#value.t,BsonInt64	bson: value(b: BsonInt64): int64	
+value	anonimongo/core/bson.html#value.t,BsonDouble	bson: value(b: BsonDouble): float64	
+value	anonimongo/core/bson.html#value.t,BsonTime	bson: value(b: BsonTime): Time	
+value	anonimongo/core/bson.html#value.t,BsonTimestamp	bson: value(b: BsonTimestamp): TimestampInternal	
+value	anonimongo/core/bson.html#value.t	bson: value(b: BsonString | BsonJs): seq[Rune]	
+value	anonimongo/core/bson.html#value.t,BsonEmbed	bson: value(b: BsonEmbed): BsonDocument	
+value	anonimongo/core/bson.html#value.t,BsonBinary	bson: value(b: BsonBinary): seq[byte]	
+value	anonimongo/core/bson.html#value.t,BsonObjectId	bson: value(b: BsonObjectId): Oid	
+value	anonimongo/core/bson.html#value.t,BsonArray	bson: value(b: BsonArray): seq[BsonBase]	
+value	anonimongo/core/bson.html#value.t,BsonBool	bson: value(b: BsonBool): bool	
+subtype	anonimongo/core/bson.html#subtype.t,BsonBinary	bson: subtype(b: BsonBinary): BsonSubtype	
+value	anonimongo/core/bson.html#value.t,BsonInt32_2	bson: value(b: var BsonInt32): var int32	
+value	anonimongo/core/bson.html#value.t,BsonInt64_2	bson: value(b: var BsonInt64): var int64	
+value	anonimongo/core/bson.html#value.t,BsonDouble_2	bson: value(b: var BsonDouble): var float64	
+value	anonimongo/core/bson.html#value.t,BsonTime_2	bson: value(b: var BsonTime): var Time	
+value	anonimongo/core/bson.html#value.t,BsonTimestamp_2	bson: value(b: var BsonTimestamp): var TimestampInternal	
+value	anonimongo/core/bson.html#value.t,BsonString	bson: value(b: var BsonString): var seq[Rune]	
+value	anonimongo/core/bson.html#value.t,BsonJs	bson: value(b: var BsonJs): var seq[Rune]	
+value	anonimongo/core/bson.html#value.t,BsonEmbed_2	bson: value(b: var BsonEmbed): var BsonDocument	
+value	anonimongo/core/bson.html#value.t,BsonBinary_2	bson: value(b: var BsonBinary): var seq[byte]	
+value	anonimongo/core/bson.html#value.t,BsonObjectId_2	bson: value(b: var BsonObjectId): var Oid	
+value	anonimongo/core/bson.html#value.t,BsonArray_2	bson: value(b: var BsonArray): var seq[BsonBase]	
 pairs	anonimongo/core/bson.html#pairs.i,BsonDocument	bson: pairs(b: BsonDocument): (string, BsonBase)	
 mpairs	anonimongo/core/bson.html#mpairs.i,BsonDocument	bson: mpairs(b: var BsonDocument): (unown string, var BsonBase)	
 ms	anonimongo/core/bson.html#ms,Time	bson: ms(a: Time): int64	

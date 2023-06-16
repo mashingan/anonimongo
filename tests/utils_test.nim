@@ -26,14 +26,14 @@ const
   runlocal* = localhost and nomongod
   anoSocketSync* = defined(anoSocketSync)
 
-  mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
+  mongourl {.strdefine, used.} = &"mongo://{user}:{pass}@{host}:{port}/" &
     "?tlscertificateKeyfile=" &
     &"certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin" &
     "&compressors=snappy,zlib"
   verbose* = defined(verbose)
 
 when verbose:
-  import times
+  import times, strformat
 
 when not anoSocketSync:
   type TheSock* = AsyncSocket
@@ -42,11 +42,11 @@ else:
 
 proc startmongo*: Process =
   var args = @[
-    "--port", "27017",
+    "--port", $port,
     "--dbpath", dbpath,
     "--bind_ip_all",
     "--networkMessageCompressors", "snappy,zlib",
-    "--auth"]
+  ]
   when defined(ssl):
     args.add "--sslMode"
     args.add "requireSSL"
@@ -55,11 +55,14 @@ proc startmongo*: Process =
     if cert != "":
       args.add "--sslCAFile"
       args.add cert
-  when defined(windows):
-    # the process cannot continue unless the stdout flushed
-    let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
-  else:
-    let opt = {poUsePath, poStdErrToStdOut}
+  if user != "" and pass != "":
+    args.add "--auth"
+  # when defined(windows):
+  #   # the process cannot continue unless the stdout flushed
+  #   let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
+  # else:
+  #   let opt = {poUsePath, poStdErrToStdOut}
+  let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
   result = unown startProcess(exe, args = args, options = opt)
 
 proc withAuth*(m: Mongo): bool =
@@ -106,33 +109,8 @@ proc tell*(label, reason: string) =
 
 template reasonedCheck*(b: BsonDocument | bool, label: string, reason = "") =
   when b is BsonDocument:
-    assert b.ok
+    check b.ok
     if not b.ok: (label & ": ").tell b.errmsg
   else:
-    assert b
+    check b
     if not b: (label & ": ").tell reason
-
-proc skip*() = discard
-
-proc errcatch*(excpt: typedesc, body: proc()) =
-  var errorCatched = false
-  try:
-    body()
-  except excpt:
-    errorCatched = true
-  assert errorCatched
-
-template fail*(msg = "", exitcode = QuitFailure) =
-  let info = instantiationInfo()
-  echo "fail at ", info.filename, ':', info.line
-  if msg != "":
-    quit msg, exitcode
-  else:
-    quit exitcode
-
-template checkpoint*(msg: string) =
-  echo msg
-
-proc require*(success: bool, msg = "") =
-  if not success:
-    fail(msg)

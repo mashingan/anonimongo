@@ -250,31 +250,31 @@ type
   BsonFetchError* = object of Defect
     ## Bson error type converting wrong type from BsonBase
 
-func value*(b: BsonInt32): int32 = b.valueInt32
-func value*(b: BsonInt64): int64 = b.valueInt64
-func value*(b: BsonDouble): float64 = b.valueDouble
-func value*(b: BsonTime): Time = b.valueTime
-func value*(b: BsonTimestamp): TimestampInternal = b.valueTimestamp
-func value*(b: BsonString|BsonJs): seq[Rune] = b.valueStr
-func value*(b: BsonEmbed): BsonDocument = b.valueEmbed
-func value*(b: BsonBinary): seq[byte] = b.valueBinary
-func value*(b: BsonObjectId): Oid = b.valueOid
-func value*(b: BsonArray): seq[BsonBase] = b.valueArray
-func value*(b: BsonBool): bool = b.valueBool
+template value*(b: BsonInt32): int32 = b.valueInt32
+template value*(b: BsonInt64): int64 = b.valueInt64
+template value*(b: BsonDouble): float64 = b.valueDouble
+template value*(b: BsonTime): Time = b.valueTime
+template value*(b: BsonTimestamp): TimestampInternal = b.valueTimestamp
+template value*(b: BsonString|BsonJs): seq[Rune] = b.valueStr
+template value*(b: BsonEmbed): BsonDocument = b.valueEmbed
+template value*(b: BsonBinary): seq[byte] = b.valueBinary
+template value*(b: BsonObjectId): Oid = b.valueOid
+template value*(b: BsonArray): seq[BsonBase] = b.valueArray
+template value*(b: BsonBool): bool = b.valueBool
 
-func subtype*(b: BsonBinary): BsonSubtype = b.subtype
+template subtype*(b: BsonBinary): BsonSubtype = b.subtype
 
-func value*(b: var BsonInt32): var int32 = b.valueInt32
-func value*(b: var BsonInt64): var int64 = b.valueInt64
-func value*(b: var BsonDouble): var float64 = b.valueDouble
-func value*(b: var BsonTime): var Time = b.valueTime
-func value*(b: var BsonTimestamp): var TimestampInternal = b.valueTimestamp
-func value*(b: var BsonString): var seq[Rune] = b.valueStr
-func value*(b: var BsonJs): var seq[Rune] = b.valueStr
-func value*(b: var BsonEmbed): var BsonDocument = b.valueEmbed
-func value*(b: var BsonBinary): var seq[byte] = b.valueBinary
-func value*(b: var BsonObjectId): var Oid = b.valueOid
-func value*(b: var BsonArray): var seq[BsonBase] = b.valueArray
+template value*(b: var BsonInt32): var int32 = b.valueInt32
+template value*(b: var BsonInt64): var int64 = b.valueInt64
+template value*(b: var BsonDouble): var float64 = b.valueDouble
+template value*(b: var BsonTime): var Time = b.valueTime
+template value*(b: var BsonTimestamp): var TimestampInternal = b.valueTimestamp
+template value*(b: var BsonString): var seq[Rune] = b.valueStr
+template value*(b: var BsonJs): var seq[Rune] = b.valueStr
+template value*(b: var BsonEmbed): var BsonDocument = b.valueEmbed
+template value*(b: var BsonBinary): var seq[byte] = b.valueBinary
+template value*(b: var BsonObjectId): var Oid = b.valueOid
+template value*(b: var BsonArray): var seq[BsonBase] = b.valueArray
 
 iterator pairs*(b: BsonDocument): (string, BsonBase) =
   for k, v in b.table:

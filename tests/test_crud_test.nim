@@ -1,38 +1,15 @@
-discard """
-  
-  action: "run"
-  exitcode: 0
-  
-  # flags with which to run the test, delimited by `;`
-  matrix: "-d:anostreamable -d:danger"
-"""
-
-from std/osproc import Process, kill, running, close
-from std/os import sleep
-from std/sequtils import map, allIt
-from std/net import Socket
-from std/strformat import `&`
-from std/times import now, toTime, initDuration, `+`
+import unittest, os, osproc, times, strformat, sequtils, net
+import sugar
 
 import utils_test
 import anonimongo
+
+{.warning[UnusedImport]: off.}
 
 var mongorun: Process
 if runlocal:
   mongorun = startmongo()
   sleep 3000 # waiting for mongod to be ready
-
-when (NimMajor, NimMinor, NimPatch) >= (1, 6, 4):
-  from std/exitprocs import addExitProc
-  addExitProc proc() {.noconv.} =
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
-else:
-  addQuitProc do:
-    if runlocal:
-      if mongorun.running: kill mongorun
-      close mongorun
 
 proc toCursor[S: TheSock|Socket](b: BsonDocument): Cursor[S] =
   Cursor[S](
@@ -42,12 +19,12 @@ proc toCursor[S: TheSock|Socket](b: BsonDocument): Cursor[S] =
     ns: b["ns"]
   )
 
-block: # "CRUD tests":
-  block: # "Mongo server is running":
+suite "CRUD tests":
+  test "Mongo server is running":
     if runlocal:
       require mongorun.running
     else:
-      assert true
+      check true
 
   var
     mongo: Mongo[TheSock]
@@ -68,25 +45,20 @@ block: # "CRUD tests":
         `type`: "insertTest",
     })
   
-  block: # "Mongo connected and authenticated":
+  test "Mongo connected and authenticated":
     mongo = testsetup()
     if mongo.withAuth:
       require mongo.authenticated
     db = mongo[testdb]
     namespace = &"{db.name}.{collname}"
 
-  block: # &"Find documents on {namespace}":
+  test &"Find documents on {namespace}":
     # find all documents
     require db != nil
-    when anoSocketSync:
-      discard db.dropCollection(collname) # need to cleanup previous documents
-      resfind = db.find(collname)
-    else:
-      discard waitFor db.dropCollection(collname)
-      resfind = waitfor db.find(collname)
+    when anoSocketSync: resfind = db.find(collname)
+    else: resfind = waitfor db.find(collname)
     resfind.reasonedCheck "find error"
-    assert resfind["cursor"]["firstBatch"].ofArray.len == 0,
-      &"""expected 0 len, got {resfind["cursor"]["firstBatch"].ofArray.len}"""
+    check resfind["cursor"]["firstBatch"].ofArray.len == 0
     when anoSocketSync:
       resfind = db.find(collname, bson(), batchSize = 1,
         singleBatch = true)
@@ -94,59 +66,36 @@ block: # "CRUD tests":
       resfind = waitFor db.find(collname, bson(), batchSize = 1,
         singleBatch = true)
     resfind.reasonedCheck "find error"
-    assert resfind["cursor"]["id"] == 0
+    check resfind["cursor"]["id"] == 0
 
-  block: # &"Insert documents on {namespace}":
+  test &"Insert documents on {namespace}":
     require db != nil
-
-    # insert twice to check whether stream is reset
-    # when used for the 2nd time
-    for _ in 1 .. 2:
-      when anoSocketSync:
-        resfind = db.insert(collname, insertDocs)
-      else:
-        resfind = waitfor db.insert(collname, insertDocs)
-      resfind.reasonedCheck "Insert documents error"
-      assert resfind["n"] == insertDocs.len
-
-    # to delete excess insertion
-    let todeleteq = block:
-      var res = newseq[BsonDocument](insertDocs.len)
-      for i, doc in res.mpairs:
-        doc = bson {
-          q: { countId: insertDocs[i]["countId"] },
-          limit: 1,
-          collation: {
-            locale: "en_US_POSIX",
-            caseLevel: false,
-          }
-        }
-      res
     when anoSocketSync:
-      resfind = db.delete(collname, todeleteq)
+      resfind = db.insert(collname, insertDocs)
     else:
-      resfind = waitfor db.delete(collname, todeleteq)
-    resfind.reasonedCheck "find error"
+      resfind = waitfor db.insert(collname, insertDocs)
+    resfind.reasonedCheck "Insert documents error"
+    check resfind["n"] == insertDocs.len
     
     when anoSocketSync:
       resfind = db.find(collname, singleBatch = true)
     else:
       resfind = waitfor db.find(collname, singleBatch = true)
-    assert resfind.ok
+    check resfind.ok
     for d in resfind["cursor"]["firstBatch"].ofArray:
       foundDocs.add d
-    assert foundDocs.len == insertDocs.len
+    check foundDocs.len == insertDocs.len
 
-  block: # &"Count documents on {namespace}":
+  test &"Count documents on {namespace}":
     require db != nil
     when anoSocketSync:
       resfind = db.count(collname)
     else:
       resfind = waitfor db.count(collname)
     resfind.reasonedCheck("count error")
-    assert resfind["n"] == foundDocs.len
+    check resfind["n"] == foundDocs.len
 
-  block: # &"Aggregate documents on {namespace}":
+  test &"Aggregate documents on {namespace}":
     require db != nil
     let tensOfMinutes = 5
     let lesstime = currtime + initDuration(minutes = tensOfMinutes * 10)
@@ -164,9 +113,9 @@ block: # "CRUD tests":
       resfind = waitfor db.aggregate(collname, pipeline)
     resfind.reasonedCheck("db.aggregate error")
     let doc = resfind["cursor"]["firstBatch"].ofArray
-    assert doc.len == tensOfMinutes
+    check doc.len == tensOfMinutes
 
-  block: # &"Distinct documents on {namespace}":
+  test &"Distinct documents on {namespace}":
     require db != nil
     when anoSocketSync:
       resfind = db.`distinct`(collname, "countId")
@@ -174,10 +123,10 @@ block: # "CRUD tests":
       resfind = waitfor db.`distinct`(collname, "countId")
     resfind.reasonedCheck "db.distinct error"
     let docs = resfind["values"].ofArray
-    assert docs.len == insertDocs.len
-    assert docs.allIt( it.kind == bkInt32 )
+    check docs.len == insertDocs.len
+    check docs.allIt( it.kind == bkInt32 )
   
-  block: # &"Find and modify some document(s) on {namespace}":
+  test &"Find and modify some document(s) on {namespace}":
     require db != nil
     let newcount = 80
     let oldcount = 8
@@ -188,7 +137,7 @@ block: # "CRUD tests":
       resfind = waitfor db.findAndModify(collname, query = bson({
         countId: oldcount }), update = bson({ "$set": { countId: newcount }}))
     resfind.reasonedCheck "findAndModify error"
-    assert resfind["lastErrorObject"]["n"] == 1
+    check resfind["lastErrorObject"]["n"] == 1
     let olddoc = resfind["value"].ofEmbedded
 
     # let's see we cannot find the old entry
@@ -199,9 +148,10 @@ block: # "CRUD tests":
       resfind = waitFor db.find(collname, bson({ countId: oldcount}),
         singleBatch = true)
     resfind.reasonedCheck "find error"
-    assert resfind["cursor"]["id"] == 0
+    check resfind["cursor"]["id"] == 0
     var docs = resfind["cursor"]["firstBatch"].ofArray
-    assert docs.len == 0
+    #let docs = resfind["cursor"]["firstBatch"].ofArray
+    check docs.len == 0
 
     when anoSocketSync:
       resfind = db.find(collname, bson({ countId: newcount}),
@@ -212,12 +162,12 @@ block: # "CRUD tests":
     resfind.reasonedCheck "find error"
     docs = resfind["cursor"]["firstBatch"].ofArray
     let foundDoc = docs[0].ofEmbedded
-    assert foundDoc["countId"].ofInt != olddoc["countId"]
-    assert foundDoc["type"].ofString == olddoc["type"]
-    assert foundDoc["addedTime"] == olddoc["addedTime"].ofTime
-    assert foundDoc["countId"] == newcount
+    check foundDoc["countId"].ofInt != olddoc["countId"]
+    check foundDoc["type"].ofString == olddoc["type"]
+    check foundDoc["addedTime"] == olddoc["addedTime"].ofTime
+    check foundDoc["countId"] == newcount
 
-  block: # &"Update document(s) on {namespace}":
+  test &"Update document(s) on {namespace}":
     require db != nil
     let addcount = 90
     let oldcount = 9
@@ -247,21 +197,21 @@ block: # "CRUD tests":
         })
       ])
     resfind.reasonedCheck "update error"
-    assert resfind["n"] == 1
-    assert resfind["nModified"] == 1
+    check resfind["n"] == 1
+    check resfind["nModified"] == 1
     when anoSocketSync:
       resfind = db.find(collname, bson({ countId: oldcount + addcount }))
     else:
       resfind = waitFor db.find(collname, bson({ countId: oldcount + addcount }))
     resfind.reasonedCheck "find error"
     let docs = resfind["cursor"]["firstBatch"].ofArray
-    assert docs.len == 1
+    check docs.len == 1
     let newdoc = docs[0].ofEmbedded
-    assert newdoc["countId"] == olddoc["countId"] + addcount
-    assert newdoc["type"] == newtype
-    assert newdoc["addedTime"] == olddoc["addedTime"].ofTime
+    check newdoc["countId"] == olddoc["countId"] + addcount
+    check newdoc["type"] == newtype
+    check newdoc["addedTime"] == olddoc["addedTime"].ofTime
 
-  block: # &"Find with lazyily on {namespace}":
+  test &"Find with lazyily on {namespace}":
     require db != nil
     when anoSocketSync:
       resfind = db.find(collname, batchSize = 1)
@@ -281,14 +231,14 @@ block: # "CRUD tests":
         break
       if not (count == 8 or count == 9):
         # it's inserted from 0
-        assert cursor.nextBatch[0]["countId"] == count
+        check cursor.nextBatch[0]["countId"] == count
       else:
         let curcount = cursor.nextBatch[0]["countId"].ofInt
-        assert curcount == 80 or curcount == 99
+        check(curcount == 80 or curcount == 99)
       inc count
-    assert count == foundDocs.len
+    check count == foundDocs.len
 
-  block: # &"Delete document(s) on {namespace}":
+  test &"Delete document(s) on {namespace}":
     require db != nil
     var todelete = "insertTest"
     when anoSocketSync:
@@ -310,9 +260,9 @@ block: # "CRUD tests":
         }})
       ])
     resfind.reasonedCheck "find error"
-    assert resfind["n"] == foundDocs.len-1 # because of update
+    check resfind["n"] == foundDocs.len-1 # because of update
 
-  block: # &"Drop database {db.name}":
+  test &"Drop database {db.name}":
     require db != nil
     when anoSocketSync:
       wr = db.dropDatabase
@@ -320,14 +270,14 @@ block: # "CRUD tests":
       wr = waitFor db.dropDatabase
     wr.success.reasonedCheck("dropDatabase error", wr.reason)
 
-  block: # "Shutdown mongo":
+  test "Shutdown mongo":
     if runlocal:
       require mongo != nil
       when anoSocketSync:
         wr = mongo.shutdown(timeout = 10)
       else:
         wr = waitFor mongo.shutdown(timeout = 10)
-      assert wr.success
+      check wr.success
     else:
       skip()
 

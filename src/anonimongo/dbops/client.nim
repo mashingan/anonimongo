@@ -27,9 +27,9 @@ const
   drivername = "anonimongo"
   description = "nim mongo driver"
 when not defined(anostreamable):
-  const anonimongoVersion* = "0.7.0-rc"
+  const anonimongoVersion* = "0.7.0"
 else:
-  const anonimongoVersion* = "0.7.0-stream-rc"
+  const anonimongoVersion* = "0.7.0-stream"
 
 proc handshake(m: Mongo[AsyncSocket], isMaster: bool, s: AsyncSocket, db: string, id: int32,
   appname = "Anonimongo client apps"):Future[ReplyFormat] {.multisock.} =

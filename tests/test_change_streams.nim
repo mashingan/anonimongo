@@ -1,42 +1,15 @@
-discard """
-  
-  action: "run"
-  exitcode: 0
-  
-  # flags with which to run the test, delimited by `;`
-  matrix: "--threads:on -d:ssl -d:anostreamable -d:release"
-"""
-
 const testChangeStreams {.booldefine.} = false
 
 when testChangeStreams:
-  from std/threadpool import spawn, sync
-  from std/osproc import Process
-  from std/os import sleep
-  from std/strformat import `&`
-  from std/times import now, toTime
-
+  import unittest, threadpool, times, os, osproc, strformat
   import utils_test, utils_replica
   import anonimongo
-
 
   proc cleanResources(p: seq[Process]) =
     cleanup p
     sleep 1_000
     cleanMongoTemp()
     cleanupSSL()
-
-  const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
-  var p: seq[Process]
-
-  proc processKiller() {.noconv.} =
-    cleanResources p
-
-  when nim164up:
-    from std/exitprocs import addExitProc
-    addExitProc processKiller
-  else:
-    addQuitProc processKiller
 
   proc setReplica(m: Mongo[AsyncSocket]): bool =
     var config = bson({
@@ -78,19 +51,20 @@ when testChangeStreams:
     #dump await c.db.killCursors(c.name, @[cursorId])
     discard await c.remove(bson(), justone = true)
 
-  block: #"Change Stream tests":
-    block: # "Prepare for running replica":
+  suite "Change Stream tests":
+    test "Prepare for running replica":
       require createMongoTemp()
       require createSSLCert()
 
+    var p: seq[Process]
     spawn fakeDnsServer()
-    block: # "Setting up replica set":
+    test "Setting up replica set":
       p = setupMongoReplication()
       var m = newMongo[AsyncSocket](
         MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin?ssl=true",
         poolconn = 1)
       require waitfor m.connect()
-      assert m.setReplica()
+      check m.setReplica()
       sleep 15_000 # to ensure replica sets has enough time to elect primary
 
     var mongo = newMongo[AsyncSocket](
@@ -99,11 +73,11 @@ when testChangeStreams:
       dnsserver = "localhost",
       poolconn = 2)
 
-    block: # "Reconnect for replica set clients":
+    test "Reconnect for replica set clients":
       require waitfor mongo.connect()
 
     var coll: Collection[AsyncSocket]
-    block: # "Watch collection temptest.templog":
+    test "Watch collection temptest.templog":
       coll = mongo["temptest"]["templog"]
       var cWatch: Cursor[AsyncSocket]
       try:
@@ -119,10 +93,12 @@ when testChangeStreams:
       ])
       let count = waitfor coll.count()
       let lastDoc = waitfor coll.findOne(bson(), sort = bson { "_id": -1 })
-      assert count == 99
-      assert lastChange.operationType == csDelete
-      assert lastDoc["insertCount"] == 100
+      check count == 99
+      check lastChange.operationType == csDelete
+      check lastDoc["insertCount"] == 100
 
-    block: # "Cleanup the temptest.templog":
+    test "Cleanup the temptest.templog":
       var res = waitfor coll.drop
       res.success.reasonedCheck("drop collection", res.reason)
+
+    cleanResources p

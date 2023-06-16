@@ -1,71 +1,65 @@
-discard """
-  
-  action: "run"
-  exitcode: 0
-  
-  # flags with which to run the test, delimited by `;`
-  matrix: "--threads:on -d:ssl -d:anostreamable -d:release"
-"""
+# WIP replication test
+# TODO:
+# 1. [Done] Run local mongod processes for replication setup
+# 2. [Done] Manage the replication setup by initializing it first
+#    ref: https://docs.mongodb.com/manual/tutorial/deploy-replica-set-for-testing/
+# 3. [Done] Fix all nodes status to be able to elect the PRIMARY, current problem
+#    all nodes are SECONDARY and this disability to elect the PRIMARY cannot
+#    to do any write operation
+# 4. Fix weird `auto` enabling slave during the test and it should be throwing
+#    MongoError with reason `not enabled slave`.
+# 5. [Done] Cleanup all produced artifacts such as temporary dbpath directories and
+#    created self-signing key, certificate, and pem file.
+# 6. [Done w ReadPreference.primary?] Since the test purposely choose
+#    the ReadPreference.secondary, testing to read the database entry
+#    could result in disaster because of eventual synchronization.
 
 import utils_test
+
+{.warning[UnusedImport]: off.}
 
 const
   testReplication {.booldefine.} = false
 
 when testReplication and defined(ssl):
+  import unittest
   from threadpool import spawn, sync
   from times import now, toTime
   from os import sleep
   from strformat import `&`
-  from osproc import Process, kill, running, close
+  from osproc import Process, running
   from sequtils import allIt, all, anyIt
+  from sugar import dump
 
   import utils_replica
 
   import anonimongo
 
-  when utils_test.verbose:
-    from sugar import dump
-
-  const nim164up = (NimMajor, NimMinor, NimPatch) >= (1, 6, 4)
-  var processes: seq[Process]
-
-  proc processKiller() {.noconv.} =
-    processes.cleanup
-    sleep 3000
-    cleanupSSL()
-    cleanMongoTemp()
-
-  when nim164up:
-    from std/exitprocs import addExitProc
-    addExitProc processKiller
-  else:
-    addQuitProc processKiller
-
-  block: # "Replication, SSL, and SRV DNS seedlist lookup (mongodb+srv) tests":
-    block: # "Initial test setup":
+  suite "Replication, SSL, and SRV DNS seedlist lookup (mongodb+srv) tests":
+    test "Initial test setup":
       require createMongoTemp()
-    block: # "Create self-signing SSL key certificate":
+    test "Create self-signing SSL key certificate":
       require createSSLCert()
-    block: # "Run the local replication set db":
+    var processes: seq[Process]
+    test "Run the local replication set db":
       processes = setupMongoReplication()
       require processes.allIt( it != nil )
       require processes.all running
 
     var mongo: Mongo[TheSock]
     var db: Database[TheSock]
-    block: # "Catch error without SSL for SSL/TLS required connection":
-      errcatch(IOError) do:
+    test "Catch error without SSL for SSL/TLS required connection":
+      expect(IOError):
         var m = newMongo[TheSock](
           MongoUri &"mongodb://{mongoServer}:{replicaPortStart}/admin",
           poolconn = utils_test.poolconn)
         when anoSocketSync:
-          assert m.connect()
+          check m.connect()
         else:
-          assert waitfor m.connect()
+          check waitfor m.connect()
         m.close()
 
-    block: # "Connect single uri":
+    test "Connect single uri":
       mongo = newMongo[TheSock](MongoUri uriSettingRepl,
         poolconn = utils_test.poolconn,
         dnsserver = mongoServer,
@@ -78,7 +72,7 @@ when testReplication and defined(ssl):
       db = mongo["admin"]
       require db != nil
 
-    block: # "Setting up replication set":
+    test "Setting up replication set":
       var config = bson({
         "_id": rsetName,
         members: [
@@ -107,33 +101,33 @@ when testReplication and defined(ssl):
         fail()
       when utils_test.verbose: dump reply
       reply.reasonedCheck("replSetGetStatus")
-      assert reply["set"] == rsetName
+      check reply["set"] == rsetName
       let members = reply["members"].ofArray
-      assert members.len == 3
+      check members.len == 3
     sleep 15_000 # waiting the replica set to elect primary
 
-    block: # "Connect with manual multi uri connections":
+    test "Connect with manual multi uri connections":
       mongo = newMongo[TheSock](
         MongoUri uriMultiManual,
         poolconn = utils_test.poolconn
       )
       require mongo != nil
       when anoSocketSync:
-        assert mongo.connect
+        check mongo.connect
       else:
-        assert waitfor mongo.connect
+        check waitfor mongo.connect
       db = mongo["admin"]
       when anoSocketSync:
         let cfg = db.replSetGetStatus
       else:
         let cfg = waitfor db.replSetGetStatus
       let members = cfg["members"].ofArray
-      assert members.len == 3
-      assert members.anyIt( it["stateStr"] == "PRIMARY" )
+      check members.len == 3
+      check members.anyIt( it["stateStr"] == "PRIMARY" )
       mongo.close
 
     spawn fakeDnsServer()
-    block: # "assert newMongo mongodb+srv scheme connection":
+    test "Check newMongo mongodb+srv scheme connection":
       try:
         mongo = newMongo[TheSock](
           MongoUri uriSrv,
@@ -164,18 +158,18 @@ when testReplication and defined(ssl):
         form: "Sword",
       })
 
-    # block: # "Reconnect to enable replication set writing":
-    #   skip()
-    #   mongo.slaveOk
-    #   #require waitfor mongo.connect
-    #   db = mongo["temptest"]
-    #   require db != nil
-    #   #sync()
-    #   #mongo.slaveOk
-    #   tempcoll = db["test"]
-    #   assert true
+    test "Reconnect to enable replication set writing":
+      skip()
+      mongo.slaveOk
+      #require waitfor mongo.connect
+      db = mongo["temptest"]
+      require db != nil
+      #sync()
+      #mongo.slaveOk
+      tempcoll = db["test"]
+      check true
 
-    block: # "Retry inserting to database":
+    test "Retry inserting to database":
       tempcoll = db["test"]
       let b = bson({
         entry: currtime,
@@ -191,9 +185,13 @@ when testReplication and defined(ssl):
 
     # apparently in some mongodb version, there's this problem
     # https://dba.stackexchange.com/questions/179616/mongodb-hangs-up-on-shutdown
-    # if the problem persists, this replication action block: # would be disabled.
+    # if the problem persists, this replication action test would be disabled.
     when anoSocketSync:
       discard mongo.shutdown(timeout = 10, force = true)
     else:
       discard waitfor mongo.shutdown(timeout = 10, force = true)
     mongo.close
+    processes.cleanup
+    sleep 3000
+    cleanupSSL()
+    cleanMongoTemp()
