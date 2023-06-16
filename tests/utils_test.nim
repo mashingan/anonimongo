@@ -57,12 +57,11 @@ proc startmongo*: Process =
       args.add cert
   if user != "" and pass != "":
     args.add "--auth"
-  # when defined(windows):
-  #   # the process cannot continue unless the stdout flushed
-  #   let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
-  # else:
-  #   let opt = {poUsePath, poStdErrToStdOut}
-  let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
+  when defined(windows):
+    # the process cannot continue unless the stdout flushed
+    let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
+  else:
+    let opt = {poUsePath, poStdErrToStdOut}
   result = unown startProcess(exe, args = args, options = opt)
 
 proc withAuth*(m: Mongo): bool =
