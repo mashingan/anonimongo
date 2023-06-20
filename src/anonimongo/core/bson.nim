@@ -587,6 +587,16 @@ iterator keys*(b: BsonDocument): string =
   for k in b.table.keys:
     yield k
 
+iterator items*(a: BsonArray): BsonBase =
+  for b in a.value:
+    yield b
+
+iterator pairs*(a: BsonArray): (int, BsonBase) =
+  var i = 0
+  for b in a:
+    yield (i, b)
+    inc i
+
 proc quote(key: string): string =
   result = '"' & key & '"'
 

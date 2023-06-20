@@ -26,7 +26,7 @@ const
   runlocal* = localhost and nomongod
   anoSocketSync* = defined(anoSocketSync)
 
-  mongourl {.strdefine, used.} = "mongo://rdruffy:rdruffy@localhost:27017/" &
+  mongourl {.strdefine, used.} = &"mongo://{user}:{pass}@{host}:{port}/" &
     "?tlscertificateKeyfile=" &
     &"certificate:{encodeUrl(cert)},key:{encodeUrl(key)}&authSource=admin" &
     "&compressors=snappy,zlib"
@@ -42,11 +42,11 @@ else:
 
 proc startmongo*: Process =
   var args = @[
-    "--port", "27017",
+    "--port", $port,
     "--dbpath", dbpath,
     "--bind_ip_all",
     "--networkMessageCompressors", "snappy,zlib",
-    "--auth"]
+  ]
   when defined(ssl):
     args.add "--sslMode"
     args.add "requireSSL"
@@ -55,6 +55,8 @@ proc startmongo*: Process =
     if cert != "":
       args.add "--sslCAFile"
       args.add cert
+  if user != "" and pass != "":
+    args.add "--auth"
   when defined(windows):
     # the process cannot continue unless the stdout flushed
     let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}

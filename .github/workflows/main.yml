@@ -54,10 +54,10 @@ jobs:
           sudo apt-get update -yqq
           sudo apt-get install -y mongodb-org
 
-      - name: Start mongodb
-        run: |
-          sudo systemctl start mongod
-          sleep 10
+      # - name: Start mongodb
+      #   run: |
+      #     sudo systemctl start mongod
+      #     sleep 10
 
       - run: nimble install -Y
 
@@ -66,12 +66,17 @@ jobs:
       # Disabling authenticating since the installed mongo is pristine without setting up the user and password
       - name: Nimble test setup and run
         run: |
-            echo 'switch("define", "nomongod")' > config.nims
+            # echo 'switch("define", "nomongod")' > config.nims
+            mkdir /tmp/mongodbpath
+            echo 'switch("define", "filename=")' > config.nims
             echo 'switch("define", "filename=")' >> config.nims
             echo 'switch("define", "saveas=")' >> config.nims
             echo 'switch("define", "user=")' >> config.nims
-            echo 'switch("define", "testReplication=no")' >> config.nims
+            echo 'switch("define", "testReplication=yes")' >> config.nims
             echo 'switch("define", "testChangeStreams=yes")' >> config.nims
+            echo 'hint("ConvFromXToItSelfNotNeeded", off)' >> config.nims
+            echo 'switch("define", "dbpath=/tmp/mongodbpath")' >> config.nims
+            echo 'switch("define", "uri")' >> config.nims
             nimble test -Y
 
       - uses: actions/checkout@v2.3.1
