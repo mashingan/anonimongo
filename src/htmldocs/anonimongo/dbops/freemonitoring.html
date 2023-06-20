@@ -17,7 +17,7 @@
 <link href='https://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600' rel='stylesheet' type='text/css'/>
 
 <!-- CSS -->
-<title>src/anonimongo/dbops/freemonitoring</title>
+<title>anonimongo/dbops/freemonitoring</title>
 <link rel="stylesheet" type="text/css" href="../../nimdoc.out.css">
 
 <script type="text/javascript" src="../../dochack.js"></script>
@@ -34,6 +34,7 @@ function main() {
     }
   }
 
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -44,32 +45,24 @@ function main() {
       }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-  if (toggleSwitch !== null) {
-    toggleSwitch.addEventListener('change', switchTheme, false);
-  }
+  toggleSwitch.addEventListener('change', switchTheme, false);
 
-  var currentTheme = localStorage.getItem('theme');
-  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    currentTheme = 'dark';
-  }
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark' && toggleSwitch !== null) {
+    if (currentTheme === 'dark') {
       toggleSwitch.checked = true;
     }
   }
 }
-
-window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body>
+<body onload="main()">
 <div class="document" id="documentId">
   <div class="container">
-    <h1 class="title">src/anonimongo/dbops/freemonitoring</h1>
+    <h1 class="title">anonimongo/dbops/freemonitoring</h1>
     <div class="row">
   <div class="three columns">
   <div class="theme-switch-wrapper">
@@ -108,33 +101,32 @@ window.addEventListener('DOMContentLoaded', main);
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
       <ul class="simple nested-toc-section">disableFreeMonitoring
-      <li><a class="reference" href="#disableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"
-    title="disableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]">disableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
-  <li><a class="reference" href="#disableFreeMonitoring%2CDatabase%5BSocket%5D"
-    title="disableFreeMonitoring(db: Database[Socket]): BsonDocument">disableFreeMonitoring(db: Database[Socket]): BsonDocument</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">enableFreeMonitoring
-      <li><a class="reference" href="#enableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"
-    title="enableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]">enableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
-  <li><a class="reference" href="#enableFreeMonitoring%2CDatabase%5BSocket%5D"
-    title="enableFreeMonitoring(db: Database[Socket]): BsonDocument">enableFreeMonitoring(db: Database[Socket]): BsonDocument</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">getFreeMonitoringStatus
-      <li><a class="reference" href="#getFreeMonitoringStatus%2CDatabase%5BAsyncSocket%5D"
-    title="getFreeMonitoringStatus(db: Database[AsyncSocket]): Future[BsonDocument]">getFreeMonitoringStatus(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
-  <li><a class="reference" href="#getFreeMonitoringStatus%2CDatabase%5BSocket%5D"
-    title="getFreeMonitoringStatus(db: Database[Socket]): BsonDocument">getFreeMonitoringStatus(db: Database[Socket]): BsonDocument</a></li>
+      <li><a class="reference" href="#disableFreeMonitoring%2CDatabase%5BSocket%5D"
+    title="disableFreeMonitoring(db: Database[Socket]): BsonDocument">disableFreeMonitoring,Database[Socket]<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#disableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"
+    title="disableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]">disableFreeMonitoring,Database[AsyncSocket]<span class="attachedType"></span></a></li>
 
   </ul>
   <ul class="simple nested-toc-section">setFreeMonitoring
-      <li><a class="reference" href="#setFreeMonitoring%2CDatabase%5BAsyncSocket%5D%2Cstring"
+      <li><a class="reference" href="#setFreeMonitoring%2CDatabase%5BSocket%5D%2Cstring"
+    title="setFreeMonitoring(db: Database[Socket]; action = &quot;enable&quot;): BsonDocument">setFreeMonitoring,Database[Socket],string<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#setFreeMonitoring%2CDatabase%5BAsyncSocket%5D%2Cstring"
     title="setFreeMonitoring(db: Database[AsyncSocket]; action = &quot;enable&quot;): Future[
-    BsonDocument]">setFreeMonitoring(db: Database[AsyncSocket]; action = &quot;enable&quot;): Future[
-    BsonDocument]</a></li>
-  <li><a class="reference" href="#setFreeMonitoring%2CDatabase%5BSocket%5D%2Cstring"
-    title="setFreeMonitoring(db: Database[Socket]; action = &quot;enable&quot;): BsonDocument">setFreeMonitoring(db: Database[Socket]; action = &quot;enable&quot;): BsonDocument</a></li>
+    BsonDocument]">setFreeMonitoring,Database[AsyncSocket],string<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">enableFreeMonitoring
+      <li><a class="reference" href="#enableFreeMonitoring%2CDatabase%5BSocket%5D"
+    title="enableFreeMonitoring(db: Database[Socket]): BsonDocument">enableFreeMonitoring,Database[Socket]<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#enableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"
+    title="enableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]">enableFreeMonitoring,Database[AsyncSocket]<span class="attachedType"></span></a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getFreeMonitoringStatus
+      <li><a class="reference" href="#getFreeMonitoringStatus%2CDatabase%5BSocket%5D"
+    title="getFreeMonitoringStatus(db: Database[Socket]): BsonDocument">getFreeMonitoringStatus,Database[Socket]<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#getFreeMonitoringStatus%2CDatabase%5BAsyncSocket%5D"
+    title="getFreeMonitoringStatus(db: Database[AsyncSocket]): Future[BsonDocument]">getFreeMonitoringStatus,Database[AsyncSocket]<span class="attachedType"></span></a></li>
 
   </ul>
 
@@ -144,11 +136,6 @@ window.addEventListener('DOMContentLoaded', main);
 </ul>
 
   </div>
-  &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/freemonitoring.nim#L1"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L1" class="link-seesrc" target="_blank" >Edit</a>
-
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
@@ -161,122 +148,114 @@ class="link-seesrc" target="_blank">Source</a>
 <div class="section" id="12">
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
 <dl class="item">
-<div id="disableFreeMonitoring,Database[AsyncSocket]">
-<dt><pre><span class="Keyword">proc</span> <a href="#disableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">disableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/freemonitoring.nim#L19"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L19" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="disableFreeMonitoring,Database[Socket]">
-<dt><pre><span class="Keyword">proc</span> <a href="#disableFreeMonitoring%2CDatabase%5BSocket%5D"><span class="Identifier">disableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+<a id="getFreeMonitoringStatus,Database[Socket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getFreeMonitoringStatus%2CDatabase%5BSocket%5D"><span class="Identifier">getFreeMonitoringStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="enableFreeMonitoring,Database[AsyncSocket]">
-<dt><pre><span class="Keyword">proc</span> <a href="#enableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">enableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<a id="getFreeMonitoringStatus,Database[AsyncSocket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getFreeMonitoringStatus%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">getFreeMonitoringStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/freemonitoring.nim#L16"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/freemonitoring.nim#L3"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L16" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L3" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="enableFreeMonitoring,Database[Socket]">
-<dt><pre><span class="Keyword">proc</span> <a href="#enableFreeMonitoring%2CDatabase%5BSocket%5D"><span class="Identifier">enableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+<a id="setFreeMonitoring,Database[Socket],string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#setFreeMonitoring%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">setFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">action</span> <span class="Other">=</span> <span class="StringLit">&quot;enable&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="getFreeMonitoringStatus,Database[AsyncSocket]">
-<dt><pre><span class="Keyword">proc</span> <a href="#getFreeMonitoringStatus%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">getFreeMonitoringStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/freemonitoring.nim#L3"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L3" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="getFreeMonitoringStatus,Database[Socket]">
-<dt><pre><span class="Keyword">proc</span> <a href="#getFreeMonitoringStatus%2CDatabase%5BSocket%5D"><span class="Identifier">getFreeMonitoringStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
-    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="setFreeMonitoring,Database[AsyncSocket],string">
+<a id="setFreeMonitoring,Database[AsyncSocket],string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#setFreeMonitoring%2CDatabase%5BAsyncSocket%5D%2Cstring"><span class="Identifier">setFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">action</span> <span class="Other">=</span> <span class="StringLit">&quot;enable&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/freemonitoring.nim#L9"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/freemonitoring.nim#L9"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L9" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L9" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
-<div id="setFreeMonitoring,Database[Socket],string">
-<dt><pre><span class="Keyword">proc</span> <a href="#setFreeMonitoring%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">setFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">action</span> <span class="Other">=</span> <span class="StringLit">&quot;enable&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+<a id="enableFreeMonitoring,Database[Socket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#enableFreeMonitoring%2CDatabase%5BSocket%5D"><span class="Identifier">enableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-</div>
+<a id="enableFreeMonitoring,Database[AsyncSocket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#enableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">enableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/freemonitoring.nim#L16"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L16" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="disableFreeMonitoring,Database[Socket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#disableFreeMonitoring%2CDatabase%5BSocket%5D"><span class="Identifier">disableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
+    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="disableFreeMonitoring,Database[AsyncSocket]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#disableFreeMonitoring%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">disableFreeMonitoring</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/freemonitoring.nim#L19"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/freemonitoring.nim#L19" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 
@@ -287,7 +266,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:32:50 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:32:54 UTC</small>
       </div>
     </div>
   </div>
