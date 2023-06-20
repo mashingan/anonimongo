@@ -49,15 +49,18 @@ jobs:
       # https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
       - name: Install mongodb
         run: |
-          wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+          sudo apt-get install gnupg
+          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
+            sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+            --dearmor
+          echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
           sudo apt-get update -yqq
           sudo apt-get install -y mongodb-org
 
-      - name: Start mongodb
-        run: |
-          sudo systemctl start mongod
-          sleep 10
+      # - name: Start mongodb
+      #   run: |
+      #     sudo systemctl start mongod
+      #     sleep 10
 
       - run: nimble install -Y
 
@@ -66,12 +69,17 @@ jobs:
       # Disabling authenticating since the installed mongo is pristine without setting up the user and password
       - name: Nimble test setup and run
         run: |
-            echo 'switch("define", "nomongod")' > config.nims
+            # echo 'switch("define", "nomongod")' > config.nims
+            mkdir /tmp/mongodbpath
+            echo 'switch("define", "filename=")' > config.nims
             echo 'switch("define", "filename=")' >> config.nims
             echo 'switch("define", "saveas=")' >> config.nims
             echo 'switch("define", "user=")' >> config.nims
-            echo 'switch("define", "testReplication=no")' >> config.nims
+            echo 'switch("define", "testReplication=yes")' >> config.nims
             echo 'switch("define", "testChangeStreams=yes")' >> config.nims
+            echo 'hint("ConvFromXToItSelfNotNeeded", off)' >> config.nims
+            echo 'switch("define", "dbpath=/tmp/mongodbpath")' >> config.nims
+            echo 'switch("define", "uri")' >> config.nims
             nimble test -Y
 
       - uses: actions/checkout@v2.3.1
