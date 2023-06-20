@@ -17,7 +17,7 @@
 <link href='https://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600' rel='stylesheet' type='text/css'/>
 
 <!-- CSS -->
-<title>anonimongo/dbops/diagnostic</title>
+<title>src/anonimongo/dbops/diagnostic</title>
 <link rel="stylesheet" type="text/css" href="../../nimdoc.out.css">
 
 <script type="text/javascript" src="../../dochack.js"></script>
@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,24 +44,32 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
-    <h1 class="title">anonimongo/dbops/diagnostic</h1>
+    <h1 class="title">src/anonimongo/dbops/diagnostic</h1>
     <div class="row">
   <div class="three columns">
   <div class="theme-switch-wrapper">
@@ -101,145 +108,153 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">explain
-      <li><a class="reference" href="#explain%2CDatabase%5BSocket%5D%2Cstring"
-    title="explain(db: Database[Socket]; cmd = bson(); verbosity = &quot;allPlansExecution&quot;;
-        command = ckRead): BsonDocument">explain,Database[Socket],string<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#explain%2CDatabase%5BAsyncSocket%5D%2Cstring"
-    title="explain(db: Database[AsyncSocket]; cmd = bson();
-        verbosity = &quot;allPlansExecution&quot;; command = ckRead): Future[BsonDocument]">explain,Database[AsyncSocket],string<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">ping
-      <li><a class="reference" href="#ping%2CDatabase%5BSocket%5D"
-    title="ping(db: Database[Socket]): BsonDocument">ping,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#ping%2CDatabase%5BAsyncSocket%5D"
-    title="ping(db: Database[AsyncSocket]): Future[BsonDocument]">ping,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">connPoolStats
-      <li><a class="reference" href="#connPoolStats%2CDatabase%5BSocket%5D"
-    title="connPoolStats(db: Database[Socket]): BsonDocument">connPoolStats,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#connPoolStats%2CDatabase%5BAsyncSocket%5D"
-    title="connPoolStats(db: Database[AsyncSocket]): Future[BsonDocument]">connPoolStats,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">getLogFilters
-      <li><a class="reference" href="#getLogFilters%2CDatabase%5BSocket%5D"
-    title="getLogFilters(db: Database[Socket]): seq[string]">getLogFilters,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#getLogFilters%2CDatabase%5BAsyncSocket%5D"
-    title="getLogFilters(db: Database[AsyncSocket]): Future[seq[string]]">getLogFilters,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">dbHash
-      <li><a class="reference" href="#dbHash%2CDatabase%5BSocket%5D%2Cseq%5Bstring%5D"
-    title="dbHash(db: Database[Socket]; colls: seq[string] = @[]): BsonDocument">dbHash,Database[Socket],seq[string]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#dbHash%2CDatabase%5BAsyncSocket%5D%2Cseq%5Bstring%5D"
-    title="dbHash(db: Database[AsyncSocket]; colls: seq[string] = @[]): Future[BsonDocument]">dbHash,Database[AsyncSocket],seq[string]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">getCmdLineOpts
-      <li><a class="reference" href="#getCmdLineOpts%2CDatabase%5BSocket%5D"
-    title="getCmdLineOpts(db: Database[Socket]): BsonDocument">getCmdLineOpts,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#getCmdLineOpts%2CDatabase%5BAsyncSocket%5D"
-    title="getCmdLineOpts(db: Database[AsyncSocket]): Future[BsonDocument]">getCmdLineOpts,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">dbStats
-      <li><a class="reference" href="#dbStats%2CDatabase%5BSocket%5D%2Cint"
-    title="dbStats(db: Database[Socket]; scale = 1024): BsonDocument">dbStats,Database[Socket],int<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#dbStats%2CDatabase%5BAsyncSocket%5D%2Cint"
-    title="dbStats(db: Database[AsyncSocket]; scale = 1024): Future[BsonDocument]">dbStats,Database[AsyncSocket],int<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">profile
-      <li><a class="reference" href="#profile%2CDatabase%5BSocket%5D%2Cint%2Cint%2Cfloat"
-    title="profile(db: Database[Socket]; level = 0; slowms = 100; sampleRate = 1.0): BsonDocument">profile,Database[Socket],int,int,float<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#profile%2CDatabase%5BAsyncSocket%5D%2Cint%2Cint%2Cfloat"
-    title="profile(db: Database[AsyncSocket]; level = 0; slowms = 100; sampleRate = 1.0): Future[
-    BsonDocument]">profile,Database[AsyncSocket],int,int,float<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">serverStat
-      <li><a class="reference" href="#serverStat%2CDatabase%5BSocket%5D"
-    title="serverStat(db: Database[Socket]): BsonDocument">serverStat,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#serverStat%2CDatabase%5BAsyncSocket%5D"
-    title="serverStat(db: Database[AsyncSocket]): Future[BsonDocument]">serverStat,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">top
-      <li><a class="reference" href="#top%2CDatabase%5BSocket%5D"
-    title="top(db: Database[Socket]): BsonDocument">top,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#top%2CDatabase%5BAsyncSocket%5D"
-    title="top(db: Database[AsyncSocket]): Future[BsonDocument]">top,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">validate
-      <li><a class="reference" href="#validate%2CDatabase%5BSocket%5D%2Cstring"
-    title="validate(db: Database[Socket]; coll: string; full = false): BsonDocument">validate,Database[Socket],string<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#validate%2CDatabase%5BAsyncSocket%5D%2Cstring"
-    title="validate(db: Database[AsyncSocket]; coll: string; full = false): Future[
-    BsonDocument]">validate,Database[AsyncSocket],string<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">connectionStatus
-      <li><a class="reference" href="#connectionStatus%2CDatabase%5BSocket%5D"
-    title="connectionStatus(db: Database[Socket]; showPriv = false): BsonDocument">connectionStatus,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#connectionStatus%2CDatabase%5BAsyncSocket%5D"
-    title="connectionStatus(db: Database[AsyncSocket]; showPriv = false): Future[
-    BsonDocument]">connectionStatus,Database[AsyncSocket]<span class="attachedType"></span></a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">listCommands
-      <li><a class="reference" href="#listCommands%2CDatabase%5BSocket%5D"
-    title="listCommands(db: Database[Socket]): BsonDocument">listCommands,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#listCommands%2CDatabase%5BAsyncSocket%5D"
-    title="listCommands(db: Database[AsyncSocket]): Future[BsonDocument]">listCommands,Database[AsyncSocket]<span class="attachedType"></span></a></li>
+      <ul class="simple nested-toc-section">buildInfo
+      <li><a class="reference" href="#buildInfo%2CDatabase%5BAsyncSocket%5D"
+    title="buildInfo(db: Database[AsyncSocket]): Future[BsonDocument]">buildInfo(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#buildInfo%2CDatabase%5BSocket%5D"
+    title="buildInfo(db: Database[Socket]): BsonDocument">buildInfo(db: Database[Socket]): BsonDocument</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">collStats
-      <li><a class="reference" href="#collStats%2CDatabase%5BSocket%5D%2Cstring%2Cint"
-    title="collStats(db: Database[Socket]; coll: string; scale = 1024): BsonDocument">collStats,Database[Socket],string,int<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#collStats%2CDatabase%5BAsyncSocket%5D%2Cstring%2Cint"
+      <li><a class="reference" href="#collStats%2CDatabase%5BAsyncSocket%5D%2Cstring%2Cint"
     title="collStats(db: Database[AsyncSocket]; coll: string; scale = 1024): Future[
-    BsonDocument]">collStats,Database[AsyncSocket],string,int<span class="attachedType"></span></a></li>
+    BsonDocument]">collStats(db: Database[AsyncSocket]; coll: string; scale = 1024): Future[
+    BsonDocument]</a></li>
+  <li><a class="reference" href="#collStats%2CDatabase%5BSocket%5D%2Cstring%2Cint"
+    title="collStats(db: Database[Socket]; coll: string; scale = 1024): BsonDocument">collStats(db: Database[Socket]; coll: string; scale = 1024): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">connectionStatus
+      <li><a class="reference" href="#connectionStatus%2CDatabase%5BAsyncSocket%5D"
+    title="connectionStatus(db: Database[AsyncSocket]; showPriv = false): Future[
+    BsonDocument]">connectionStatus(db: Database[AsyncSocket]; showPriv = false): Future[
+    BsonDocument]</a></li>
+  <li><a class="reference" href="#connectionStatus%2CDatabase%5BSocket%5D"
+    title="connectionStatus(db: Database[Socket]; showPriv = false): BsonDocument">connectionStatus(db: Database[Socket]; showPriv = false): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">connPoolStats
+      <li><a class="reference" href="#connPoolStats%2CDatabase%5BAsyncSocket%5D"
+    title="connPoolStats(db: Database[AsyncSocket]): Future[BsonDocument]">connPoolStats(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#connPoolStats%2CDatabase%5BSocket%5D"
+    title="connPoolStats(db: Database[Socket]): BsonDocument">connPoolStats(db: Database[Socket]): BsonDocument</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">dataSize
-      <li><a class="reference" href="#dataSize%2CDatabase%5BSocket%5D%2Cstring"
-    title="dataSize(db: Database[Socket]; coll: string; pattern = bson({&quot;_id&quot;: 1});
-         min = bson(); max = bson(); estimate = false): BsonDocument">dataSize,Database[Socket],string<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#dataSize%2CDatabase%5BAsyncSocket%5D%2Cstring"
+      <li><a class="reference" href="#dataSize%2CDatabase%5BAsyncSocket%5D%2Cstring"
     title="dataSize(db: Database[AsyncSocket]; coll: string; pattern = bson({&quot;_id&quot;: 1});
-         min = bson(); max = bson(); estimate = false): Future[BsonDocument]">dataSize,Database[AsyncSocket],string<span class="attachedType"></span></a></li>
+         min = bson(); max = bson(); estimate = false): Future[BsonDocument]">dataSize(db: Database[AsyncSocket]; coll: string; pattern = bson({&quot;_id&quot;: 1});
+         min = bson(); max = bson(); estimate = false): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#dataSize%2CDatabase%5BSocket%5D%2Cstring"
+    title="dataSize(db: Database[Socket]; coll: string; pattern = bson({&quot;_id&quot;: 1});
+         min = bson(); max = bson(); estimate = false): BsonDocument">dataSize(db: Database[Socket]; coll: string; pattern = bson({&quot;_id&quot;: 1});
+         min = bson(); max = bson(); estimate = false): BsonDocument</a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">hostInfo
-      <li><a class="reference" href="#hostInfo%2CDatabase%5BSocket%5D"
-    title="hostInfo(db: Database[Socket]): BsonDocument">hostInfo,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#hostInfo%2CDatabase%5BAsyncSocket%5D"
-    title="hostInfo(db: Database[AsyncSocket]): Future[BsonDocument]">hostInfo,Database[AsyncSocket]<span class="attachedType"></span></a></li>
+  <ul class="simple nested-toc-section">dbHash
+      <li><a class="reference" href="#dbHash%2CDatabase%5BAsyncSocket%5D%2Cseq%5Bstring%5D"
+    title="dbHash(db: Database[AsyncSocket]; colls: seq[string] = @[]): Future[BsonDocument]">dbHash(db: Database[AsyncSocket]; colls: seq[string] = @[]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#dbHash%2CDatabase%5BSocket%5D%2Cseq%5Bstring%5D"
+    title="dbHash(db: Database[Socket]; colls: seq[string] = @[]): BsonDocument">dbHash(db: Database[Socket]; colls: seq[string] = @[]): BsonDocument</a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">shardConnPoolStats
-      <li><a class="reference" href="#shardConnPoolStats%2CDatabase%5BSocket%5D"
-    title="shardConnPoolStats(db: Database[Socket]): BsonDocument">shardConnPoolStats,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#shardConnPoolStats%2CDatabase%5BAsyncSocket%5D"
-    title="shardConnPoolStats(db: Database[AsyncSocket]): Future[BsonDocument]">shardConnPoolStats,Database[AsyncSocket]<span class="attachedType"></span></a></li>
+  <ul class="simple nested-toc-section">dbStats
+      <li><a class="reference" href="#dbStats%2CDatabase%5BAsyncSocket%5D%2Cint"
+    title="dbStats(db: Database[AsyncSocket]; scale = 1024): Future[BsonDocument]">dbStats(db: Database[AsyncSocket]; scale = 1024): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#dbStats%2CDatabase%5BSocket%5D%2Cint"
+    title="dbStats(db: Database[Socket]; scale = 1024): BsonDocument">dbStats(db: Database[Socket]; scale = 1024): BsonDocument</a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">buildInfo
-      <li><a class="reference" href="#buildInfo%2CDatabase%5BSocket%5D"
-    title="buildInfo(db: Database[Socket]): BsonDocument">buildInfo,Database[Socket]<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#buildInfo%2CDatabase%5BAsyncSocket%5D"
-    title="buildInfo(db: Database[AsyncSocket]): Future[BsonDocument]">buildInfo,Database[AsyncSocket]<span class="attachedType"></span></a></li>
+  <ul class="simple nested-toc-section">explain
+      <li><a class="reference" href="#explain%2CDatabase%5BAsyncSocket%5D%2Cstring"
+    title="explain(db: Database[AsyncSocket]; cmd = bson();
+        verbosity = &quot;allPlansExecution&quot;; command = ckRead): Future[BsonDocument]">explain(db: Database[AsyncSocket]; cmd = bson();
+        verbosity = &quot;allPlansExecution&quot;; command = ckRead): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#explain%2CDatabase%5BSocket%5D%2Cstring"
+    title="explain(db: Database[Socket]; cmd = bson(); verbosity = &quot;allPlansExecution&quot;;
+        command = ckRead): BsonDocument">explain(db: Database[Socket]; cmd = bson(); verbosity = &quot;allPlansExecution&quot;;
+        command = ckRead): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getCmdLineOpts
+      <li><a class="reference" href="#getCmdLineOpts%2CDatabase%5BAsyncSocket%5D"
+    title="getCmdLineOpts(db: Database[AsyncSocket]): Future[BsonDocument]">getCmdLineOpts(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#getCmdLineOpts%2CDatabase%5BSocket%5D"
+    title="getCmdLineOpts(db: Database[Socket]): BsonDocument">getCmdLineOpts(db: Database[Socket]): BsonDocument</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">getLog
-      <li><a class="reference" href="#getLog%2CDatabase%5BSocket%5D%2Cstring"
-    title="getLog(db: Database[Socket]; filter = &quot;global&quot;): BsonDocument">getLog,Database[Socket],string<span class="attachedType"></span></a></li>
-  <li><a class="reference" href="#getLog%2CDatabase%5BAsyncSocket%5D%2Cstring"
-    title="getLog(db: Database[AsyncSocket]; filter = &quot;global&quot;): Future[BsonDocument]">getLog,Database[AsyncSocket],string<span class="attachedType"></span></a></li>
+      <li><a class="reference" href="#getLog%2CDatabase%5BAsyncSocket%5D%2Cstring"
+    title="getLog(db: Database[AsyncSocket]; filter = &quot;global&quot;): Future[BsonDocument]">getLog(db: Database[AsyncSocket]; filter = &quot;global&quot;): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#getLog%2CDatabase%5BSocket%5D%2Cstring"
+    title="getLog(db: Database[Socket]; filter = &quot;global&quot;): BsonDocument">getLog(db: Database[Socket]; filter = &quot;global&quot;): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">getLogFilters
+      <li><a class="reference" href="#getLogFilters%2CDatabase%5BAsyncSocket%5D"
+    title="getLogFilters(db: Database[AsyncSocket]): Future[seq[string]]">getLogFilters(db: Database[AsyncSocket]): Future[seq[string]]</a></li>
+  <li><a class="reference" href="#getLogFilters%2CDatabase%5BSocket%5D"
+    title="getLogFilters(db: Database[Socket]): seq[string]">getLogFilters(db: Database[Socket]): seq[string]</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">hostInfo
+      <li><a class="reference" href="#hostInfo%2CDatabase%5BAsyncSocket%5D"
+    title="hostInfo(db: Database[AsyncSocket]): Future[BsonDocument]">hostInfo(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#hostInfo%2CDatabase%5BSocket%5D"
+    title="hostInfo(db: Database[Socket]): BsonDocument">hostInfo(db: Database[Socket]): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">listCommands
+      <li><a class="reference" href="#listCommands%2CDatabase%5BAsyncSocket%5D"
+    title="listCommands(db: Database[AsyncSocket]): Future[BsonDocument]">listCommands(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#listCommands%2CDatabase%5BSocket%5D"
+    title="listCommands(db: Database[Socket]): BsonDocument">listCommands(db: Database[Socket]): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">ping
+      <li><a class="reference" href="#ping%2CDatabase%5BAsyncSocket%5D"
+    title="ping(db: Database[AsyncSocket]): Future[BsonDocument]">ping(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#ping%2CDatabase%5BSocket%5D"
+    title="ping(db: Database[Socket]): BsonDocument">ping(db: Database[Socket]): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">profile
+      <li><a class="reference" href="#profile%2CDatabase%5BAsyncSocket%5D%2Cint%2Cint%2Cfloat"
+    title="profile(db: Database[AsyncSocket]; level = 0; slowms = 100; sampleRate = 1.0): Future[
+    BsonDocument]">profile(db: Database[AsyncSocket]; level = 0; slowms = 100; sampleRate = 1.0): Future[
+    BsonDocument]</a></li>
+  <li><a class="reference" href="#profile%2CDatabase%5BSocket%5D%2Cint%2Cint%2Cfloat"
+    title="profile(db: Database[Socket]; level = 0; slowms = 100; sampleRate = 1.0): BsonDocument">profile(db: Database[Socket]; level = 0; slowms = 100; sampleRate = 1.0): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">serverStat
+      <li><a class="reference" href="#serverStat%2CDatabase%5BAsyncSocket%5D"
+    title="serverStat(db: Database[AsyncSocket]): Future[BsonDocument]">serverStat(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#serverStat%2CDatabase%5BSocket%5D"
+    title="serverStat(db: Database[Socket]): BsonDocument">serverStat(db: Database[Socket]): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">shardConnPoolStats
+      <li><a class="reference" href="#shardConnPoolStats%2CDatabase%5BAsyncSocket%5D"
+    title="shardConnPoolStats(db: Database[AsyncSocket]): Future[BsonDocument]">shardConnPoolStats(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#shardConnPoolStats%2CDatabase%5BSocket%5D"
+    title="shardConnPoolStats(db: Database[Socket]): BsonDocument">shardConnPoolStats(db: Database[Socket]): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">top
+      <li><a class="reference" href="#top%2CDatabase%5BAsyncSocket%5D"
+    title="top(db: Database[AsyncSocket]): Future[BsonDocument]">top(db: Database[AsyncSocket]): Future[BsonDocument]</a></li>
+  <li><a class="reference" href="#top%2CDatabase%5BSocket%5D"
+    title="top(db: Database[Socket]): BsonDocument">top(db: Database[Socket]): BsonDocument</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">validate
+      <li><a class="reference" href="#validate%2CDatabase%5BAsyncSocket%5D%2Cstring"
+    title="validate(db: Database[AsyncSocket]; coll: string; full = false): Future[
+    BsonDocument]">validate(db: Database[AsyncSocket]; coll: string; full = false): Future[
+    BsonDocument]</a></li>
+  <li><a class="reference" href="#validate%2CDatabase%5BSocket%5D%2Cstring"
+    title="validate(db: Database[Socket]; coll: string; full = false): BsonDocument">validate(db: Database[Socket]; coll: string; full = false): BsonDocument</a></li>
 
   </ul>
 
@@ -249,11 +264,16 @@ function main() {
 </ul>
 
   </div>
+  &nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L1"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L1" class="link-seesrc" target="_blank" >Edit</a>
+
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
   <p class="module-desc">
-<h1><a class="toc-backref" id="diagnostics-commands" href="#diagnostics-commands">Diagnostics Commands</a></h1><p>This APIs can be referred <a class="reference external" href="https://docs.mongodb.com/manual/reference/command/nav-diagnostic/">here</a>. All these APIs are returning BsonDocument so check the <a class="reference external" href="#mongo-documentation">Mongo documentation</a>.</p>
+<h1><a class="toc-backref" id="diagnostics-commands" href="#diagnostics-commands">Diagnostics Commands</a></h1><p>This APIs can be referred <a class="reference external" href="https://docs.mongodb.com/manual/reference/command/nav-diagnostic/">here</a>. All these APIs are returning BsonDocument so check the <a class="reference internal" href="#Mongo">Mongo</a>.</p>
 <p><strong>Beware</strong>: These APIs are not tested.</p>
 <p>All APIs are async.</p>
 <p>__ <a class="reference external" href="https://docs.mongodb.com/manual/reference/command/nav-diagnostic/">here</a></p>
@@ -266,525 +286,563 @@ function main() {
 <div class="section" id="12">
 <h1><a class="toc-backref" href="#12">Procs</a></h1>
 <dl class="item">
-<a id="buildInfo,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#buildInfo%2CDatabase%5BSocket%5D"><span class="Identifier">buildInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+<div id="buildInfo,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#buildInfo%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">buildInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L17"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L17" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="buildInfo,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#buildInfo%2CDatabase%5BSocket%5D"><span class="Identifier">buildInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
     <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
     <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="buildInfo,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#buildInfo%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">buildInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L17"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L17" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="collStats,Database[Socket],string,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#collStats%2CDatabase%5BSocket%5D%2Cstring%2Cint"><span class="Identifier">collStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
-    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="collStats,Database[AsyncSocket],string,int"></a>
+</div>
+<div id="collStats,Database[AsyncSocket],string,int">
 <dt><pre><span class="Keyword">proc</span> <a href="#collStats%2CDatabase%5BAsyncSocket%5D%2Cstring%2Cint"><span class="Identifier">collStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L21"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L21"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L21" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L21" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="connPoolStats,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#connPoolStats%2CDatabase%5BSocket%5D"><span class="Identifier">connPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
-    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
-    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="connPoolStats,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#connPoolStats%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">connPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L24"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L24" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="connectionStatus,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#connectionStatus%2CDatabase%5BSocket%5D"><span class="Identifier">connectionStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">showPriv</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+</div>
+<div id="collStats,Database[Socket],string,int">
+<dt><pre><span class="Keyword">proc</span> <a href="#collStats%2CDatabase%5BSocket%5D%2Cstring%2Cint"><span class="Identifier">collStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="connectionStatus,Database[AsyncSocket]"></a>
+</div>
+<div id="connectionStatus,Database[AsyncSocket]">
 <dt><pre><span class="Keyword">proc</span> <a href="#connectionStatus%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">connectionStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">showPriv</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L27"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L27"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L27" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L27" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="dataSize,Database[Socket],string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dataSize%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">dataSize</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">pattern</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">{</span><span class="StringLit">&quot;_id&quot;</span><span class="Other">:</span> <span class="DecNumber">1</span><span class="Other">}</span><span class="Other">)</span><span class="Other">;</span>
-              <span class="Identifier">min</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">max</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">estimate</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span>
-    <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="connectionStatus,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#connectionStatus%2CDatabase%5BSocket%5D"><span class="Identifier">connectionStatus</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">showPriv</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
+    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="dataSize,Database[AsyncSocket],string"></a>
+</div>
+<div id="connPoolStats,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#connPoolStats%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">connPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L24"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L24" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="connPoolStats,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#connPoolStats%2CDatabase%5BSocket%5D"><span class="Identifier">connPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
+    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="dataSize,Database[AsyncSocket],string">
 <dt><pre><span class="Keyword">proc</span> <a href="#dataSize%2CDatabase%5BAsyncSocket%5D%2Cstring"><span class="Identifier">dataSize</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span>
               <span class="Identifier">pattern</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">{</span><span class="StringLit">&quot;_id&quot;</span><span class="Other">:</span> <span class="DecNumber">1</span><span class="Other">}</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">min</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">max</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-              <span class="Identifier">estimate</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+              <span class="Identifier">estimate</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L33"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L33"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L33" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L33" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="dbHash,Database[Socket],seq[string]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dbHash%2CDatabase%5BSocket%5D%2Cseq%5Bstring%5D"><span class="Identifier">dbHash</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">colls</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
-    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="dataSize,Database[Socket],string">
+<dt><pre><span class="Keyword">proc</span> <a href="#dataSize%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">dataSize</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">pattern</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">{</span><span class="StringLit">&quot;_id&quot;</span><span class="Other">:</span> <span class="DecNumber">1</span><span class="Other">}</span><span class="Other">)</span><span class="Other">;</span>
+              <span class="Identifier">min</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">max</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">estimate</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span>
+    <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="dbHash,Database[AsyncSocket],seq[string]"></a>
+</div>
+<div id="dbHash,Database[AsyncSocket],seq[string]">
 <dt><pre><span class="Keyword">proc</span> <a href="#dbHash%2CDatabase%5BAsyncSocket%5D%2Cseq%5Bstring%5D"><span class="Identifier">dbHash</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">colls</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L40"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L40"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="dbStats,Database[Socket],int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dbStats%2CDatabase%5BSocket%5D%2Cint"><span class="Identifier">dbStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+</div>
+<div id="dbHash,Database[Socket],seq[string]">
+<dt><pre><span class="Keyword">proc</span> <a href="#dbHash%2CDatabase%5BSocket%5D%2Cseq%5Bstring%5D"><span class="Identifier">dbHash</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">colls</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="dbStats,Database[AsyncSocket],int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#dbStats%2CDatabase%5BAsyncSocket%5D%2Cint"><span class="Identifier">dbStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="dbStats,Database[AsyncSocket],int">
+<dt><pre><span class="Keyword">proc</span> <a href="#dbStats%2CDatabase%5BAsyncSocket%5D%2Cint"><span class="Identifier">dbStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L45"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L45"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L45" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L45" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="explain,Database[Socket],string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#explain%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">explain</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">cmd</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
-             <span class="Identifier">verbosity</span> <span class="Other">=</span> <span class="StringLit">&quot;allPlansExecution&quot;</span><span class="Other">;</span> <span class="Identifier">command</span> <span class="Other">=</span> <span class="Identifier">ckRead</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+</div>
+<div id="dbStats,Database[Socket],int">
+<dt><pre><span class="Keyword">proc</span> <a href="#dbStats%2CDatabase%5BSocket%5D%2Cint"><span class="Identifier">dbStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">scale</span> <span class="Other">=</span> <span class="DecNumber">1024</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="explain,Database[AsyncSocket],string"></a>
+</div>
+<div id="explain,Database[AsyncSocket],string">
 <dt><pre><span class="Keyword">proc</span> <a href="#explain%2CDatabase%5BAsyncSocket%5D%2Cstring"><span class="Identifier">explain</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">cmd</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
              <span class="Identifier">verbosity</span> <span class="Other">=</span> <span class="StringLit">&quot;allPlansExecution&quot;</span><span class="Other">;</span> <span class="Identifier">command</span> <span class="Other">=</span> <span class="Identifier">ckRead</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L51"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L51"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L51" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L51" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="getCmdLineOpts,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getCmdLineOpts%2CDatabase%5BSocket%5D"><span class="Identifier">getCmdLineOpts</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
-    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
-    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="getCmdLineOpts,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getCmdLineOpts%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">getCmdLineOpts</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L55"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L55" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="getLog,Database[Socket],string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getLog%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">getLog</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">filter</span> <span class="Other">=</span> <span class="StringLit">&quot;global&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+</div>
+<div id="explain,Database[Socket],string">
+<dt><pre><span class="Keyword">proc</span> <a href="#explain%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">explain</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">cmd</span> <span class="Other">=</span> <span class="Identifier">bson</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+             <span class="Identifier">verbosity</span> <span class="Other">=</span> <span class="StringLit">&quot;allPlansExecution&quot;</span><span class="Other">;</span> <span class="Identifier">command</span> <span class="Other">=</span> <span class="Identifier">ckRead</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="getLog,Database[AsyncSocket],string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getLog%2CDatabase%5BAsyncSocket%5D%2Cstring"><span class="Identifier">getLog</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">filter</span> <span class="Other">=</span> <span class="StringLit">&quot;global&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="getCmdLineOpts,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#getCmdLineOpts%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">getCmdLineOpts</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L58"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L55"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L58" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L55" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="getLogFilters,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getLogFilters%2CDatabase%5BSocket%5D"><span class="Identifier">getLogFilters</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+</div>
+<div id="getCmdLineOpts,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#getCmdLineOpts%2CDatabase%5BSocket%5D"><span class="Identifier">getCmdLineOpts</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
     <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
     <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="getLogFilters,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getLogFilters%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">getLogFilters</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="getLog,Database[AsyncSocket],string">
+<dt><pre><span class="Keyword">proc</span> <a href="#getLog%2CDatabase%5BAsyncSocket%5D%2Cstring"><span class="Identifier">getLog</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">filter</span> <span class="Other">=</span> <span class="StringLit">&quot;global&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L61"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L58"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L61" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L58" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="hostInfo,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#hostInfo%2CDatabase%5BSocket%5D"><span class="Identifier">hostInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+</div>
+<div id="getLog,Database[Socket],string">
+<dt><pre><span class="Keyword">proc</span> <a href="#getLog%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">getLog</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">filter</span> <span class="Other">=</span> <span class="StringLit">&quot;global&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
+    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="getLogFilters,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#getLogFilters%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">getLogFilters</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L61"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L61" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="getLogFilters,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#getLogFilters%2CDatabase%5BSocket%5D"><span class="Identifier">getLogFilters</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
     <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
     <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="hostInfo,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#hostInfo%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">hostInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="hostInfo,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#hostInfo%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">hostInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L65"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L65"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L65" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L65" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="listCommands,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#listCommands%2CDatabase%5BSocket%5D"><span class="Identifier">listCommands</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+</div>
+<div id="hostInfo,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#hostInfo%2CDatabase%5BSocket%5D"><span class="Identifier">hostInfo</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
     <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
     <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="listCommands,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#listCommands%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">listCommands</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+</div>
+<div id="listCommands,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#listCommands%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">listCommands</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L68"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L68"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L68" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L68" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="ping,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#ping%2CDatabase%5BSocket%5D"><span class="Identifier">ping</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
+</div>
+<div id="listCommands,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#listCommands%2CDatabase%5BSocket%5D"><span class="Identifier">listCommands</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
+    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="ping,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#ping%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">ping</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L71"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="ping,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#ping%2CDatabase%5BSocket%5D"><span class="Identifier">ping</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
     <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
     <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="ping,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#ping%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">ping</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L71"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L71" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="profile,Database[Socket],int,int,float"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#profile%2CDatabase%5BSocket%5D%2Cint%2Cint%2Cfloat"><span class="Identifier">profile</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">level</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span> <span class="Identifier">slowms</span> <span class="Other">=</span> <span class="DecNumber">100</span><span class="Other">;</span> <span class="Identifier">sampleRate</span> <span class="Other">=</span> <span class="FloatNumber">1.0</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
-    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
-    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="profile,Database[AsyncSocket],int,int,float"></a>
+</div>
+<div id="profile,Database[AsyncSocket],int,int,float">
 <dt><pre><span class="Keyword">proc</span> <a href="#profile%2CDatabase%5BAsyncSocket%5D%2Cint%2Cint%2Cfloat"><span class="Identifier">profile</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">level</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span> <span class="Identifier">slowms</span> <span class="Other">=</span> <span class="DecNumber">100</span><span class="Other">;</span>
-             <span class="Identifier">sampleRate</span> <span class="Other">=</span> <span class="FloatNumber">1.0</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+             <span class="Identifier">sampleRate</span> <span class="Other">=</span> <span class="FloatNumber">1.0</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L75"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L75"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L75" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L75" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="serverStat,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#serverStat%2CDatabase%5BSocket%5D"><span class="Identifier">serverStat</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
-    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
-    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="serverStat,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#serverStat%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">serverStat</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L82"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L82" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="shardConnPoolStats,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#shardConnPoolStats%2CDatabase%5BSocket%5D"><span class="Identifier">shardConnPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
-    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
-    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="shardConnPoolStats,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#shardConnPoolStats%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">shardConnPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L85"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L85" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="top,Database[Socket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#top%2CDatabase%5BSocket%5D"><span class="Identifier">top</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
-    <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
-    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="top,Database[AsyncSocket]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#top%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">top</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L88"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L88" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="validate,Database[Socket],string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#validate%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">validate</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">full</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+</div>
+<div id="profile,Database[Socket],int,int,float">
+<dt><pre><span class="Keyword">proc</span> <a href="#profile%2CDatabase%5BSocket%5D%2Cint%2Cint%2Cfloat"><span class="Identifier">profile</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">level</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span> <span class="Identifier">slowms</span> <span class="Other">=</span> <span class="DecNumber">100</span><span class="Other">;</span> <span class="Identifier">sampleRate</span> <span class="Other">=</span> <span class="FloatNumber">1.0</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
     <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
     <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/core/multisock.nim#L125"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="validate,Database[AsyncSocket],string"></a>
+</div>
+<div id="serverStat,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#serverStat%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">serverStat</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L82"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L82" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="serverStat,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#serverStat%2CDatabase%5BSocket%5D"><span class="Identifier">serverStat</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
+    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="shardConnPoolStats,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#shardConnPoolStats%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">shardConnPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L85"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L85" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="shardConnPoolStats,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#shardConnPoolStats%2CDatabase%5BSocket%5D"><span class="Identifier">shardConnPoolStats</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
+    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="top,Database[AsyncSocket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#top%2CDatabase%5BAsyncSocket%5D"><span class="Identifier">top</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span><a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L88"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L88" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="top,Database[Socket]">
+<dt><pre><span class="Keyword">proc</span> <a href="#top%2CDatabase%5BSocket%5D"><span class="Identifier">top</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span>
+    <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span> <span class="Identifier">SslError</span><span class="Other">,</span>
+    <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="validate,Database[AsyncSocket],string">
 <dt><pre><span class="Keyword">proc</span> <a href="#validate%2CDatabase%5BAsyncSocket%5D%2Cstring"><span class="Identifier">validate</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">AsyncSocket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">full</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Future</span><span class="Other">[</span>
-    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">]</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+                    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-4/src/anonimongo/dbops/diagnostic.nim#L92"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/dbops/diagnostic.nim#L92"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L92" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/dbops/diagnostic.nim#L92" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+</div>
+<div id="validate,Database[Socket],string">
+<dt><pre><span class="Keyword">proc</span> <a href="#validate%2CDatabase%5BSocket%5D%2Cstring"><span class="Identifier">validate</span></a><span class="Other">(</span><span class="Identifier">db</span><span class="Other">:</span> <a href="../core/types.html#Database"><span class="Identifier">Database</span></a><span class="Other">[</span><span class="Identifier">Socket</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">coll</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">full</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span><span class="Other">:</span> <a href="../core/bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">MongoError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">SnappyError</span><span class="Other">,</span> <span class="Identifier">ZippyError</span><span class="Other">,</span>
+    <span class="Identifier">SslError</span><span class="Other">,</span> <span class="Identifier">TimeoutError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/src/anonimongo/core/multisock.nim#L125"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/src/anonimongo/core/multisock.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 
 </dl></div>
 
@@ -795,7 +853,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:32:54 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:33:09 UTC</small>
       </div>
     </div>
   </div>
