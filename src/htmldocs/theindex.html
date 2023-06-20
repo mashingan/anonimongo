@@ -34,7 +34,6 @@ function main() {
     }
   }
 
-  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
   function switchTheme(e) {
       if (e.target.checked) {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -45,21 +44,29 @@ function main() {
       }
   }
 
-  toggleSwitch.addEventListener('change', switchTheme, false);
+  const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+  if (toggleSwitch !== null) {
+    toggleSwitch.addEventListener('change', switchTheme, false);
+  }
 
-  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  var currentTheme = localStorage.getItem('theme');
+  if (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    currentTheme = 'dark';
+  }
   if (currentTheme) {
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    if (currentTheme === 'dark') {
+    if (currentTheme === 'dark' && toggleSwitch !== null) {
       toggleSwitch.checked = true;
     }
   }
 }
+
+window.addEventListener('DOMContentLoaded', main);
 </script>
 
 </head>
-<body onload="main()">
+<body>
 <div class="document" id="documentId">
   <div class="container">
     <h1 class="title">Index</h1>
@@ -1575,19 +1582,19 @@ function main() {
 <dt><a name="getMore" href="#getMore"><span>getMore:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="crud: getMore(db: Database[AsyncSocket]; cursorId: int64; collname: string;
-        batchSize: int; maxTimeMS = -1): Future[BsonDocument]" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/dbops/crud.html#getMore%2CDatabase%5BAsyncSocket%5D%2Cint64%2Cstring%2Cint">crud: getMore(db: Database[AsyncSocket]; cursorId: int64; collname: string;
+        batchSize: int; maxTimeMS = -1): Future[BsonDocument]" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/dbops/crud.html#getMore%2CDatabase%5BAsyncSocket%5D%2Cint64%2Cstring%2Cint%2Cint">crud: getMore(db: Database[AsyncSocket]; cursorId: int64; collname: string;
         batchSize: int; maxTimeMS = -1): Future[BsonDocument]</a></li>
           <li><a class="reference external"
           data-doc-search-tag="crud: getMore(db: Database[Socket]; cursorId: int64; collname: string; batchSize: int;
-        maxTimeMS = -1): BsonDocument" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/dbops/crud.html#getMore%2CDatabase%5BSocket%5D%2Cint64%2Cstring%2Cint">crud: getMore(db: Database[Socket]; cursorId: int64; collname: string; batchSize: int;
+        maxTimeMS = -1): BsonDocument" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/dbops/crud.html#getMore%2CDatabase%5BSocket%5D%2Cint64%2Cstring%2Cint%2Cint">crud: getMore(db: Database[Socket]; cursorId: int64; collname: string; batchSize: int;
         maxTimeMS = -1): BsonDocument</a></li>
           <li><a class="reference external"
           data-doc-search-tag="crud: getMore(db: Database[AsyncSocket]; cursorId: int64; collname: string;
-        batchSize: int; maxTimeMS = -1): Future[BsonDocument]" href="anonimongo/dbops/crud.html#getMore%2CDatabase%5BAsyncSocket%5D%2Cint64%2Cstring%2Cint">crud: getMore(db: Database[AsyncSocket]; cursorId: int64; collname: string;
+        batchSize: int; maxTimeMS = -1): Future[BsonDocument]" href="anonimongo/dbops/crud.html#getMore%2CDatabase%5BAsyncSocket%5D%2Cint64%2Cstring%2Cint%2Cint">crud: getMore(db: Database[AsyncSocket]; cursorId: int64; collname: string;
         batchSize: int; maxTimeMS = -1): Future[BsonDocument]</a></li>
           <li><a class="reference external"
           data-doc-search-tag="crud: getMore(db: Database[Socket]; cursorId: int64; collname: string; batchSize: int;
-        maxTimeMS = -1): BsonDocument" href="anonimongo/dbops/crud.html#getMore%2CDatabase%5BSocket%5D%2Cint64%2Cstring%2Cint">crud: getMore(db: Database[Socket]; cursorId: int64; collname: string; batchSize: int;
+        maxTimeMS = -1): BsonDocument" href="anonimongo/dbops/crud.html#getMore%2CDatabase%5BSocket%5D%2Cint64%2Cstring%2Cint%2Cint">crud: getMore(db: Database[Socket]; cursorId: int64; collname: string; batchSize: int;
         maxTimeMS = -1): BsonDocument</a></li>
           </ul></dd>
 <dt><a name="getPosition" href="#getPosition"><span>getPosition:</span></a></dt><dd><ul class="simple">
@@ -2078,15 +2085,15 @@ function main() {
           </ul></dd>
 <dt><a name="newBson" href="#newBson"><span>newBson:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="bson: newBson(table = newOrderedTable[string, BsonBase]();
-        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/core/bson.html#newBson%2CStreamable%2Cstring">bson: newBson(table = newOrderedTable[string, BsonBase]();
-        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument</a></li>
+          data-doc-search-tag="bson: newBson(table = newOrderedTable(); stream: Streamable = newStream();
+        filename = &quot;&quot;): BsonDocument" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/core/bson.html#newBson%2CStreamable%2Cstring">bson: newBson(table = newOrderedTable(); stream: Streamable = newStream();
+        filename = &quot;&quot;): BsonDocument</a></li>
           <li><a class="reference external"
           data-doc-search-tag="bson: newBson(table: varargs[(string, BsonBase)]): BsonDocument" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/core/bson.html#newBson%2Cvarargs%5B%5D">bson: newBson(table: varargs[(string, BsonBase)]): BsonDocument</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="bson: newBson(table = newOrderedTable[string, BsonBase]();
-        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument" href="anonimongo/core/bson.html#newBson%2CStreamable%2Cstring">bson: newBson(table = newOrderedTable[string, BsonBase]();
-        stream: Streamable = newStream(); filename = &quot;&quot;): BsonDocument</a></li>
+          data-doc-search-tag="bson: newBson(table = newOrderedTable(); stream: Streamable = newStream();
+        filename = &quot;&quot;): BsonDocument" href="anonimongo/core/bson.html#newBson%2CStreamable%2Cstring">bson: newBson(table = newOrderedTable(); stream: Streamable = newStream();
+        filename = &quot;&quot;): BsonDocument</a></li>
           <li><a class="reference external"
           data-doc-search-tag="bson: newBson(table: varargs[(string, BsonBase)]): BsonDocument" href="anonimongo/core/bson.html#newBson%2Cvarargs%5B%5D">bson: newBson(table: varargs[(string, BsonBase)]): BsonDocument</a></li>
           </ul></dd>
@@ -2785,10 +2792,10 @@ function main() {
           data-doc-search-tag="streamable: setPosition(s: var DefaultStream; pos: int)" href="anonimongo/core/streamable.html#setPosition%2CDefaultStream%2Cint">streamable: setPosition(s: var DefaultStream; pos: int)</a></li>
           <li><a class="reference external"
           data-doc-search-tag="gridfs: setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(
-    Future[void])" href="anonimongo/gridfs.html#setPosition%2CGridStream%5BAsyncSocket%5D%2Cint64">gridfs: setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(
+    Future[void])" href="anonimongo/gridfs.html#setPosition%2CGridStream%5BAsyncSocket%5D%2Cint64%2Cint">gridfs: setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(
     Future[void])</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)" href="anonimongo/gridfs.html#setPosition%2CGridStream%5BSocket%5D%2Cint64">gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)</a></li>
+          data-doc-search-tag="gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)" href="anonimongo/gridfs.html#setPosition%2CGridStream%5BSocket%5D%2Cint64%2Cint">gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)</a></li>
           </ul></dd>
 <dt><a name="shardConnPoolStats" href="#shardConnPoolStats"><span>shardConnPoolStats:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3136,9 +3143,9 @@ function main() {
           </ul></dd>
 <dt><a name="writeLE" href="#writeLE"><span>writeLE:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="bson: writeLE[T; ](s: var Streamable; val: T): untyped" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/core/bson.html#writeLE.t%2CStreamable%2CT">bson: writeLE[T; ](s: var Streamable; val: T): untyped</a></li>
+          data-doc-search-tag="bson: writeLE[T](s: var Streamable; val: T): untyped" href="_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.4/anonimongo/core/bson.html#writeLE.t%2CStreamable%2CT">bson: writeLE[T](s: var Streamable; val: T): untyped</a></li>
           <li><a class="reference external"
-          data-doc-search-tag="bson: writeLE[T; ](s: var Streamable; val: T): untyped" href="anonimongo/core/bson.html#writeLE.t%2CStreamable%2CT">bson: writeLE[T; ](s: var Streamable; val: T): untyped</a></li>
+          data-doc-search-tag="bson: writeLE[T](s: var Streamable; val: T): untyped" href="anonimongo/core/bson.html#writeLE.t%2CStreamable%2CT">bson: writeLE[T](s: var Streamable; val: T): untyped</a></li>
           </ul></dd>
 <dt><a name="WriteResult" href="#WriteResult"><span>WriteResult:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -3151,7 +3158,7 @@ function main() {
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:32:28 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:32:54 UTC</small>
       </div>
     </div>
   </div>
