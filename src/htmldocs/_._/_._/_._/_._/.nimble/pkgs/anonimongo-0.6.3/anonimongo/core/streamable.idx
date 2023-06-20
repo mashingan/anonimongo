@@ -1,0 +1,27 @@
+Readable	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#Readable	streamable: Readable	
+Writable	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#Writable	streamable: Writable	
+Peekable	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#Peekable	streamable: Peekable	
+Streamable	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#Streamable	streamable: Streamable	
+DefaultStream	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#DefaultStream	streamable: DefaultStream	
+MainStream	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#MainStream	streamable: MainStream	
+write	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#write,DefaultStream,string	streamable: write(s: var DefaultStream; data: string)	
+write	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#write,DefaultStream,char	streamable: write(s: var DefaultStream; data: char)	
+write	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#write,DefaultStream,T	streamable: write[T](s: var DefaultStream; data: T)	
+readAll	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readAll,DefaultStream	streamable: readAll(s: var DefaultStream): string	
+peekChar	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#peekChar,DefaultStream	streamable: peekChar(s: var DefaultStream): char	
+peekInt8	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#peekInt8,DefaultStream	streamable: peekInt8(s: var DefaultStream): int8	
+peekInt32	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#peekInt32,DefaultStream	streamable: peekInt32(s: var DefaultStream): int32	
+peekStr	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#peekStr,DefaultStream,int	streamable: peekStr(s: var DefaultStream; n: int): string	
+atEnd	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#atEnd,DefaultStream	streamable: atEnd(s: var DefaultStream): bool	
+read	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#read,DefaultStream,T	streamable: read[T](s: var DefaultStream; data: var T)	
+readFloat64	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readFloat64,DefaultStream	streamable: readFloat64(s: var DefaultStream): float64	
+readInt64	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readInt64,DefaultStream	streamable: readInt64(s: var DefaultStream): int64	
+readInt32	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readInt32,DefaultStream	streamable: readInt32(s: var DefaultStream): int32	
+readUint32	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readUint32,DefaultStream	streamable: readUint32(s: var DefaultStream): uint32	
+readInt8	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readInt8,DefaultStream	streamable: readInt8(s: var DefaultStream): int8	
+readUint8	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readUint8,DefaultStream	streamable: readUint8(s: var DefaultStream): uint8	
+readChar	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readChar,DefaultStream	streamable: readChar(s: var DefaultStream): char	
+readStr	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#readStr,DefaultStream,int	streamable: readStr(s: var DefaultStream; n: int): string	
+getPosition	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#getPosition,DefaultStream	streamable: getPosition(s: DefaultStream): int	
+setPosition	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#setPosition,DefaultStream,int	streamable: setPosition(s: var DefaultStream; pos: int)	
+newStream	_._/_._/_._/_._/.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/streamable.html#newStream,string	streamable: newStream(d = &quot;&quot;): MainStream	

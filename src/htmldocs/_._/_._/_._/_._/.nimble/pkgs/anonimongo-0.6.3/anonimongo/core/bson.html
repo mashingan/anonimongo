@@ -109,72 +109,42 @@ window.addEventListener('DOMContentLoaded', main);
   <a class="reference reference-toplevel" href="#7" id="57">Types</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#BsonArray"
-    title="BsonArray {.borrow: `.`.} = distinct BsonBase">BsonArray</a></li>
+    title="BsonArray = ref object of BsonBase
+  value*: seq[BsonBase]">BsonArray</a></li>
   <li><a class="reference" href="#BsonBase"
-    title="BsonBase = object of RootObj
-  case kind*: BsonKind
-  of bkInt32:
-      valueInt32: int32
-
-  of bkInt64:
-      valueInt64: int64
-
-  of bkTimestamp:
-      valueTimestamp: (uint32, uint32)
-
-  of bkDouble:
-      valueDouble: float64
-
-  of bkBool:
-      valueBool: bool
-
-  of bkNull:
-      nil
-
-  of bkArray:
-      valueArray: seq[BsonBase]
-
-  of bkString, bkJs:
-      valueStr: seq[Rune]
-
-  of bkTime:
-      valueTime: Time
-
-  of bkEmbed:
-      valueEmbed: BsonDocument
-
-  of bkBinary:
-      valueBinary: seq[byte]
-      subtype*: BsonSubtype
-
-  of bkObjectId:
-      valueOid: Oid
-
-  else:
-      nil">BsonBase</a></li>
+    title="BsonBase = ref object of RootObj
+  kind*: BsonKind">BsonBase</a></li>
   <li><a class="reference" href="#BsonBinary"
-    title="BsonBinary {.borrow: `.`.} = distinct BsonBase">BsonBinary</a></li>
+    title="BsonBinary = ref object of BsonBase
+  subtype*: BsonSubtype
+  value*: seq[byte]">BsonBinary</a></li>
   <li><a class="reference" href="#BsonBool"
-    title="BsonBool {.borrow: `.`.} = distinct BsonBase">BsonBool</a></li>
+    title="BsonBool = ref object of BsonBase
+  value*: bool">BsonBool</a></li>
   <li><a class="reference" href="#BsonDocument"
-    title="BsonDocument = object
+    title="BsonDocument = ref object
   table: BsonInternal
   stream: MainStream
   filename: string
   encoded*: bool             ## Flag whether the document already encoded
                              ## to avoid repeated encoding.">BsonDocument</a></li>
   <li><a class="reference" href="#BsonDouble"
-    title="BsonDouble {.borrow: `.`.} = distinct BsonBase">BsonDouble</a></li>
+    title="BsonDouble = ref object of BsonBase
+  value*: float64">BsonDouble</a></li>
   <li><a class="reference" href="#BsonEmbed"
-    title="BsonEmbed {.borrow: `.`.} = distinct BsonBase">BsonEmbed</a></li>
+    title="BsonEmbed = ref object of BsonBase
+  value*: BsonDocument">BsonEmbed</a></li>
   <li><a class="reference" href="#BsonFetchError"
     title="BsonFetchError = object of Defect">BsonFetchError</a></li>
   <li><a class="reference" href="#BsonInt32"
-    title="BsonInt32 {.borrow: `.`.} = distinct BsonBase">BsonInt32</a></li>
+    title="BsonInt32 = ref object of BsonBase
+  value*: int32">BsonInt32</a></li>
   <li><a class="reference" href="#BsonInt64"
-    title="BsonInt64 {.borrow: `.`.} = distinct BsonBase">BsonInt64</a></li>
+    title="BsonInt64 = ref object of BsonBase
+  value*: int64">BsonInt64</a></li>
   <li><a class="reference" href="#BsonJs"
-    title="BsonJs {.borrow: `.`.} = distinct BsonBase">BsonJs</a></li>
+    title="BsonJs = ref object of BsonBase
+  value*: seq[Rune]">BsonJs</a></li>
   <li><a class="reference" href="#BsonKind"
     title="BsonKind = enum
   bkEmptyArray = (0, &quot;BsonEmptyArray&quot;), bkDouble = (1, &quot;BsonDouble&quot;),
@@ -186,18 +156,22 @@ window.addEventListener('DOMContentLoaded', main);
   bkDecimal = &quot;BsonDecimal&quot;, bkMaxKey = (127, &quot;BsonMaxKey&quot;),
   bkMinKey = (255, &quot;BsonMinKey&quot;)">BsonKind</a></li>
   <li><a class="reference" href="#BsonNull"
-    title="BsonNull {.borrow: `.`.} = distinct BsonBase">BsonNull</a></li>
+    title="BsonNull = ref object of BsonBase">BsonNull</a></li>
   <li><a class="reference" href="#BsonObjectId"
-    title="BsonObjectId {.borrow: `.`.} = distinct BsonBase">BsonObjectId</a></li>
+    title="BsonObjectId = ref object of BsonBase
+  value*: Oid">BsonObjectId</a></li>
   <li><a class="reference" href="#BsonString"
-    title="BsonString {.borrow: `.`.} = distinct BsonBase">BsonString</a></li>
+    title="BsonString = ref object of BsonBase
+  value*: seq[Rune]">BsonString</a></li>
   <li><a class="reference" href="#BsonSubtype"
     title="BsonSubtype = enum
   stGeneric = 0, stFunction, stBinaryOld, stUuidOld, stUuid, stMd5">BsonSubtype</a></li>
   <li><a class="reference" href="#BsonTime"
-    title="BsonTime {.borrow: `.`.} = distinct BsonBase">BsonTime</a></li>
+    title="BsonTime = ref object of BsonBase
+  value*: Time">BsonTime</a></li>
   <li><a class="reference" href="#BsonTimestamp"
-    title="BsonTimestamp {.borrow: `.`.} = distinct BsonBase">BsonTimestamp</a></li>
+    title="BsonTimestamp = ref object of BsonBase
+  value*: TimestampInternal">BsonTimestamp</a></li>
 
   </ul>
 </li>
@@ -290,10 +264,8 @@ window.addEventListener('DOMContentLoaded', main);
 
   </ul>
   <ul class="simple nested-toc-section">encode
-      <li><a class="reference" href="#encode%2CsinkBsonDocument"
-    title="encode(doc: sink BsonDocument): (int, string)">encode(doc: sink BsonDocument): (int, string)</a></li>
-  <li><a class="reference" href="#encode%2CBsonDocument"
-    title="encode(doc: var BsonDocument): (int, string)">encode(doc: var BsonDocument): (int, string)</a></li>
+      <li><a class="reference" href="#encode%2CBsonDocument"
+    title="encode(doc: BsonDocument): (int, string)">encode(doc: BsonDocument): (int, string)</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">isNil
@@ -328,8 +300,8 @@ window.addEventListener('DOMContentLoaded', main);
   </ul>
   <ul class="simple nested-toc-section">newBson
       <li><a class="reference" href="#newBson%2CStreamable%2Cstring"
-    title="newBson(table = initOrderedTable(); stream: Streamable = newStream();
-        filename = &quot;&quot;): BsonDocument">newBson(table = initOrderedTable(); stream: Streamable = newStream();
+    title="newBson(table = newOrderedTable(); stream: Streamable = newStream();
+        filename = &quot;&quot;): BsonDocument">newBson(table = newOrderedTable(); stream: Streamable = newStream();
         filename = &quot;&quot;): BsonDocument</a></li>
   <li><a class="reference" href="#newBson%2Cvarargs%5B%5D"
     title="newBson(table: varargs[(string, BsonBase)]): BsonDocument">newBson(table: varargs[(string, BsonBase)]): BsonDocument</a></li>
@@ -346,18 +318,25 @@ window.addEventListener('DOMContentLoaded', main);
 <li>
   <a class="reference reference-toplevel" href="#15" id="65">Iterators</a>
   <ul class="simple simple-toc-section">
-      <ul class="simple nested-toc-section">keys
+      <ul class="simple nested-toc-section">items
+      <li><a class="reference" href="#items.i%2CBsonArray"
+    title="items(a: BsonArray): BsonBase">items(a: BsonArray): BsonBase</a></li>
+
+  </ul>
+  <ul class="simple nested-toc-section">keys
       <li><a class="reference" href="#keys.i%2CBsonDocument"
     title="keys(b: BsonDocument): string">keys(b: BsonDocument): string</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">mpairs
       <li><a class="reference" href="#mpairs.i%2CBsonDocument"
-    title="mpairs(b: var BsonDocument): (unown string, var BsonBase)">mpairs(b: var BsonDocument): (unown string, var BsonBase)</a></li>
+    title="mpairs(b: BsonDocument): (unown string, var BsonBase)">mpairs(b: BsonDocument): (unown string, var BsonBase)</a></li>
 
   </ul>
   <ul class="simple nested-toc-section">pairs
-      <li><a class="reference" href="#pairs.i%2CBsonDocument"
+      <li><a class="reference" href="#pairs.i%2CBsonArray"
+    title="pairs(a: BsonArray): (int, BsonBase)">pairs(a: BsonArray): (int, BsonBase)</a></li>
+  <li><a class="reference" href="#pairs.i%2CBsonDocument"
     title="pairs(b: BsonDocument): (string, BsonBase)">pairs(b: BsonDocument): (string, BsonBase)</a></li>
 
   </ul>
@@ -430,8 +409,6 @@ window.addEventListener('DOMContentLoaded', main);
   <ul class="simple nested-toc-section">toBson
       <li><a class="reference" href="#toBson.c%2CBsonBase"
     title="toBson(v: BsonBase): BsonBase">toBson(v: BsonBase): BsonBase</a></li>
-  <li><a class="reference" href="#toBson.c_3"
-    title="toBson(value: (uint32, uint32)): BsonBase">toBson(value: (uint32, uint32)): BsonBase</a></li>
   <li><a class="reference" href="#toBson.c%2Cbool"
     title="toBson(value: bool): BsonBase">toBson(value: bool): BsonBase</a></li>
   <li><a class="reference" href="#toBson.c%2CBsonDocument"
@@ -450,10 +427,10 @@ window.addEventListener('DOMContentLoaded', main);
     title="toBson(value: SomeFloat): BsonBase">toBson(value: SomeFloat): BsonBase</a></li>
   <li><a class="reference" href="#toBson.c%2CTime"
     title="toBson(value: Time): BsonBase">toBson(value: Time): BsonBase</a></li>
+  <li><a class="reference" href="#toBson.c%2CTimestampInternal"
+    title="toBson(value: TimestampInternal): BsonBase">toBson(value: TimestampInternal): BsonBase</a></li>
   <li><a class="reference" href="#toBson.c_2"
     title="toBson(values: string | seq[Rune]): BsonBase">toBson(values: string | seq[Rune]): BsonBase</a></li>
-  <li><a class="reference" href="#toBson.c%2CT"
-    title="toBson[T: BsonBaseInherit](v: T): BsonBase">toBson[T: BsonBaseInherit](v: T): BsonBase</a></li>
 
   </ul>
 
@@ -482,58 +459,6 @@ window.addEventListener('DOMContentLoaded', main);
     title="readIntLE(s: var Streamable; which: typedesc): untyped">readIntLE(s: var Streamable; which: typedesc): untyped</a></li>
 
   </ul>
-  <ul class="simple nested-toc-section">subtype
-      <li><a class="reference" href="#subtype.t%2CBsonBinary"
-    title="subtype(b: BsonBinary): BsonSubtype">subtype(b: BsonBinary): BsonSubtype</a></li>
-
-  </ul>
-  <ul class="simple nested-toc-section">value
-      <li><a class="reference" href="#value.t%2CBsonArray"
-    title="value(b: BsonArray): seq[BsonBase]">value(b: BsonArray): seq[BsonBase]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonBinary"
-    title="value(b: BsonBinary): seq[byte]">value(b: BsonBinary): seq[byte]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonBool"
-    title="value(b: BsonBool): bool">value(b: BsonBool): bool</a></li>
-  <li><a class="reference" href="#value.t%2CBsonDouble"
-    title="value(b: BsonDouble): float64">value(b: BsonDouble): float64</a></li>
-  <li><a class="reference" href="#value.t%2CBsonEmbed"
-    title="value(b: BsonEmbed): BsonDocument">value(b: BsonEmbed): BsonDocument</a></li>
-  <li><a class="reference" href="#value.t%2CBsonInt32"
-    title="value(b: BsonInt32): int32">value(b: BsonInt32): int32</a></li>
-  <li><a class="reference" href="#value.t%2CBsonInt64"
-    title="value(b: BsonInt64): int64">value(b: BsonInt64): int64</a></li>
-  <li><a class="reference" href="#value.t%2CBsonObjectId"
-    title="value(b: BsonObjectId): Oid">value(b: BsonObjectId): Oid</a></li>
-  <li><a class="reference" href="#value.t"
-    title="value(b: BsonString | BsonJs): seq[Rune]">value(b: BsonString | BsonJs): seq[Rune]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonTime"
-    title="value(b: BsonTime): Time">value(b: BsonTime): Time</a></li>
-  <li><a class="reference" href="#value.t%2CBsonTimestamp"
-    title="value(b: BsonTimestamp): TimestampInternal">value(b: BsonTimestamp): TimestampInternal</a></li>
-  <li><a class="reference" href="#value.t%2CBsonArray_2"
-    title="value(b: var BsonArray): var seq[BsonBase]">value(b: var BsonArray): var seq[BsonBase]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonBinary_2"
-    title="value(b: var BsonBinary): var seq[byte]">value(b: var BsonBinary): var seq[byte]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonDouble_2"
-    title="value(b: var BsonDouble): var float64">value(b: var BsonDouble): var float64</a></li>
-  <li><a class="reference" href="#value.t%2CBsonEmbed_2"
-    title="value(b: var BsonEmbed): var BsonDocument">value(b: var BsonEmbed): var BsonDocument</a></li>
-  <li><a class="reference" href="#value.t%2CBsonInt32_2"
-    title="value(b: var BsonInt32): var int32">value(b: var BsonInt32): var int32</a></li>
-  <li><a class="reference" href="#value.t%2CBsonInt64_2"
-    title="value(b: var BsonInt64): var int64">value(b: var BsonInt64): var int64</a></li>
-  <li><a class="reference" href="#value.t%2CBsonJs"
-    title="value(b: var BsonJs): var seq[Rune]">value(b: var BsonJs): var seq[Rune]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonObjectId_2"
-    title="value(b: var BsonObjectId): var Oid">value(b: var BsonObjectId): var Oid</a></li>
-  <li><a class="reference" href="#value.t%2CBsonString"
-    title="value(b: var BsonString): var seq[Rune]">value(b: var BsonString): var seq[Rune]</a></li>
-  <li><a class="reference" href="#value.t%2CBsonTime_2"
-    title="value(b: var BsonTime): var Time">value(b: var BsonTime): var Time</a></li>
-  <li><a class="reference" href="#value.t%2CBsonTimestamp_2"
-    title="value(b: var BsonTimestamp): var TimestampInternal">value(b: var BsonTimestamp): var TimestampInternal</a></li>
-
-  </ul>
   <ul class="simple nested-toc-section">writeLE
       <li><a class="reference" href="#writeLE.t%2CStreamable%2CT"
     title="writeLE[T](s: var Streamable; val: T): untyped">writeLE[T](s: var Streamable; val: T): untyped</a></li>
@@ -553,9 +478,9 @@ window.addEventListener('DOMContentLoaded', main);
 
   </div>
   &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1" class="link-seesrc" target="_blank" >Edit</a>
 
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
@@ -583,97 +508,64 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" href="#7">Types</a></h1>
 <dl class="item">
 <div id="BsonArray">
-<dt><pre><a href="bson.html#BsonArray"><span class="Identifier">BsonArray</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonArray"><span class="Identifier">BsonArray</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">]</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L226"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L179"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L226" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L179" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonBase">
-<dt><pre><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
-  <span class="Keyword">case</span> <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonKind"><span class="Identifier">BsonKind</span></a>
-  <span class="Keyword">of</span> <span class="Identifier">bkInt32</span><span class="Other">:</span>
-      <span class="Identifier">valueInt32</span><span class="Other">:</span> <span class="Identifier">int32</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkInt64</span><span class="Other">:</span>
-      <span class="Identifier">valueInt64</span><span class="Other">:</span> <span class="Identifier">int64</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkTimestamp</span><span class="Other">:</span>
-      <span class="Identifier">valueTimestamp</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">uint32</span><span class="Other">,</span> <span class="Identifier">uint32</span><span class="Other">)</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkDouble</span><span class="Other">:</span>
-      <span class="Identifier">valueDouble</span><span class="Other">:</span> <span class="Identifier">float64</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkBool</span><span class="Other">:</span>
-      <span class="Identifier">valueBool</span><span class="Other">:</span> <span class="Identifier">bool</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkNull</span><span class="Other">:</span>
-      <span class="Keyword">nil</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkArray</span><span class="Other">:</span>
-      <span class="Identifier">valueArray</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">]</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkString</span><span class="Other">,</span> <span class="Identifier">bkJs</span><span class="Other">:</span>
-      <span class="Identifier">valueStr</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Rune</span><span class="Other">]</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkTime</span><span class="Other">:</span>
-      <span class="Identifier">valueTime</span><span class="Other">:</span> <span class="Identifier">Time</span>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkEmbed</span><span class="Other">:</span>
-      <span class="Identifier">valueEmbed</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkBinary</span><span class="Other">:</span>
-      <span class="Identifier">valueBinary</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">byte</span><span class="Other">]</span>
-      <span class="Identifier">subtype</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonSubtype"><span class="Identifier">BsonSubtype</span></a>
-
-  <span class="Keyword">of</span> <span class="Identifier">bkObjectId</span><span class="Other">:</span>
-      <span class="Identifier">valueOid</span><span class="Other">:</span> <span class="Identifier">Oid</span>
-
-  <span class="Keyword">else</span><span class="Other">:</span>
-      <span class="Keyword">nil</span>
-
-  </pre></dt>
+<dt><pre><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
+  <span class="Identifier">kind</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonKind"><span class="Identifier">BsonKind</span></a>
+</pre></dt>
 <dd>
 
 BsonBase is type mimick object variant. Used as base of others Bson.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L184"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L148"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L184" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonBinary">
-<dt><pre><a href="bson.html#BsonBinary"><span class="Identifier">BsonBinary</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonBinary"><span class="Identifier">BsonBinary</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">subtype</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonSubtype"><span class="Identifier">BsonSubtype</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">byte</span><span class="Other">]</span>
+</pre></dt>
 <dd>
 
-
+BsonBinary handles any kind of byte stream for Bson encoding/decoding.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L224"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L201"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L201" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonBool">
-<dt><pre><a href="bson.html#BsonBool"><span class="Identifier">BsonBool</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonBool"><span class="Identifier">BsonBool</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L227"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L173"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L227" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L173" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonDocument">
-<dt><pre><a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
+<dt><pre><a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span>
   <span class="Identifier">table</span><span class="Other">:</span> <span class="Identifier">BsonInternal</span>
   <span class="Identifier">stream</span><span class="Other">:</span> <a href="streamable.html#MainStream"><span class="Identifier">MainStream</span></a>
   <span class="Identifier">filename</span><span class="Other">:</span> <span class="Identifier">string</span>
@@ -684,33 +576,37 @@ class="link-seesrc" target="_blank">Source</a>
 
 BsonDocument is the top of Bson type which has different structure tree with BsonBase family. Any user will mainly handle this often instead of BsonBase.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L238"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L209"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L238" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L209" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonDouble">
-<dt><pre><a href="bson.html#BsonDouble"><span class="Identifier">BsonDouble</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonDouble"><span class="Identifier">BsonDouble</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">float64</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L218"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L168"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L218" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L168" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonEmbed">
-<dt><pre><a href="bson.html#BsonEmbed"><span class="Identifier">BsonEmbed</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonEmbed"><span class="Identifier">BsonEmbed</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a>
+</pre></dt>
 <dd>
 
-
+Embedded object as BsonDocument as its value. Defined in accordance with other BsonType for easier encoding/decoding to Bson stream.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L223"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L192"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L223" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L192" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -721,45 +617,51 @@ class="link-seesrc" target="_blank">Source</a>
 
 Bson error type converting wrong type from BsonBase
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L250"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L253"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L250" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L253" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonInt32">
-<dt><pre><a href="bson.html#BsonInt32"><span class="Identifier">BsonInt32</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonInt32"><span class="Identifier">BsonInt32</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int32</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L216"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L153"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonInt64">
-<dt><pre><a href="bson.html#BsonInt64"><span class="Identifier">BsonInt64</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonInt64"><span class="Identifier">BsonInt64</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int64</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L217"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L156"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L217" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonJs">
-<dt><pre><a href="bson.html#BsonJs"><span class="Identifier">BsonJs</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonJs"><span class="Identifier">BsonJs</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Rune</span><span class="Other">]</span>
+</pre></dt>
 <dd>
 
-
+JS code which represented as string, it's implemented as same as string.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L222"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L187"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L222" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L187" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -777,45 +679,49 @@ class="link-seesrc" target="_blank">Source</a>
 
 Available Bson kind in accordance to Bson spec
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L148"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L221"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L221" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonNull">
-<dt><pre><a href="bson.html#BsonNull"><span class="Identifier">BsonNull</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonNull"><span class="Identifier">BsonNull</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L228"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L171"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L228" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L171" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonObjectId">
-<dt><pre><a href="bson.html#BsonObjectId"><span class="Identifier">BsonObjectId</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonObjectId"><span class="Identifier">BsonObjectId</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Oid</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L225"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L198"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L225" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L198" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonString">
-<dt><pre><a href="bson.html#BsonString"><span class="Identifier">BsonString</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonString"><span class="Identifier">BsonString</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Rune</span><span class="Other">]</span>
+</pre></dt>
 <dd>
 
-
+BsonString supports unicode string and the implementation save it as Runes.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L221"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L182"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L221" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L182" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -826,33 +732,37 @@ class="link-seesrc" target="_blank">Source</a>
 
 BsonSubtype is used to identify which kind of binary we encode/decode for that BsonBase. <tt class="docutils literal"><span class="pre"><span class="Identifier">stGeneric</span></span></tt> is used generically when no specific subtype should be used.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L173"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L173" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonTime">
-<dt><pre><a href="bson.html#BsonTime"><span class="Identifier">BsonTime</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonTime"><span class="Identifier">BsonTime</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Time</span>
+</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L219"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L176"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L219" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L176" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="BsonTimestamp">
-<dt><pre><a href="bson.html#BsonTimestamp"><span class="Identifier">BsonTimestamp</span></a> {.<span class="Identifier">borrow</span><span class="Other">:</span> <span class="Other">`</span><span class="Operator">.</span><span class="Other">`</span>.} <span class="Other">=</span> <span class="Keyword">distinct</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
+<dt><pre><a href="bson.html#BsonTimestamp"><span class="Identifier">BsonTimestamp</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a>
+  <span class="Identifier">value</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">TimestampInternal</span>
+</pre></dt>
 <dd>
 
-
+BsonTimestamp is actually int64 which represented by low dword as increment and high dword as timestamp.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L220"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L163"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -873,9 +783,9 @@ Stringified BsonDocument.
   <span class="Identifier">arr</span><span class="Punctuation">:</span> <span class="Punctuation">[</span><span class="Punctuation">]</span><span class="Punctuation">,</span> <span class="Identifier">embed</span><span class="Punctuation">:</span> <span class="Identifier">bsonempty</span><span class="Punctuation">}</span><span class="Punctuation">)</span>
 <span class="Identifier">doAssert</span> <span class="Operator">$</span><span class="Identifier">simple</span> <span class="Operator">==</span> <span class="LongStringLit">&quot;&quot;&quot;{&quot;field1&quot;:1,&quot;field2&quot;:&quot;two&quot;,&quot;field3&quot;:3.14,&quot;arr&quot;:[],&quot;embed&quot;:{}}&quot;&quot;&quot;</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L661"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L651"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L661" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L651" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -895,9 +805,9 @@ Stringified BsonBase.
 <span class="Identifier">doAssert</span> <span class="Operator">$</span><span class="Punctuation">(</span><span class="Identifier">bsonNull</span><span class="Punctuation">(</span><span class="Punctuation">)</span><span class="Punctuation">)</span> <span class="Operator">==</span> <span class="StringLit">&quot;null&quot;</span>
 <span class="Identifier">doAssert</span> <span class="Operator">$</span><span class="Identifier">bsonArray</span><span class="Punctuation">(</span><span class="DecNumber">1</span><span class="Punctuation">,</span> <span class="FloatNumber">3.14</span><span class="Punctuation">,</span> <span class="Identifier">true</span><span class="Punctuation">)</span> <span class="Operator">==</span> <span class="StringLit">&quot;[1,3.14,true]&quot;</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L619"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L609"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L619" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L609" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -908,9 +818,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 eq operator to fix some caveat caused by different precision between Nim's <tt class="docutils literal"><span class="pre">Time</span></tt> and Bson's <tt class="docutils literal"><span class="pre">Time</span></tt>. Bson precision is milliseconds while Nim precision is nanoseconds.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L293"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L270"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L293" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L270" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -921,9 +831,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 To support another eq operator position.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L302"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L279"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L302" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L279" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -934,9 +844,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Shortcut for assigning BsonEmbed key retrieved from <tt class="docutils literal"><span class="pre"><span class="Identifier">mget</span></span></tt> BsonBase
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L530"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L508"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L530" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L508" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -959,9 +869,9 @@ BsonDocument setter with string key and the value. Because defined converter, an
 <span class="Identifier">doAssert</span> <span class="Identifier">bsonobj</span><span class="Punctuation">[</span><span class="StringLit">&quot;currtime&quot;</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="Identifier">currtime</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">bsonobj</span><span class="Punctuation">[</span><span class="StringLit">&quot;thefloat&quot;</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="FloatNumber">42.0</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L463"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L440"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L463" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L440" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -986,9 +896,9 @@ BsonArray accessor for int index. Error when b is not BsonArray.
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;bsarr&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="DecNumber">2</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="FloatNumber">3.14</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;bsarr&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="DecNumber">3</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">ofBool</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L402"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L379"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L402" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L379" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1010,9 +920,9 @@ BsonEmbed accessor for string key. Error when b is not BsonEmbed.
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;field2&quot;</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="StringLit">&quot;field2&quot;</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;dynamic&quot;</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">ofBool</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L384"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L361"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L384" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L361" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1031,9 +941,9 @@ BsonDocument accessor for string key.
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;field1&quot;</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="DecNumber">1</span>
 <span class="Comment">#doAssert bso[&quot;not-exists&quot;].isNone</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L372"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L349"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L372" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L349" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1059,9 +969,9 @@ BsonBase Accessor whether indexed key or string key. Offload the actual operatio
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;bsarr&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="DecNumber">2</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="FloatNumber">3.14</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">bso</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;bsarr&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="DecNumber">3</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">ofBool</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L442"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L419"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L442" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L419" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1078,9 +988,9 @@ Add element to BsonArray
 <span class="Identifier">doAssert</span> <span class="Identifier">barray</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">3</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">barray</span><span class="Punctuation">[</span><span class="DecNumber">2</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">ofBool</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L538"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L517"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L538" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L517" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1091,9 +1001,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Shortcut for adding element to BsonBase that's actually BsonArray. Use it with combination of <tt class="docutils literal"><span class="pre"><span class="Identifier">mget</span></span></tt> for retriving the var BsonBase
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L549"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L528"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L549" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L528" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1103,9 +1013,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Change a variable arguments into BsonArray.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L872"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L852"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L872" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L852" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1114,11 +1024,11 @@ class="link-seesrc" target="_blank">Source</a>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Overload with seq of byte to be BsonBinary
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L880"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L860"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L880" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L860" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1127,11 +1037,11 @@ class="link-seesrc" target="_blank">Source</a>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Change a string BsonBinary.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L876"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L856"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L876" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L856" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1141,9 +1051,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 BsonJs init for string or Runes.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L884"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L864"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L884" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L864" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1151,11 +1061,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">proc</span> <a href="#bsonNull_2"><span class="Identifier">bsonNull</span></a><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Convenient BsonNull init.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L860"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L840"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L860" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L840" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1165,9 +1075,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Converts ObjectId to sequence of bytes.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L126"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L126"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1177,9 +1087,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Converts string to sequence of bytes.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L120"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L120"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L120" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L120" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1209,9 +1119,9 @@ except BsonFetchError:
   doAssert true
   ]#</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L345"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L322"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L345" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L322" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1230,9 +1140,9 @@ Check whether string <tt class="docutils literal"><span class="pre">key</span></
 <span class="Identifier">doAssert</span> <span class="StringLit">&quot;field2&quot;</span> <span class="Keyword">in</span> <span class="Identifier">bso</span>
 <span class="Identifier">doAssert</span> <span class="StringLit">&quot;dynamic&quot;</span> <span class="Keyword">in</span> <span class="Identifier">bso</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L332"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L309"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L332" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L309" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1243,9 +1153,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Decode a binary stream into BsonDocument.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1008"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L987"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1008" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L987" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1264,37 +1174,22 @@ Delete a field given from string key. Do nothing when there's no targeted field
 <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">del</span> <span class="StringLit">&quot;f2&quot;</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">1</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L557"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L537"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L557" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="encode,sinkBsonDocument">
-<dt><pre><span class="Keyword">proc</span> <a href="#encode%2CsinkBsonDocument"><span class="Identifier">encode</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <span class="Identifier">sink</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">int</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L807"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L807" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L537" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="encode,BsonDocument">
-<dt><pre><span class="Keyword">proc</span> <a href="#encode%2CBsonDocument"><span class="Identifier">encode</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">int</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#encode%2CBsonDocument"><span class="Identifier">encode</span></a><span class="Other">(</span><span class="Identifier">doc</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">int</span><span class="Other">,</span> <span class="Identifier">string</span><span class="Other">)</span> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 Encode BsonDocument and return it into length of binary string and the binary string itself.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L754"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L742"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L754" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L742" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1304,9 +1199,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Check whether BsonBase is literally nil or it's BsonNull.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L864"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L844"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L864" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L844" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1316,9 +1211,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Check whether BsonDocument is literally nil or it's empty.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L868"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L848"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L868" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L848" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1334,9 +1229,9 @@ Return the length of BsonArray
 <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">true</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">3</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L583"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L563"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L583" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L563" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1346,9 +1241,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Shortcut for returning the array of BsonEmbed or BsonArray. Throw BsonFetchError in case of not both BsonKind
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L593"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L573"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L593" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L573" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1365,9 +1260,9 @@ Return the how many key-value in BsonDocument.
 <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">del</span> <span class="StringLit">&quot;field1&quot;</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">b</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">0</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L572"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L552"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L572" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L552" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1382,15 +1277,15 @@ Actual a mutable accessor for indexed key BsonArray. Throw error when it's not B
 <span class="Identifier">bbase</span><span class="Operator">.</span><span class="Identifier">mget</span><span class="Punctuation">(</span><span class="DecNumber">2</span><span class="Punctuation">)</span> <span class="Operator">=</span> <span class="DecNumber">5</span>
 <span class="Identifier">doAssert</span> <span class="Identifier">bbase</span><span class="Punctuation">[</span><span class="DecNumber">2</span><span class="Punctuation">]</span> <span class="Operator">==</span> <span class="DecNumber">5</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L518"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L496"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L518" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L496" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="mget,BsonBase,sinkstring">
 <dt><pre><span class="Keyword">proc</span> <a href="#mget%2CBsonBase%2Csinkstring"><span class="Identifier">mget</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.
-    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 Actual a mutable accessor for string key BsonEmbed. Throw error when it's not BsonEmbed.
@@ -1401,22 +1296,22 @@ Actual a mutable accessor for string key BsonEmbed. Throw error when it's not Bs
 <span class="Identifier">bbase</span><span class="Operator">.</span><span class="Identifier">mget</span><span class="Punctuation">(</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">)</span><span class="Operator">.</span><span class="Identifier">mget</span><span class="Punctuation">(</span><span class="StringLit">&quot;f2&quot;</span><span class="Punctuation">)</span> <span class="Operator">=</span> <span class="Identifier">false</span>
 <span class="Identifier">doAssert</span> <span class="Keyword">not</span> <span class="Identifier">bbase</span><span class="Punctuation">[</span><span class="StringLit">&quot;embed&quot;</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="StringLit">&quot;f2&quot;</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">ofBool</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L503"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L480"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L503" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L480" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="mget,BsonDocument,sinkstring">
-<dt><pre><span class="Keyword">proc</span> <a href="#mget%2CBsonDocument%2Csinkstring"><span class="Identifier">mget</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#mget%2CBsonDocument%2Csinkstring"><span class="Identifier">mget</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <span class="Identifier">sink</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.
+    <span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">KeyError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L483"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L460"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L483" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L460" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1426,22 +1321,22 @@ class="link-seesrc" target="_blank">Source</a>
 
 Unix epoch in milliseconds.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L289"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L266"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L289" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L266" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="newBson,Streamable,string">
-<dt><pre><span class="Keyword">proc</span> <a href="#newBson%2CStreamable%2Cstring"><span class="Identifier">newBson</span></a><span class="Other">(</span><span class="Identifier">table</span> <span class="Other">=</span> <span class="Identifier">initOrderedTable</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">stream</span><span class="Other">:</span> <a href="streamable.html#Streamable"><span class="Identifier">Streamable</span></a> <span class="Other">=</span> <span class="Identifier">newStream</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#newBson%2CStreamable%2Cstring"><span class="Identifier">newBson</span></a><span class="Other">(</span><span class="Identifier">table</span> <span class="Other">=</span> <span class="Identifier">newOrderedTable</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">stream</span><span class="Other">:</span> <a href="streamable.html#Streamable"><span class="Identifier">Streamable</span></a> <span class="Other">=</span> <span class="Identifier">newStream</span><span class="Other">(</span><span class="Other">)</span><span class="Other">;</span>
              <span class="Identifier">filename</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a></pre></dt>
 <dd>
 
 A primordial BsonDocument allocators. Preferably to use <a class="reference external" href="#bson.m,untyped">bson macro</a> instead, except the need to specify the stream used for the BsonDocument.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L893"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L872"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L893" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L872" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1452,9 +1347,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1027"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1006"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1027" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1006" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1464,9 +1359,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Convert byte stream seq to string. Usually used for reading binary stream.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L137"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L137"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L137" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L137" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1475,28 +1370,52 @@ class="link-seesrc" target="_blank">Source</a>
 <div class="section" id="15">
 <h1><a class="toc-backref" href="#15">Iterators</a></h1>
 <dl class="item">
+<div id="items.i,BsonArray">
+<dt><pre><span class="Keyword">iterator</span> <a href="#items.i%2CBsonArray"><span class="Identifier">items</span></a><span class="Other">(</span><span class="Identifier">a</span><span class="Other">:</span> <a href="bson.html#BsonArray"><span class="Identifier">BsonArray</span></a><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L590"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L590" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
 <div id="keys.i,BsonDocument">
 <dt><pre><span class="Keyword">iterator</span> <a href="#keys.i%2CBsonDocument"><span class="Identifier">keys</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L606"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L586"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L606" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L586" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
 <div id="mpairs.i,BsonDocument">
-<dt><pre><span class="Keyword">iterator</span> <a href="#mpairs.i%2CBsonDocument"><span class="Identifier">mpairs</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">unown</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Keyword">var</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+<dt><pre><span class="Keyword">iterator</span> <a href="#mpairs.i%2CBsonDocument"><span class="Identifier">mpairs</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">unown</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Keyword">var</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L283"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L260"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L283" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L260" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="pairs.i,BsonArray">
+<dt><pre><span class="Keyword">iterator</span> <a href="#pairs.i%2CBsonArray"><span class="Identifier">pairs</span></a><span class="Other">(</span><span class="Identifier">a</span><span class="Other">:</span> <a href="bson.html#BsonArray"><span class="Identifier">BsonArray</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">int</span><span class="Other">,</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L594"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L594" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1506,9 +1425,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L279"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L256"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L279" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L256" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1524,9 +1443,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1084"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1060"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1084" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1060" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1537,9 +1456,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1093"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1069"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1093" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1069" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1550,9 +1469,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1087"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1063"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1087" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1063" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1563,9 +1482,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1061"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1037"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1061" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1037" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1576,9 +1495,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1090"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1066"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1090" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1066" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1589,9 +1508,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1052"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1031"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1052" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1031" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1602,9 +1521,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1046"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1025"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1046" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1025" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1615,9 +1534,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1049"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1028"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1049" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1028" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1628,9 +1547,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1081"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1057"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1081" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1057" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1641,9 +1560,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 ofString converter able to extract whether BsonString or BsonJs because both of implementation is exactly same with only different their BsonKind.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1064"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1040"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1064" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1040" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1654,9 +1573,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1078"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1054"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1078" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1054" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1667,9 +1586,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1096"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1072"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1096" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1072" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1679,21 +1598,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Id conversion BsonBase to itself. For <a class="reference external" href="#bson.m,untyped">bson macro</a>.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L811"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L794"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L811" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="toBson.c_3">
-<dt><pre><span class="Keyword">converter</span> <a href="#toBson.c_3"><span class="Identifier">toBson</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">uint32</span><span class="Other">,</span> <span class="Identifier">uint32</span><span class="Other">)</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L857"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L857" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L794" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1703,9 +1610,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L840"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L820"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L840" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L820" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1713,11 +1620,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">converter</span> <a href="#toBson.c%2CBsonDocument"><span class="Identifier">toBson</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Convert BsonDocument into BsonEmbed.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L849"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L829"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L849" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L829" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1727,9 +1634,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Convert int or int32 to BsonBase automatically.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L817"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L797"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L817" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L797" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1737,11 +1644,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">converter</span> <a href="#toBson.c%2Cint64"><span class="Identifier">toBson</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">int64</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Convert int64 to BsonBase automatically.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L821"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L801"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L821" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L801" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1751,9 +1658,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L846"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L826"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L846" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L826" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1761,11 +1668,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">converter</span> <a href="#toBson.c%2CopenArray%5Bbyte%5D"><span class="Identifier">toBson</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">openArray</span><span class="Other">[</span><span class="Identifier">byte</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Convert any bytes into as generic BsonBinary.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L853"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L833"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L853" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L833" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1773,11 +1680,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">converter</span> <a href="#toBson.c%2Cseq%5BBsonBase%5D"><span class="Identifier">toBson</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
 <dd>
 
-Convert seq of BsonBase into BsonArray/BsonBase.
+
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L836"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L816"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L836" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L816" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1787,9 +1694,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L833"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L813"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L833" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L813" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1799,9 +1706,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L843"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L823"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L843" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L823" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+</div>
+<div id="toBson.c,TimestampInternal">
+<dt><pre><span class="Keyword">converter</span> <a href="#toBson.c%2CTimestampInternal"><span class="Identifier">toBson</span></a><span class="Other">(</span><span class="Identifier">value</span><span class="Other">:</span> <span class="Identifier">TimestampInternal</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L837"
+class="link-seesrc" target="_blank">Source</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L837" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1811,21 +1730,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Convert whether string or Runes to BsonString/BsonBase.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L825"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L805"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L825" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="toBson.c,T">
-<dt><pre><span class="Keyword">converter</span> <a href="#toBson.c%2CT"><span class="Identifier">toBson</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">:</span> <span class="Identifier">BsonBaseInherit</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">v</span><span class="Other">:</span> <span class="Identifier">T</span><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a></pre></dt>
-<dd>
-
-Id conversion to itself as BsonBase. For <a class="reference external" href="#bson.m,untyped">bson macro</a>.
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L814"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L814" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L805" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1840,9 +1747,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sugar syntax for cast.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L143"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L143"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L143" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L143" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1852,9 +1759,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Convenience for empty bson.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1099"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1075"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L1099" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L1075" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1864,9 +1771,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Peek less endian int32
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L110"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L110"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L110" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L110" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -1876,285 +1783,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Utility template to read int value which int type is specified in less endian format and adapt accordingly to current machine endianess.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L80"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L80"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="subtype.t,BsonBinary">
-<dt><pre><span class="Keyword">template</span> <a href="#subtype.t%2CBsonBinary"><span class="Identifier">subtype</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonBinary"><span class="Identifier">BsonBinary</span></a><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonSubtype"><span class="Identifier">BsonSubtype</span></a></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L265"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L265" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonArray">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonArray"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonArray"><span class="Identifier">BsonArray</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L262"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L262" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonBinary">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonBinary"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonBinary"><span class="Identifier">BsonBinary</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">byte</span><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L260"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L260" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonBool">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonBool"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonBool"><span class="Identifier">BsonBool</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L263"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L263" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonDouble">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonDouble"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonDouble"><span class="Identifier">BsonDouble</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">float64</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L255"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L255" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonEmbed">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonEmbed"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonEmbed"><span class="Identifier">BsonEmbed</span></a><span class="Other">)</span><span class="Other">:</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L259"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L259" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonInt32">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonInt32"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonInt32"><span class="Identifier">BsonInt32</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int32</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L253"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L253" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonInt64">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonInt64"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonInt64"><span class="Identifier">BsonInt64</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int64</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L254"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L254" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonObjectId">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonObjectId"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonObjectId"><span class="Identifier">BsonObjectId</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Oid</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L261"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L261" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonString"><span class="Identifier">BsonString</span></a> <span class="Operator">|</span> <a href="bson.html#BsonJs"><span class="Identifier">BsonJs</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Rune</span><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L258"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L258" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonTime">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonTime"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonTime"><span class="Identifier">BsonTime</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Time</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L256"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L256" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonTimestamp">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonTimestamp"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <a href="bson.html#BsonTimestamp"><span class="Identifier">BsonTimestamp</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">TimestampInternal</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L257"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L257" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonArray_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonArray_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonArray"><span class="Identifier">BsonArray</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="bson.html#BsonBase"><span class="Identifier">BsonBase</span></a><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L277"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L277" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonBinary_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonBinary_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonBinary"><span class="Identifier">BsonBinary</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">byte</span><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L275"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L275" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonDouble_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonDouble_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonDouble"><span class="Identifier">BsonDouble</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">float64</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L269"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L269" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonEmbed_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonEmbed_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonEmbed"><span class="Identifier">BsonEmbed</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonDocument"><span class="Identifier">BsonDocument</span></a></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L274"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L274" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonInt32_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonInt32_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonInt32"><span class="Identifier">BsonInt32</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">int32</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L267"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L267" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonInt64_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonInt64_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonInt64"><span class="Identifier">BsonInt64</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">int64</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L268"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L268" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonJs">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonJs"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonJs"><span class="Identifier">BsonJs</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Rune</span><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L273"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L273" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonObjectId_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonObjectId_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonObjectId"><span class="Identifier">BsonObjectId</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">Oid</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L276"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L276" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonString">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonString"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonString"><span class="Identifier">BsonString</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">Rune</span><span class="Other">]</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L272"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L272" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonTime_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonTime_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonTime"><span class="Identifier">BsonTime</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">Time</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L270"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L270" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-</div>
-<div id="value.t,BsonTimestamp_2">
-<dt><pre><span class="Keyword">template</span> <a href="#value.t%2CBsonTimestamp_2"><span class="Identifier">value</span></a><span class="Other">(</span><span class="Identifier">b</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="bson.html#BsonTimestamp"><span class="Identifier">BsonTimestamp</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">TimestampInternal</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L271"
-class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L271" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L80" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2164,9 +1795,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Utility template to write any value to comply to less endian byte stream.
 &nbsp;&nbsp;<a
-href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L64"
+href="https://github.com/mashingan/anonimongo/tree/version-1-6/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L64"
 class="link-seesrc" target="_blank">Source</a>
-&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.7.0/anonimongo/core/bson.nim#L64" class="link-seesrc" target="_blank" >Edit</a>
+&nbsp;&nbsp;<a href="https://github.com/mashingan/anonimongo/edit/devel/../../../.nimble/pkgs/anonimongo-0.6.3/anonimongo/core/bson.nim#L64" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 </div>
@@ -2185,7 +1816,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-16 17:19:38 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2023-06-20 19:20:37 UTC</small>
       </div>
     </div>
   </div>

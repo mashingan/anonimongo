@@ -1,7 +1,10 @@
 import sequtils, strformat
+import sugar
 
 import dbops/[admmgmt, aggregation, crud]
 import core/[bson, types, utils, wire, multisock]
+
+{.warning[UnusedImport]: off.}
 
 ## Collection Methods
 ## ******************
@@ -38,11 +41,6 @@ import core/[bson, types, utils, wire, multisock]
 ##
 ## .. _items: #items.i,Cursor
 ## .. _getMore: dbops/crud.html#getMore,Database,int64,string,int
-
-const anoverbose {.booldefine.} = false
-
-when anoverbose:
-  from std/sugar import dump
 
 proc one*(q: Query[AsyncSocket]): Future[BsonDocument] {.multisock.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
@@ -239,13 +237,13 @@ proc count*(c: Collection[AsyncSocket], query = bson(), opt = bson()):
     hint, readConcern, collation: BsonBase
     limit = 0
     skip = 0
-  for k, v in opt.pairs:
+  for k, v in opt.mpairs:
     case k
-    of "hint": hint = v
-    of "readConcern": readConcern = v
-    of "collation": collation = v
-    of "limit": limit = v
-    of "skip": skip = v
+    of "hint": hint = move v
+    of "readConcern": readConcern = move v
+    of "collation": collation = move v
+    of "limit": limit = move v
+    of "skip": skip = move v
   let doc = await c.db.count(c.name, query, limit, skip, hint,
     readConcern, collation)
   result = doc["n"]

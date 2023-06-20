@@ -861,7 +861,7 @@ each field as its own.
 
 ## Install
 
-Anonimongo requires minimum Nim version of `v1.6.4`.  
+Anonimongo requires minimum Nim version of `v1.2.0`.  
 
 For installation, we can choose several methods will be mentioned below.
 
