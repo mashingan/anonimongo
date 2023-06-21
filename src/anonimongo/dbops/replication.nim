@@ -1,5 +1,6 @@
 import strformat
-import ../core/[types, bson, wire, utils, multisock]
+import ../core/[types, bson, wire, utils]
+import multisock
 
 proc isMaster*(db: Database[AsyncSocket], cmd = bson()): Future[BsonDocument]{.multisock.} =
   var q = bson({

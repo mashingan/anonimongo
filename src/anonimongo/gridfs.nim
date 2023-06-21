@@ -2,8 +2,10 @@ import strformat, asyncfile, oids, times, sequtils, os
 import mimetypes, sugar
 
 import dbops/[admmgmt]
-import core/[bson, types, wire, utils, multisock]
+import core/[bson, types, wire, utils]
 import collections
+
+import multisock
 
 func files(name: string): string = &"{name}.files"
 func chunks(name: string): string = &"{name}.chunks"

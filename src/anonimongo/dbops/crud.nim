@@ -1,6 +1,7 @@
 import tables, sequtils, asyncdispatch
-import ../core/[bson, types, wire, utils, multisock]
+import ../core/[bson, types, wire, utils]
 import diagnostic
+import multisock
 
 ## Query and Write Operation Commands
 ## **********************************
