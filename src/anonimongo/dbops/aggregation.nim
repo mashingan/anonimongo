@@ -1,6 +1,7 @@
 import tables, sequtils
-import ../core/[bson, types, wire, utils, multisock]
+import ../core/[bson, types, wire, utils]
 import diagnostic
+import multisock
 
 ## Aggregation commands (and a Geospatial command)
 ## ***********************************************

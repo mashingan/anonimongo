@@ -2,7 +2,8 @@ import std/[asyncdispatch, tables, deques, strformat, sequtils]
 from std/strutils import parseEnum
 import os, net
 
-import ../core/[types, wire, bson, pool, utils, multisock]
+import ../core/[types, wire, bson, pool, utils]
+import multisock
 
 {.warning[UnusedImport]: off.}
 
@@ -27,9 +28,9 @@ const
   drivername = "anonimongo"
   description = "nim mongo driver"
 when not defined(anostreamable):
-  const anonimongoVersion* = "0.6.4"
+  const anonimongoVersion* = "0.6.5"
 else:
-  const anonimongoVersion* = "0.6.4-stream"
+  const anonimongoVersion* = "0.6.5-stream"
 
 proc handshake(m: Mongo[AsyncSocket], isMaster: bool, s: AsyncSocket, db: string, id: int32,
   appname = "Anonimongo client apps"):Future[ReplyFormat] {.multisock.} =

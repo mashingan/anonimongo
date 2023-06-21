@@ -1,4 +1,5 @@
-import ../core/[bson, types, utils, wire, multisock]
+import ../core/[bson, types, utils, wire]
+import multisock
 
 proc getFreeMonitoringStatus*(db: Database[AsyncSocket]): Future[BsonDocument] {.multisock.} =
   result = await db.crudops(bson({

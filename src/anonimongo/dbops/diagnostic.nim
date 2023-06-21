@@ -1,5 +1,6 @@
 import sequtils
-import ../core/[bson, types, utils, wire, multisock]
+import ../core/[bson, types, utils, wire]
+import multisock
 
 ## Diagnostics Commands
 ## ********************

@@ -2,7 +2,9 @@ import sequtils, strformat
 import sugar
 
 import dbops/[admmgmt, aggregation, crud]
-import core/[bson, types, utils, wire, multisock]
+import core/[bson, types, utils, wire]
+
+import multisock
 
 {.warning[UnusedImport]: off.}
 

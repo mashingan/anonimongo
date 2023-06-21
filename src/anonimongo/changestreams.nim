@@ -1,8 +1,10 @@
 import oids
 from sequtils import concat, map, mapIt
 
-import anonimongo/core/[bson, types, wire, multisock]
+import anonimongo/core/[bson, types, wire]
 import anonimongo/dbops/[aggregation, crud]
+
+import multisock
 
 const csVerbose = defined(changeStreamVerbose)
 
