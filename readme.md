@@ -861,7 +861,7 @@ each field as its own.
 
 ## Install
 
-Anonimongo requires minimum Nim version of `v1.2.0`.  
+Anonimongo requires minimum Nim version of `v1.4.0`.  
 
 For installation, we can choose several methods will be mentioned below.
 
@@ -915,6 +915,7 @@ and [mongo spec][3].
 
 ### Features connection
 
+- :heavy_check_mark: Driver for Mongo 6 and up
 - :heavy_check_mark: URI connect
 - :heavy_check_mark: Multiquery on URI connect
 - :heavy_check_mark: Multihost on URI connect
@@ -934,15 +935,15 @@ and [mongo spec][3].
 
 #### :white_check_mark: Aggregation commands 4/4 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-aggregation/) [Anonimongo module](src/anonimongo/dbops/aggregation.nim)
 
-- :heavy_check_mark: `aggregate` (collection procs: [`aggregate`](/src/anonimongo/collections.nim#L283))
-- :heavy_check_mark: `count` (collection procs: [`count`](/src/anonimongo.collections.nim#L231))
-- :heavy_check_mark: `distinct` (collection procs: [`distinct`](/src/anonimongo.collections.nim#L267))
-- :heavy_check_mark: `mapReduce`
+- :heavy_check_mark: `aggregate` (collection procs: [`aggregate`](/src/anonimongo/collections.nim#L289))
+- :heavy_check_mark: `count` (collection procs: [`count`](/src/anonimongo.collections.nim#L236))
+- :heavy_check_mark: `distinct` (collection procs: [`distinct`](/src/anonimongo.collections.nim#L273))
+- :heavy_check_mark: `mapReduce` (db procs: [`mapReduce`](/src/anonimongo/dbops/aggregation.nim#L81))
 
 
 #### :white_check_mark: Geospatial command 1/1 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-geospatial/) [Anonimongo module](src/anonimongo/dbops/geospatial.nim#L109)
 
-- :heavy_check_mark: `geoSearch`
+- :heavy_check_mark: `geoSearch` (db procs: [`geoSearch`](/src/anonimongo/dbops/aggregation.nim#L110))
 
 
 #### :white_check_mark: Query and write operations commands 7/7 (<del>8</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-crud/) [Anonimongo module](src/anonimongo/dbops/crud.nim)
@@ -950,10 +951,10 @@ and [mongo spec][3].
 - :heavy_check_mark: `delete` (collection procs: [`remove`](/src/anonimongo/collections.nim#L167), [`remove`](/src/anonimongo/collections.nim#L179), [`remove`](/src/anonimongo/collections.nim#L199))
 - :heavy_check_mark: `find` (collection procs: [`find`](/src/anonimongo/collections.nim#L99), [`findOne`](/src/anonimongo/collections.nim#L103), [`findAll`](/src/anonimongo/collections.nim#L109), [`findIter`](/src/anonimongo/collections.nim#L116))
 - :heavy_check_mark: `findAndModify` (collection procs: [`findAndModify`](/src/anonimongo/collections.nim#L122))
-- :heavy_check_mark: `getMore`
+- :heavy_check_mark: `getMore` (db procs: [`getMore`](/src/anonimongo/dbops/crud.nim#L73))
 - :heavy_check_mark: `insert` (collection procs: [`insert`](/src/anonimongo/collections.nim#L211))
 - :heavy_check_mark: `update` (collection procs: [`update`](/src/anonimongo/collections.nim#L143))
-- :heavy_check_mark: `getLastError`
+- :heavy_check_mark: `getLastError` (db procs: [`getLastError`](/src/anonimongo/dbops/crud.nim#L147))
 - :white_square_button: `resetError` (deprecated)
 
 
@@ -969,49 +970,48 @@ and [mongo spec][3].
 
 #### :ballot_box_with_check: Database operations commands 1/3 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-authentication/) [Anonimongo module](src/anonimongo/core/types.nim#L511)
 
-- :heavy_check_mark: `authenticate`, implemented as Mongo proc. ([`authenticate`](src/anonimongo/core/types.nim#L511), [`authenticate`](src/anonimongo/core/types.nim#L519))
+- :heavy_check_mark: `authenticate`, implemented as Mongo proc. ([`authenticate`](src/anonimongo/core/types.nim#L509), [`authenticate`](src/anonimongo/core/types.nim#L517))
 - :white_square_button: `getnonce`
 - :white_square_button: `logout`
 
 #### :white_check_mark: User management commands 7/7 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-user-management/) [Anonimongo module](src/anonimongo/dbops/client.nim)
 
-- :heavy_check_mark: `createUser`
-- :heavy_check_mark: `dropAllUsersFromDatabase`
-- :heavy_check_mark: `dropUser`
-- :heavy_check_mark: `grantRolesToUser`
-- :heavy_check_mark: `revokeRolesFromUser`
-- :heavy_check_mark: `updateUser`
-- :heavy_check_mark: `usersInfo`
+- :heavy_check_mark: `createUser` (db procs: [`createUser`](/src/anonimongo/dbops/client.nim#L162))
+- :heavy_check_mark: `dropAllUsersFromDatabase` (db:procs [`dropAllUsersFromDatabase`](/src/anonimongo/dbops/client.nim#L196))
+- :heavy_check_mark: `dropUser` (db procs: [`dropUser`](/src/anonimongo/dbops/client.nim#L218))
+- :heavy_check_mark: `grantRolesToUser` (db procs: [`grantRolesToUser`](/src/anonimongo/dbops/client.nim#L231))
+- :heavy_check_mark: `revokeRolesFromUser` (db procs: [`revokeRolesFromUser`](/src/anonimongo/dbops/client.nim#L235))
+- :heavy_check_mark: `updateUser` (db procs: [`updateUser`](/src/anonimongo/dbops/client.nim#L171))
+- :heavy_check_mark: `usersInfo` (db procs: [`usersInfo`](/src/anonimongo/dbops/client.nim#L180))
 
 #### :white_check_mark: Role management commands 10/10 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-role-management/) [Anonimongo module](src/anonimongo/dbops/rolemgmt.nim)
 
-- :heavy_check_mark: `createRole`
-- :heavy_check_mark: `dropRole`
-- :heavy_check_mark: `dropAllRolesFromDatabase`
-- :heavy_check_mark: `grantPrivilegesToRole`
-- :heavy_check_mark: `grantRolesToRole`
-- :heavy_check_mark: `invalidateUserCache`
-- :heavy_check_mark: `revokePrivilegesFromRole`
-- :heavy_check_mark: `rovokeRolesFromRole`
-- :heavy_check_mark: `rolesInfo`
-- :heavy_check_mark: `updateRole`
+- :heavy_check_mark: `createRole` (db procs: [`createRole`](/src/anonimongo/dbops/rolemgmt.nim#L18))
+- :heavy_check_mark: `dropRole` (db procs: [`dropRole`](/src/anonimongo/dbops/rolemgmt.nim#L53))
+- :heavy_check_mark: `dropAllRolesFromDatabase` (db procs: [`dropAllRolesFromDatabase`](/src/anonimongo/dbops/rolemgmt.nim#L59))
+- :heavy_check_mark: `grantPrivilegesToRole`(db procs: [`grantPrivilegesToRole`](/src/anonimongo/dbops/rolemgmt.nim#L73))
+- :heavy_check_mark: `grantRolesToRole` (db procs: [`grantRolesToRole`](/src/anonimongo/dbops/rolemgmt.nim#L78))
+- :heavy_check_mark: `invalidateUserCache` (db procs: [`invalidateUserCache`](/src/anonimongo/dbops/rolemgmt.nim#L83))
+- :heavy_check_mark: `revokePrivilegesFromRole` (db procs: [`revokePrivilegesFromRole`](/src/anonimongo/dbops/rolemgmt.nim#L86))
+- :heavy_check_mark: `revokeRolesFromRole` (db procs: [`revokeRolesFromRole`](/src/anonimongo/dbops/rolemgmt.nim#L91))
+- :heavy_check_mark: `rolesInfo` (db procs: [`rolesInfo`](/src/anonimongo/dbops/rolemgmt.nim#L96))
+- :heavy_check_mark: `updateRole` (db procs: [`updateRole`](/src/anonimongo/dbops/rolemgmt.nim#L31))
 
 
 #### :white_check_mark: Replication commands 12/12(<del>13</del>) [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-replication/) [Anonimongo module](src/anonimongo/dbops/replication.nim)
 
 - :white_square_button: `applyOps` (internal command)
-- :heavy_check_mark: `isMaster`
-- :heavy_check_mark: `replSetAbortPrimaryCatchUp`
-- :heavy_check_mark: `replSetFreeze`
-- :heavy_check_mark: `replSetGetConfig`
-- :heavy_check_mark: `replSetGetStatus`
-- :heavy_check_mark: `replSetGetStatus`
-- :heavy_check_mark: `replSetInitiate`
-- :heavy_check_mark: `replSetMaintenance`
-- :heavy_check_mark: `replSetReconfig`
-- :heavy_check_mark: `replSetResizeOplog`
-- :heavy_check_mark: `replSetStepDown`
-- :heavy_check_mark: `replSetSyncFrom`
+- :heavy_check_mark: `isMaster` (db procs: [`isMaster`](/src/anonimongo/dbops/replication.nim#L5))
+- :heavy_check_mark: `replSetAbortPrimaryCatchUp` (db procs: [`replSetAbortPrimaryCatchUp`](/src/anonimongo/dbops/replication.nim#L16))
+- :heavy_check_mark: `replSetFreeze` (db procs: [`replSetFreeze`](/src/anonimongo/dbops/replication.nim#L19))
+- :heavy_check_mark: `replSetGetConfig` (db procs: [`replSetGetConfig`](/src/anonimongo/dbops/replication.nim#L22))
+- :heavy_check_mark: `replSetGetStatus` (db procs: [`replSetGetStatus`](/src/anonimongo/dbops/replication.nim#L32))
+- :heavy_check_mark: `replSetInitiate` (db procs: [`replSetInitiate`](/src/anonimongo/dbops/replication.nim#L38))
+- :heavy_check_mark: `replSetMaintenance` (db procs: [`replSetMaintenance`](/src/anonimongo/dbops/replication.nim#L44))
+- :heavy_check_mark: `replSetReconfig` (db procs: [`replSetReconfig`](/src/anonimongo/dbops/replication.nim#L48))
+- :heavy_check_mark: `replSetResizeOplog` (db procs: [`replSetResizeOplog`](/src/anonimongo/dbops/replication.nim#L58))
+- :heavy_check_mark: `replSetStepDown` (db procs: [`replSetStepDown`](/src/anonimongo/dbops/replication.nim#L67))
+- :heavy_check_mark: `replSetSyncFrom` (db procs: [`replSetSyncFrom`](/src/anonimongo/dbops/replication.nim#L81))
 
 #### :x: Sharding commands 0/27 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-sharding/) <del>Anonimongo module</del>
 
@@ -1063,65 +1063,65 @@ and [mongo spec][3].
 - :white_square_button: `compact`
 - :white_square_button: `connPoolSync`
 - :white_square_button: `convertToCapped`
-- :heavy_check_mark: `create`
+- :heavy_check_mark: `create` (db procs: [`create`](/src/anonimongo/dbops/admmgmt.nim#L23))
 - :heavy_check_mark: `createIndexes` (collection proc: [`createIndexes`](src/anonimongo/collections.nim#L248))
-- :heavy_check_mark: `currentOp`
-- :heavy_check_mark: `drop`
-- :heavy_check_mark: `dropDatabase`
+- :heavy_check_mark: `currentOp` (db procs: [`currentOp`](/src/anonimongo/dbops/admmgmt.nim#L192))
+- :heavy_check_mark: `drop` (collection procs: [`drop`](/src/anonimongo/collections.nim#L233))
+- :heavy_check_mark: `dropDatabase` (db procs: [`dropDatabase`](/src/anonimongo/dbops/admmgmt.nim#L71))
 - :white_square_button: `dropConnections`
 - :heavy_check_mark: `dropIndexes` (collection procs: [`dropIndex`](src/anonimongo/collections.nim#L275), [`dropIndexes`](src/anonimongo/collections.nim#L275))
 - :white_square_button: `filemd5`
 - :white_square_button: `fsync`
 - :white_square_button: `fsyncUnlock`
 - :white_square_button: `getParameter`
-- :heavy_check_mark: `getDefaultReadConcern`
-- :heavy_check_mark: `killCursors`
-- :heavy_check_mark: `killOp`
-- :heavy_check_mark: `listCollections`
-- :heavy_check_mark: `listDatabases`
+- :heavy_check_mark: `getDefaultReadConcern` (db procs: [`getDefaultReadConcern`](/src/anonimongo/dbops/admmgmt.nim#L241))
+- :heavy_check_mark: `killCursors` (db procs: [`killCursors`](/src/anonimongo/dbops/admmgmt.nim#L223))
+- :heavy_check_mark: `killOp` (db procs: [`killOp`](/src/anonimongo/dbops/admmgmt.nim#L205))
+- :heavy_check_mark: `listCollections` (db procs: [`listCollections`](/src/anonimongo/dbops/admmgmt.nim#L87))
+- :heavy_check_mark: `listDatabases` (db procs: [`listDatabases`](/src/anonimongo/dbops/admmgmt.nim#L114)
 - :heavy_check_mark: `listIndexes` (collection proc: [`listIndexes`](src/anonimongo/collections.nim#L264))
 - :white_square_button: `logRotate`
 - :white_square_button: `reIndex`
-- :heavy_check_mark: `renameCollection`
-- :heavy_check_mark: `setDefaultRWConcern`
+- :heavy_check_mark: `renameCollection` (db procs: [`renameCollection`](/src/anonimongo/dbops/admmgmt.nim#L158))
+- :heavy_check_mark: `setDefaultRWConcern` (db procs: [`setDefaultRWConcern`](/src/anonimongo/dbops/admmgmt.nim#L228))
 - :white_square_button: `setFeatureCompabilityVersion`
 - :white_square_button: `setIndexCommitQuorum`
 - :white_square_button: `setParameter`
-- :heavy_check_mark: `shutdown`
+- :heavy_check_mark: `shutdown` (db procs: [`shutdown`](/src/anonimongo/dbops/admmgmt.nim#L173))
 
 #### :white_check_mark: Diagnostic commands 17/17 (<del>26</del>) [Mongo module](https://docs.mongodb.com/manual/reference/command/nav-diagnostic/) [Anonimongo module](src/anonimongo/dbops/diagnostic.nim)
 
 - :white_square_button: `availableQueryOptions` (internal command)
-- :heavy_check_mark: `buildInfo`
-- :heavy_check_mark: `collStats`
-- :heavy_check_mark: `connPoolStats`
-- :heavy_check_mark: `connectionStatus`
+- :heavy_check_mark: `buildInfo` (db procs: [`buildInfo`](src/anonimongo/dbops/diagnostic.nim#L18))
+- :heavy_check_mark: `collStats` (db procs: [`collStats`](src/anonimongo/dbops/diagnostic.nim#L21))
+- :heavy_check_mark: `connPoolStats` (db procs: [`connPoolStats`](src/anonimongo/dbops/diagnostic.nim#L25))
+- :heavy_check_mark: `connectionStatus` *(db procs: [`connectionStatus`](src/anonimongo/dbops/diagnostic.nim#L28))
 - :white_square_button: `cursorInfo` (removed, use metrics.cursor from `serverStatus` instead)
-- :heavy_check_mark: `dataSize`
-- :heavy_check_mark: `dbHash`
-- :heavy_check_mark: `dbStats`
+- :heavy_check_mark: `dataSize` (db procs: [`dataSize`](src/anonimongo/dbops/diagnostic.nim#L33))
+- :heavy_check_mark: `dbHash` (db procs: [`dbHash`](src/anonimongo/dbops/diagnostic.nim#L41))
+- :heavy_check_mark: `dbStats` (db procs: [`dbStats`](src/anonimongo/dbops/diagnostic.nim#L46))
 - :white_square_button: `diagLogging` (removed, on Mongo 3.6, use mongoreplay instead)
 - :white_square_button: `driverOIDTest` (internal command)
-- :heavy_check_mark: `explain`
+- :heavy_check_mark: `explain` (db procs: [`explain`](src/anonimongo/dbops/diagnostic.nim#L51))
 - :white_square_button: `features` (internal command)
-- :heavy_check_mark: `getCmdLineOpts`
-- :heavy_check_mark: `getLog`
-- :heavy_check_mark: `hostInfo`
+- :heavy_check_mark: `getCmdLineOpts` (db procs: [`getCmdLineOpts`](src/anonimongo/dbops/diagnostic.nim#L56))
+- :heavy_check_mark: `getLog` (db procs: [`getLog`](src/anonimongo/dbops/diagnostic.nim#L59))
+- :heavy_check_mark: `hostInfo` (db procs: [`hostInfo`](src/anonimongo/dbops/diagnostic.nim#L62))
 - :white_square_button: `isSelf` (internal command)
-- :heavy_check_mark: `listCommands`
+- :heavy_check_mark: `listCommands` (db procs: [`listCommands`](src/anonimongo/dbops/diagnostic.nim#L66))
 - :white_square_button: `netstat` (internal command)
-- :heavy_check_mark: `ping`
-- :white_square_button: `profile` (internal command)
-- :heavy_check_mark: `serverStatus`
-- :heavy_check_mark: `shardConnPoolStats`
-- :heavy_check_mark: `top`
-- :heavy_check_mark: `validate`
+- :heavy_check_mark: `ping` (db procs: [`ping`](src/anonimongo/dbops/diagnostic.nim#L69))
+- :heavy_check_mark: `profile` (internal command) (db procs: [`profile`](src/anonimongo/dbops/diagnostic.nim#L75))
+- :heavy_check_mark: `serverStatus` (db procs: [`serverStat`](src/anonimongo/dbops/diagnostic.nim#L83))
+- :heavy_check_mark: `shardConnPoolStats` (db procs: [`shardConnPoolStats`](src/anonimongo/dbops/diagnostic.nim#L86))
+- :heavy_check_mark: `top` (db procs: [`top`](src/anonimongo/dbops/diagnostic.nim#L89))
+- :heavy_check_mark: `validate` (db procs: [`validate`](src/anonimongo/dbops/diagnostic.nim#L92))
 - :white_square_button: `whatsmyuri` (internal command)
 
 #### :white_check_mark: Free monitoring commands 2/2 [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-free-monitoring/) [Anonimongo module](src/anonimongo/dbops/freemonitoring.nim)
 
-- :heavy_check_mark: `getFreeMonitoringStatus`
-- :heavy_check_mark: `setFreeMonitoring`
+- :heavy_check_mark: `getFreeMonitoringStatus` (db procs: [`getFreeMonitoringStatus`](src/anonimongo/dbops/freemonitoring.nim#L4))
+- :heavy_check_mark: `setFreeMonitoring` (db procs: [`setFreeMonitoring`](src/anonimongo/dbops/freemonitoring.nim#L9))
 
 #### :x: <del>Auditing commands 0/1</del>, only available for Mongodb Enterprise and AtlasDB [Mongo doc](https://docs.mongodb.com/manual/reference/command/nav-auditing/) <del>Anonimongo module</del>
 
