@@ -1,6 +1,7 @@
 import std/[strformat, sequtils]
 from std/sugar import `=>`
-import ../core/[types, bson, wire, utils, multisock]
+import ../core/[types, bson, wire, utils]
+import multisock
 
 ## Administration Commands
 ## ***********************

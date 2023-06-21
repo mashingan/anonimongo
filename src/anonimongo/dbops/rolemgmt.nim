@@ -1,5 +1,6 @@
 import sequtils
-import ../core/[bson, types, wire, utils, multisock]
+import ../core/[bson, types, wire, utils]
+import multisock
 
 ## Role Management Methods
 ## ***********************
