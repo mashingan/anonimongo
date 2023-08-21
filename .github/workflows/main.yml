@@ -63,9 +63,9 @@ jobs:
       #     sudo systemctl start mongod
       #     sleep 10
 
-      # latest hmac (v0.3.0) requires Nim v2 which not supported yet by Anonimongo
-      # while hmac is required by scram hence need to pin hmac version first.
+      # Pinning the indirect dependencies version first.
       - run: |
+          nimble install nimcrypto@0.5.4 -Y
           nimble install hmac@0.2 -Y
           nimble install -Y
 
