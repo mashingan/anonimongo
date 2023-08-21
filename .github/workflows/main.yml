@@ -65,7 +65,7 @@ jobs:
 
       # Pinning the indirect dependencies version first.
       - run: |
-          nimble install nimcrypto@0.5.4 -Y
+          nimble install nimcrypto@#f62df96cfc43f1e1c0acaf12807cfe99b3b45a9d -Y
           nimble install hmac@0.2 -Y
           nimble install -Y
 
