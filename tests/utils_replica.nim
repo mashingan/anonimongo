@@ -145,7 +145,9 @@ proc setupMongoReplication*: seq[Process] =
     when defined(windows):
       let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
     else:
-      let opt = {poUsePath, poStdErrToStdOut}
+      # cannot run mongod process silently on Linux, it will hang indefinitely
+      # if the buffer is not flushed.
+      let opt = {poUsePath, poStdErrToStdOut, poParentStreams}
     result[i] = unown startProcess(exe, args = args, options = opt)
     sleep 3000
 

@@ -12,7 +12,7 @@ jobs:
 
   before:
     runs-on: ubuntu-latest
-    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    if: ! contains(github.event.head_commit.message, '[skip ci]')
     steps:
       - run: echo "not contains '[skip ci]'"
 
@@ -26,7 +26,8 @@ jobs:
             #- macOS-latest
         nim-version:
           - '1.4.0'
-          - 'stable'
+          - '1.6.14' # stable is already v2 but this hasn't supported that yet
+          # - 'stable'
     needs: before
     steps:
       - uses: actions/checkout@v1
@@ -49,8 +50,11 @@ jobs:
       # https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
       - name: Install mongodb
         run: |
-          wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+          sudo apt-get install gnupg
+          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
+            sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+            --dearmor
+          echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
           sudo apt-get update -yqq
           sudo apt-get install -y mongodb-org
 
