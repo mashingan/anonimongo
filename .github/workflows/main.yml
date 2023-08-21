@@ -63,7 +63,11 @@ jobs:
       #     sudo systemctl start mongod
       #     sleep 10
 
-      - run: nimble install -Y
+      # latest hmac (v0.3.0) requires Nim v2 which not supported yet by Anonimongo
+      # while hmac is required by scram hence need to pin hmac version first.
+      - run: |
+          nimble install hmac@0.2
+          nimble install -Y
 
       # Disabling running mongod since mongod is already running with systemctl
       # Disabling test gridfs because no big file available, by setting filename and saveas to blank
