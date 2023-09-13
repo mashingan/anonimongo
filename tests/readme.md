@@ -8,6 +8,7 @@ Table of contents
 * [CRUD command test](#crud-command-test)
 * [GridFS test](#gridfs-test)
 * [Replication set test](#replication-set-test)
+* [Changestream test](#changestream-test)
 * [How to run](#how-to-run)
 
 ## Administration management command test
@@ -43,11 +44,15 @@ seting it up, connecting through the `mongodb+srv` scheme, emulating fake DNS se
 `mongodb+srv` scheme. The APIs are following the Mongodb Page for [Replication commands](https://docs.mongodb.com/manual/reference/replication/#replication-database-commands) which implemented
 in [Replication module](replication.nim).
 
+## Changestream test
+Changestream is Mongodb functionality to watch any happening to specific collection and the kinds of
+events we want to watch. Changestream needs the mongo clustered as replication set so it's reusing
+the same configuration with [replication set test](#replication-set-test) above.  
+Changestream itself is implemented in [Changestream module](changestreams.nim)
+
 ## How to run
-Ideally, this should be added to `nimble test` for running all tests and `nimble test_name` for each
-separate test. However since these tests need an elaborate options to ensure it's configurable, the
-tests aren't added to `nimble` and need to be run manually. The `nimble test` will eventually be added.  
-By default, these tests take the variables defined as compile-arguments constants in file [utils_test.nim](utils_test.nim)
+
+By default, these tests take the variables defined as compile-arguments constants in file [utils_test.nim](utils_test.nim#L9)
 , if the user wants to run in other machine/platform, specify the options on `config.nims` in rootdir project.
 
 For example
@@ -72,14 +77,6 @@ switch("define", "testReplication=yes")
 EOF
 
 # now running the test
-nim c -r tests/test_admmgmt_test.nim
-nim c -r tests/test_bson_test.nim
-nim c -r tests/test_client_test.nim
-nim c -r tests/test_collections_test.nim
-nim c -r tests/test_crud_test.nim
-nim c -r tests/test_gridfs_test.nim
-
-# or simply
 nimble test
 ```
 
@@ -94,14 +91,21 @@ switch("define", "testReplication=yes")
 switch("define", "testChangeStreams=yes")
 switch("define", "uri")
 switch("define", "existingMongoSetup")
+switch("define", "exe=D:/Installer/mongodb6.0.6/bin/mongod.exe")
+switch("define", "dbpath=D:/Dev/mongodata-v6")
 "ConvFromXToItselfNotNeeded".hint off
 ```
+
+Also in [Github action](/.github/workflows/main.yml#L69).
 
 Any others variable can be checked in that [utils_test.nim](utils_test.nim).  
 In the platform where these tests run, the Mongo server only boot-up when the any of test running
 (except `test_bson_test.nim`) and then shutdown the Mongo server before the test ends. This only works
 when the Mongo server host in `localhost`. Define `nomongod` option (like example above) to disable
-booting up Mongo server.
+booting up Mongo server.  
+We can choose which mongod executable we want to run by defining value for `exe` e.g. `-d:exe=/some/path/to/mongod`
+and supplying the `dbpath` e.g. `-d:dbpath=/where/the/dbpath/reside`. See the example above by setting
+file `config.nims`.
 
 Each test (with exception `test_bson_test.nim`) will create a new Database and its related collections and
 immediately drop the database and the collections to avoid polluting the database.  
@@ -109,27 +113,28 @@ In case user wants to have a different scenario, for example, inserting several 
 it intact without removing it or dropping the collections or database, the user can write his/her own
 test scenario.
 
-[admmgmt.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/admmgmt.nim 
+[admmgmt.nim]: /src/anonimongo/dbops/admmgmt.nim 
 [dropDatabase]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html#dropDatabase,Database,BsonBase
 [dropCollection]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html#dropCollection,Database,string,BsonBase
 [listCollections]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html#listCollections,Database,string,BsonBase
 [admmgmt_doc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/dbops/admmgmt.html
 
-[bson.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/core/bson.nim
+[bson.nim]: /src/anonimongo/core/bson.nim
 [bsondocument]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/core/bson.html
 
-[client.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/client.nim
+[client.nim]: /src/anonimongo/dbops/client.nim
 
-[collections.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/collections.nim
+[collections.nim]: /src/anonimongo/collections.nim
 [collinsert]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html#insert,Collection,seq[BsonDocument],BsonBase
 [collremove]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html#remove,Collection,BsonDocument,bool
 [collupdate]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html#update,Collection,BsonDocument,BsonBase,BsonDocument
 [colldoc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/collections.html
 
-[crud.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/crud.nim
+[crud.nim]: /src/anonimongo/dbops/crud.nim
 
 [gridfs]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/gridfs.html#GridFS
 [gridstream]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/gridfs.html#GridStream
 [grid-doc]: https://mashingan.github.io/anonimongo/src/htmldocs/anonimongo/gridfs.html
 
-[replication.nim]: https://github.com/mashingan/anonimongo/blob/develop/src/anonimongo/dbops/replication.nim
+[replication.nim]: /src/anonimongo/dbops/replication.nim
+[changestream.nim]: /src/anonimongo/changestream.nim

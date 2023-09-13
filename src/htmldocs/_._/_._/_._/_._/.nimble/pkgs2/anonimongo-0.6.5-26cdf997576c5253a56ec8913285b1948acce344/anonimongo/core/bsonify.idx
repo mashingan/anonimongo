@@ -1,0 +1,2 @@
+nimTitle	bsonify	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/bsonify.html	module anonimongo/core/bsonify		0
+nim	bson	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/bsonify.html#bson.m,untyped	macro bson(p: untyped): untyped		40

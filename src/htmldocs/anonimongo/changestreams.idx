@@ -1,17 +1,20 @@
-csInsert	anonimongo/changestreams.html#csInsert	ChangeStreamEvent.csInsert	
-csUpdate	anonimongo/changestreams.html#csUpdate	ChangeStreamEvent.csUpdate	
-csReplace	anonimongo/changestreams.html#csReplace	ChangeStreamEvent.csReplace	
-csDelete	anonimongo/changestreams.html#csDelete	ChangeStreamEvent.csDelete	
-csInvalidate	anonimongo/changestreams.html#csInvalidate	ChangeStreamEvent.csInvalidate	
-csDrop	anonimongo/changestreams.html#csDrop	ChangeStreamEvent.csDrop	
-csDropDatabase	anonimongo/changestreams.html#csDropDatabase	ChangeStreamEvent.csDropDatabase	
-csRename	anonimongo/changestreams.html#csRename	ChangeStreamEvent.csRename	
-ChangeStreamEvent	anonimongo/changestreams.html#ChangeStreamEvent	changestreams: ChangeStreamEvent	
-ChangeStreamId	anonimongo/changestreams.html#ChangeStreamId	changestreams: ChangeStreamId	
-Namespace	anonimongo/changestreams.html#Namespace	changestreams: Namespace	
-DocumentKey	anonimongo/changestreams.html#DocumentKey	changestreams: DocumentKey	
-ChangeStream	anonimongo/changestreams.html#ChangeStream	changestreams: ChangeStream	
-forEach	anonimongo/changestreams.html#forEach,Cursor[Socket],proc(ChangeStream),set[ChangeStreamEvent]	changestreams: forEach(c: Cursor[Socket]; cb: proc (b: ChangeStream);\n        stopWhen: set[ChangeStreamEvent]): void	
-forEach	anonimongo/changestreams.html#forEach,Cursor[AsyncSocket],proc(ChangeStream),set[ChangeStreamEvent]	changestreams: forEach(c: Cursor[AsyncSocket]; cb: proc (b: ChangeStream);\n        stopWhen: set[ChangeStreamEvent]): Future[void]	
-watch	anonimongo/changestreams.html#watch,Collection[Socket],seq[BsonDocument]	changestreams: watch(coll: Collection[Socket]; pipelines: seq[BsonDocument] = @[];\n      options = bson()): Cursor[Socket]	
-watch	anonimongo/changestreams.html#watch,Collection[AsyncSocket],seq[BsonDocument]	changestreams: watch(coll: Collection[AsyncSocket]; pipelines: seq[BsonDocument] = @[];\n      options = bson()): Future[Cursor[AsyncSocket]]	
+nimTitle	changestreams	anonimongo/changestreams.html	module src/anonimongo/changestreams		0
+nim	csInsert	anonimongo/changestreams.html#csInsert	ChangeStreamEvent.csInsert		15
+nim	csUpdate	anonimongo/changestreams.html#csUpdate	ChangeStreamEvent.csUpdate		15
+nim	csReplace	anonimongo/changestreams.html#csReplace	ChangeStreamEvent.csReplace		15
+nim	csDelete	anonimongo/changestreams.html#csDelete	ChangeStreamEvent.csDelete		15
+nim	csInvalidate	anonimongo/changestreams.html#csInvalidate	ChangeStreamEvent.csInvalidate		15
+nim	csDrop	anonimongo/changestreams.html#csDrop	ChangeStreamEvent.csDrop		15
+nim	csDropDatabase	anonimongo/changestreams.html#csDropDatabase	ChangeStreamEvent.csDropDatabase		15
+nim	csRename	anonimongo/changestreams.html#csRename	ChangeStreamEvent.csRename		15
+nim	ChangeStreamEvent	anonimongo/changestreams.html#ChangeStreamEvent	enum ChangeStreamEvent		15
+nim	ChangeStreamId	anonimongo/changestreams.html#ChangeStreamId	object ChangeStreamId		24
+nim	Namespace	anonimongo/changestreams.html#Namespace	object Namespace		26
+nim	DocumentKey	anonimongo/changestreams.html#DocumentKey	object DocumentKey		29
+nim	ChangeStream	anonimongo/changestreams.html#ChangeStream	object ChangeStream		31
+nim	forEach	anonimongo/changestreams.html#forEach,Cursor[Socket],proc(ChangeStream),set[ChangeStreamEvent]	proc forEach(c: Cursor[Socket]; cb: proc (b: ChangeStream);\n        stopWhen: set[ChangeStreamEvent]): void		130
+nim	forEach	anonimongo/changestreams.html#forEach,Cursor[AsyncSocket],proc(ChangeStream),set[ChangeStreamEvent]	proc forEach(c: Cursor[AsyncSocket]; cb: proc (b: ChangeStream);\n        stopWhen: set[ChangeStreamEvent]): Future[void]		39
+nim	watch	anonimongo/changestreams.html#watch,Collection[Socket],seq[BsonDocument]	proc watch(coll: Collection[Socket]; pipelines: seq[BsonDocument] = @[];\n      options = bson()): Cursor[Socket]		130
+nim	watch	anonimongo/changestreams.html#watch,Collection[AsyncSocket],seq[BsonDocument]	proc watch(coll: Collection[AsyncSocket]; pipelines: seq[BsonDocument] = @[];\n      options = bson()): Future[Cursor[AsyncSocket]]		71
+nimgrp	foreach	anonimongo/changestreams.html#forEach-procs-all	proc		38
+nimgrp	watch	anonimongo/changestreams.html#watch-procs-all	proc		70

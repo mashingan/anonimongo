@@ -1,0 +1,64 @@
+nimTitle	types	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html	module anonimongo/core/types		0
+nim	poolconn	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#poolconn	const poolconn		17
+nim	verbose	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#verbose	const verbose		18
+nim	verifypeer	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#verifypeer	const verifypeer		19
+nim	cafile	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#cafile	const cafile		20
+nim	MongoConn	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#MongoConn	type MongoConn		28
+nim	Mongo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#Mongo	type Mongo		38
+nim	ReadPreference	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#ReadPreference	enum ReadPreference		58
+nim	SslInfo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#SslInfo	object SslInfo		65
+nim	Database	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#Database	type Database		73
+nim	Collection	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#Collection	type Collection		78
+nim	Cursor	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#Cursor	object Cursor		85
+nim	Query	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#Query	object Query		94
+nim	wkSingle	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#wkSingle	WriteKind.wkSingle		111
+nim	wkMany	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#wkMany	WriteKind.wkMany		111
+nim	WriteKind	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#WriteKind	enum WriteKind		111
+nim	WriteResult	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#WriteResult	object WriteResult		114
+nim	BulkResult	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#BulkResult	object BulkResult		128
+nim	GridFS	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#GridFS	type GridFS		133
+nim	ckWrite	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#ckWrite	CommandKind.ckWrite		148
+nim	ckRead	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#ckRead	CommandKind.ckRead		148
+nim	CommandKind	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#CommandKind	enum CommandKind		148
+nim	MongoError	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#MongoError	object MongoError		155
+nim	MultiUri	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#MultiUri	type MultiUri		157
+nim	MongoUri	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#MongoUri	type MongoUri		159
+nim	initSslInfo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#initSslInfo,string,string	proc initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo		181
+nim	newMongo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#newMongo,string,int	proc newMongo[S: MultiSock](host = "localhost"; port = 27017; master = true;\n                       poolconn = poolconn; sslinfo = SslInfo();\n                       ssl = defined(ssl)): Mongo[S]		275
+nim	newMongo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#newMongo,MongoUri,string,int	proc newMongo[S: MultiSock](muri: MongoUri; poolconn = poolconn;\n                       dnsserver = "8.8.8.8"; dnsport = 53): Mongo[S]		296
+nim	newMongo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#newMongo,Uri	proc newMongo[S: MultiSock](uri: Uri; poolconn = poolconn): Mongo[S]		381
+nim	tls	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#tls,Mongo	proc tls(m: Mongo): bool		443
+nim	authenticated	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticated,Mongo	proc authenticated(m: Mongo): bool		444
+nim	authenticated	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticated,MongoConn	proc authenticated(m: MongoConn): bool		445
+nim	host	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#host,MongoConn	proc host(m: MongoConn): string		446
+nim	port	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#port,MongoConn	proc port(m: MongoConn): Port		447
+nim	query	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#query,Mongo	proc query(m: Mongo): lent TableRef[string, seq[string]]		448
+nim	flags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#flags,Mongo	proc flags(m: Mongo): QueryFlags		450
+nim	main	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#main,Mongo[T: MultiSock]	proc main[T: MultiSock](m: Mongo[T]): MongoConn[T]		460
+nim	mainPreferred	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#mainPreferred,Mongo[T: MultiSock]	proc mainPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]		467
+nim	secondary	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#secondary,Mongo[T: MultiSock]	proc secondary[T: MultiSock](m: Mongo[T]): MongoConn[T]		475
+nim	secondaryPreferred	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#secondaryPreferred,Mongo[T: MultiSock]	proc secondaryPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]		481
+nim	hasUserAuth	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#hasUserAuth,Mongo	proc hasUserAuth(m: Mongo): bool		489
+nim	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticate,Mongo[Socket],string,string	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool		130
+nim	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticate,Mongo[AsyncSocket],string,string	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket];\n    user, pass: string): Future[bool]		510
+nim	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticate,Mongo[Socket]	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]): bool		130
+nim	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticate,Mongo[AsyncSocket]	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]		518
+nim	appname=	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#appname=,Mongo,string	proc appname=(m: Mongo; name: string)		526
+nim	appname	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#appname,Mongo	proc appname(m: Mongo): string		530
+nim	username	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#username,Mongo	proc username(m: Mongo): string		538
+nim	tailableCursor	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#tailableCursor,Mongo	proc tailableCursor(m: Mongo)		541
+nim	noTailable	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#noTailable,Mongo	proc noTailable(m: Mongo)		545
+nim	isTailable	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#isTailable,Mongo	proc isTailable(m: Mongo): bool		549
+nim	slaveOk	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#slaveOk,Mongo	proc slaveOk(m: Mongo)		553
+nim	noSlave	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#noSlave,Mongo	proc noSlave(m: Mongo)		557
+nim	`[]`	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#[],Mongo[T: MultiSock],string	proc `[]`[T: MultiSock](m: Mongo[T]; name: string): Database[T]		561
+nim	`[]`	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#[],Database[T: MultiSock],string	proc `[]`[T: MultiSock](dbase: Database[T]; name: string): Collection[T]		568
+nim	dbname	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#dbname,Cursor	proc dbname(cur: Cursor): string		576
+nim	collname	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#collname,Cursor	proc collname(cur: Cursor): string		578
+nim	close	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#close,Mongo	proc close(m: Mongo)		584
+nim	initQuery	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#initQuery,Collection[T: MultiSock],int32,int32,int32	proc initQuery[T: MultiSock](query = bson(); collection: Collection[T] = nil;\n                        skip = 0'i32; limit = 0'i32; batchSize = 101'i32): Query[\n    T]		588
+nim	toCursor	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#toCursor,BsonDocument	proc toCursor[S: MultiSock](b: BsonDocument): Cursor[S]		600
+nimgrp	newmongo	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#newMongo-procs-all	proc		275
+nimgrp	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticate-procs-all	proc		509
+nimgrp	authenticated	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#authenticated-procs-all	proc		444
+nimgrp	[]	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.5-26cdf997576c5253a56ec8913285b1948acce344/anonimongo/core/types.html#[]-procs-all	proc		561

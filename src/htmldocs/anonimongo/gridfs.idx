@@ -1,41 +1,55 @@
-kilobytes	anonimongo/gridfs.html#kilobytes,Positive	gridfs: kilobytes(n: Positive): int	
-megabytes	anonimongo/gridfs.html#megabytes,Positive	gridfs: megabytes(n: Positive): int	
-createBucket	anonimongo/gridfs.html#createBucket,Database[Socket],string	gridfs: createBucket(db: Database[Socket]; name = &quot;fs&quot;; chunkSize = defaultChunkSize): GridFS[\n    Socket]	
-createBucket	anonimongo/gridfs.html#createBucket,Database[AsyncSocket],string	gridfs: createBucket(db: Database[AsyncSocket]; name = &quot;fs&quot;;\n             chunkSize = defaultChunkSize): Future[GridFS[AsyncSocket]]	
-createBucket	anonimongo/gridfs.html#createBucket,Collection[Socket],string	gridfs: createBucket(c: Collection[Socket]; name = &quot;fs&quot;; chunkSize = defaultChunkSize): GridFS[\n    Socket]	
-createBucket	anonimongo/gridfs.html#createBucket,Collection[AsyncSocket],string	gridfs: createBucket(c: Collection[AsyncSocket]; name = &quot;fs&quot;;\n             chunkSize = defaultChunkSize): Future[GridFS[AsyncSocket]]	
-getBucket	anonimongo/gridfs.html#getBucket,Database[Socket],string	gridfs: getBucket(db: Database[Socket]; name = &quot;fs&quot;): GridFS[Socket]	
-getBucket	anonimongo/gridfs.html#getBucket,Database[AsyncSocket],string	gridfs: getBucket(db: Database[AsyncSocket]; name = &quot;fs&quot;): Future[GridFS[AsyncSocket]]	
-getBucket	anonimongo/gridfs.html#getBucket,Collection[Socket],string	gridfs: getBucket(c: Collection[Socket]; name = &quot;fs&quot;): GridFS[Socket]	
-getBucket	anonimongo/gridfs.html#getBucket,Collection[AsyncSocket],string	gridfs: getBucket(c: Collection[AsyncSocket]; name = &quot;fs&quot;): Future[GridFS[AsyncSocket]]	
-uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[Socket],AsyncFile,string,int32	gridfs: uploadFile(g: GridFS[Socket]; f: AsyncFile; filename = &quot;&quot;; chunk = 0&apos;i32;\n           metadata = bson()): WriteResult	
-uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[AsyncSocket],AsyncFile,string,int32	gridfs: uploadFile(g: GridFS[AsyncSocket]; f: AsyncFile; filename = &quot;&quot;; chunk = 0&apos;i32;\n           metadata = bson()): Future[WriteResult]	
-uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[Socket],string,int32	gridfs: uploadFile(g: GridFS[Socket]; filename: string; chunk = 0&apos;i32; metadata = bson()): WriteResult	
-uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[AsyncSocket],string,int32	gridfs: uploadFile(g: GridFS[AsyncSocket]; filename: string; chunk = 0&apos;i32;\n           metadata = bson()): Future[WriteResult]	
-downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[Socket],AsyncFile,string	gridfs: downloadFile(g: GridFS[Socket]; f: AsyncFile; filename = &quot;&quot;): WriteResult	
-downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[AsyncSocket],AsyncFile,string	gridfs: downloadFile(g: GridFS[AsyncSocket]; f: AsyncFile; filename = &quot;&quot;): Future[\n    WriteResult]	
-downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[Socket],string	gridfs: downloadFile(bucket: GridFS[Socket]; filename: string): WriteResult	
-downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[AsyncSocket],string	gridfs: downloadFile(bucket: GridFS[AsyncSocket]; filename: string): Future[WriteResult]	
-downloadAs	anonimongo/gridfs.html#downloadAs,GridFS[Socket],string,string	gridfs: downloadAs(g: GridFS[Socket]; source, target: string): WriteResult	
-downloadAs	anonimongo/gridfs.html#downloadAs,GridFS[AsyncSocket],string,string	gridfs: downloadAs(g: GridFS[AsyncSocket]; source, target: string): Future[WriteResult]	
-availableFiles	anonimongo/gridfs.html#availableFiles,GridFS[Socket]	gridfs: availableFiles(g: GridFS[Socket]; query = bson()): int	
-availableFiles	anonimongo/gridfs.html#availableFiles,GridFS[AsyncSocket]	gridfs: availableFiles(g: GridFS[AsyncSocket]; query = bson()): Future[int]	
-listFileNames	anonimongo/gridfs.html#listFileNames,GridFS[Socket]	gridfs: listFileNames(g: GridFS[Socket]; matcher = &quot;all&quot;.toBson; sort = bson()): seq[\n    string]	
-listFileNames	anonimongo/gridfs.html#listFileNames,GridFS[AsyncSocket]	gridfs: listFileNames(g: GridFS[AsyncSocket]; matcher = &quot;all&quot;.toBson; sort = bson()): Future[\n    seq[string]]	
-removeFile	anonimongo/gridfs.html#removeFile,GridFS[Socket]	gridfs: removeFile(g: GridFS[Socket]; matcher = &quot;all&quot;.toBson; one = false): WriteResult	
-removeFile	anonimongo/gridfs.html#removeFile,GridFS[AsyncSocket]	gridfs: removeFile(g: GridFS[AsyncSocket]; matcher = &quot;all&quot;.toBson; one = false): Future[\n    WriteResult]	
-drop	anonimongo/gridfs.html#drop,GridFS[Socket]	gridfs: drop(g: GridFS[Socket]): WriteResult	
-drop	anonimongo/gridfs.html#drop,GridFS[AsyncSocket]	gridfs: drop(g: GridFS[AsyncSocket]): Future[WriteResult]	
-GridStream	anonimongo/gridfs.html#GridStream	gridfs: GridStream	
-fileSize	anonimongo/gridfs.html#fileSize,GridStream	gridfs: fileSize(gs: GridStream): int64	
-metadata	anonimongo/gridfs.html#metadata,GridStream	gridfs: metadata(gs: GridStream): BsonDocument	
-close	anonimongo/gridfs.html#close,GridStream	gridfs: close(gs: GridStream)	
-setPosition	anonimongo/gridfs.html#setPosition,GridStream[Socket],int64	gridfs: setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)	
-setPosition	anonimongo/gridfs.html#setPosition,GridStream[AsyncSocket],int64	gridfs: setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(\n    Future[void])	
-getPosition	anonimongo/gridfs.html#getPosition,GridStream	gridfs: getPosition(gs: GridStream): int64	
-read	anonimongo/gridfs.html#read,GridStream[Socket],int64	gridfs: read(gs: GridStream[Socket]; length = 0&apos;i64): string	
-read	anonimongo/gridfs.html#read,GridStream[AsyncSocket],int64	gridfs: read(gs: GridStream[AsyncSocket]; length = 0&apos;i64): Future[string]	
-readAll	anonimongo/gridfs.html#readAll,GridStream[Socket]	gridfs: readAll(gs: GridStream[Socket]): string	
-readAll	anonimongo/gridfs.html#readAll,GridStream[AsyncSocket]	gridfs: readAll(gs: GridStream[AsyncSocket]): Future[string]	
-getStream	anonimongo/gridfs.html#getStream,GridFS[Socket],BsonBase	gridfs: getStream(g: GridFS[Socket]; matcher: BsonBase; sort = bson(); buffered = false): GridStream[\n    Socket]	
-getStream	anonimongo/gridfs.html#getStream,GridFS[AsyncSocket],BsonBase	gridfs: getStream(g: GridFS[AsyncSocket]; matcher: BsonBase; sort = bson();\n          buffered = false): Future[GridStream[AsyncSocket]]	
+nimTitle	gridfs	anonimongo/gridfs.html	module src/anonimongo/gridfs		0
+nim	kilobytes	anonimongo/gridfs.html#kilobytes,Positive	proc kilobytes(n: Positive): int		12
+nim	megabytes	anonimongo/gridfs.html#megabytes,Positive	proc megabytes(n: Positive): int		13
+nim	createBucket	anonimongo/gridfs.html#createBucket,Database[Socket],string	proc createBucket(db: Database[Socket]; name = "fs"; chunkSize = defaultChunkSize): GridFS[\n    Socket]		130
+nim	createBucket	anonimongo/gridfs.html#createBucket,Database[AsyncSocket],string	proc createBucket(db: Database[AsyncSocket]; name = "fs";\n             chunkSize = defaultChunkSize): Future[GridFS[AsyncSocket]]		20
+nim	createBucket	anonimongo/gridfs.html#createBucket,Collection[Socket],string	proc createBucket(c: Collection[Socket]; name = "fs"; chunkSize = defaultChunkSize): GridFS[\n    Socket]		130
+nim	createBucket	anonimongo/gridfs.html#createBucket,Collection[AsyncSocket],string	proc createBucket(c: Collection[AsyncSocket]; name = "fs";\n             chunkSize = defaultChunkSize): Future[GridFS[AsyncSocket]]		50
+nim	getBucket	anonimongo/gridfs.html#getBucket,Database[Socket],string	proc getBucket(db: Database[Socket]; name = "fs"): GridFS[Socket]		130
+nim	getBucket	anonimongo/gridfs.html#getBucket,Database[AsyncSocket],string	proc getBucket(db: Database[AsyncSocket]; name = "fs"): Future[GridFS[AsyncSocket]]		55
+nim	getBucket	anonimongo/gridfs.html#getBucket,Collection[Socket],string	proc getBucket(c: Collection[Socket]; name = "fs"): GridFS[Socket]		130
+nim	getBucket	anonimongo/gridfs.html#getBucket,Collection[AsyncSocket],string	proc getBucket(c: Collection[AsyncSocket]; name = "fs"): Future[GridFS[AsyncSocket]]		81
+nim	uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[Socket],AsyncFile,string,int32	proc uploadFile(g: GridFS[Socket]; f: AsyncFile; filename = ""; chunk = 0'i32;\n           metadata = bson()): WriteResult		130
+nim	uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[AsyncSocket],AsyncFile,string,int32	proc uploadFile(g: GridFS[AsyncSocket]; f: AsyncFile; filename = ""; chunk = 0'i32;\n           metadata = bson()): Future[WriteResult]		86
+nim	uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[Socket],string,int32	proc uploadFile(g: GridFS[Socket]; filename: string; chunk = 0'i32; metadata = bson()): WriteResult		130
+nim	uploadFile	anonimongo/gridfs.html#uploadFile,GridFS[AsyncSocket],string,int32	proc uploadFile(g: GridFS[AsyncSocket]; filename: string; chunk = 0'i32;\n           metadata = bson()): Future[WriteResult]		161
+nim	downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[Socket],AsyncFile,string	proc downloadFile(g: GridFS[Socket]; f: AsyncFile; filename = ""): WriteResult		130
+nim	downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[AsyncSocket],AsyncFile,string	proc downloadFile(g: GridFS[AsyncSocket]; f: AsyncFile; filename = ""): Future[\n    WriteResult]		181
+nim	downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[Socket],string	proc downloadFile(bucket: GridFS[Socket]; filename: string): WriteResult		130
+nim	downloadFile	anonimongo/gridfs.html#downloadFile,GridFS[AsyncSocket],string	proc downloadFile(bucket: GridFS[AsyncSocket]; filename: string): Future[WriteResult]		218
+nim	downloadAs	anonimongo/gridfs.html#downloadAs,GridFS[Socket],string,string	proc downloadAs(g: GridFS[Socket]; source, target: string): WriteResult		130
+nim	downloadAs	anonimongo/gridfs.html#downloadAs,GridFS[AsyncSocket],string,string	proc downloadAs(g: GridFS[AsyncSocket]; source, target: string): Future[WriteResult]		226
+nim	availableFiles	anonimongo/gridfs.html#availableFiles,GridFS[Socket]	proc availableFiles(g: GridFS[Socket]; query = bson()): int		130
+nim	availableFiles	anonimongo/gridfs.html#availableFiles,GridFS[AsyncSocket]	proc availableFiles(g: GridFS[AsyncSocket]; query = bson()): Future[int]		231
+nim	listFileNames	anonimongo/gridfs.html#listFileNames,GridFS[Socket]	proc listFileNames(g: GridFS[Socket]; matcher = "all".toBson; sort = bson()): seq[\n    string]		130
+nim	listFileNames	anonimongo/gridfs.html#listFileNames,GridFS[AsyncSocket]	proc listFileNames(g: GridFS[AsyncSocket]; matcher = "all".toBson; sort = bson()): Future[\n    seq[string]]		245
+nim	removeFile	anonimongo/gridfs.html#removeFile,GridFS[Socket]	proc removeFile(g: GridFS[Socket]; matcher = "all".toBson; one = false): WriteResult		130
+nim	removeFile	anonimongo/gridfs.html#removeFile,GridFS[AsyncSocket]	proc removeFile(g: GridFS[AsyncSocket]; matcher = "all".toBson; one = false): Future[\n    WriteResult]		280
+nim	drop	anonimongo/gridfs.html#drop,GridFS[Socket]	proc drop(g: GridFS[Socket]): WriteResult		130
+nim	drop	anonimongo/gridfs.html#drop,GridFS[AsyncSocket]	proc drop(g: GridFS[AsyncSocket]): Future[WriteResult]		326
+nim	GridStream	anonimongo/gridfs.html#GridStream	type GridStream		346
+nim	fileSize	anonimongo/gridfs.html#fileSize,GridStream	proc fileSize(gs: GridStream): int64		358
+nim	metadata	anonimongo/gridfs.html#metadata,GridStream	proc metadata(gs: GridStream): BsonDocument		359
+nim	close	anonimongo/gridfs.html#close,GridStream	proc close(gs: GridStream)		361
+nim	setPosition	anonimongo/gridfs.html#setPosition,GridStream[Socket],int64,int	proc setPosition(gs: GridStream[Socket]; pos: int64; chunkn = -1)		130
+nim	setPosition	anonimongo/gridfs.html#setPosition,GridStream[AsyncSocket],int64,int	proc setPosition(gs: GridStream[AsyncSocket]; pos: int64; chunkn = -1): owned(\n    Future[void])		377
+nim	getPosition	anonimongo/gridfs.html#getPosition,GridStream	proc getPosition(gs: GridStream): int64		389
+nim	read	anonimongo/gridfs.html#read,GridStream[Socket],int64	proc read(gs: GridStream[Socket]; length = 0'i64): string		130
+nim	read	anonimongo/gridfs.html#read,GridStream[AsyncSocket],int64	proc read(gs: GridStream[AsyncSocket]; length = 0'i64): Future[string]		391
+nim	readAll	anonimongo/gridfs.html#readAll,GridStream[Socket]	proc readAll(gs: GridStream[Socket]): string		130
+nim	readAll	anonimongo/gridfs.html#readAll,GridStream[AsyncSocket]	proc readAll(gs: GridStream[AsyncSocket]): Future[string]		414
+nim	getStream	anonimongo/gridfs.html#getStream,GridFS[Socket],BsonBase	proc getStream(g: GridFS[Socket]; matcher: BsonBase; sort = bson(); buffered = false): GridStream[\n    Socket]		130
+nim	getStream	anonimongo/gridfs.html#getStream,GridFS[AsyncSocket],BsonBase	proc getStream(g: GridFS[AsyncSocket]; matcher: BsonBase; sort = bson();\n          buffered = false): Future[GridStream[AsyncSocket]]		419
+nimgrp	createbucket	anonimongo/gridfs.html#createBucket-procs-all	proc		19
+nimgrp	drop	anonimongo/gridfs.html#drop-procs-all	proc		326
+nimgrp	readall	anonimongo/gridfs.html#readAll-procs-all	proc		414
+nimgrp	availablefiles	anonimongo/gridfs.html#availableFiles-procs-all	proc		231
+nimgrp	uploadfile	anonimongo/gridfs.html#uploadFile-procs-all	proc		85
+nimgrp	listfilenames	anonimongo/gridfs.html#listFileNames-procs-all	proc		244
+nimgrp	downloadas	anonimongo/gridfs.html#downloadAs-procs-all	proc		225
+nimgrp	read	anonimongo/gridfs.html#read-procs-all	proc		391
+nimgrp	setposition	anonimongo/gridfs.html#setPosition-procs-all	proc		377
+nimgrp	getstream	anonimongo/gridfs.html#getStream-procs-all	proc		418
+nimgrp	downloadfile	anonimongo/gridfs.html#downloadFile-procs-all	proc		180
+nimgrp	removefile	anonimongo/gridfs.html#removeFile-procs-all	proc		279
+nimgrp	getbucket	anonimongo/gridfs.html#getBucket-procs-all	proc		55

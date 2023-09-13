@@ -1,47 +1,68 @@
-Collection Methods	anonimongo/collections.html#collection-methods	 Collection Methods	
-one	anonimongo/collections.html#one,Query[Socket]	collections: one(q: Query[Socket]): BsonDocument	
-one	anonimongo/collections.html#one,Query[AsyncSocket]	collections: one(q: Query[AsyncSocket]): Future[BsonDocument]	
-all	anonimongo/collections.html#all,Query[Socket]	collections: all(q: Query[Socket]): seq[BsonDocument]	
-all	anonimongo/collections.html#all,Query[AsyncSocket]	collections: all(q: Query[AsyncSocket]): Future[seq[BsonDocument]]	
-items	anonimongo/collections.html#items.i,Cursor[S: MultiSock]	collections: items[S: MultiSock](cur: Cursor[S]): BsonDocument	
-pairs	anonimongo/collections.html#pairs.i,Cursor	collections: pairs(cur: Cursor): (int, BsonDocument)	
-iter	anonimongo/collections.html#iter,Query[Socket]	collections: iter(q: Query[Socket]): Cursor[Socket]	
-iter	anonimongo/collections.html#iter,Query[AsyncSocket]	collections: iter(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]]	
-find	anonimongo/collections.html#find,Collection[Socket]	collections: find(c: Collection[Socket]; query = bson(); projection = bsonNull()): Query[\n    Socket]	
-find	anonimongo/collections.html#find,Collection[AsyncSocket]	collections: find(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull()): Future[\n    Query[AsyncSocket]]	
-findOne	anonimongo/collections.html#findOne,Collection[Socket]	collections: findOne(c: Collection[Socket]; query = bson(); projection = bsonNull();\n        sort = bsonNull()): BsonDocument	
-findOne	anonimongo/collections.html#findOne,Collection[AsyncSocket]	collections: findOne(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull();\n        sort = bsonNull()): Future[BsonDocument]	
-findAll	anonimongo/collections.html#findAll,Collection[Socket],int	collections: findAll(c: Collection[Socket]; query = bson(); projection = bsonNull();\n        sort = bsonNull(); limit = 0): seq[BsonDocument]	
-findAll	anonimongo/collections.html#findAll,Collection[AsyncSocket],int	collections: findAll(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull();\n        sort = bsonNull(); limit = 0): Future[seq[BsonDocument]]	
-findIter	anonimongo/collections.html#findIter,Collection[Socket]	collections: findIter(c: Collection[Socket]; query = bson(); projection = bsonNull();\n         sort = bsonNull()): Cursor[Socket]	
-findIter	anonimongo/collections.html#findIter,Collection[AsyncSocket]	collections: findIter(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull();\n         sort = bsonNull()): Future[Cursor[AsyncSocket]]	
-findAndModify	anonimongo/collections.html#findAndModify,Collection[Socket],seq[BsonDocument]	collections: findAndModify(c: Collection[Socket]; query = bson(); sort = bsonNull();\n              remove = false; update = bsonNull(); new = false;\n              fields = bsonNull(); upsert = false; bypass = false;\n              wt = bsonNull(); collation = bsonNull();\n              arrayFilters: seq[BsonDocument] = @[]): BsonDocument	
-findAndModify	anonimongo/collections.html#findAndModify,Collection[AsyncSocket],seq[BsonDocument]	collections: findAndModify(c: Collection[AsyncSocket]; query = bson(); sort = bsonNull();\n              remove = false; update = bsonNull(); new = false;\n              fields = bsonNull(); upsert = false; bypass = false;\n              wt = bsonNull(); collation = bsonNull();\n              arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]	
-update	anonimongo/collections.html#update,Collection[Socket]	collections: update(c: Collection[Socket]; query = bson(); updates = bsonNull(); opt = bson()): WriteResult	
-update	anonimongo/collections.html#update,Collection[AsyncSocket]	collections: update(c: Collection[AsyncSocket]; query = bson(); updates = bsonNull();\n       opt = bson()): Future[WriteResult]	
-remove	anonimongo/collections.html#remove,Collection[Socket],BsonDocument	collections: remove(c: Collection[Socket]; query: BsonDocument; justone = false): WriteResult	
-remove	anonimongo/collections.html#remove,Collection[AsyncSocket],BsonDocument	collections: remove(c: Collection[AsyncSocket]; query: BsonDocument; justone = false): Future[\n    WriteResult]	
-remove	anonimongo/collections.html#remove,Collection[Socket],BsonDocument,BsonDocument	collections: remove(c: Collection[Socket]; query, opt: BsonDocument): WriteResult	
-remove	anonimongo/collections.html#remove,Collection[AsyncSocket],BsonDocument,BsonDocument	collections: remove(c: Collection[AsyncSocket]; query, opt: BsonDocument): Future[WriteResult]	
-remove	anonimongo/collections.html#remove,Collection[Socket],seq[BsonDocument]	collections: remove(c: Collection[Socket]; query: seq[BsonDocument]): WriteResult	
-remove	anonimongo/collections.html#remove,Collection[AsyncSocket],seq[BsonDocument]	collections: remove(c: Collection[AsyncSocket]; query: seq[BsonDocument]): Future[WriteResult]	
-insert	anonimongo/collections.html#insert,Collection[Socket],seq[BsonDocument]	collections: insert(c: Collection[Socket]; docs: seq[BsonDocument]; opt = bson()): WriteResult	
-insert	anonimongo/collections.html#insert,Collection[AsyncSocket],seq[BsonDocument]	collections: insert(c: Collection[AsyncSocket]; docs: seq[BsonDocument]; opt = bson()): Future[\n    WriteResult]	
-drop	anonimongo/collections.html#drop,Collection[Socket]	collections: drop(c: Collection[Socket]; wt = bsonNull()): WriteResult	
-drop	anonimongo/collections.html#drop,Collection[AsyncSocket]	collections: drop(c: Collection[AsyncSocket]; wt = bsonNull()): Future[WriteResult]	
-count	anonimongo/collections.html#count,Collection[Socket]	collections: count(c: Collection[Socket]; query = bson(); opt = bson()): int	
-count	anonimongo/collections.html#count,Collection[AsyncSocket]	collections: count(c: Collection[AsyncSocket]; query = bson(); opt = bson()): Future[int]	
-createIndex	anonimongo/collections.html#createIndex,Collection[Socket],BsonDocument	collections: createIndex(c: Collection[Socket]; key: BsonDocument; opt = bson()): WriteResult	
-createIndex	anonimongo/collections.html#createIndex,Collection[AsyncSocket],BsonDocument	collections: createIndex(c: Collection[AsyncSocket]; key: BsonDocument; opt = bson()): Future[\n    WriteResult]	
-listIndexes	anonimongo/collections.html#listIndexes,Collection[Socket]	collections: listIndexes(c: Collection[Socket]): seq[BsonDocument]	
-listIndexes	anonimongo/collections.html#listIndexes,Collection[AsyncSocket]	collections: listIndexes(c: Collection[AsyncSocket]): Future[seq[BsonDocument]]	
-`distinct`	anonimongo/collections.html#distinct,Collection[Socket],string	collections: `distinct`(c: Collection[Socket]; field: string; query = bson(); opt = bson()): seq[\n    BsonBase]	
-`distinct`	anonimongo/collections.html#distinct,Collection[AsyncSocket],string	collections: `distinct`(c: Collection[AsyncSocket]; field: string; query = bson();\n           opt = bson()): Future[seq[BsonBase]]	
-dropIndex	anonimongo/collections.html#dropIndex,Collection[Socket],BsonBase	collections: dropIndex(c: Collection[Socket]; indexes: BsonBase): WriteResult	
-dropIndex	anonimongo/collections.html#dropIndex,Collection[AsyncSocket],BsonBase	collections: dropIndex(c: Collection[AsyncSocket]; indexes: BsonBase): Future[WriteResult]	
-dropIndexes	anonimongo/collections.html#dropIndexes,Collection[Socket],seq[string]	collections: dropIndexes(c: Collection[Socket]; indexes: seq[string]): WriteResult	
-dropIndexes	anonimongo/collections.html#dropIndexes,Collection[AsyncSocket],seq[string]	collections: dropIndexes(c: Collection[AsyncSocket]; indexes: seq[string]): Future[\n    WriteResult]	
-aggregate	anonimongo/collections.html#aggregate,Collection[Socket],seq[BsonDocument]	collections: aggregate(c: Collection[Socket]; pipeline: seq[BsonDocument]; opt = bson()): seq[\n    BsonDocument]	
-aggregate	anonimongo/collections.html#aggregate,Collection[AsyncSocket],seq[BsonDocument]	collections: aggregate(c: Collection[AsyncSocket]; pipeline: seq[BsonDocument]; opt = bson()): Future[\n    seq[BsonDocument]]	
-bulkWrite	anonimongo/collections.html#bulkWrite,Collection[Socket],seq[BsonDocument]	collections: bulkWrite(c: Collection[Socket]; operations: seq[BsonDocument]; wt = bsonNull();\n          ordered = true): BulkResult	
-bulkWrite	anonimongo/collections.html#bulkWrite,Collection[AsyncSocket],seq[BsonDocument]	collections: bulkWrite(c: Collection[AsyncSocket]; operations: seq[BsonDocument];\n          wt = bsonNull(); ordered = true): Future[BulkResult]	
+nimTitle	collections	anonimongo/collections.html	module src/anonimongo/collections		0
+nim	one	anonimongo/collections.html#one,Query[Socket]	proc one(q: Query[Socket]): BsonDocument		130
+nim	one	anonimongo/collections.html#one,Query[AsyncSocket]	proc one(q: Query[AsyncSocket]): Future[BsonDocument]		47
+nim	all	anonimongo/collections.html#all,Query[Socket]	proc all(q: Query[Socket]): seq[BsonDocument]		130
+nim	all	anonimongo/collections.html#all,Query[AsyncSocket]	proc all(q: Query[AsyncSocket]): Future[seq[BsonDocument]]		56
+nim	items	anonimongo/collections.html#items.i,Cursor[S: MultiSock]	iterator items[S: MultiSock](cur: Cursor[S]): BsonDocument		71
+nim	pairs	anonimongo/collections.html#pairs.i,Cursor	iterator pairs(cur: Cursor): (int, BsonDocument)		92
+nim	iter	anonimongo/collections.html#iter,Query[Socket]	proc iter(q: Query[Socket]): Cursor[Socket]		130
+nim	iter	anonimongo/collections.html#iter,Query[AsyncSocket]	proc iter(q: Query[AsyncSocket]): Future[Cursor[AsyncSocket]]		98
+nim	find	anonimongo/collections.html#find,Collection[Socket]	proc find(c: Collection[Socket]; query = bson(); projection = bsonNull()): Query[\n    Socket]		130
+nim	find	anonimongo/collections.html#find,Collection[AsyncSocket]	proc find(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull()): Future[\n    Query[AsyncSocket]]		104
+nim	findOne	anonimongo/collections.html#findOne,Collection[Socket]	proc findOne(c: Collection[Socket]; query = bson(); projection = bsonNull();\n        sort = bsonNull()): BsonDocument		130
+nim	findOne	anonimongo/collections.html#findOne,Collection[AsyncSocket]	proc findOne(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull();\n        sort = bsonNull()): Future[BsonDocument]		109
+nim	findAll	anonimongo/collections.html#findAll,Collection[Socket],int	proc findAll(c: Collection[Socket]; query = bson(); projection = bsonNull();\n        sort = bsonNull(); limit = 0): seq[BsonDocument]		130
+nim	findAll	anonimongo/collections.html#findAll,Collection[AsyncSocket],int	proc findAll(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull();\n        sort = bsonNull(); limit = 0): Future[seq[BsonDocument]]		115
+nim	findIter	anonimongo/collections.html#findIter,Collection[Socket]	proc findIter(c: Collection[Socket]; query = bson(); projection = bsonNull();\n         sort = bsonNull()): Cursor[Socket]		130
+nim	findIter	anonimongo/collections.html#findIter,Collection[AsyncSocket]	proc findIter(c: Collection[AsyncSocket]; query = bson(); projection = bsonNull();\n         sort = bsonNull()): Future[Cursor[AsyncSocket]]		122
+nim	findAndModify	anonimongo/collections.html#findAndModify,Collection[Socket],seq[BsonDocument]	proc findAndModify(c: Collection[Socket]; query = bson(); sort = bsonNull();\n              remove = false; update = bsonNull(); new = false;\n              fields = bsonNull(); upsert = false; bypass = false;\n              wt = bsonNull(); collation = bsonNull();\n              arrayFilters: seq[BsonDocument] = @[]): BsonDocument		130
+nim	findAndModify	anonimongo/collections.html#findAndModify,Collection[AsyncSocket],seq[BsonDocument]	proc findAndModify(c: Collection[AsyncSocket]; query = bson(); sort = bsonNull();\n              remove = false; update = bsonNull(); new = false;\n              fields = bsonNull(); upsert = false; bypass = false;\n              wt = bsonNull(); collation = bsonNull();\n              arrayFilters: seq[BsonDocument] = @[]): Future[BsonDocument]		130
+nim	update	anonimongo/collections.html#update,Collection[Socket]	proc update(c: Collection[Socket]; query = bson(); updates = bsonNull(); opt = bson()): WriteResult		130
+nim	update	anonimongo/collections.html#update,Collection[AsyncSocket]	proc update(c: Collection[AsyncSocket]; query = bson(); updates = bsonNull();\n       opt = bson()): Future[WriteResult]		149
+nim	remove	anonimongo/collections.html#remove,Collection[Socket],BsonDocument	proc remove(c: Collection[Socket]; query: BsonDocument; justone = false): WriteResult		130
+nim	remove	anonimongo/collections.html#remove,Collection[AsyncSocket],BsonDocument	proc remove(c: Collection[AsyncSocket]; query: BsonDocument; justone = false): Future[\n    WriteResult]		173
+nim	remove	anonimongo/collections.html#remove,Collection[Socket],BsonDocument,BsonDocument	proc remove(c: Collection[Socket]; query, opt: BsonDocument): WriteResult		130
+nim	remove	anonimongo/collections.html#remove,Collection[AsyncSocket],BsonDocument,BsonDocument	proc remove(c: Collection[AsyncSocket]; query, opt: BsonDocument): Future[WriteResult]		185
+nim	remove	anonimongo/collections.html#remove,Collection[Socket],seq[BsonDocument]	proc remove(c: Collection[Socket]; query: seq[BsonDocument]): WriteResult		130
+nim	remove	anonimongo/collections.html#remove,Collection[AsyncSocket],seq[BsonDocument]	proc remove(c: Collection[AsyncSocket]; query: seq[BsonDocument]): Future[WriteResult]		205
+nim	insert	anonimongo/collections.html#insert,Collection[Socket],seq[BsonDocument]	proc insert(c: Collection[Socket]; docs: seq[BsonDocument]; opt = bson()): WriteResult		130
+nim	insert	anonimongo/collections.html#insert,Collection[AsyncSocket],seq[BsonDocument]	proc insert(c: Collection[AsyncSocket]; docs: seq[BsonDocument]; opt = bson()): Future[\n    WriteResult]		217
+nim	drop	anonimongo/collections.html#drop,Collection[Socket]	proc drop(c: Collection[Socket]; wt = bsonNull()): WriteResult		130
+nim	drop	anonimongo/collections.html#drop,Collection[AsyncSocket]	proc drop(c: Collection[AsyncSocket]; wt = bsonNull()): Future[WriteResult]		233
+nim	count	anonimongo/collections.html#count,Collection[Socket]	proc count(c: Collection[Socket]; query = bson(); opt = bson()): int		130
+nim	count	anonimongo/collections.html#count,Collection[AsyncSocket]	proc count(c: Collection[AsyncSocket]; query = bson(); opt = bson()): Future[int]		237
+nim	createIndex	anonimongo/collections.html#createIndex,Collection[Socket],BsonDocument	proc createIndex(c: Collection[Socket]; key: BsonDocument; opt = bson()): WriteResult		130
+nim	createIndex	anonimongo/collections.html#createIndex,Collection[AsyncSocket],BsonDocument	proc createIndex(c: Collection[AsyncSocket]; key: BsonDocument; opt = bson()): Future[\n    WriteResult]		254
+nim	listIndexes	anonimongo/collections.html#listIndexes,Collection[Socket]	proc listIndexes(c: Collection[Socket]): seq[BsonDocument]		130
+nim	listIndexes	anonimongo/collections.html#listIndexes,Collection[AsyncSocket]	proc listIndexes(c: Collection[AsyncSocket]): Future[seq[BsonDocument]]		269
+nim	`distinct`	anonimongo/collections.html#distinct,Collection[Socket],string	proc `distinct`(c: Collection[Socket]; field: string; query = bson(); opt = bson()): seq[\n    BsonBase]		130
+nim	`distinct`	anonimongo/collections.html#distinct,Collection[AsyncSocket],string	proc `distinct`(c: Collection[AsyncSocket]; field: string; query = bson();\n           opt = bson()): Future[seq[BsonBase]]		274
+nim	dropIndex	anonimongo/collections.html#dropIndex,Collection[Socket],BsonBase	proc dropIndex(c: Collection[Socket]; indexes: BsonBase): WriteResult		130
+nim	dropIndex	anonimongo/collections.html#dropIndex,Collection[AsyncSocket],BsonBase	proc dropIndex(c: Collection[AsyncSocket]; indexes: BsonBase): Future[WriteResult]		282
+nim	dropIndexes	anonimongo/collections.html#dropIndexes,Collection[Socket],seq[string]	proc dropIndexes(c: Collection[Socket]; indexes: seq[string]): WriteResult		130
+nim	dropIndexes	anonimongo/collections.html#dropIndexes,Collection[AsyncSocket],seq[string]	proc dropIndexes(c: Collection[AsyncSocket]; indexes: seq[string]): Future[\n    WriteResult]		286
+nim	aggregate	anonimongo/collections.html#aggregate,Collection[Socket],seq[BsonDocument]	proc aggregate(c: Collection[Socket]; pipeline: seq[BsonDocument]; opt = bson()): seq[\n    BsonDocument]		130
+nim	aggregate	anonimongo/collections.html#aggregate,Collection[AsyncSocket],seq[BsonDocument]	proc aggregate(c: Collection[AsyncSocket]; pipeline: seq[BsonDocument]; opt = bson()): Future[\n    seq[BsonDocument]]		290
+nim	bulkWrite	anonimongo/collections.html#bulkWrite,Collection[Socket],seq[BsonDocument]	proc bulkWrite(c: Collection[Socket]; operations: seq[BsonDocument]; wt = bsonNull();\n          ordered = true): BulkResult		130
+nim	bulkWrite	anonimongo/collections.html#bulkWrite,Collection[AsyncSocket],seq[BsonDocument]	proc bulkWrite(c: Collection[AsyncSocket]; operations: seq[BsonDocument];\n          wt = bsonNull(); ordered = true): Future[BulkResult]		324
+nimgrp	drop	anonimongo/collections.html#drop-procs-all	proc		233
+nimgrp	dropindexes	anonimongo/collections.html#dropIndexes-procs-all	proc		285
+nimgrp	aggregate	anonimongo/collections.html#aggregate-procs-all	proc		289
+nimgrp	findone	anonimongo/collections.html#findOne-procs-all	proc		108
+nimgrp	all	anonimongo/collections.html#all-procs-all	proc		56
+nimgrp	one	anonimongo/collections.html#one-procs-all	proc		47
+nimgrp	iter	anonimongo/collections.html#iter-procs-all	proc		98
+nimgrp	dropindex	anonimongo/collections.html#dropIndex-procs-all	proc		281
+nimgrp	findandmodify	anonimongo/collections.html#findAndModify-procs-all	proc		127
+nimgrp	remove	anonimongo/collections.html#remove-procs-all	proc		172
+nimgrp	findall	anonimongo/collections.html#findAll-procs-all	proc		114
+nimgrp	count	anonimongo/collections.html#count-procs-all	proc		236
+nimgrp	createindex	anonimongo/collections.html#createIndex-procs-all	proc		253
+nimgrp	insert	anonimongo/collections.html#insert-procs-all	proc		216
+nimgrp	listindexes	anonimongo/collections.html#listIndexes-procs-all	proc		269
+nimgrp	bulkwrite	anonimongo/collections.html#bulkWrite-procs-all	proc		323
+nimgrp	finditer	anonimongo/collections.html#findIter-procs-all	proc		121
+nimgrp	distinct	anonimongo/collections.html#distinct-procs-all	proc		273
+nimgrp	find	anonimongo/collections.html#find-procs-all	proc		104
+nimgrp	update	anonimongo/collections.html#update-procs-all	proc		148
+heading	Collection Methods	anonimongo/collections.html#collection-methods	 Collection Methods		0
