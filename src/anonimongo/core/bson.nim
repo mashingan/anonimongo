@@ -606,6 +606,14 @@ proc `$`(doc: BsonBinary): string =
   ## Stringified BsonBinary.
   result = fmt"binary({quote($doc.subtype)}, {quote(doc.value.stringbytes)})"
 
+proc `$`(a: BsonArray): string =
+  result = "["
+  for i, x in a:
+    if i > 0:
+      add(result, ",")
+    add(result, $x)
+  result.add "]"
+
 proc `$`*(v: BsonBase): string {.gcsafe.} =
   ## Stringified BsonBase.
   runnableExamples:
@@ -633,7 +641,7 @@ proc `$`*(v: BsonBase): string {.gcsafe.} =
   of bkTime:
     result = quote $(v as BsonTime).value
   of bkArray:
-    result = '[' & (v as BsonArray).value.join(",") & ']'
+    result = $(v as BsonArray)
   of bkEmbed:
     result = $(v as BsonEmbed).value
   of bkObjectId:
