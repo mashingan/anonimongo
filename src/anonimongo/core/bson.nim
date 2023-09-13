@@ -606,7 +606,7 @@ proc `$`(doc: BsonBinary): string =
   ## Stringified BsonBinary.
   result = fmt"binary({quote($doc.subtype)}, {quote(doc.value.stringbytes)})"
 
-proc `$`(a: BsonArray): string =
+proc `$`*(a: BsonArray): string =
   result = "["
   for i, x in a:
     if i > 0:
