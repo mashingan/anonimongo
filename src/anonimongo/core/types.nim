@@ -532,7 +532,7 @@ proc appname*(m: Mongo): string =
   else:
     result = ""
 
-func username*(m: Mongo): string =
+proc username*(m: Mongo): string =
   m.main.username
 
 proc tailableCursor*(m: Mongo) =
