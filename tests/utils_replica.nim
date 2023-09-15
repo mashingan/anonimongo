@@ -142,11 +142,12 @@ proc setupMongoReplication*: seq[Process] =
       ]
     when verbose:
       dump args
+    let opt = {poUsePath, poStdErrToStdOut, poParentStreams, poEvalCommand}
+    let execstr = (@[exe & ' '] & args).join " "
     when defined(windows):
-      let opt = {poUsePath, poStdErrToStdOut, poInteractive, poParentStreams}
+      result[i] = unown startProcess(execstr & " > NUL", options = opt)
     else:
-      let opt = {poUsePath, poStdErrToStdOut}
-    result[i] = unown startProcess(exe, args = args, options = opt)
+      result[i] = unown startProcess(execstr & " > /dev/null", options = opt)
     sleep 3000
 
 proc cleanup*(processes: seq[Process]) =

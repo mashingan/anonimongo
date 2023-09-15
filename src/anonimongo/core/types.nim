@@ -449,40 +449,37 @@ proc query*(m: Mongo): lent TableRef[string, seq[string]] =
   m.query
 proc flags*(m: Mongo): QueryFlags = m.flags
 
-proc pickAnyServer[T: MultiSock](m: Mongo[T], test: (string, int) -> bool = nil): MongoConn[T] =
-  var res: MongoConn[T]
-  for host{.inject.}, server{.inject.} in m.servers:
-    #if `test`:
-    if test == nil or (test != nil and test(host, server.pool.available.len)):
-      res = server
-  res
+template pickAnyServer(m: Mongo, test: untyped): untyped =
+  for hostname{.inject.}, theserver{.inject.} in m.servers:
+    if test:
+      result = theserver
+      break
 
 proc main*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    #result = m.pickAnyServer true
-    result = m.pickAnyServer
+    m.pickAnyServer true
   else:
     result = m.servers[m.primary]
 
 proc mainPreferred*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer
+    m.pickAnyServer true
   elif m.servers[m.primary].pool.available.len > 0:
     result = m.servers[m.primary]
   else:
-    result = m.pickAnyServer((host: string, num: int) => host != m.primary)
+    m.pickAnyServer: hostname != m.primary
 
 proc secondary*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer
+    m.pickAnyServer true
   else:
-    result = m.pickAnyServer((host: string, num: int) => host != m.primary)
+    m.pickAnyServer: hostname != m.primary and theserver.pool.available.len > 0
 
 proc secondaryPreferred*[T: MultiSock](m: Mongo[T]): MongoConn[T] =
   if m.primary == "":
-    result = m.pickAnyServer
+    m.pickAnyServer true
   else:
-    result = m.pickAnyServer((host: string, num: int) => host != m.primary and num > 0)
+    m.pickAnyServer: hostname != m.primary
     if result == nil:
       result = m.servers[m.primary]
 
