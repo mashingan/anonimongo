@@ -1,13 +1,17 @@
-cmd	anonimongo/core/utils.html#cmd,string	utils: cmd(name: string): string	
-flags	anonimongo/core/utils.html#flags,Database	utils: flags(d: Database): int32	
-sendOps	anonimongo/core/utils.html#sendOps,BsonDocument,Database[Socket],string	utils: sendOps(q: BsonDocument; db: Database[Socket]; name = &quot;&quot;; cmd = ckRead;\n        compression = cidNoop): ReplyFormat	
-sendOps	anonimongo/core/utils.html#sendOps,BsonDocument,Database[AsyncSocket],string	utils: sendOps(q: BsonDocument; db: Database[AsyncSocket]; name = &quot;&quot;; cmd = ckRead;\n        compression = cidNoop): Future[ReplyFormat]	
-addWriteConcern	anonimongo/core/utils.html#addWriteConcern,BsonDocument,Database,BsonBase	utils: addWriteConcern(q: var BsonDocument; db: Database; wt: BsonBase)	
-addOptional	anonimongo/core/utils.html#addOptional.t,BsonDocument,string,BsonBase	utils: addOptional(q: var BsonDocument; name: string; f: BsonBase)	
-addConditional	anonimongo/core/utils.html#addConditional.t,BsonDocument,string,BsonBase	utils: addConditional(q: var BsonDocument; field: string; val: BsonBase)	
-epilogueCheck	anonimongo/core/utils.html#epilogueCheck,ReplyFormat,string	utils: epilogueCheck(reply: ReplyFormat; target: var string): bool	
-proceed	anonimongo/core/utils.html#proceed,Database[Socket],BsonDocument,string	utils: proceed(db: Database[Socket]; q: BsonDocument; dbname = &quot;&quot;; cmd = ckRead;\n        needCompress = true): WriteResult	
-proceed	anonimongo/core/utils.html#proceed,Database[AsyncSocket],BsonDocument,string	utils: proceed(db: Database[AsyncSocket]; q: BsonDocument; dbname = &quot;&quot;; cmd = ckRead;\n        needCompress = true): Future[WriteResult]	
-crudops	anonimongo/core/utils.html#crudops,Database[Socket],BsonDocument,string	utils: crudops(db: Database[Socket]; q: BsonDocument; dbname = &quot;&quot;; cmd = ckRead): BsonDocument	
-crudops	anonimongo/core/utils.html#crudops,Database[AsyncSocket],BsonDocument,string	utils: crudops(db: Database[AsyncSocket]; q: BsonDocument; dbname = &quot;&quot;; cmd = ckRead): Future[\n    BsonDocument]	
-getWResult	anonimongo/core/utils.html#getWResult,BsonDocument	utils: getWResult(b: BsonDocument): WriteResult	
+nimTitle	utils	anonimongo/core/utils.html	module src/anonimongo/core/utils		0
+nim	cmd	anonimongo/core/utils.html#cmd,string	proc cmd(name: string): string		9
+nim	flags	anonimongo/core/utils.html#flags,Database	proc flags(d: Database): int32		12
+nim	sendOps	anonimongo/core/utils.html#sendOps,BsonDocument,Database[Socket],string	proc sendOps(q: BsonDocument; db: Database[Socket]; name = ""; cmd = ckRead;\n        compression = cidNoop): ReplyFormat		130
+nim	sendOps	anonimongo/core/utils.html#sendOps,BsonDocument,Database[AsyncSocket],string	proc sendOps(q: BsonDocument; db: Database[AsyncSocket]; name = ""; cmd = ckRead;\n        compression = cidNoop): Future[ReplyFormat]		17
+nim	addWriteConcern	anonimongo/core/utils.html#addWriteConcern,BsonDocument,Database,BsonBase	proc addWriteConcern(q: var BsonDocument; db: Database; wt: BsonBase)		46
+nim	addOptional	anonimongo/core/utils.html#addOptional.t,BsonDocument,string,BsonBase	template addOptional(q: var BsonDocument; name: string; f: BsonBase)		55
+nim	addConditional	anonimongo/core/utils.html#addConditional.t,BsonDocument,string,BsonBase	template addConditional(q: var BsonDocument; field: string; val: BsonBase)		60
+nim	epilogueCheck	anonimongo/core/utils.html#epilogueCheck,ReplyFormat,string	proc epilogueCheck(reply: ReplyFormat; target: var string): bool		65
+nim	proceed	anonimongo/core/utils.html#proceed,Database[Socket],BsonDocument,string	proc proceed(db: Database[Socket]; q: BsonDocument; dbname = ""; cmd = ckRead;\n        needCompress = true): WriteResult		130
+nim	proceed	anonimongo/core/utils.html#proceed,Database[AsyncSocket],BsonDocument,string	proc proceed(db: Database[AsyncSocket]; q: BsonDocument; dbname = ""; cmd = ckRead;\n        needCompress = true): Future[WriteResult]		79
+nim	crudops	anonimongo/core/utils.html#crudops,Database[Socket],BsonDocument,string	proc crudops(db: Database[Socket]; q: BsonDocument; dbname = ""; cmd = ckRead): BsonDocument		130
+nim	crudops	anonimongo/core/utils.html#crudops,Database[AsyncSocket],BsonDocument,string	proc crudops(db: Database[AsyncSocket]; q: BsonDocument; dbname = ""; cmd = ckRead): Future[\n    BsonDocument]		96
+nim	getWResult	anonimongo/core/utils.html#getWResult,BsonDocument	proc getWResult(b: BsonDocument): WriteResult		109
+nimgrp	sendops	anonimongo/core/utils.html#sendOps-procs-all	proc		15
+nimgrp	crudops	anonimongo/core/utils.html#crudops-procs-all	proc		95
+nimgrp	proceed	anonimongo/core/utils.html#proceed-procs-all	proc		78

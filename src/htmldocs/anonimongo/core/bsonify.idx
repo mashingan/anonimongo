@@ -1,1 +1,2 @@
-bson	anonimongo/core/bsonify.html#bson.m,untyped	bsonify: bson(p: untyped): untyped	
+nimTitle	bsonify	anonimongo/core/bsonify.html	module src/anonimongo/core/bsonify		0
+nim	bson	anonimongo/core/bsonify.html#bson.m,untyped	macro bson(p: untyped): untyped		40

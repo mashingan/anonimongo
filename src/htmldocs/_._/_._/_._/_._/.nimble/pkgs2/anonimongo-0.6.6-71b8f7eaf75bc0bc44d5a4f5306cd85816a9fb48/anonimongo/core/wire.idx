@@ -1,0 +1,35 @@
+nimTitle	wire	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html	module anonimongo/core/wire		0
+nim	opReply	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opReply	OpCode.opReply		15
+nim	opUpdate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opUpdate	OpCode.opUpdate		15
+nim	opInsert	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opInsert	OpCode.opInsert		15
+nim	opReserved	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opReserved	OpCode.opReserved		15
+nim	opQuery	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opQuery	OpCode.opQuery		15
+nim	opGetMore	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opGetMore	OpCode.opGetMore		15
+nim	opDelete	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opDelete	OpCode.opDelete		15
+nim	opKillCursors	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opKillCursors	OpCode.opKillCursors		15
+nim	opCommand	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opCommand	OpCode.opCommand		15
+nim	opCommandReply	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opCommandReply	OpCode.opCommandReply		15
+nim	opCompressed	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opCompressed	OpCode.opCompressed		15
+nim	opMsg	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#opMsg	OpCode.opMsg		15
+nim	OpCode	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#OpCode	enum OpCode		15
+nim	CompressorId	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#CompressorId	enum CompressorId		25
+nim	MsgHeader	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#MsgHeader	object MsgHeader		33
+nim	ReplyFormat	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#ReplyFormat	object ReplyFormat		37
+nim	Flags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#Flags	enum Flags		45
+nim	QueryFlags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#QueryFlags	type QueryFlags		55
+nim	RFlags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#RFlags	enum RFlags		58
+nim	ResponseFlags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#ResponseFlags	type ResponseFlags		64
+nim	MsgBitFlags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#MsgBitFlags	enum MsgBitFlags		67
+nim	MsgFlags	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#MsgFlags	type MsgFlags		72
+nim	replyParse	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#replyParse,Streamable	proc replyParse(s: var Streamable): ReplyFormat		97
+nim	msgParse	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#msgParse,Streamable,int	proc msgParse(s: var Streamable; rest = 0): ReplyFormat		111
+nim	prepareQuery	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#prepareQuery,Streamable,int32,int32,int32,int32,string,int32,int32	proc prepareQuery(s: var Streamable; reqId, target, opcode, flags: int32;\n             collname: string; nskip, nreturn: int32; query = newBson();\n             selector = newBson(); compression = cidNoop): int		131
+nim	prepare	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#prepare.t,BsonDocument,int32,string,int,int,int	template prepare(q: BsonDocument; flags: int32; dbname: string; id = 0; skip = 0;\n        limit = 1; compression = cidNoop): untyped		185
+nim	ok	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#ok,BsonDocument	proc ok(b: BsonDocument): bool		192
+nim	errmsg	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#errmsg,BsonDocument	proc errmsg(b: BsonDocument): string		202
+nim	code	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#code,BsonDocument	proc code(b: BsonDocument): int		207
+nim	check	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#check.t,ReplyFormat	template check(r: ReplyFormat): (bool, string)		212
+nim	look	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#look,ReplyFormat	proc look(reply: ReplyFormat)		232
+nim	getReply	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#getReply,Socket	proc getReply(socket: Socket): ReplyFormat		130
+nim	getReply	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#getReply,AsyncSocket	proc getReply(socket: AsyncSocket): Future[ReplyFormat]		247
+nimgrp	getreply	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/wire.html#getReply-procs-all	proc		247
