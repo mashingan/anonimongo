@@ -1,13 +1,8 @@
-nimTitle	freemonitoring	anonimongo/dbops/freemonitoring.html	module src/anonimongo/dbops/freemonitoring		0
-nim	getFreeMonitoringStatus	anonimongo/dbops/freemonitoring.html#getFreeMonitoringStatus,Database[Socket]	proc getFreeMonitoringStatus(db: Database[Socket]): BsonDocument		130
-nim	getFreeMonitoringStatus	anonimongo/dbops/freemonitoring.html#getFreeMonitoringStatus,Database[AsyncSocket]	proc getFreeMonitoringStatus(db: Database[AsyncSocket]): Future[BsonDocument]		4
-nim	setFreeMonitoring	anonimongo/dbops/freemonitoring.html#setFreeMonitoring,Database[Socket],string	proc setFreeMonitoring(db: Database[Socket]; action = "enable"): BsonDocument		130
-nim	setFreeMonitoring	anonimongo/dbops/freemonitoring.html#setFreeMonitoring,Database[AsyncSocket],string	proc setFreeMonitoring(db: Database[AsyncSocket]; action = "enable"): Future[\n    BsonDocument]		10
-nim	enableFreeMonitoring	anonimongo/dbops/freemonitoring.html#enableFreeMonitoring,Database[Socket]	proc enableFreeMonitoring(db: Database[Socket]): BsonDocument		130
-nim	enableFreeMonitoring	anonimongo/dbops/freemonitoring.html#enableFreeMonitoring,Database[AsyncSocket]	proc enableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]		17
-nim	disableFreeMonitoring	anonimongo/dbops/freemonitoring.html#disableFreeMonitoring,Database[Socket]	proc disableFreeMonitoring(db: Database[Socket]): BsonDocument		130
-nim	disableFreeMonitoring	anonimongo/dbops/freemonitoring.html#disableFreeMonitoring,Database[AsyncSocket]	proc disableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]		20
-nimgrp	disablefreemonitoring	anonimongo/dbops/freemonitoring.html#disableFreeMonitoring-procs-all	proc		20
-nimgrp	setfreemonitoring	anonimongo/dbops/freemonitoring.html#setFreeMonitoring-procs-all	proc		9
-nimgrp	enablefreemonitoring	anonimongo/dbops/freemonitoring.html#enableFreeMonitoring-procs-all	proc		17
-nimgrp	getfreemonitoringstatus	anonimongo/dbops/freemonitoring.html#getFreeMonitoringStatus-procs-all	proc		4
+getFreeMonitoringStatus	anonimongo/dbops/freemonitoring.html#getFreeMonitoringStatus,Database[Socket]	freemonitoring: getFreeMonitoringStatus(db: Database[Socket]): BsonDocument	
+getFreeMonitoringStatus	anonimongo/dbops/freemonitoring.html#getFreeMonitoringStatus,Database[AsyncSocket]	freemonitoring: getFreeMonitoringStatus(db: Database[AsyncSocket]): Future[BsonDocument]	
+setFreeMonitoring	anonimongo/dbops/freemonitoring.html#setFreeMonitoring,Database[Socket],string	freemonitoring: setFreeMonitoring(db: Database[Socket]; action = &quot;enable&quot;): BsonDocument	
+setFreeMonitoring	anonimongo/dbops/freemonitoring.html#setFreeMonitoring,Database[AsyncSocket],string	freemonitoring: setFreeMonitoring(db: Database[AsyncSocket]; action = &quot;enable&quot;): Future[\n    BsonDocument]	
+enableFreeMonitoring	anonimongo/dbops/freemonitoring.html#enableFreeMonitoring,Database[Socket]	freemonitoring: enableFreeMonitoring(db: Database[Socket]): BsonDocument	
+enableFreeMonitoring	anonimongo/dbops/freemonitoring.html#enableFreeMonitoring,Database[AsyncSocket]	freemonitoring: enableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]	
+disableFreeMonitoring	anonimongo/dbops/freemonitoring.html#disableFreeMonitoring,Database[Socket]	freemonitoring: disableFreeMonitoring(db: Database[Socket]): BsonDocument	
+disableFreeMonitoring	anonimongo/dbops/freemonitoring.html#disableFreeMonitoring,Database[AsyncSocket]	freemonitoring: disableFreeMonitoring(db: Database[AsyncSocket]): Future[BsonDocument]	
