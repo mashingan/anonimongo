@@ -1,4 +1,0 @@
-nimTitle	auth	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/auth.html	module anonimongo/core/auth		0
-nim	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/auth.html#authenticate,Socket,string,string,typedesc,string	proc authenticate(sock: Socket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = "admin.$cmd"): bool		130
-nim	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/auth.html#authenticate,AsyncSocket,string,string,typedesc,string	proc authenticate(sock: AsyncSocket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = "admin.$cmd"): Future[bool]		9
-nimgrp	authenticate	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/auth.html#authenticate-procs-all	proc		8

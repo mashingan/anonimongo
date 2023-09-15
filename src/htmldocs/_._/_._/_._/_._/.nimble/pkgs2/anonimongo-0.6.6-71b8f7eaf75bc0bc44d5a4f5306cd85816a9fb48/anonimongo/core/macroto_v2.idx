@@ -1,4 +1,0 @@
-nimTitle	macroto_v2	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/macroto_v2.html	module anonimongo/core/macroto_v2		0
-nim	to	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/macroto_v2.html#to.m,untyped,typed	macro to(b: untyped; t: typed): untyped		642
-nim	bsonExport	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/macroto_v2.html#bsonExport.t	template bsonExport()		746
-nim	bsonKey	_._/_._/_._/_._/.nimble/pkgs2/anonimongo-0.6.6-71b8f7eaf75bc0bc44d5a4f5306cd85816a9fb48/anonimongo/core/macroto_v2.html#bsonKey.t,string	template bsonKey(key: string)		748
