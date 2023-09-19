@@ -678,7 +678,7 @@ proc writeKey(s: var Streamable, key: string, kind: BsonKind): int32 =
   s.write 0x00.byte
   result = int32(1 + key.len + 1)
 
-proc encode*(doc: BsonDocument): (int, string)
+proc encode*(doc: BsonDocument): (int, string) {.gcsafe.}
 
 proc encode(s: var Streamable, key: string, doc: BsonInt32): int =
   result = s.writeKey(key, bkInt32) + doc.value.sizeof
@@ -904,7 +904,7 @@ proc decodeKey(s: var Streamable): (string, BsonKind) =
     buff &= achar
   result = (buff, kind)
 
-proc decode*(strbytes: string): BsonDocument
+proc decode*(strbytes: string): BsonDocument {.gcsafe.}
 
 proc decodeArray(s: var Streamable): seq[BsonBase] =
   let length = s.peekInt32LE
