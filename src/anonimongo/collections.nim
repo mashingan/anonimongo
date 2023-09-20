@@ -44,7 +44,7 @@ import multisock
 ## .. _items: #items.i,Cursor
 ## .. _getMore: dbops/crud.html#getMore,Database,int64,string,int
 
-proc one*(q: Query[AsyncSocket]): Future[BsonDocument] {.multisock.} =
+proc one*(q: Query[AsyncSocket]): Future[BsonDocument] {.multisock, gcsafe.} =
   let doc = await q.collection.db.find(q.collection.name, q.query, q.sort,
     q.projection, skip = q.skip, limit = 1, singleBatch = true)
   let batch = doc["cursor"]["firstBatch"].ofArray
@@ -106,7 +106,7 @@ proc find*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull()):
   result.projection = projection
 
 proc findOne*(c: Collection[AsyncSocket], query = bson(), projection = bsonNull(),
-  sort = bsonNull()): Future[BsonDocument] {.multisock.} =
+  sort = bsonNull()): Future[BsonDocument] {.multisock, gcsafe.} =
   var q = await c.find(query, projection)
   q.sort = sort
   result = await q.one

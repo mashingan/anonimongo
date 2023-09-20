@@ -36,7 +36,7 @@ proc find*(db: Database[AsyncSocket], coll: string,query = bson(),
   max = bsonNull(), min = bsonNull(), returnKey = false, showRecordId = false,
   tailable = false, awaitData = false, oplogReplay = false,
   noCursorTimeout = false, partial = false,
-  collation = bsonNull(), explain = ""): Future[BsonDocument]{.multisock.} =
+  collation = bsonNull(), explain = ""): Future[BsonDocument]{.multisock, gcsafe.} =
   var q = bson({ find: coll, filter: query })
   for field, val in {
     "sort": sort,

@@ -14,7 +14,7 @@ func flags*(d: Database): int32 = d.db.flags as int32
 
 proc sendOps*(q: BsonDocument, db: Database[AsyncSocket], name = "", cmd = ckRead,
   compression = cidNoop):
-  Future[ReplyFormat]{.multisock.} =
+  Future[ReplyFormat]{.multisock, gcsafe.} =
   ## A helper utility which greatly simplify actual Database command
   ## queries. Any new command implementation usually use this
   ## helper proc. Cmd argument is needed to recognize what kind
@@ -93,7 +93,7 @@ proc proceed*(db: Database[AsyncSocket], q: BsonDocument, dbname = "", cmd = ckR
 
 #template crudops(db: Database, q: BsonDocument): untyped {.multisock.} =
 proc crudops*(db: Database[AsyncSocket], q: BsonDocument, dbname = "", cmd = ckRead):
-  Future[BsonDocument]{.multisock.} =
+  Future[BsonDocument]{.multisock, gcsafe.} =
   ## About the same as ``proceed`` but this will return a BsonDocument
   ## compared to ``proceed`` that return ``WriteResult``.
   let compressions = db.db.compressions
