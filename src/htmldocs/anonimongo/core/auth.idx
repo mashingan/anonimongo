@@ -1,4 +1,2 @@
-nimTitle	auth	anonimongo/core/auth.html	module src/anonimongo/core/auth		0
-nim	authenticate	anonimongo/core/auth.html#authenticate,Socket,string,string,typedesc,string	proc authenticate(sock: Socket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = "admin.$cmd"): bool		130
-nim	authenticate	anonimongo/core/auth.html#authenticate,AsyncSocket,string,string,typedesc,string	proc authenticate(sock: AsyncSocket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = "admin.$cmd"): Future[bool]		9
-nimgrp	authenticate	anonimongo/core/auth.html#authenticate-procs-all	proc		8
+authenticate	anonimongo/core/auth.html#authenticate,Socket,string,string,typedesc,string	auth: authenticate(sock: Socket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): bool	
+authenticate	anonimongo/core/auth.html#authenticate,AsyncSocket,string,string,typedesc,string	auth: authenticate(sock: AsyncSocket; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): Future[bool]	

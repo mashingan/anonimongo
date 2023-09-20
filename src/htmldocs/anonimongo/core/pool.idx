@@ -1,20 +1,16 @@
-nimTitle	pool	anonimongo/core/pool.html	module src/anonimongo/core/pool		0
-nim	Connection	anonimongo/core/pool.html#Connection	object Connection		13
-nim	Pool	anonimongo/core/pool.html#Pool	type Pool		19
-nim	connections	anonimongo/core/pool.html#connections,Pool[T: MultiSock]	proc connections[T: MultiSock](p: Pool[T]): lent TableRef[int, Connection[T]]		25
-nim	initConnection	anonimongo/core/pool.html#initConnection,int	proc initConnection[T: MultiSock](id = 0): Connection[T]		29
-nim	contains	anonimongo/core/pool.html#contains,Pool,int	proc contains[T: MultiSock](p: Pool; i: int): bool		37
-nim	`[]`	anonimongo/core/pool.html#[],Pool[T: MultiSock],int	proc `[]`[T: MultiSock](p: Pool[T]; i: int): lent Connection[T]		41
-nim	`[]=`	anonimongo/core/pool.html#[]=,Pool,int,Connection[T: MultiSock]	proc `[]=`[T: MultiSock](p: Pool; i: int; c: Connection[T])		45
-nim	initPool	anonimongo/core/pool.html#initPool,int	proc initPool[T: MultiSock](size = 16): Pool[T]		49
-nim	getConn	anonimongo/core/pool.html#getConn,Pool[AsyncSocket]	proc getConn(p: Pool[AsyncSocket]): Future[(int, Connection[AsyncSocket])]		60
-nim	getConn	anonimongo/core/pool.html#getConn,Pool[Socket]	proc getConn(p: Pool[Socket]): (int, Connection[Socket])		75
-nim	connect	anonimongo/core/pool.html#connect,Pool[Socket],string,int	proc connect(p: Pool[Socket]; address: string; port: int): void		130
-nim	connect	anonimongo/core/pool.html#connect,Pool[AsyncSocket],string,int	proc connect(p: Pool[AsyncSocket]; address: string; port: int): Future[void]		82
-nim	close	anonimongo/core/pool.html#close,Pool[T: MultiSock]	proc close[T: MultiSock](p: Pool[T])		89
-nim	endConn	anonimongo/core/pool.html#endConn,Pool,Positive	proc endConn(p: Pool; i: Positive)		100
-nim	authenticate	anonimongo/core/pool.html#authenticate,Pool[AsyncSocket],string,string,typedesc,string	proc authenticate(p: Pool[AsyncSocket]; user, pass: string;\n             T: typedesc = Sha256Digest; dbname = "admin.$cmd"): Future[bool]		105
-nim	authenticate	anonimongo/core/pool.html#authenticate,Pool[Socket],string,string,typedesc,string	proc authenticate(p: Pool[Socket]; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = "admin.$cmd"): bool		124
-nimgrp	connect	anonimongo/core/pool.html#connect-procs-all	proc		82
-nimgrp	getconn	anonimongo/core/pool.html#getConn-procs-all	proc		60
-nimgrp	authenticate	anonimongo/core/pool.html#authenticate-procs-all	proc		104
+Connection	anonimongo/core/pool.html#Connection	pool: Connection	
+Pool	anonimongo/core/pool.html#Pool	pool: Pool	
+connections	anonimongo/core/pool.html#connections,Pool[T: MultiSock]	pool: connections[T: MultiSock](p: Pool[T]): lent TableRef[int, Connection[T]]	
+initConnection	anonimongo/core/pool.html#initConnection,int	pool: initConnection[T: MultiSock](id = 0): Connection[T]	
+contains	anonimongo/core/pool.html#contains,Pool,int	pool: contains[T: MultiSock](p: Pool; i: int): bool	
+`[]`	anonimongo/core/pool.html#[],Pool[T: MultiSock],int	pool: `[]`[T: MultiSock](p: Pool[T]; i: int): lent Connection[T]	
+`[]=`	anonimongo/core/pool.html#[]=,Pool,int,Connection[T: MultiSock]	pool: `[]=`[T: MultiSock](p: Pool; i: int; c: Connection[T])	
+initPool	anonimongo/core/pool.html#initPool,int	pool: initPool[T: MultiSock](size = 16): Pool[T]	
+getConn	anonimongo/core/pool.html#getConn,Pool[AsyncSocket]	pool: getConn(p: Pool[AsyncSocket]): Future[(int, Connection[AsyncSocket])]	
+getConn	anonimongo/core/pool.html#getConn,Pool[Socket]	pool: getConn(p: Pool[Socket]): (int, Connection[Socket])	
+connect	anonimongo/core/pool.html#connect,Pool[Socket],string,int	pool: connect(p: Pool[Socket]; address: string; port: int): void	
+connect	anonimongo/core/pool.html#connect,Pool[AsyncSocket],string,int	pool: connect(p: Pool[AsyncSocket]; address: string; port: int): Future[void]	
+close	anonimongo/core/pool.html#close,Pool[T: MultiSock]	pool: close[T: MultiSock](p: Pool[T])	
+endConn	anonimongo/core/pool.html#endConn,Pool,Positive	pool: endConn(p: Pool; i: Positive)	
+authenticate	anonimongo/core/pool.html#authenticate,Pool[AsyncSocket],string,string,typedesc,string	pool: authenticate(p: Pool[AsyncSocket]; user, pass: string;\n             T: typedesc = Sha256Digest; dbname = &quot;admin.$cmd&quot;): Future[bool]	
+authenticate	anonimongo/core/pool.html#authenticate,Pool[Socket],string,string,typedesc,string	pool: authenticate(p: Pool[Socket]; user, pass: string; T: typedesc = Sha256Digest;\n             dbname = &quot;admin.$cmd&quot;): bool	
