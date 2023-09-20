@@ -1,64 +1,59 @@
-nimTitle	types	anonimongo/core/types.html	module src/anonimongo/core/types		0
-nim	poolconn	anonimongo/core/types.html#poolconn	const poolconn		17
-nim	verbose	anonimongo/core/types.html#verbose	const verbose		18
-nim	verifypeer	anonimongo/core/types.html#verifypeer	const verifypeer		19
-nim	cafile	anonimongo/core/types.html#cafile	const cafile		20
-nim	MongoConn	anonimongo/core/types.html#MongoConn	type MongoConn		28
-nim	Mongo	anonimongo/core/types.html#Mongo	type Mongo		38
-nim	ReadPreference	anonimongo/core/types.html#ReadPreference	enum ReadPreference		58
-nim	SslInfo	anonimongo/core/types.html#SslInfo	object SslInfo		65
-nim	Database	anonimongo/core/types.html#Database	type Database		73
-nim	Collection	anonimongo/core/types.html#Collection	type Collection		78
-nim	Cursor	anonimongo/core/types.html#Cursor	object Cursor		85
-nim	Query	anonimongo/core/types.html#Query	object Query		94
-nim	wkSingle	anonimongo/core/types.html#wkSingle	WriteKind.wkSingle		111
-nim	wkMany	anonimongo/core/types.html#wkMany	WriteKind.wkMany		111
-nim	WriteKind	anonimongo/core/types.html#WriteKind	enum WriteKind		111
-nim	WriteResult	anonimongo/core/types.html#WriteResult	object WriteResult		114
-nim	BulkResult	anonimongo/core/types.html#BulkResult	object BulkResult		128
-nim	GridFS	anonimongo/core/types.html#GridFS	type GridFS		133
-nim	ckWrite	anonimongo/core/types.html#ckWrite	CommandKind.ckWrite		148
-nim	ckRead	anonimongo/core/types.html#ckRead	CommandKind.ckRead		148
-nim	CommandKind	anonimongo/core/types.html#CommandKind	enum CommandKind		148
-nim	MongoError	anonimongo/core/types.html#MongoError	object MongoError		155
-nim	MultiUri	anonimongo/core/types.html#MultiUri	type MultiUri		157
-nim	MongoUri	anonimongo/core/types.html#MongoUri	type MongoUri		159
-nim	initSslInfo	anonimongo/core/types.html#initSslInfo,string,string	proc initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo		181
-nim	newMongo	anonimongo/core/types.html#newMongo,string,int	proc newMongo[S: MultiSock](host = "localhost"; port = 27017; master = true;\n                       poolconn = poolconn; sslinfo = SslInfo();\n                       ssl = defined(ssl)): Mongo[S]		275
-nim	newMongo	anonimongo/core/types.html#newMongo,MongoUri,string,int	proc newMongo[S: MultiSock](muri: MongoUri; poolconn = poolconn;\n                       dnsserver = "8.8.8.8"; dnsport = 53): Mongo[S]		296
-nim	newMongo	anonimongo/core/types.html#newMongo,Uri	proc newMongo[S: MultiSock](uri: Uri; poolconn = poolconn): Mongo[S]		381
-nim	tls	anonimongo/core/types.html#tls,Mongo	proc tls(m: Mongo): bool		443
-nim	authenticated	anonimongo/core/types.html#authenticated,Mongo	proc authenticated(m: Mongo): bool		444
-nim	authenticated	anonimongo/core/types.html#authenticated,MongoConn	proc authenticated(m: MongoConn): bool		445
-nim	host	anonimongo/core/types.html#host,MongoConn	proc host(m: MongoConn): string		446
-nim	port	anonimongo/core/types.html#port,MongoConn	proc port(m: MongoConn): Port		447
-nim	query	anonimongo/core/types.html#query,Mongo	proc query(m: Mongo): lent TableRef[string, seq[string]]		448
-nim	flags	anonimongo/core/types.html#flags,Mongo	proc flags(m: Mongo): QueryFlags		450
-nim	main	anonimongo/core/types.html#main,Mongo[T: MultiSock]	proc main[T: MultiSock](m: Mongo[T]): MongoConn[T]		458
-nim	mainPreferred	anonimongo/core/types.html#mainPreferred,Mongo[T: MultiSock]	proc mainPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]		464
-nim	secondary	anonimongo/core/types.html#secondary,Mongo[T: MultiSock]	proc secondary[T: MultiSock](m: Mongo[T]): MongoConn[T]		472
-nim	secondaryPreferred	anonimongo/core/types.html#secondaryPreferred,Mongo[T: MultiSock]	proc secondaryPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]		478
-nim	hasUserAuth	anonimongo/core/types.html#hasUserAuth,Mongo	proc hasUserAuth(m: Mongo): bool		486
-nim	authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket],string,string	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool		130
-nim	authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket],string,string	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket];\n    user, pass: string): Future[bool]		507
-nim	authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket]	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]): bool		130
-nim	authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket]	proc authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]		515
-nim	appname=	anonimongo/core/types.html#appname=,Mongo,string	proc appname=(m: Mongo; name: string)		523
-nim	appname	anonimongo/core/types.html#appname,Mongo	proc appname(m: Mongo): string		527
-nim	username	anonimongo/core/types.html#username,Mongo	proc username(m: Mongo): string		535
-nim	tailableCursor	anonimongo/core/types.html#tailableCursor,Mongo	proc tailableCursor(m: Mongo)		538
-nim	noTailable	anonimongo/core/types.html#noTailable,Mongo	proc noTailable(m: Mongo)		542
-nim	isTailable	anonimongo/core/types.html#isTailable,Mongo	proc isTailable(m: Mongo): bool		546
-nim	slaveOk	anonimongo/core/types.html#slaveOk,Mongo	proc slaveOk(m: Mongo)		550
-nim	noSlave	anonimongo/core/types.html#noSlave,Mongo	proc noSlave(m: Mongo)		554
-nim	`[]`	anonimongo/core/types.html#[],Mongo[T: MultiSock],string	proc `[]`[T: MultiSock](m: Mongo[T]; name: string): Database[T]		558
-nim	`[]`	anonimongo/core/types.html#[],Database[T: MultiSock],string	proc `[]`[T: MultiSock](dbase: Database[T]; name: string): Collection[T]		565
-nim	dbname	anonimongo/core/types.html#dbname,Cursor	proc dbname(cur: Cursor): string		573
-nim	collname	anonimongo/core/types.html#collname,Cursor	proc collname(cur: Cursor): string		575
-nim	close	anonimongo/core/types.html#close,Mongo	proc close(m: Mongo)		581
-nim	initQuery	anonimongo/core/types.html#initQuery,Collection[T: MultiSock],int32,int32,int32	proc initQuery[T: MultiSock](query = bson(); collection: Collection[T] = nil;\n                        skip = 0'i32; limit = 0'i32; batchSize = 101'i32): Query[\n    T]		585
-nim	toCursor	anonimongo/core/types.html#toCursor,BsonDocument	proc toCursor[S: MultiSock](b: BsonDocument): Cursor[S]		597
-nimgrp	newmongo	anonimongo/core/types.html#newMongo-procs-all	proc		275
-nimgrp	authenticate	anonimongo/core/types.html#authenticate-procs-all	proc		506
-nimgrp	authenticated	anonimongo/core/types.html#authenticated-procs-all	proc		444
-nimgrp	[]	anonimongo/core/types.html#[]-procs-all	proc		558
+poolconn	anonimongo/core/types.html#poolconn	types: poolconn	
+verbose	anonimongo/core/types.html#verbose	types: verbose	
+verifypeer	anonimongo/core/types.html#verifypeer	types: verifypeer	
+cafile	anonimongo/core/types.html#cafile	types: cafile	
+MongoConn	anonimongo/core/types.html#MongoConn	types: MongoConn	
+Mongo	anonimongo/core/types.html#Mongo	types: Mongo	
+ReadPreference	anonimongo/core/types.html#ReadPreference	types: ReadPreference	
+SslInfo	anonimongo/core/types.html#SslInfo	types: SslInfo	
+Database	anonimongo/core/types.html#Database	types: Database	
+Collection	anonimongo/core/types.html#Collection	types: Collection	
+Cursor	anonimongo/core/types.html#Cursor	types: Cursor	
+Query	anonimongo/core/types.html#Query	types: Query	
+wkSingle	anonimongo/core/types.html#wkSingle	WriteKind.wkSingle	
+wkMany	anonimongo/core/types.html#wkMany	WriteKind.wkMany	
+WriteKind	anonimongo/core/types.html#WriteKind	types: WriteKind	
+WriteResult	anonimongo/core/types.html#WriteResult	types: WriteResult	
+BulkResult	anonimongo/core/types.html#BulkResult	types: BulkResult	
+GridFS	anonimongo/core/types.html#GridFS	types: GridFS	
+ckWrite	anonimongo/core/types.html#ckWrite	CommandKind.ckWrite	
+ckRead	anonimongo/core/types.html#ckRead	CommandKind.ckRead	
+CommandKind	anonimongo/core/types.html#CommandKind	types: CommandKind	
+MongoError	anonimongo/core/types.html#MongoError	types: MongoError	
+MultiUri	anonimongo/core/types.html#MultiUri	types: MultiUri	
+MongoUri	anonimongo/core/types.html#MongoUri	types: MongoUri	
+initSslInfo	anonimongo/core/types.html#initSslInfo,string,string	types: initSslInfo(keyfile, certfile: string; prot = protSSLv23): SslInfo	
+newMongo	anonimongo/core/types.html#newMongo,string,int	types: newMongo[S: MultiSock](host = &quot;localhost&quot;; port = 27017; master = true;\n                       poolconn = poolconn; sslinfo = SslInfo();\n                       ssl = defined(ssl)): Mongo[S]	
+newMongo	anonimongo/core/types.html#newMongo,MongoUri,string,int	types: newMongo[S: MultiSock](muri: MongoUri; poolconn = poolconn;\n                       dnsserver = &quot;8.8.8.8&quot;; dnsport = 53): Mongo[S]	
+newMongo	anonimongo/core/types.html#newMongo,Uri	types: newMongo[S: MultiSock](uri: Uri; poolconn = poolconn): Mongo[S]	
+tls	anonimongo/core/types.html#tls,Mongo	types: tls(m: Mongo): bool	
+authenticated	anonimongo/core/types.html#authenticated,Mongo	types: authenticated(m: Mongo): bool	
+authenticated	anonimongo/core/types.html#authenticated,MongoConn	types: authenticated(m: MongoConn): bool	
+host	anonimongo/core/types.html#host,MongoConn	types: host(m: MongoConn): string	
+port	anonimongo/core/types.html#port,MongoConn	types: port(m: MongoConn): Port	
+query	anonimongo/core/types.html#query,Mongo	types: query(m: Mongo): lent TableRef[string, seq[string]]	
+flags	anonimongo/core/types.html#flags,Mongo	types: flags(m: Mongo): QueryFlags	
+main	anonimongo/core/types.html#main,Mongo[T: MultiSock]	types: main[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+mainPreferred	anonimongo/core/types.html#mainPreferred,Mongo[T: MultiSock]	types: mainPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+secondary	anonimongo/core/types.html#secondary,Mongo[T: MultiSock]	types: secondary[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+secondaryPreferred	anonimongo/core/types.html#secondaryPreferred,Mongo[T: MultiSock]	types: secondaryPreferred[T: MultiSock](m: Mongo[T]): MongoConn[T]	
+hasUserAuth	anonimongo/core/types.html#hasUserAuth,Mongo	types: hasUserAuth(m: Mongo): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket],string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]; user, pass: string): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket],string,string	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket];\n    user, pass: string): Future[bool]	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[Socket]	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[Socket]): bool	
+authenticate	anonimongo/core/types.html#authenticate,Mongo[AsyncSocket]	types: authenticate[T: SHA1Digest | SHA256Digest](m: Mongo[AsyncSocket]): Future[bool]	
+appname=	anonimongo/core/types.html#appname=,Mongo,string	types: appname=(m: Mongo; name: string)	
+appname	anonimongo/core/types.html#appname,Mongo	types: appname(m: Mongo): string	
+username	anonimongo/core/types.html#username,Mongo	types: username(m: Mongo): string	
+tailableCursor	anonimongo/core/types.html#tailableCursor,Mongo	types: tailableCursor(m: Mongo)	
+noTailable	anonimongo/core/types.html#noTailable,Mongo	types: noTailable(m: Mongo)	
+isTailable	anonimongo/core/types.html#isTailable,Mongo	types: isTailable(m: Mongo): bool	
+slaveOk	anonimongo/core/types.html#slaveOk,Mongo	types: slaveOk(m: Mongo)	
+noSlave	anonimongo/core/types.html#noSlave,Mongo	types: noSlave(m: Mongo)	
+`[]`	anonimongo/core/types.html#[],Mongo[T: MultiSock],string	types: `[]`[T: MultiSock](m: Mongo[T]; name: string): Database[T]	
+`[]`	anonimongo/core/types.html#[],Database[T: MultiSock],string	types: `[]`[T: MultiSock](dbase: Database[T]; name: string): Collection[T]	
+dbname	anonimongo/core/types.html#dbname,Cursor	types: dbname(cur: Cursor): string	
+collname	anonimongo/core/types.html#collname,Cursor	types: collname(cur: Cursor): string	
+close	anonimongo/core/types.html#close,Mongo	types: close(m: Mongo)	
+initQuery	anonimongo/core/types.html#initQuery,Collection[T: MultiSock],int32,int32,int32	types: initQuery[T: MultiSock](query = bson(); collection: Collection[T] = nil;\n                        skip = 0&apos;i32; limit = 0&apos;i32; batchSize = 101&apos;i32): Query[\n    T]	
+toCursor	anonimongo/core/types.html#toCursor,BsonDocument	types: toCursor[S: MultiSock](b: BsonDocument): Cursor[S]	
