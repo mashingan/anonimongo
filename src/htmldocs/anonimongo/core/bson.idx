@@ -1,118 +1,133 @@
-writeLE	anonimongo/core/bson.html#writeLE.t,Streamable,T	bson: writeLE[T](s: var Streamable; val: T): untyped	
-readIntLE	anonimongo/core/bson.html#readIntLE.t,Streamable,typedesc	bson: readIntLE(s: var Streamable; which: typedesc): untyped	
-peekInt32LE	anonimongo/core/bson.html#peekInt32LE.t,Streamable	bson: peekInt32LE(s: var Streamable): untyped	
-bytes	anonimongo/core/bson.html#bytes,string	bson: bytes(s: string): seq[byte]	
-bytes	anonimongo/core/bson.html#bytes,Oid	bson: bytes(o: Oid): seq[byte]	
-stringbytes	anonimongo/core/bson.html#stringbytes,seq[byte]	bson: stringbytes(s: seq[byte]): string	
-`as`	anonimongo/core/bson.html#as.t,untyped,untyped	bson: `as`(a, b: untyped): untyped	
-BsonBase	anonimongo/core/bson.html#BsonBase	bson: BsonBase	
-BsonInt32	anonimongo/core/bson.html#BsonInt32	bson: BsonInt32	
-BsonInt64	anonimongo/core/bson.html#BsonInt64	bson: BsonInt64	
-BsonTimestamp	anonimongo/core/bson.html#BsonTimestamp	bson: BsonTimestamp	
-BsonDouble	anonimongo/core/bson.html#BsonDouble	bson: BsonDouble	
-BsonNull	anonimongo/core/bson.html#BsonNull	bson: BsonNull	
-BsonBool	anonimongo/core/bson.html#BsonBool	bson: BsonBool	
-BsonTime	anonimongo/core/bson.html#BsonTime	bson: BsonTime	
-BsonArray	anonimongo/core/bson.html#BsonArray	bson: BsonArray	
-BsonString	anonimongo/core/bson.html#BsonString	bson: BsonString	
-BsonJs	anonimongo/core/bson.html#BsonJs	bson: BsonJs	
-BsonEmbed	anonimongo/core/bson.html#BsonEmbed	bson: BsonEmbed	
-BsonObjectId	anonimongo/core/bson.html#BsonObjectId	bson: BsonObjectId	
-BsonBinary	anonimongo/core/bson.html#BsonBinary	bson: BsonBinary	
-BsonDocument	anonimongo/core/bson.html#BsonDocument	bson: BsonDocument	
-bkEmptyArray	anonimongo/core/bson.html#bkEmptyArray	BsonKind.bkEmptyArray	
-bkDouble	anonimongo/core/bson.html#bkDouble	BsonKind.bkDouble	
-bkString	anonimongo/core/bson.html#bkString	BsonKind.bkString	
-bkEmbed	anonimongo/core/bson.html#bkEmbed	BsonKind.bkEmbed	
-bkArray	anonimongo/core/bson.html#bkArray	BsonKind.bkArray	
-bkBinary	anonimongo/core/bson.html#bkBinary	BsonKind.bkBinary	
-bkUndefined	anonimongo/core/bson.html#bkUndefined	BsonKind.bkUndefined	
-bkObjectId	anonimongo/core/bson.html#bkObjectId	BsonKind.bkObjectId	
-bkBool	anonimongo/core/bson.html#bkBool	BsonKind.bkBool	
-bkTime	anonimongo/core/bson.html#bkTime	BsonKind.bkTime	
-bkNull	anonimongo/core/bson.html#bkNull	BsonKind.bkNull	
-bkRegex	anonimongo/core/bson.html#bkRegex	BsonKind.bkRegex	
-bkDbPointer	anonimongo/core/bson.html#bkDbPointer	BsonKind.bkDbPointer	
-bkJs	anonimongo/core/bson.html#bkJs	BsonKind.bkJs	
-bkSymbol	anonimongo/core/bson.html#bkSymbol	BsonKind.bkSymbol	
-bkJsScope	anonimongo/core/bson.html#bkJsScope	BsonKind.bkJsScope	
-bkInt32	anonimongo/core/bson.html#bkInt32	BsonKind.bkInt32	
-bkTimestamp	anonimongo/core/bson.html#bkTimestamp	BsonKind.bkTimestamp	
-bkInt64	anonimongo/core/bson.html#bkInt64	BsonKind.bkInt64	
-bkDecimal	anonimongo/core/bson.html#bkDecimal	BsonKind.bkDecimal	
-bkMaxKey	anonimongo/core/bson.html#bkMaxKey	BsonKind.bkMaxKey	
-bkMinKey	anonimongo/core/bson.html#bkMinKey	BsonKind.bkMinKey	
-BsonKind	anonimongo/core/bson.html#BsonKind	bson: BsonKind	
-stGeneric	anonimongo/core/bson.html#stGeneric	BsonSubtype.stGeneric	
-stFunction	anonimongo/core/bson.html#stFunction	BsonSubtype.stFunction	
-stBinaryOld	anonimongo/core/bson.html#stBinaryOld	BsonSubtype.stBinaryOld	
-stUuidOld	anonimongo/core/bson.html#stUuidOld	BsonSubtype.stUuidOld	
-stUuid	anonimongo/core/bson.html#stUuid	BsonSubtype.stUuid	
-stMd5	anonimongo/core/bson.html#stMd5	BsonSubtype.stMd5	
-BsonSubtype	anonimongo/core/bson.html#BsonSubtype	bson: BsonSubtype	
-BsonFetchError	anonimongo/core/bson.html#BsonFetchError	bson: BsonFetchError	
-pairs	anonimongo/core/bson.html#pairs.i,BsonDocument	bson: pairs(b: BsonDocument): (string, BsonBase)	
-mpairs	anonimongo/core/bson.html#mpairs.i,BsonDocument	bson: mpairs(b: BsonDocument): (unown string, var BsonBase)	
-ms	anonimongo/core/bson.html#ms,Time	bson: ms(a: Time): int64	
-`==`	anonimongo/core/bson.html#==,BsonBase,Time	bson: `==`(b: BsonBase; t: Time): bool	
-`==`	anonimongo/core/bson.html#==,Time,BsonBase	bson: `==`(t: Time; b: BsonBase): bool	
-contains	anonimongo/core/bson.html#contains,BsonDocument,string	bson: contains(b: BsonDocument; key: string): bool	
-contains	anonimongo/core/bson.html#contains,BsonBase,string	bson: contains(b: BsonBase; key: string): bool	
-`[]`	anonimongo/core/bson.html#[],BsonDocument,sinkstring	bson: `[]`(b: BsonDocument; key: sink string): BsonBase	
-`[]`	anonimongo/core/bson.html#[],BsonBase,sinkstring	bson: `[]`(b: BsonBase; key: sink string): BsonBase	
-`[]`	anonimongo/core/bson.html#[],BsonBase,sinkint	bson: `[]`(b: BsonBase; idx: sink int): BsonBase	
-`[]`	anonimongo/core/bson.html#[],BsonBase,sinkT	bson: `[]`[T: int | string](b: BsonBase; key: sink T): BsonBase	
-`[]=`	anonimongo/core/bson.html#[]=,BsonDocument,sinkstring,BsonBase	bson: `[]=`(b: var BsonDocument; key: sink string; val: BsonBase)	
-mget	anonimongo/core/bson.html#mget,BsonDocument,sinkstring	bson: mget(b: var BsonDocument; key: sink string): var BsonBase	
-mget	anonimongo/core/bson.html#mget,BsonBase,sinkstring	bson: mget(b: var BsonBase; key: sink string): var BsonBase	
-mget	anonimongo/core/bson.html#mget,BsonBase,sinkint	bson: mget(b: var BsonBase; index: sink int): var BsonBase	
-`[]=`	anonimongo/core/bson.html#[]=,BsonBase,sinkstring,BsonBase	bson: `[]=`(b: var BsonBase; key: sink string; val: BsonBase)	
-add	anonimongo/core/bson.html#add,BsonArray,BsonBase	bson: add(b: var BsonArray; v: BsonBase)	
-add	anonimongo/core/bson.html#add,BsonBase,BsonBase	bson: add(b: var BsonBase; v: BsonBase)	
-del	anonimongo/core/bson.html#del,BsonDocument,string	bson: del(b: var BsonDocument; key: string)	
-len	anonimongo/core/bson.html#len,BsonDocument	bson: len(b: BsonDocument): int	
-len	anonimongo/core/bson.html#len,BsonArray	bson: len(b: BsonArray): int	
-len	anonimongo/core/bson.html#len,BsonBase	bson: len(b: BsonBase): int	
-keys	anonimongo/core/bson.html#keys.i,BsonDocument	bson: keys(b: BsonDocument): string	
-items	anonimongo/core/bson.html#items.i,BsonArray	bson: items(a: BsonArray): BsonBase	
-pairs	anonimongo/core/bson.html#pairs.i,BsonArray	bson: pairs(a: BsonArray): (int, BsonBase)	
-`$`	anonimongo/core/bson.html#$,BsonArray	bson: `$`(a: BsonArray): string	
-`$`	anonimongo/core/bson.html#$,BsonBase	bson: `$`(v: BsonBase): string	
-`$`	anonimongo/core/bson.html#$,BsonDocument	bson: `$`(doc: BsonDocument): string	
-encode	anonimongo/core/bson.html#encode,BsonDocument	bson: encode(doc: BsonDocument): (int, string)	
-toBson	anonimongo/core/bson.html#toBson.c,BsonBase	bson: toBson(v: BsonBase): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c	bson: toBson(value: int | int32): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,int64	bson: toBson(value: int64): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c_2	bson: toBson(values: string | seq[Rune]): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,SomeFloat	bson: toBson(value: SomeFloat): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,seq[BsonBase]	bson: toBson(value: seq[BsonBase]): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,bool	bson: toBson(value: bool): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,Time	bson: toBson(value: Time): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,Oid	bson: toBson(value: Oid): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,BsonDocument	bson: toBson(value: BsonDocument): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,openArray[byte]	bson: toBson(value: openArray[byte]): BsonBase	
-toBson	anonimongo/core/bson.html#toBson.c,TimestampInternal	bson: toBson(value: TimestampInternal): BsonBase	
-bsonNull	anonimongo/core/bson.html#bsonNull_2	bson: bsonNull(): BsonBase	
-isNil	anonimongo/core/bson.html#isNil,BsonBase	bson: isNil(b: BsonBase): bool	
-isNil	anonimongo/core/bson.html#isNil,BsonDocument	bson: isNil(b: BsonDocument): bool	
-bsonArray	anonimongo/core/bson.html#bsonArray,varargs[BsonBase,toBson]	bson: bsonArray(args: varargs[BsonBase, toBson]): BsonBase	
-bsonBinary	anonimongo/core/bson.html#bsonBinary,string	bson: bsonBinary(binstr: string; subtype = stGeneric): BsonBase	
-bsonBinary	anonimongo/core/bson.html#bsonBinary,seq[byte]	bson: bsonBinary(binseq: seq[byte]; subtype = stGeneric): BsonBase	
-bsonJs	anonimongo/core/bson.html#bsonJs_2	bson: bsonJs(code: string | seq[Rune]): BsonBase	
-newBson	anonimongo/core/bson.html#newBson,Streamable,string	bson: newBson(table = newOrderedTable(); stream: Streamable = newStream();\n        filename = &quot;&quot;): BsonDocument	
-decode	anonimongo/core/bson.html#decode,string	bson: decode(strbytes: string): BsonDocument	
-newBson	anonimongo/core/bson.html#newBson,varargs[]	bson: newBson(table: varargs[(string, BsonBase)]): BsonDocument	
-ofInt32	anonimongo/core/bson.html#ofInt32.c,BsonBase	bson: ofInt32(b: BsonBase): int32	
-ofInt64	anonimongo/core/bson.html#ofInt64.c,BsonBase	bson: ofInt64(b: BsonBase): int64	
-ofInt	anonimongo/core/bson.html#ofInt.c,BsonBase	bson: ofInt(b: BsonBase): int	
-ofDouble	anonimongo/core/bson.html#ofDouble.c,BsonBase	bson: ofDouble(b: BsonBase): float64	
-ofString	anonimongo/core/bson.html#ofString.c,BsonBase	bson: ofString(b: BsonBase): string	
-ofTime	anonimongo/core/bson.html#ofTime.c,BsonBase	bson: ofTime(b: BsonBase): Time	
-ofObjectId	anonimongo/core/bson.html#ofObjectId.c,BsonBase	bson: ofObjectId(b: BsonBase): Oid	
-ofArray	anonimongo/core/bson.html#ofArray.c,BsonBase	bson: ofArray(b: BsonBase): seq[BsonBase]	
-ofBool	anonimongo/core/bson.html#ofBool.c,BsonBase	bson: ofBool(b: BsonBase): bool	
-ofEmbedded	anonimongo/core/bson.html#ofEmbedded.c,BsonBase	bson: ofEmbedded(b: BsonBase): BsonDocument	
-ofBinary	anonimongo/core/bson.html#ofBinary.c,BsonBase	bson: ofBinary(b: BsonBase): seq[byte]	
-ofTimestamp	anonimongo/core/bson.html#ofTimestamp.c,BsonBase	bson: ofTimestamp(b: BsonBase): TimestampInternal	
-bson	anonimongo/core/bson.html#bson.t	bson: bson(): untyped	
-Bson	anonimongo/core/bson.html#bson	 Bson	
+nimTitle	bson	anonimongo/core/bson.html	module src/anonimongo/core/bson		0
+nim	writeLE	anonimongo/core/bson.html#writeLE.t,Streamable,T	template writeLE[T](s: var Streamable; val: T): untyped		64
+nim	readIntLE	anonimongo/core/bson.html#readIntLE.t,Streamable,typedesc	template readIntLE(s: var Streamable; which: typedesc): untyped		80
+nim	peekInt32LE	anonimongo/core/bson.html#peekInt32LE.t,Streamable	template peekInt32LE(s: var Streamable): untyped		110
+nim	bytes	anonimongo/core/bson.html#bytes,string	proc bytes(s: string): seq[byte]		120
+nim	bytes	anonimongo/core/bson.html#bytes,Oid	proc bytes(o: Oid): seq[byte]		126
+nim	stringbytes	anonimongo/core/bson.html#stringbytes,seq[byte]	proc stringbytes(s: seq[byte]): string		137
+nim	`as`	anonimongo/core/bson.html#as.t,untyped,untyped	template `as`(a, b: untyped): untyped		143
+nim	BsonBase	anonimongo/core/bson.html#BsonBase	type BsonBase		148
+nim	BsonInt32	anonimongo/core/bson.html#BsonInt32	type BsonInt32		153
+nim	BsonInt64	anonimongo/core/bson.html#BsonInt64	type BsonInt64		156
+nim	BsonTimestamp	anonimongo/core/bson.html#BsonTimestamp	type BsonTimestamp		163
+nim	BsonDouble	anonimongo/core/bson.html#BsonDouble	type BsonDouble		168
+nim	BsonNull	anonimongo/core/bson.html#BsonNull	type BsonNull		171
+nim	BsonBool	anonimongo/core/bson.html#BsonBool	type BsonBool		173
+nim	BsonTime	anonimongo/core/bson.html#BsonTime	type BsonTime		176
+nim	BsonArray	anonimongo/core/bson.html#BsonArray	type BsonArray		179
+nim	BsonString	anonimongo/core/bson.html#BsonString	type BsonString		182
+nim	BsonJs	anonimongo/core/bson.html#BsonJs	type BsonJs		187
+nim	BsonEmbed	anonimongo/core/bson.html#BsonEmbed	type BsonEmbed		192
+nim	BsonObjectId	anonimongo/core/bson.html#BsonObjectId	type BsonObjectId		198
+nim	BsonBinary	anonimongo/core/bson.html#BsonBinary	type BsonBinary		201
+nim	BsonDocument	anonimongo/core/bson.html#BsonDocument	type BsonDocument		209
+nim	bkEmptyArray	anonimongo/core/bson.html#bkEmptyArray	BsonKind.bkEmptyArray		221
+nim	bkDouble	anonimongo/core/bson.html#bkDouble	BsonKind.bkDouble		221
+nim	bkString	anonimongo/core/bson.html#bkString	BsonKind.bkString		221
+nim	bkEmbed	anonimongo/core/bson.html#bkEmbed	BsonKind.bkEmbed		221
+nim	bkArray	anonimongo/core/bson.html#bkArray	BsonKind.bkArray		221
+nim	bkBinary	anonimongo/core/bson.html#bkBinary	BsonKind.bkBinary		221
+nim	bkUndefined	anonimongo/core/bson.html#bkUndefined	BsonKind.bkUndefined		221
+nim	bkObjectId	anonimongo/core/bson.html#bkObjectId	BsonKind.bkObjectId		221
+nim	bkBool	anonimongo/core/bson.html#bkBool	BsonKind.bkBool		221
+nim	bkTime	anonimongo/core/bson.html#bkTime	BsonKind.bkTime		221
+nim	bkNull	anonimongo/core/bson.html#bkNull	BsonKind.bkNull		221
+nim	bkRegex	anonimongo/core/bson.html#bkRegex	BsonKind.bkRegex		221
+nim	bkDbPointer	anonimongo/core/bson.html#bkDbPointer	BsonKind.bkDbPointer		221
+nim	bkJs	anonimongo/core/bson.html#bkJs	BsonKind.bkJs		221
+nim	bkSymbol	anonimongo/core/bson.html#bkSymbol	BsonKind.bkSymbol		221
+nim	bkJsScope	anonimongo/core/bson.html#bkJsScope	BsonKind.bkJsScope		221
+nim	bkInt32	anonimongo/core/bson.html#bkInt32	BsonKind.bkInt32		221
+nim	bkTimestamp	anonimongo/core/bson.html#bkTimestamp	BsonKind.bkTimestamp		221
+nim	bkInt64	anonimongo/core/bson.html#bkInt64	BsonKind.bkInt64		221
+nim	bkDecimal	anonimongo/core/bson.html#bkDecimal	BsonKind.bkDecimal		221
+nim	bkMaxKey	anonimongo/core/bson.html#bkMaxKey	BsonKind.bkMaxKey		221
+nim	bkMinKey	anonimongo/core/bson.html#bkMinKey	BsonKind.bkMinKey		221
+nim	BsonKind	anonimongo/core/bson.html#BsonKind	enum BsonKind		221
+nim	stGeneric	anonimongo/core/bson.html#stGeneric	BsonSubtype.stGeneric		246
+nim	stFunction	anonimongo/core/bson.html#stFunction	BsonSubtype.stFunction		246
+nim	stBinaryOld	anonimongo/core/bson.html#stBinaryOld	BsonSubtype.stBinaryOld		246
+nim	stUuidOld	anonimongo/core/bson.html#stUuidOld	BsonSubtype.stUuidOld		246
+nim	stUuid	anonimongo/core/bson.html#stUuid	BsonSubtype.stUuid		246
+nim	stMd5	anonimongo/core/bson.html#stMd5	BsonSubtype.stMd5		246
+nim	BsonSubtype	anonimongo/core/bson.html#BsonSubtype	enum BsonSubtype		246
+nim	BsonFetchError	anonimongo/core/bson.html#BsonFetchError	object BsonFetchError		253
+nim	pairs	anonimongo/core/bson.html#pairs.i,BsonDocument	iterator pairs(b: BsonDocument): (string, BsonBase)		256
+nim	mpairs	anonimongo/core/bson.html#mpairs.i,BsonDocument	iterator mpairs(b: BsonDocument): (unown string, var BsonBase)		260
+nim	`$`	anonimongo/core/bson.html#$,BsonBase	proc `$`(v: BsonBase): string		264
+nim	ms	anonimongo/core/bson.html#ms,Time	proc ms(a: Time): int64		266
+nim	`==`	anonimongo/core/bson.html#==,BsonBase,Time	proc `==`(b: BsonBase; t: Time): bool		270
+nim	`==`	anonimongo/core/bson.html#==,Time,BsonBase	proc `==`(t: Time; b: BsonBase): bool		279
+nim	contains	anonimongo/core/bson.html#contains,BsonDocument,string	proc contains(b: BsonDocument; key: string): bool		309
+nim	contains	anonimongo/core/bson.html#contains,BsonBase,string	proc contains(b: BsonBase; key: string): bool		322
+nim	`[]`	anonimongo/core/bson.html#[],BsonDocument,sinkstring	proc `[]`(b: BsonDocument; key: sink string): BsonBase		349
+nim	`[]`	anonimongo/core/bson.html#[],BsonBase,sinkstring	proc `[]`(b: BsonBase; key: sink string): BsonBase		361
+nim	`[]`	anonimongo/core/bson.html#[],BsonBase,sinkint	proc `[]`(b: BsonBase; idx: sink int): BsonBase		379
+nim	`[]`	anonimongo/core/bson.html#[],BsonBase,sinkT	proc `[]`[T: int | string](b: BsonBase; key: sink T): BsonBase		419
+nim	`[]=`	anonimongo/core/bson.html#[]=,BsonDocument,sinkstring,BsonBase	proc `[]=`(b: var BsonDocument; key: sink string; val: BsonBase)		440
+nim	mget	anonimongo/core/bson.html#mget,BsonDocument,sinkstring	proc mget(b: var BsonDocument; key: sink string): var BsonBase		460
+nim	mget	anonimongo/core/bson.html#mget,BsonBase,sinkstring	proc mget(b: var BsonBase; key: sink string): var BsonBase		480
+nim	mget	anonimongo/core/bson.html#mget,BsonBase,sinkint	proc mget(b: var BsonBase; index: sink int): var BsonBase		496
+nim	`[]=`	anonimongo/core/bson.html#[]=,BsonBase,sinkstring,BsonBase	proc `[]=`(b: var BsonBase; key: sink string; val: BsonBase)		508
+nim	add	anonimongo/core/bson.html#add,BsonArray,BsonBase	proc add(b: var BsonArray; v: BsonBase)		517
+nim	add	anonimongo/core/bson.html#add,BsonBase,BsonBase	proc add(b: var BsonBase; v: BsonBase)		528
+nim	del	anonimongo/core/bson.html#del,BsonDocument,string	proc del(b: var BsonDocument; key: string)		537
+nim	len	anonimongo/core/bson.html#len,BsonDocument	proc len(b: BsonDocument): int		552
+nim	len	anonimongo/core/bson.html#len,BsonArray	proc len(b: BsonArray): int		563
+nim	len	anonimongo/core/bson.html#len,BsonBase	proc len(b: BsonBase): int		573
+nim	keys	anonimongo/core/bson.html#keys.i,BsonDocument	iterator keys(b: BsonDocument): string		586
+nim	items	anonimongo/core/bson.html#items.i,BsonArray	iterator items(a: BsonArray): BsonBase		590
+nim	pairs	anonimongo/core/bson.html#pairs.i,BsonArray	iterator pairs(a: BsonArray): (int, BsonBase)		594
+nim	`$`	anonimongo/core/bson.html#$,BsonDocument	proc `$`(doc: BsonDocument): string		603
+nim	`$`	anonimongo/core/bson.html#$,BsonArray	proc `$`(a: BsonArray): string		609
+nim	encode	anonimongo/core/bson.html#encode,BsonDocument	proc encode(doc: BsonDocument): (int, string)		681
+nim	toBson	anonimongo/core/bson.html#toBson.c,BsonBase	converter toBson(v: BsonBase): BsonBase		802
+nim	toBson	anonimongo/core/bson.html#toBson.c	converter toBson(value: int | int32): BsonBase		805
+nim	toBson	anonimongo/core/bson.html#toBson.c,int64	converter toBson(value: int64): BsonBase		809
+nim	toBson	anonimongo/core/bson.html#toBson.c_2	converter toBson(values: string | seq[Rune]): BsonBase		813
+nim	toBson	anonimongo/core/bson.html#toBson.c,SomeFloat	converter toBson(value: SomeFloat): BsonBase		821
+nim	toBson	anonimongo/core/bson.html#toBson.c,seq[BsonBase]	converter toBson(value: seq[BsonBase]): BsonBase		824
+nim	toBson	anonimongo/core/bson.html#toBson.c,bool	converter toBson(value: bool): BsonBase		828
+nim	toBson	anonimongo/core/bson.html#toBson.c,Time	converter toBson(value: Time): BsonBase		831
+nim	toBson	anonimongo/core/bson.html#toBson.c,Oid	converter toBson(value: Oid): BsonBase		834
+nim	toBson	anonimongo/core/bson.html#toBson.c,BsonDocument	converter toBson(value: BsonDocument): BsonBase		837
+nim	toBson	anonimongo/core/bson.html#toBson.c,openArray[byte]	converter toBson(value: openArray[byte]): BsonBase		841
+nim	toBson	anonimongo/core/bson.html#toBson.c,TimestampInternal	converter toBson(value: TimestampInternal): BsonBase		845
+nim	bsonNull	anonimongo/core/bson.html#bsonNull_2	proc bsonNull(): BsonBase		848
+nim	isNil	anonimongo/core/bson.html#isNil,BsonBase	proc isNil(b: BsonBase): bool		852
+nim	isNil	anonimongo/core/bson.html#isNil,BsonDocument	proc isNil(b: BsonDocument): bool		856
+nim	bsonArray	anonimongo/core/bson.html#bsonArray,varargs[BsonBase,toBson]	proc bsonArray(args: varargs[BsonBase, toBson]): BsonBase		860
+nim	bsonBinary	anonimongo/core/bson.html#bsonBinary,string	proc bsonBinary(binstr: string; subtype = stGeneric): BsonBase		864
+nim	bsonBinary	anonimongo/core/bson.html#bsonBinary,seq[byte]	proc bsonBinary(binseq: seq[byte]; subtype = stGeneric): BsonBase		868
+nim	bsonJs	anonimongo/core/bson.html#bsonJs_2	proc bsonJs(code: string | seq[Rune]): BsonBase		872
+nim	newBson	anonimongo/core/bson.html#newBson,Streamable,string	proc newBson(table = newOrderedTable(); stream: Streamable = newStream();\n        filename = ""): BsonDocument		880
+nim	decode	anonimongo/core/bson.html#decode,string	proc decode(strbytes: string): BsonDocument		907
+nim	newBson	anonimongo/core/bson.html#newBson,varargs[]	proc newBson(table: varargs[(string, BsonBase)]): BsonDocument		1014
+nim	ofInt32	anonimongo/core/bson.html#ofInt32.c,BsonBase	converter ofInt32(b: BsonBase): int32		1033
+nim	ofInt64	anonimongo/core/bson.html#ofInt64.c,BsonBase	converter ofInt64(b: BsonBase): int64		1036
+nim	ofInt	anonimongo/core/bson.html#ofInt.c,BsonBase	converter ofInt(b: BsonBase): int		1039
+nim	ofDouble	anonimongo/core/bson.html#ofDouble.c,BsonBase	converter ofDouble(b: BsonBase): float64		1045
+nim	ofString	anonimongo/core/bson.html#ofString.c,BsonBase	converter ofString(b: BsonBase): string		1048
+nim	ofTime	anonimongo/core/bson.html#ofTime.c,BsonBase	converter ofTime(b: BsonBase): Time		1062
+nim	ofObjectId	anonimongo/core/bson.html#ofObjectId.c,BsonBase	converter ofObjectId(b: BsonBase): Oid		1065
+nim	ofArray	anonimongo/core/bson.html#ofArray.c,BsonBase	converter ofArray(b: BsonBase): seq[BsonBase]		1068
+nim	ofBool	anonimongo/core/bson.html#ofBool.c,BsonBase	converter ofBool(b: BsonBase): bool		1071
+nim	ofEmbedded	anonimongo/core/bson.html#ofEmbedded.c,BsonBase	converter ofEmbedded(b: BsonBase): BsonDocument		1074
+nim	ofBinary	anonimongo/core/bson.html#ofBinary.c,BsonBase	converter ofBinary(b: BsonBase): seq[byte]		1077
+nim	ofTimestamp	anonimongo/core/bson.html#ofTimestamp.c,BsonBase	converter ofTimestamp(b: BsonBase): TimestampInternal		1080
+nim	bson	anonimongo/core/bson.html#bson.t	template bson(): untyped		1083
+nimgrp	contains	anonimongo/core/bson.html#contains-procs-all	proc		309
+nimgrp	$	anonimongo/core/bson.html#$-procs-all	proc		264
+nimgrp	isnil	anonimongo/core/bson.html#isNil-procs-all	proc		852
+nimgrp	bytes	anonimongo/core/bson.html#bytes-procs-all	proc		120
+nimgrp	[]=	anonimongo/core/bson.html#[]=-procs-all	proc		440
+nimgrp	len	anonimongo/core/bson.html#len-procs-all	proc		552
+nimgrp	add	anonimongo/core/bson.html#add-procs-all	proc		517
+nimgrp	bsonbinary	anonimongo/core/bson.html#bsonBinary-procs-all	proc		864
+nimgrp	mget	anonimongo/core/bson.html#mget-procs-all	proc		460
+nimgrp	==	anonimongo/core/bson.html#==-procs-all	proc		270
+nimgrp	[]	anonimongo/core/bson.html#[]-procs-all	proc		349
+nimgrp	newbson	anonimongo/core/bson.html#newBson-procs-all	proc		880
+nimgrp	pairs	anonimongo/core/bson.html#pairs-iterators-all	iterator		256
+nimgrp	tobson	anonimongo/core/bson.html#toBson-converters-all	converter		802
+heading	Bson	anonimongo/core/bson.html#bson	 Bson		0

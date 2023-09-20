@@ -1,33 +1,35 @@
-opReply	anonimongo/core/wire.html#opReply	OpCode.opReply	
-opUpdate	anonimongo/core/wire.html#opUpdate	OpCode.opUpdate	
-opInsert	anonimongo/core/wire.html#opInsert	OpCode.opInsert	
-opReserved	anonimongo/core/wire.html#opReserved	OpCode.opReserved	
-opQuery	anonimongo/core/wire.html#opQuery	OpCode.opQuery	
-opGetMore	anonimongo/core/wire.html#opGetMore	OpCode.opGetMore	
-opDelete	anonimongo/core/wire.html#opDelete	OpCode.opDelete	
-opKillCursors	anonimongo/core/wire.html#opKillCursors	OpCode.opKillCursors	
-opCommand	anonimongo/core/wire.html#opCommand	OpCode.opCommand	
-opCommandReply	anonimongo/core/wire.html#opCommandReply	OpCode.opCommandReply	
-opCompressed	anonimongo/core/wire.html#opCompressed	OpCode.opCompressed	
-opMsg	anonimongo/core/wire.html#opMsg	OpCode.opMsg	
-OpCode	anonimongo/core/wire.html#OpCode	wire: OpCode	
-CompressorId	anonimongo/core/wire.html#CompressorId	wire: CompressorId	
-MsgHeader	anonimongo/core/wire.html#MsgHeader	wire: MsgHeader	
-ReplyFormat	anonimongo/core/wire.html#ReplyFormat	wire: ReplyFormat	
-Flags	anonimongo/core/wire.html#Flags	wire: Flags	
-QueryFlags	anonimongo/core/wire.html#QueryFlags	wire: QueryFlags	
-RFlags	anonimongo/core/wire.html#RFlags	wire: RFlags	
-ResponseFlags	anonimongo/core/wire.html#ResponseFlags	wire: ResponseFlags	
-MsgBitFlags	anonimongo/core/wire.html#MsgBitFlags	wire: MsgBitFlags	
-MsgFlags	anonimongo/core/wire.html#MsgFlags	wire: MsgFlags	
-replyParse	anonimongo/core/wire.html#replyParse,Streamable	wire: replyParse(s: var Streamable): ReplyFormat	
-msgParse	anonimongo/core/wire.html#msgParse,Streamable,int	wire: msgParse(s: var Streamable; rest = 0): ReplyFormat	
-prepareQuery	anonimongo/core/wire.html#prepareQuery,Streamable,int32,int32,int32,int32,string,int32,int32	wire: prepareQuery(s: var Streamable; reqId, target, opcode, flags: int32;\n             collname: string; nskip, nreturn: int32; query = newBson();\n             selector = newBson(); compression = cidNoop): int	
-prepare	anonimongo/core/wire.html#prepare.t,BsonDocument,int32,string,int,int,int	wire: prepare(q: BsonDocument; flags: int32; dbname: string; id = 0; skip = 0;\n        limit = 1; compression = cidNoop): untyped	
-ok	anonimongo/core/wire.html#ok,BsonDocument	wire: ok(b: BsonDocument): bool	
-errmsg	anonimongo/core/wire.html#errmsg,BsonDocument	wire: errmsg(b: BsonDocument): string	
-code	anonimongo/core/wire.html#code,BsonDocument	wire: code(b: BsonDocument): int	
-check	anonimongo/core/wire.html#check.t,ReplyFormat	wire: check(r: ReplyFormat): (bool, string)	
-look	anonimongo/core/wire.html#look,ReplyFormat	wire: look(reply: ReplyFormat)	
-getReply	anonimongo/core/wire.html#getReply,Socket	wire: getReply(socket: Socket): ReplyFormat	
-getReply	anonimongo/core/wire.html#getReply,AsyncSocket	wire: getReply(socket: AsyncSocket): Future[ReplyFormat]	
+nimTitle	wire	anonimongo/core/wire.html	module src/anonimongo/core/wire		0
+nim	opReply	anonimongo/core/wire.html#opReply	OpCode.opReply		15
+nim	opUpdate	anonimongo/core/wire.html#opUpdate	OpCode.opUpdate		15
+nim	opInsert	anonimongo/core/wire.html#opInsert	OpCode.opInsert		15
+nim	opReserved	anonimongo/core/wire.html#opReserved	OpCode.opReserved		15
+nim	opQuery	anonimongo/core/wire.html#opQuery	OpCode.opQuery		15
+nim	opGetMore	anonimongo/core/wire.html#opGetMore	OpCode.opGetMore		15
+nim	opDelete	anonimongo/core/wire.html#opDelete	OpCode.opDelete		15
+nim	opKillCursors	anonimongo/core/wire.html#opKillCursors	OpCode.opKillCursors		15
+nim	opCommand	anonimongo/core/wire.html#opCommand	OpCode.opCommand		15
+nim	opCommandReply	anonimongo/core/wire.html#opCommandReply	OpCode.opCommandReply		15
+nim	opCompressed	anonimongo/core/wire.html#opCompressed	OpCode.opCompressed		15
+nim	opMsg	anonimongo/core/wire.html#opMsg	OpCode.opMsg		15
+nim	OpCode	anonimongo/core/wire.html#OpCode	enum OpCode		15
+nim	CompressorId	anonimongo/core/wire.html#CompressorId	enum CompressorId		25
+nim	MsgHeader	anonimongo/core/wire.html#MsgHeader	object MsgHeader		33
+nim	ReplyFormat	anonimongo/core/wire.html#ReplyFormat	object ReplyFormat		37
+nim	Flags	anonimongo/core/wire.html#Flags	enum Flags		45
+nim	QueryFlags	anonimongo/core/wire.html#QueryFlags	type QueryFlags		55
+nim	RFlags	anonimongo/core/wire.html#RFlags	enum RFlags		58
+nim	ResponseFlags	anonimongo/core/wire.html#ResponseFlags	type ResponseFlags		64
+nim	MsgBitFlags	anonimongo/core/wire.html#MsgBitFlags	enum MsgBitFlags		67
+nim	MsgFlags	anonimongo/core/wire.html#MsgFlags	type MsgFlags		72
+nim	replyParse	anonimongo/core/wire.html#replyParse,Streamable	proc replyParse(s: var Streamable): ReplyFormat		97
+nim	msgParse	anonimongo/core/wire.html#msgParse,Streamable,int	proc msgParse(s: var Streamable; rest = 0): ReplyFormat		111
+nim	prepareQuery	anonimongo/core/wire.html#prepareQuery,Streamable,int32,int32,int32,int32,string,int32,int32	proc prepareQuery(s: var Streamable; reqId, target, opcode, flags: int32;\n             collname: string; nskip, nreturn: int32; query = newBson();\n             selector = newBson(); compression = cidNoop): int		131
+nim	prepare	anonimongo/core/wire.html#prepare.t,BsonDocument,int32,string,int,int,int	template prepare(q: BsonDocument; flags: int32; dbname: string; id = 0; skip = 0;\n        limit = 1; compression = cidNoop): untyped		185
+nim	ok	anonimongo/core/wire.html#ok,BsonDocument	proc ok(b: BsonDocument): bool		192
+nim	errmsg	anonimongo/core/wire.html#errmsg,BsonDocument	proc errmsg(b: BsonDocument): string		202
+nim	code	anonimongo/core/wire.html#code,BsonDocument	proc code(b: BsonDocument): int		207
+nim	check	anonimongo/core/wire.html#check.t,ReplyFormat	template check(r: ReplyFormat): (bool, string)		212
+nim	look	anonimongo/core/wire.html#look,ReplyFormat	proc look(reply: ReplyFormat)		232
+nim	getReply	anonimongo/core/wire.html#getReply,Socket	proc getReply(socket: Socket): ReplyFormat		130
+nim	getReply	anonimongo/core/wire.html#getReply,AsyncSocket	proc getReply(socket: AsyncSocket): Future[ReplyFormat]		247
+nimgrp	getreply	anonimongo/core/wire.html#getReply-procs-all	proc		247

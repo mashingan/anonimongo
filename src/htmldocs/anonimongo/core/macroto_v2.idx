@@ -1,3 +1,4 @@
-to	anonimongo/core/macroto_v2.html#to.m,untyped,typed	macroto_v2: to(b: untyped; t: typed): untyped	
-bsonExport	anonimongo/core/macroto_v2.html#bsonExport.t	macroto_v2: bsonExport()	
-bsonKey	anonimongo/core/macroto_v2.html#bsonKey.t,string	macroto_v2: bsonKey(key: string)	
+nimTitle	macroto_v2	anonimongo/core/macroto_v2.html	module src/anonimongo/core/macroto_v2		0
+nim	to	anonimongo/core/macroto_v2.html#to.m,untyped,typed	macro to(b: untyped; t: typed): untyped		642
+nim	bsonExport	anonimongo/core/macroto_v2.html#bsonExport.t	template bsonExport()		746
+nim	bsonKey	anonimongo/core/macroto_v2.html#bsonKey.t,string	template bsonKey(key: string)		748
