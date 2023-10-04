@@ -74,7 +74,7 @@ type
 
 const msgDefaultFlags = 0
 
-proc serialize(s: var Streamable, doc: BsonDocument): int =
+proc serialize(s: var Streamable, doc: BsonDocument): int {.gcsafe.} =
   let (doclen, docstr) = encode doc
   result = doclen
   s.write docstr
@@ -108,7 +108,7 @@ proc replyParse*(s: var Streamable): ReplyFormat =
     result.documents[i] = s.readStr(doclen).decode
     if s.atEnd or s.peekChar.byte == 0: break
 
-proc msgParse*(s: var Streamable, rest = 0): ReplyFormat =
+proc msgParse*(s: var Streamable, rest = 0): ReplyFormat {.gcsafe.} =
   ## Get the message in the ReplyFormat from given data stream.
   ## This is adapted to older type ReplyFormat from newer wire
   ## protocol OP_MSG.
@@ -130,7 +130,7 @@ proc msgParse*(s: var Streamable, rest = 0): ReplyFormat =
 
 proc prepareQuery*(s: var Streamable, reqId, target, opcode, flags: int32,
     collname: string, nskip, nreturn: int32,
-    query = newbson(), selector = newbson(), compression = cidNoop): int =
+    query = newbson(), selector = newbson(), compression = cidNoop): int {.gcsafe.} =
   ## Convert and encode the query into stream to be ready for sending
   ## onto TCP wire socket.
   var query = query
@@ -244,7 +244,7 @@ proc look*(reply: ReplyFormat) =
     for d in reply.documents:
       dump d
     
-proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock.} =
+proc getReply*(socket: AsyncSocket): Future[ReplyFormat] {.multisock, gcsafe.} =
   ## Get data from socket and apply the replyParse into the result.
   var bstrhead = newStringStream(await socket.recv(size = 16))
   let msghdr = msgHeaderFetch bstrhead
