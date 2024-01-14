@@ -114,12 +114,12 @@ proc uploadFile*(g: GridFS[AsyncSocket], f: AsyncFile, filename = "", chunk = 0'
   let capsize = 16.megabytes
   var insertops = newseq[Future[WriteResult]]()
   var chunks = newseq[BsonDocument]()
-  for _ in countup(0, int(fsize-1), chunksize):
+  for _ in countup(0, int(fsize-1), chunkSize):
     var chunk = bson({
       "files_id": foid,
       "n": chunkn
     })
-    let data = waitfor f.read(chunksize) # to make it work regardless sync/async because asyncfile
+    let data = waitfor f.read(chunkSize) # to make it work regardless sync/async because asyncfile
     chunk["data"] = bsonBinary data
     let newcurr = curread + data.len
     if newcurr >= capsize:

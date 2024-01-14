@@ -67,9 +67,9 @@ if filename != "" and saveas != "":
     test "Create default bucket":
       require db != nil
       when anoSocketSync:
-        grid = db.createBucket(chunkSize = 1.megabytes.int32)
+        grid = db.createBucket(chunkSize = 131072)
       else:
-        grid = waitfor db.createBucket(chunkSize = 1.megabytes.int32)
+        grid = waitfor db.createBucket(chunkSize = 131072)
       require grid != nil
 
     test "Upload file":
@@ -106,8 +106,9 @@ if filename != "" and saveas != "":
         var gf = grid.getStream(bson({filename: dwfile}), buffered = true)
       else:
         var gf = waitfor grid.getStream(bson({filename: dwfile}), buffered = true)
-      check f.getFileSize == gf.fileSize
-      check f.getFilePos == gf.getPosition
+      doassert f.getFileSize == gf.fileSize
+      doassert f.getFilePos == gf.getPosition
+
 
       let threekb = 3.kilobytes
       when anoSocketSync:
@@ -115,28 +116,32 @@ if filename != "" and saveas != "":
       else:
         var binread = waitfor gf.read(threekb)
       var bufread = waitfor f.read(threekb)
-      check bufread == binread
-      check f.getFilePos == gf.getPosition
+      doassert bufread == binread
+      doassert f.getFilePos == gf.getPosition
+      
 
-      let fivemb = 5.megabytes
-      f.setFilePos fivemb
+      let kbStream = 131072 #changed
+      f.setFilePos kbStream
       when anoSocketSync:
-        gf.setPosition fivemb
+        gf.setPosition kbStream
       else:
-        waitfor gf.setPosition fivemb
-      check f.getFilePos == gf.getPosition
-
+        waitfor gf.setPosition kbStream
+      doassert f.getFilePos == gf.getPosition
+      
+        
       when anoSocketSync:
-        binread = gf.read(fivemb)
+     #it can't be fivemb because of the buffer limit in tests
+        binread = gf.read(kbStream)
       else:
-        binread = waitfor gf.read(fivemb)
-      bufread = waitfor f.read(fivemb)
-      check bufread.len == binread.len
-      check bufread == binread 
-      check f.getFilePos == gf.getPosition
+        binread = waitfor gf.read(kbStream)
+      bufread = waitfor f.read(kbStream)
+      doassert bufread.len == binread.len
+      doassert bufread == binread 
+      doassert f.getFilePos == gf.getPosition
 
       close f
       close gf
+      
 
     test "Gridstream read chunked size":
       let chunkfile = "gs_chunks.mkv"
